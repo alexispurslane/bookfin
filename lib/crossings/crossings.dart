@@ -46,7 +46,13 @@ sealed class Landing extends Crossing {
 
 /// Where a listening place lands in an ebook edition.
 final class TextLanding extends Landing {
-  const TextLanding(this.from, this.place, {required this.into});
+  const TextLanding(
+    this.from,
+    this.place, {
+    required this.into,
+    required this.share,
+    required this.chapter,
+  });
 
   @override
   final AudioPosition from;
@@ -59,6 +65,15 @@ final class TextLanding extends Landing {
   /// The ebook edition of the landing, at the file revision whose outline
   /// placed it.
   final ({String editionId, String sourceKey, String revision}) into;
+
+  /// How far through the ebook the landing lies: the share of the book's
+  /// visible characters before it, from 0 to 1, by the text outline. The
+  /// reader names a landing by it until it measures the open book.
+  final double share;
+
+  /// The title of the last contents entry that starts at or before the
+  /// landing, by the text outline, or null before the first entry.
+  final String? chapter;
 }
 
 /// Where a reading place lands in an audio edition.
@@ -348,6 +363,9 @@ class Crossings {
             sourceKey: file.key,
             revision: file.revision,
           ),
+          // An aligned outline holds characters, or the alignment refuses.
+          share: (characters / outline.length).clamp(0.0, 1.0),
+          chapter: outline.chapterAt(characters),
         );
       case TextPosition():
         final characters = place.fits(from)

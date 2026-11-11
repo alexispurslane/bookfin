@@ -1,6 +1,6 @@
 # Go to a place of the other edition inside the open edition
 
-Epic: boo-z3is, under boo-fs0n. Written 2026-11-11 with two designs, A and B. Status: the user chose design A (see "Decision" at the end). Steps 2 to 7 of design A are built. Step 8, the PDF outline, waits. Design B is not scheduled.
+Epic: boo-z3is, under boo-fs0n. Written 2026-11-11 with two designs, A and B. Status: the user chose design A (see "Decision" at the end). Steps 2 to 8 of design A are built, with the self-check of boo-bxap. Design B is not scheduled. Ticket boo-snng prototyped speech search and an anchor map: see "Speech search prototype" at the end, with two build designs and questions for the user.
 
 Read this with three other documents:
 
@@ -223,6 +223,15 @@ The thresholds alone do not stop the wrong matches. The measurement suggests one
 - The check needs at least three anchors. A pairing of exactly two anchors stays unchecked. None occurred in this sample.
 - The spread of span rates separates less well. Its 90th percentile is 1.19 times the median rate or less in right pairings and 1.43 to 1.84 in most wrong ones. But it misses book E (1.0) and book I (1.2).
 
+As built in boo-bxap:
+
+- `alignEditions` runs the self-check after the coverage limit, which is now 0.3. A pairing that fails both gets the coverage reason.
+- The limit is two pages for every chapter length. The error of a hidden anchor grows with the length of its chapters, so a right pairing of a few very long chapters can fail. "A Christmas Carol" (five staves) is at 1.25 pages.
+- A chance pairing by numbers with exactly three anchors can pass, when its two spans read at about the same rate. Ticket t3-b7wc measures a check of this case.
+- The new refusal is `Refusal.misaligned`. Its note reads "The chapters of these editions do not line up, so this opens the audiobook."
+- A pairing of exactly two anchors has no inner anchor to hide. It is kept only when both anchors pair by the words of their titles, such as "Marley's Ghost" with "MARLEY'S GHOST.". A pairing by numbers alone or by the ordinal fill is refused as `fewMatches`. The reason is the evidence above: all 5 wrong matches paired titles by their numbers, as track numbers or as the chapter numbers of several works. So a titled number match is no evidence that a pairing is right. The measurement found no wrong match that shared title words caused. No two-anchor pairing occurred, so this rule costs no measured match.
+- `test/crossings/alignment_test.dart` reproduces two of the wrong shapes: tracks one chapter late, with the credits and the preface in track 01 (book J), and a work of three chapters against an anthology of three works (book E). The self-check refuses both. The seven public recordings that matched still match.
+
 With the rule, design A refuses 72% of these pairings, where it now refuses 56%. A refusal sends Go to to the other screen, as today. A wrong match plays or shows the wrong chapter with the word "about". The user chose the refusal for chapters that do not match ("Decision", item 3).
 
 ### Limits of this measurement
@@ -275,7 +284,7 @@ flowchart TD
 | Listening track, listening Undo offer, listening bookmarks | `Playback`, unchanged | Player, timeline controller |
 | Reading track, reading Undo offer, reading bookmarks | `ReaderSession`, unchanged | Reader, timeline controller |
 | Audio outline of an audio edition | `audioOutline(Edition)`, a pure function of the catalog. `Playback.chapters` uses it too. | `Crossings`, `Playback` |
-| Text outline of an ebook edition | `measureTextOutline`, in the reader package, in a worker isolate | `Crossings` |
+| Text outline of an ebook edition | `measureTextOutline` for an EPUB or MOBI, in a worker isolate. `PdfRuntime.measureOutline` for a PDF, on PDFium's worker isolate. | `Crossings` |
 | The anchors of a pair of editions, and the landing of a place | `Crossings`, a new app-wide data source. It keeps the outlines and alignments that it derives. | Timeline controller |
 | Which landing a choice uses, and the fallback | `openHistory`, the timeline controller | `HistoryTimeline` |
 | A landing in words | The open owner: `Playback.describe` for an audio landing, `ReaderSession.describeLanding` (new) for a text landing | `HistoryTimeline` |
@@ -392,8 +401,10 @@ The timeline gets one new input: `landingOf(place)`, the words of where a choice
 As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 
 - A tile of a place of the other medium names its landing, such as "about p. 134", and its detail line names the landing's chapter in the open edition.
-- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens, for example "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
-- The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. The landing words replace them when `Crossings` notifies, and only the open tiles follow that signal.
+- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens. An example: "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
+- The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. When `Crossings` notifies, the landing words replace them. Only the open tiles follow that signal.
+- In the reader, a landing reads as its page by the open book's map, as every reading place does. The map knows the pages only after the reader lays out the book. Before that, the tile names the landing by its share of the book's visible characters and by its chapter. The text outline gives both, for example "about 23%" and "Chapter 4". Then the tile changes to "about p. 134" (t9-m4fw). The landing carries its share and its chapter, so the reader does not need the outline. Where the map names no chapter, as in a PDF, the chapter still comes from the outline.
+- Before the reader shows the book at all, Go to cannot show the landing in it. Then the tile keeps the place's own words, such as "1:02:15". The tile names a landing exactly when Go to can show it.
 - When the history holds one medium, the rail keeps its one lane.
 
 ### Bookmarks of the other edition
@@ -408,17 +419,31 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 `Crossings` gives no landing in these cases. Design B removes some of them, as its section says.
 
 1. The audio edition has no chapter marks, or the ebook has no contents.
-2. Fewer than two anchors survive the rate check.
+2. Fewer than two anchors survive the rate check. Two anchors also count as too few unless both pair by the words of their titles (boo-bxap).
 3. The place lies more than one page (45 s) outside every span. Such places are in text that only one edition has, for example an introduction that the narrator does not read.
-4. The anchors cover less than half of the audio time. This catches abridged recordings and other editions.
-5. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
-6. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
+4. The anchors cover less than three tenths of the audio time. This catches abridged recordings and other editions. Until boo-bxap, the limit was half.
+5. The anchors fail the self-check: hidden one at a time, the inner anchors land more than two pages from their own starts, at the median. The note says "The chapters of these editions do not line up" (boo-bxap).
+6. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
+7. The ebook is a PDF without bookmarks. Its outline has no contents entries, so the note says that one of the editions has no chapters (t9-nl30).
 
-Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. Two more cases give no landing: the ebook is a PDF (item 6), and Bookfin cannot read the downloaded ebook.
+Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. One more case gives no landing: Bookfin cannot read the downloaded ebook, as for a damaged or encrypted PDF.
+
+### The PDF outline
+
+As built in t9-nl30, `pdfOutlineOf` makes the text outline of a PDF edition:
+
+- Each source page is a part, named `page:N` as a PDF place names its page. A part holds the visible characters of the page's text layer, as the reader extracts it.
+- Each bookmark is a contents entry at its nesting depth, in the order of the outline. The matcher pairs titles at every depth, as it does with the levels of an EPUB's contents. The ordinal fill uses the depth of its neighboring anchors. So the PDF path needs no choice of one level.
+- A bookmark starts at its page, after the visible characters above its place there. An /XYZ destination names the height of its place. Other destinations start at the top of their page.
+- A PDF reading place lies at the start of its source page. In the reader, a landing in a PDF shows the start of its page. Ticket t3-tkpa can place a reading place of the PDF text view inside its page.
+- A page without a text layer is a picture or a blank page when at least half of the book's pages have a text layer. It holds no characters.
+- A book where most pages have no text layer is a scan. Each of its pages without a text layer counts as 1600 visible characters, a printed page of about 330 words. So places fall by pages, the way the scrub bar already measures a PDF. Recognition of every page would cost minutes of phone CPU for one Go to. A refusal would lose every scanned book with bookmarks, and Bookfin reads scanned books.
 
 ### Engine rules
 
 - `measureTextOutline` parses every section of the book once, in one `Isolate.run` for each ebook edition. The matching runs in a second hop, once for each pair of editions. Its table has at most about 200 × 200 cells.
+- A PDF outline needs PDFium, which runs on pdfrx's one worker isolate. `measurePdfOutline` opens its own handle of the file there and reads all the bookmarks in one step. Then it counts each page's text layer in slices of about 8 ms, as low-priority work. A page that the reader asks for waits at most about one slice, or the time to open the file and read its bookmarks. Only the bookmarks and the counts come back to the UI isolate.
+- The first outline of a long PDF reads the text layer of every page. Its time on a phone is not measured yet (ticket t3-l03x). Go to on a listening place waits for the outline.
 - `Crossings` keeps each text outline in a small JSON cache, keyed by edition id and file revision, with an atomic write. A removed download keeps its outline, so its reading places still map. A later launch does not parse the book again.
 - The History sheet draws at once with each entry's own words. After the alignment arrives, the landing words fill in. No spinner shows.
 - A mapped move saves through the existing move path. These new tests prove the data safety of engine rule 3:
@@ -434,6 +459,7 @@ Then the choice names the place in its own words ("1:02:15"), a note says why an
 - An outline belongs to the current revision of its edition's file.
 - Anchors increase strictly in time and in characters.
 - Every span reads at 0.5 to 2 times the median rate of the pair.
+- Hidden one at a time and placed from their two neighbors, the inner anchors land at most two pages from their own starts, at the median.
 - A landing by chapters lies inside its span, or within one page of it.
 
 ## Design A: matched chapters and proportional placement
@@ -445,7 +471,8 @@ Then the choice names the place in its own words ("1:02:15"), a note says why an
 3. Rate check. While a span reads at less than half or more than twice the median rate, the check drops the anchor whose removal helps most.
 4. Ordinal fill. In a gap between anchors with as many audio chapters as contents entries at the anchors' depth, the fill pairs them in order. This repairs numbering by volume.
 5. Placement. Inside a span, the landing lies at the same share of the span's characters as the place's share of the span's time, and the reverse.
-6. Refusal: the fallback cases above.
+6. Self-check. Each inner anchor is hidden in turn and placed from its two neighbors by the rule of step 5. If the median distance from its own start is more than two pages, the pairing is refused (boo-bxap).
+7. Refusal: the fallback cases above.
 
 ### Usage example
 
@@ -545,7 +572,7 @@ Design A:
 | 5 | `Crossings`: landings, caches and invariants | 4 |
 | 6 | Mapped moves: `counterpartOf` and `matchedBy`, `goToLanding` in `ReaderSession` and `Playback`, with the data-safety tests | 5 |
 | 7 | The History sheet: the routing rule, `landingOf`, the detail line, the fallback and the two lanes | 6 |
-| 8 | PDF editions: the PDF outline from PDFium bookmarks and characters from the text layer. Until then a PDF refuses. | 7 |
+| 8 | PDF editions: the PDF outline from PDFium bookmarks and characters from the text layer (t9-nl30, see "The PDF outline") | 7 |
 
 The thresholds of step 4 (the rate band, the coverage limit and the one-page margin) can change after step 1 measures the real library. Step 7 and boo-hyl4 both change `lib/playback/timeline.dart`, so they merge one after the other.
 
@@ -574,3 +601,278 @@ If the answers pick speech, design B adds five tickets. All of them follow step 
    the entry says why before the tap.
 
 Design B is not scheduled. It stays recorded here for the later decision.
+
+## Speech search prototype
+
+Ticket boo-snng, 2026-11-11. This section measures the user's later idea. It is a prototype and a measurement. Nothing in `lib/` changed.
+
+### The idea
+
+The user asked for "whole book progress" as the first estimate. They accept speech "only if we find it faster", or if it is less accurate but uses a search to make up for it. So the prototype has two steps:
+
+1. A coarse estimate: the whole-book share, or the landing of matched chapters (design A) where the leave-one-out check of boo-bxap passes.
+2. Speech recognition on the phone plus a word search near the estimate, to land on the sentence. The search fails early when no place is clear.
+
+The parent task added a second variant, the anchor map. It moves the speech work from the tap to the time of listening.
+
+### Terms
+
+- Window: a stretch of the audiobook that whisper transcribes at once, here 3 to 15 s.
+- Coarse estimate: where the place lies before speech, by whole-book share or by matched chapters.
+- Search radius: how many pages around the estimate the search reads. The radii grow until a place is clear: 8, 24 and 72 pages, then the whole book. From matched chapters: 3 and 24 pages, then the whole book.
+- Confident match: at least 6 heard words, and at least half of them, match the book in order. The best other place, more than 30 words away, matches at most half as many.
+- Round: one window and one search in the reading-place loop.
+- Reference map: for each recording, where each spoken word lies in the book. It is the measure of truth here.
+- Anchor: one audio time and the book word spoken then, found from one window.
+- Anchor map: the anchors of one audio edition, kept while the person listens.
+- Audio context: the length of audio that whisper's encoder reads. Whisper pads every window to 30 s unless the context is cut to the window's length. "Reduced context" below cuts it.
+- Heard words: whisper's words, in lower case, with punctuation and dashes left out and numbers as words. The book's words get the same treatment.
+
+### Method
+
+#### Data
+
+| Source | Recordings | Audio | Ebook | Reference map |
+| --- | --- | --- | --- | --- |
+| LibriVox, whole books | Alice in Wonderland (900), The Time Machine (5630), Heart of Darkness (64) | 10.6 h, one reader each | Standard Ebooks. Heart of Darkness is inside a 2,060,876-character Conrad collection, so the whole-book share is wrong by about 2,300 pages at the 90th percentile. | Every section |
+| LibriVox, long books | Pride and Prejudice (1480), Moby-Dick (21919), Jane Eyre (2192) | 53 h downloaded, 5 sections of each transcribed | Standard Ebooks | 15 sections, 4.6 h |
+| The user's Jellyfin server | Letters A, B, C, E, G | 52 h. A, C and G are M4B. B is a 64 kb/s MP3. E is a VBR MP3 without chapter marks. C and G have "Opening Credits" and "End Credits" chapters. | Corpus editions of the same works. E and G pair with the Conrad collection. | A stronger reference per place, see below |
+
+- The reference map comes from base.en on the Mac's GPU over whole sections (`speech_truth.py`). It aligns the heard words with the book by word sequences of four that occur once in the book, kept in increasing order. 94% of the heard words got a place. The probe under test never reads it.
+- The server recordings have no reference map. There, base.en on 30 s around the place, searched in the whole book with a stricter rule (60% of words, best other place at most 35%), stands in. 148 of 150 places got such a reference.
+- The server was read with GET requests only, through a local proxy (`speech_server.py`). Each window fetched byte ranges near its place, plus the M4B index. The private map of letters to items and the server's books were deleted after the run.
+
+#### The harness
+
+- `tool/research/cross_edition/speech_probe` is a scratch Flutter app. It is not wired into Bookfin. The same Dart code places on the Mac (`bin/host_eval.dart`) and on Android (`lib/main.dart`): `text.dart` normalizes words, `search.dart` finds them, and `place.dart` holds the two directions.
+- whisper.cpp 1.9.5 runs through Dart FFI and a small C face, `native/speech_probe.c`. The Mac and Android builds compile the same pinned source on the CPU only, with 4 threads, greedy decoding and token times. `nix/whisper.nix` pins the source and six model files. `nix develop .#speech` gives them.
+- The Mac is an Apple M1 Max. Other agents loaded it during every run: a load average of 6 to 25 on 10 cores. So the Mac times are pessimistic.
+- The emulator is an arm64 Android 16 AVD of my own, with 4 cores, on the same Mac. On Android, MediaCodec decodes each window, and one long-lived worker isolate transcribes and searches.
+
+#### The search
+
+1. Each heard word votes for the diagonals (book word minus heard index) where it occurs in the radius, weighted by its rarity.
+2. The eight best diagonals are aligned word by word (longest common subsequence). Words of five letters or more match when they differ in at most one letter after their first four, as "colour" and "color" do.
+3. The best alignment wins if it is a confident match. Otherwise the radius grows. If the whole book gives no confident match, the search fails.
+4. The search reads the body text only. Back matter (endnotes, colophon, license) is left out. One Moby-Dick endnote quotes a passage that the narrator reads in chapter 45.
+
+#### The two directions
+
+- Listening place into the ebook: transcribe 15 s centered on the place, search near the estimate, and land on the book word of the heard word nearest the place's time.
+- Reading place into the audiobook: transcribe 15 s at the estimated time, find the window in the book, and move the time by the words between the window and the target at the reading rate. Repeat until a window holds the target word. Then read the target's time from the token times. Give up after 6 rounds. The first rate is the recording's length over the book's words, kept between 270 and 540 ms per word. Two found windows more than 20 s apart give a local rate.
+
+The reading-place loop changed four times on this data. The first version used the unclamped book rate, so the anthology never converged (80% in all). The second clamped the rate and dropped stray end matches. The third searched the body only and let a window hold the middle of the file it reads. The fourth accepts a target within 12 words of a window's words on the second time in a row, for headings that the narrator words differently. The tables give the fourth version, except the server rows, which ran with the second.
+
+### Timings per step
+
+Medians, with the 90th percentile in brackets. tiny.en at 5 bits (q5_1), 15 s window, full 30 s context, 4 threads.
+
+| Step | Mac M1 Max | Emulator, 4 cores | Phone estimate (Pixel 8) |
+| --- | --- | --- | --- |
+| Model load | 35 to 66 ms | 106 to 253 ms | Not estimated. Read from flash. |
+| Book words, parse and index, once per book | 5 + 2 ms (28k words), 93 + 32 ms (456k words) | 19 + 3 ms (28k words) | Not estimated |
+| Decode 15 s from a downloaded MP3 | 90 [123] ms (ffmpeg, with its process start) | 832 [878] ms wall, 73 ms CPU in the app (MediaCodec) | 0.2 to 0.8 s |
+| Fetch and decode 15 s from Jellyfin | 198 [399] ms (ffmpeg, bit-rate seek) | MP3 1.30 s, M4B 1.18 s (MediaExtractor) | Network-bound, see "Streaming" |
+| Transcribe 15 s | 506 [855] ms, 1.70 [2.95] s CPU | 696 to 785 [1,069 to 1,108] ms, 2.2 to 2.3 s CPU | 1.0 to 1.4 [1.7 to 2.3] s |
+| Search, 8-page radius | 0.30 [0.60] ms | 0.67 to 0.74 [1.0 to 1.1] ms | Under 3 ms |
+| Search, whole 456k-word book | 5.7 ms, at most 44 ms | Not run | Under 0.12 s |
+| One listening place into the ebook | 0.6 [1.0] s | 1.5 to 1.7 s | 1.2 to 2.2 s |
+| One reading place into the audiobook, from whole-book share | 1.72 [3.53] s, 5.4 [8.7] s CPU | Not run | 3.4 to 4.6 [7.1 to 9.5] s |
+| One reading place into the audiobook, from matched chapters | 1.03 [1.77] s, 3.0 [5.2] s CPU | Not run | 2.1 to 2.8 [3.5 to 4.8] s |
+
+- The emulator's MediaCodec time is mostly the codec process, which runs outside the app, plus a binder call for each of the window's 574 MP3 frames. The harness did not measure that process. A real phone makes these calls faster, and an in-process decoder avoids them.
+- The emulator ran the tiny models' transcription at 1.0 to 1.55 times the Mac's time, on the same cores.
+- The phone's decode range: 0.2 s is the Mac's ffmpeg time scaled by the factor below, and 0.8 s is the emulator's MediaCodec time.
+
+#### The phone estimate
+
+The estimate multiplies the Mac's time by 2.0 to 2.7. `docs/research/on-device-tts.md` derives that factor for 4 threads on a Pixel 8 (one Cortex-X3 and three Cortex-A715 cores) from Geekbench 6 scores against an M1 Max core. It was made for ONNX Runtime. whisper.cpp's matrix code is different, so the factor is an assumption here. Nobody measured it on a phone. The emulator is no phone either: it runs on the Mac's own cores.
+
+### Accuracy
+
+#### Listening place into the ebook
+
+| Recordings | Estimate | Places | Landed | Same sentence | Within 2 words | Largest error | Wrong page |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| LibriVox | Whole-book share | 240 | 239 (99.6%) | 225 (94%) | 235 (98%) | 3 words | 0 |
+| LibriVox | Matched chapters | 200 | 200 | 190 (95%) | 198 (99%) | 3 words | 0 |
+| LibriVox | No estimate, whole book | 240 | 238 | 224 (93%) | 234 (98%) | 3 words | 0 |
+| Server, CBR MP3 and M4B (A, B, C, G) | Whole-book share | 118 | 118 | 111 (94%) | 113 (96%) | Not counted | 0 |
+| Server, VBR MP3 without chapter marks (E) | Whole-book share | 30 | 30 | 26 (87%) | 27 (90%) | Not counted | 0 |
+
+- Every sentence miss lies 1 to 3 words from the true word, across a sentence's edge.
+- The one refusal was a whisper loop: it repeated one 9-word phrase 15 times. The search refused it, as it must.
+- The radius that found the place, from whole-book share on LibriVox: 8 pages for 171 places, 24 for 29, 72 for 1, and the whole book for 38. All 38 whole-book searches were in the Conrad collection, where the share is wrong by hundreds of pages.
+- tiny.en at 16 and 8 bits and base.en at 5 bits gave the same result on 60 places: 53 or 54 in the same sentence, none wrong. base.en took 3.5 times as long.
+
+#### Reading place into the audiobook
+
+| Recordings | Estimate | Places | Converged | Rounds: median [90th] | Error: median [90th], largest | Within 1 s | In the target sentence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| LibriVox | Whole-book share (estimate error: median 213 s, 90th 5,498 s) | 147 | 145 (99%) | 3 [4] | 0.20 [0.89] s, 2.19 s | 134 (91%) | 132 (90%) |
+| LibriVox | Matched chapters (estimate error: median 8 s, 90th 19 s) | 122 | 122 | 2 [2] | 0.16 [0.81] s, 4.36 s | 116 (95%) | 107 (88%) |
+| Server, CBR MP3 and M4B | Whole-book share | 117 | 117 | 3 [4] | 0.30 [1.2] s, 2.35 s | 97 (83%) | Not counted |
+| Server, VBR MP3 (E) | Whole-book share | 30 | 27 | 4 [6] | 0.55 [29] s, 38 s | 18 (60%) | Not counted |
+
+- "In the target sentence" means from 0.5 s before its first word to the start of the next sentence. A landing early by a few hundred milliseconds plays the end of the sentence before.
+- Rounds from whole-book share: 1 round for 2 places, 2 for 70, 3 for 45, 4 for 19, 5 for 9, 6 for 2. From matched chapters: 1 round for 55, 2 for 66, 3 for 1.
+- The two places that did not converge: a chapter's first words right after LibriVox's spoken notice, and a passage where the Standard Ebooks text differs from the edition that the reader read.
+- E's errors come from seeking, not from speech. See "Failure modes".
+
+#### Intros, credits and missing chapter marks
+
+- LibriVox notice: 45 windows 5 s into a section, inside the spoken notice ("Chapter 3 of ... This is a LibriVox recording ..."). 24 landed, all at the chapter's start: 0 to 22 words after the first word of the chapter. 21 refused. None landed elsewhere.
+- Commercial credits: 4 windows 10 s into an "Opening Credits" or "End Credits" chapter. 3 refused. One landed in the book's last sentences, which the reference confirmed: that "End Credits" mark starts before the text ends.
+- No chapter marks: recording E. All 30 listening places landed, none wrong. The whole-book share was wrong by about 1,960 pages at the 90th percentile, because the ebook is an anthology. The growing radius found the place.
+
+### The shortest window
+
+The anchor map transcribes the last L seconds heard before a time. 25 places of each of the 6 LibriVox books, 150 windows for each row. "Near" searches 3 pages around the place, as an anchor map does from its previous anchor. "Whole book" searches everything.
+
+| Window | Context | Near: confident | Near: within 5 words | Whole book: confident | Wrong | Mac CPU [90th] | Mac wall | Emulator wall (CPU) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 3 s | Reduced | 69% | 61% | 45% | 0 | 288 ms [9.6 s] | 102 ms | Not run |
+| 5 s | Reduced | 91% | 83% | 78% | 0 | 398 [627] ms | 139 ms | 128 ms (330 ms) |
+| 8 s | Reduced | 99% | 85% | 93% | 0 | 667 [1,256] ms | 230 ms | 211 ms (564 ms) |
+| 10 s | Reduced | 98% | 89% | 97% | 0 | 870 [1,493] ms | 297 ms | Not run |
+| 15 s | Reduced | 99% | 86% | 99% | 0 | 1,584 [4,234] ms | 498 ms | 400 ms (1,134 ms) |
+| 5 s | Full 30 s | 96% | 87% | 87% | 0 | 1,468 [2,355] ms | 426 ms | 502 ms (1,750 ms) |
+| 8 s | Full 30 s | 98% | 84% | 95% | 0 | 1,664 [3,223] ms | 504 ms | 534 ms (1,798 ms) |
+
+- The shortest window that still gives a unique, confident match is 8 s with reduced context: 99% near, 93% in the whole book, and none wrong. At 5 s, 1 window in 11 fails near the place, so an anchor must retry.
+- "Within 5 words" counts the anchor word, the last word of the window, where whisper's word times are least sure. An anchor off by a few words does not matter next to the interpolation error below.
+- A reduced context costs a quarter to a half of the CPU of a full one. It also makes whisper loop on some short windows: the 3 s row's 90th percentile is 9.6 s of CPU. A build must cap the tokens of a window.
+
+### The anchor map
+
+#### Interpolation between anchors
+
+`speech_anchor_map.py` keeps an exact anchor every N minutes of continuous listening and places every fifth word of the reference map between two anchors by straight interpolation, in both directions. The three whole LibriVox books, 17,664 to 18,458 places for each row:
+
+| Anchor every | Into the ebook: median [90th], 99th | Same sentence | Into the audiobook: median [90th], 99th |
+| --- | --- | --- | --- |
+| 1 min | 0.02 [0.06] pages, 0.19 | 84% | 0.9 [3.0] s, 13 s |
+| 2 min | 0.03 [0.09] pages, 0.31 | 75% | 1.4 [4.8] s, 19 s |
+| 5 min | 0.06 [0.23] pages, 0.57 | 56% | 2.9 [12.1] s, 30 s |
+| 10 min | 0.09 [0.38] pages, 0.85 | 44% | 4.8 [19.6] s, 45 s |
+| 20 min | 0.15 [0.55] pages, 0.98 | 32% | 7.7 [27.7] s, 50 s |
+
+- So at 5 minutes, a place between anchors lands on the shown page or the next one at the 99th percentile, with no speech at the tap. The sections of the long books agree up to their length of 10 to 54 minutes.
+- In the audiobook, the error is larger at the 99th percentile because LibriVox notices and pauses between chapters hold time without book words.
+- A place that has its own window (a bookmark, a jump, a pause) lands on its sentence with a search of its kept words: 0.3 to 0.7 ms on the emulator, no speech.
+
+#### Energy and windows per listening hour
+
+The energy of a window is the phone's estimated wall time times 3 to 6 W for four busy cores. `docs/research/on-device-tts.md` uses the same power. It is an assumption, not a measurement. The Pixel 8 battery holds about 17.7 Wh, or 63.7 kJ.
+
+| Work | Phone time (estimate) | Energy | Share of the battery |
+| --- | --- | --- | --- |
+| One 5 s window, reduced context | 0.28 to 0.38 s | 0.8 to 2.3 J | 0.001 to 0.004% |
+| One 8 s window, reduced context | 0.46 to 0.62 s | 1.4 to 3.7 J | 0.002 to 0.006% |
+| One 15 s window, full context | 1.0 to 1.4 s | 3.0 to 8.2 J | 0.005 to 0.013% |
+| Anchor map, 8 s every 5 min, plus 4 moves or bookmarks: 16 windows per listening hour | 7.4 to 9.9 s | 22 to 59 J | 0.03 to 0.09% per hour |
+| Anchor map, 8 s every 2 min, plus 4: 34 windows per listening hour | 16 to 21 s | 47 to 127 J | 0.07 to 0.2% per hour |
+| One listening place into the ebook at the tap | 1.2 to 2.2 s | 4 to 13 J | 0.01 to 0.02% |
+| One reading place into the audiobook at the tap, 3 windows | 3.4 to 4.6 s | 10 to 28 J | 0.02 to 0.04% |
+
+- The windows run while the audio plays, so the phone is awake anyway. They need no extra wake-ups.
+- One anchor keeps about 150 bytes: a time and the heard words. That is about 2 KB per listening hour.
+
+### Streaming the audio from Jellyfin
+
+| File | Index (moov) | Where | Bytes for one 15 s window |
+| --- | --- | --- | --- |
+| MP3, 64 kb/s (B) | None needed | Not applicable | 120 KB of audio. ffmpeg read about 1.8 MB: 1 MB at the file's start and 0.8 MB at the place. |
+| M4B, 3.8 h (G) | 1.7 MB | File end | Index once, then about 120 KB |
+| M4B, 8.6 h (C) | 3.3 MB | File end | Index once, then about 120 KB |
+| M4B, 22.9 h, 127 kb/s (A) | 14.2 MB | File start | Index once, then about 240 KB |
+
+- The server sent its first byte in 13 to 15 ms (median) to this Mac. A phone away from home waits longer.
+- ffmpeg's exact seek read an MP3 from its first byte: 116 MB for one window. A bit-rate seek fixed it: 0.11 s.
+- Android's MediaExtractor asked for open-ended ranges (`bytes=N-`) and read ahead until it closed the stream. It read the M4B index again for every window. A build must fetch bounded ranges and keep each M4B index per edition.
+
+### Model size and memory
+
+| Model | File | Mac, 15 s | Emulator, 15 s | Same sentence (60 places) |
+| --- | --- | --- | --- | --- |
+| tiny.en, 5 bits (q5_1) | 32 MB | 506 ms | 696 to 785 ms | 53 |
+| tiny.en, 8 bits (q8_0) | 44 MB | 567 ms | 566 to 604 ms | 54 |
+| tiny.en, 16 bits | 78 MB | 671 ms | 690 ms | 54 |
+| base.en, 5 bits | 60 MB | 2,083 ms | 1,246 ms | 53 |
+| base.en, 8 bits | 82 MB | Not run | 808 ms | Not run |
+
+- On the emulator's ARM cores, 8 bits ran faster than 5 bits. The Mac runs of the other models ran at a load of 23 to 25, so the Mac column compares poorly.
+- The harness, with tiny.en and four books loaded, used 225 MB (PSS), of which 158 MB was native heap.
+- English only. Another language needs a multilingual model.
+
+### Failure modes
+
+| Failure | Seen | What happens |
+| --- | --- | --- |
+| Whisper loops on one phrase | 1 of 240 listening places, and short windows with reduced context | The search refuses. A build caps the tokens of a window. |
+| Spoken notice or credits | 21 of 45 notices and 3 of 4 credits refused | Fail early. The other notices landed at the chapter's start. |
+| An anthology or wrong edition makes the whole-book share wrong by hundreds of pages | Conrad collection: Heart of Darkness, E and G | The radius grows to the whole book. Listening places still landed. The reading-place loop needs the clamped rate. |
+| The ebook repeats a passage | A Moby-Dick endnote quotes chapter 45 | Search the body only. Without that, one place went to the endnote. |
+| The ebook's text differs from the read edition | One Moby-Dick passage | Windows there are not confident. The loop steps on and can run out of rounds. |
+| A chapter's first words follow a notice or a heading that the narrator words differently | One place | The near-target rule lands it on the second try. One place still failed. |
+| A VBR MP3 seeked by bytes | E | A byte seek at 2 h landed about 10 s early. Reading places were off by up to 38 s. Exact times need the frame index from the file's start, so streamed VBR MP3 needs a full read once, or speech only after download. |
+
+No place in this measurement landed on a wrong page. Every failure was a refusal, which falls back.
+
+### Verdict
+
+Speech search works as a correction of the whole-book share. It lands a listening place on its sentence 94% of the time and within 3 words always. It places a reading place within 0.9 s at the 90th percentile. It refused instead of guessing in every hard case seen here.
+
+It is not faster than design A at the tap. Design A answers at once. On the phone, speech at the tap is estimated at 1.2 to 2.2 s for a listening place and 3.4 to 4.6 s for a reading place from the whole-book share (2.1 to 2.8 s from matched chapters). The anchor map makes History fast: it does the speech work while the person listens, for under 0.1% of the battery per listening hour. Then History opens with no speech work, and its landings are within a page at the 99th percentile, or on the sentence for places with their own window.
+
+So the approach is viable if the speech work happens before the tap: in the background when the sheet opens, or in an anchor map. It is the user's decision whether that counts as "faster".
+
+### Two build designs
+
+Both build on design A's routing, records, Undo and words, and both add `MatchedBy.speech`.
+
+| Design | When speech runs | History open | Listening place into the ebook | Reading place into the audiobook | Battery | Build work |
+| --- | --- | --- | --- | --- | --- | --- |
+| S1: speech at the tap | When the History sheet shows an entry of the other medium | "about" at once, the sentence 1 to 5 s later | 1.2 to 2.2 s, then the sentence | 2.1 to 4.6 s median, up to 9.5 s, then the sentence | 4 to 28 J per jump, only when used | Five tickets, as design B listed |
+| S2: anchor map, then speech at the tap | While listening: 8 s every 5 min and at each move or bookmark. At the tap only for places outside the map. | No speech work. Every place in the map has its landing at once. | At once: the sentence for places with a window, within a page otherwise | At once within 12 s at the 90th percentile, then one window (1 to 1.4 s) for the sentence | 0.03 to 0.09% per listening hour, plus S1's cost outside the map | S1's tickets, plus a heard-words store and a listening policy: about seven tickets |
+
+S1 in use: the person reads to p. 134, then opens the player and History. The reading entry says "about 1:02:15". About 3 s later it says "1:02:09". A tap plays from the sentence.
+
+S2 in use: the person listened in the car. A window ran every 5 minutes and at the pause. That evening they open the ebook and History. The pause entry says "p. 134" at once, because the pause has its own window. A tap shows the sentence that they heard last.
+
+Both designs share these points:
+
+- whisper.cpp tiny.en, 8 or 5 bits (44 or 32 MB), downloaded on first use, pinned in `nix/whisper.nix`, run in a worker isolate.
+- The normalized word search, body text only, with the confidence rule and the growing radius.
+- The coarse estimate: matched chapters where they pass the leave-one-out check, else the whole-book share.
+- Fail early, then fall back to design A's landing or to the screen switch of today.
+- Audio from the download, or bounded byte ranges from Jellyfin with each M4B index kept per edition. A streamed VBR MP3 gets no speech landing for reading places.
+- No change to the other edition's place, track or bookmarks.
+
+In S2, a new data source owns the heard windows of each audio edition: their times and words. Playback reports its position and its moves, and the new owner decides when to transcribe. `Crossings` reads the windows and searches their words in the ebook when History opens. The windows keep heard words, not ebook offsets, so a new ebook revision or another ebook edition reuses them. Places outside the map (old or synced entries, places never played) take S1's path at the tap, or a fill when the phone is idle and charging, newest first, and never in battery saver.
+
+### Questions for the user
+
+1. Which design to build? S2 (Recommended) makes most History landings instant and exact, for under 0.1% of the battery per listening hour, and costs about two more tickets. S1 costs nothing until a jump, and makes each jump wait 1 to 5 s for the sentence, up to about 10 s.
+2. How often does the anchor map keep an anchor? Every 5 minutes (Recommended): within a quarter page at the 90th percentile, 0.03 to 0.09% battery per hour. Every 2 minutes: within a tenth of a page, up to 0.2% per hour. Every 10 minutes: within 0.4 pages, half the cost of 5 minutes.
+3. Audiobooks that are not downloaded: fetch the needed byte ranges from Jellyfin (about 120 to 240 KB per window, and each M4B index of 0.4 to 0.6 MB per hour of audio once), or use speech only for downloaded audiobooks?
+4. While speech works at the tap, does Go to wait for the sentence (up to a few seconds) or take the "about" landing at once? Design B's rule was never to wait.
+
+### Limits of this measurement
+
+- Nothing ran on a phone. The phone numbers scale the Mac's by an assumed factor, and the energy assumes a power.
+- The Mac and the emulator shared the machine with other agents at a load of 6 to 25.
+- The public recordings are LibriVox, with spoken notices. Five server recordings are commercial. The ebooks are public editions of the same works, not the user's own ebooks.
+- The reference map comes from a larger whisper model, not from a forced aligner. Its own error is a few hundred milliseconds of token time.
+- The anchor map simulation used exact anchors and continuous listening. Real anchors are off by a few words, and listening skips around.
+- Each reading-place version was tuned on the data that measured it. The fourth version ran on the LibriVox places only.
+
+## Decision on speech search (user, 2026-11-11)
+
+1. Build S2: the anchor map plus speech at the tap.
+2. The anchor map keeps an anchor every 5 minutes of listening, plus one at
+   each bookmark and jump.
+3. Speech works only on downloaded audiobooks. Streamed audiobooks use
+   matched chapters, or switch screens and say why.
+4. When speech is still working at the tap, Go to waits for the sentence,
+   with a short progress state and Cancel.

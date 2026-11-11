@@ -15,16 +15,19 @@ typedef OutlineEntry = ({String title, int depth, int start});
 /// visible characters from the book's start, and the visible characters of
 /// each part. A visible character is a character of the body text that is
 /// not white space, as [BookMap] counts it. A part is an EPUB section of the
-/// spine.
+/// spine, or a PDF source page (see `pdfOutlineOf`).
 ///
 /// The cross-edition matching pairs the entries with audio chapters, and
 /// places reading places along the book by their characters.
 class TextOutline {
+  /// The outline of [parts] with [entries], which it lists in order of
+  /// their starts. Entries that start at one place keep their order in
+  /// [entries].
   TextOutline({
     required List<({String path, int characters})> parts,
     required List<OutlineEntry> entries,
   }) : parts = List.unmodifiable(parts),
-       entries = List.unmodifiable(entries),
+       entries = List.unmodifiable(_byStart(entries)),
        _starts = _startsOf(parts);
 
   /// The outline that [toJson] wrote. Throws a [FormatException] when
@@ -65,6 +68,16 @@ class TextOutline {
   /// Where each part starts, with the book's length after the last part.
   final List<int> _starts;
 
+  /// [entries] in order of their starts, by a stable sort.
+  static List<OutlineEntry> _byStart(List<OutlineEntry> entries) {
+    final order = [for (var index = 0; index < entries.length; index++) index]
+      ..sort((a, b) {
+        final by = entries[a].start.compareTo(entries[b].start);
+        return by != 0 ? by : a.compareTo(b);
+      });
+    return [for (final index in order) entries[index]];
+  }
+
   static List<int> _startsOf(List<({String path, int characters})> parts) {
     final starts = [0];
     for (final part in parts) {
@@ -77,9 +90,10 @@ class TextOutline {
   int get length => _starts.last;
 
   /// Where the reading place [place] lies, in visible characters from the
-  /// book's start, or null when its anchor names no section of this book or
+  /// book's start, or null when its anchor names no part of this book or
   /// no share of its section, as places that early builds saved do not.
-  /// A PDF place names a page, not a section, so it has none.
+  /// A PDF place names its source page, and lies at the page's start, as
+  /// the reader shows a page from its start.
   double? charactersOf(TextPosition place) {
     final Object? anchor;
     try {
@@ -93,6 +107,12 @@ class TextOutline {
       final part = parts.indexWhere((part) => part.path == resource);
       if (part < 0) return null;
       return _starts[part] + parts[part].characters * progress.toDouble();
+    }
+    if (anchor case {'page': final int page}
+        when page >= 1 &&
+            page <= parts.length &&
+            parts[page - 1].path == 'page:$page') {
+      return _starts[page - 1].toDouble();
     }
     return null;
   }
@@ -115,6 +135,18 @@ class TextOutline {
     );
   }
 
+  /// The title of the last contents entry that starts at [characters] from
+  /// the book's start or before, or null before the first entry. The book
+  /// map names a place's chapter by the same rule.
+  String? chapterAt(double characters) {
+    String? title;
+    for (final entry in entries) {
+      if (entry.start > characters) break;
+      title = entry.title;
+    }
+    return title;
+  }
+
   Map<String, dynamic> toJson() => {
     'parts': [
       for (final part in parts) [part.path, part.characters],
@@ -124,6 +156,22 @@ class TextOutline {
     ],
   };
 }
+
+/// Whether the character [code] is white space, which the book map leaves
+/// out of the visible characters: exactly what `\s` matches in a Dart
+/// regular expression.
+bool isWhiteSpace(int code) =>
+    code >= 0x09 && code <= 0x0D ||
+    code == 0x20 ||
+    code == 0xA0 ||
+    code == 0x1680 ||
+    code >= 0x2000 && code <= 0x200A ||
+    code == 0x2028 ||
+    code == 0x2029 ||
+    code == 0x202F ||
+    code == 0x205F ||
+    code == 0x3000 ||
+    code == 0xFEFF;
 
 /// The text outline of [publication]. It parses every section, so run it
 /// in a worker isolate.
@@ -151,15 +199,5 @@ TextOutline measureTextOutline(Publication publication) {
         start: starts[part] + (id == null ? 0 : counts[part].before[id] ?? 0),
       ),
   ];
-  // A stable sort, so that entries that start at one place keep their
-  // order in the contents.
-  final order = [for (var index = 0; index < entries.length; index++) index]
-    ..sort((a, b) {
-      final by = entries[a].start.compareTo(entries[b].start);
-      return by != 0 ? by : a.compareTo(b);
-    });
-  return TextOutline(
-    parts: parts,
-    entries: [for (final index in order) entries[index]],
-  );
+  return TextOutline(parts: parts, entries: entries);
 }

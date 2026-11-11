@@ -16,7 +16,9 @@ import 'column_layout.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
+import 'pdf_outline.dart';
 import 'running_lines.dart';
+import 'text_outline.dart';
 import 'word_bands.dart';
 
 /// How the reader shows a PDF page. The reader session owns the choice for
@@ -764,8 +766,34 @@ class PdfRuntime {
     return book;
   });
 
+  /// The text outline of the PDF file at [path], from its bookmarks and its
+  /// text layer (see [measurePdfOutline]). Its PDFium work runs on pdfrx's
+  /// worker as background work, beside the open books, and [shutdown]
+  /// waits for it.
+  Future<TextOutline> measureOutline(String path) async {
+    await _admit(() async {
+      await (_initialization ??= pdfrxFlutterInitialize());
+      // An open book initializes PDFium again after [shutdown] destroyed
+      // it, and this work opens no book, so it initializes it here.
+      await native.PdfrxEntryFunctions.instance.init();
+    });
+    final work = measurePdfOutline(path);
+    _measuring.add(work);
+    try {
+      return await work;
+    } finally {
+      _measuring.remove(work);
+    }
+  }
+
+  /// The outline measurements that run.
+  final Set<Future<TextOutline>> _measuring = {};
+
   Future<void> shutdown() => _admit(() async {
-    await Future.wait(_books.toList().map((book) => book.dispose()));
+    await Future.wait([
+      ..._books.toList().map((book) => book.dispose()),
+      for (final work in _measuring) work.then((_) {}, onError: (_) {}),
+    ]);
     await native.PdfrxEntryFunctions.instance.stopBackgroundWorker();
     _initialization = null;
   });
@@ -801,7 +829,7 @@ class _NativePdfBook extends PdfBook {
   final Map<int, Future<PreparedPdfPage>> _layers = {};
 
   /// The measurements of pages that run now, by page number.
-  final Map<int, Future<void>> _measuring = {};
+  final Map<int, Future<void>> _pageMeasurements = {};
   Future<void>? _closing;
   bool _disposed = false;
   @override
@@ -855,10 +883,10 @@ class _NativePdfBook extends PdfBook {
     if (!_document.pages[number - 1].isLoaded) {
       // The block returns nothing: the removed future is this one, and
       // whenComplete would wait for it.
-      await (_measuring[number] ??= _document
+      await (_pageMeasurements[number] ??= _document
           .reloadPages(pageNumbersToReload: [number])
           .whenComplete(() {
-            _measuring.remove(number);
+            _pageMeasurements.remove(number);
           }));
     }
     final page = _document.pages[number - 1];

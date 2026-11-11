@@ -83,13 +83,14 @@
               ];
           readerNative = import ./nix/reader-native.nix { inherit pkgs; };
           ocr = import ./nix/ocr.nix { inherit pkgs; };
+          whisper = import ./nix/whisper.nix { inherit pkgs; };
           # Gradle downloads an aapt2 built for a generic Linux. It needs the
           # /lib64 loader, which NixOS lacks, so use the patched SDK aapt2.
           linuxOnly = pkgs.lib.optionalAttrs (!isDarwin) {
             GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdk}/build-tools/36.0.0/aapt2";
           };
         in
-        {
+        rec {
           default = pkgs.mkShell (
             {
               packages = [
@@ -137,6 +138,15 @@
             }
             // linuxOnly
           );
+          # nix develop .#speech: the default shell with whisper.cpp and its
+          # models, for the speech prototype of boo-snng
+          # (tool/research/cross_edition/speech_probe). A shell of its own,
+          # so the default shell does not fetch 600 MB of models.
+          speech = default.overrideAttrs {
+            BOOKFIN_WHISPER_SOURCE = whisper.source;
+            BOOKFIN_WHISPER_HOST = whisper.host;
+            BOOKFIN_WHISPER_MODELS = whisper.models;
+          };
         }
         // pkgs.lib.optionalAttrs isDarwin {
           # nix develop .#macos
