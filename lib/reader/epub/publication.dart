@@ -753,7 +753,9 @@ class _Admission {
     if (utf8.decode(raw['mimetype'] ?? []) != 'application/epub+zip') {
       throw const FormatException('This file is not an EPUB publication.');
     }
-    if (raw.containsKey('META-INF/encryption.xml')) {
+    // A damaged encryption.xml still says that the book is encrypted.
+    if (raw.containsKey('META-INF/encryption.xml') ||
+        damaged.contains('META-INF/encryption.xml')) {
       throw const FormatException(
         'Encrypted or obfuscated EPUB resources are not supported.',
       );

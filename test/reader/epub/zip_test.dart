@@ -241,6 +241,26 @@ void main() {
     );
   });
 
+  test('a book whose encryption.xml fails the ZIP check is still refused as '
+      'encrypted (t5-gk30)', () {
+    final book = epub(
+      extra: {'META-INF/encryption.xml': utf8.encode('<encryption/>')},
+    );
+
+    expect(
+      () => Publication.admit(
+        withEntry(book, 'META-INF/encryption.xml', crc: 0x12345678),
+      ),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          contains('Encrypted'),
+        ),
+      ),
+    );
+  });
+
   test('a book from disk still admits whole', () {
     final publication = Publication.admit(
       File('test/reader/fixtures/broken-image.epub').readAsBytesSync(),
