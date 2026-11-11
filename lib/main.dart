@@ -32,6 +32,9 @@ import 'reader/session.dart';
 import 'reader/survey_files.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
+import 'speech/heard_windows.dart';
+import 'speech/hearing_policy.dart';
+import 'speech/platform.dart';
 import 'sync/alert.dart' show RecordSyncScope;
 import 'sync/coordinator.dart';
 import 'sync/device.dart';
@@ -90,6 +93,26 @@ Future<void> runBookfin({bool gallery = false}) async {
           speed: speed,
           surveyStore: SurveyFiles.new,
         );
+  // Speech search hears windows of downloaded audiobooks (docs/plans/
+  // cross-edition-places.md, "Build design of S2"). The policy starts after
+  // the first frame, and the speech runtime loads its model at the first
+  // window, never before.
+  final hear = createHear();
+  final heard = downloads == null || hear == null
+      ? null
+      : HeardWindows(
+          hear: hear,
+          store: createDerivedStore('bookfin-heard'),
+          localPath: (file) async =>
+              (await downloads.localFile(file))?.toFilePath(),
+        );
+  final hearing = heard == null || playback == null
+      ? null
+      : HearingPolicy(
+          playback: playback,
+          heard: heard,
+          mayFill: watchFillAllowed(),
+        );
   // Crossings measures an ebook's outline only when the History first asks
   // for a landing in it, so no launch step waits for it.
   final crossings = downloads == null
@@ -115,6 +138,7 @@ Future<void> runBookfin({bool gallery = false}) async {
       playback: playback,
       reader: reader,
       crossings: crossings,
+      hearing: hearing,
       sync: gallery
           ? null
           : RecordSync(records: records, playback: playback, reader: reader),
@@ -165,6 +189,7 @@ class BookfinApp extends StatefulWidget {
     this.playback,
     this.reader,
     this.crossings,
+    this.hearing,
     this.sync,
   });
 
@@ -177,6 +202,7 @@ class BookfinApp extends StatefulWidget {
   final Playback? playback;
   final ReaderSession? reader;
   final Crossings? crossings;
+  final HearingPolicy? hearing;
   final RecordSync? sync;
 
   @override
@@ -218,9 +244,10 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     _binding = _bind();
     // Kept copies of damaged records are read again in the background,
     // never on the path to the first frame.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => unawaited(widget.sync?.recoverKept()),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(widget.sync?.recoverKept());
+      widget.hearing?.start();
+    });
     WidgetsBinding.instance.addObserver(this);
     _showAppearance(_appearance);
   }
@@ -308,6 +335,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     _appearance.suspend();
     _binding.dispose();
     widget.sync?.dispose();
+    widget.hearing?.dispose();
     if (widget.catalog == null) _catalog.dispose();
     _reduceMotion.dispose();
     WidgetsBinding.instance.removeObserver(this);

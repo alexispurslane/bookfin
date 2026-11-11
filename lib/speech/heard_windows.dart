@@ -88,8 +88,8 @@ class HeardWindow {
 }
 
 /// How soon a window is heard. A window for a person who waits goes first,
-/// then the windows of listening.
-enum _Priority { waiting, listening }
+/// then the windows of listening, then the fill of older places.
+enum _Priority { waiting, listening, fill }
 
 /// One window to hear: [length] milliseconds of [file] of [edition] from
 /// [start], and the requests that wait for it.
@@ -123,7 +123,8 @@ class _Job {
 ///
 /// It hears one window at a time, through [Hear], from one queue: a window
 /// for a person who waits ([hear]) goes before the windows of listening
-/// ([hearSoon]). A window is [windowMs] long and centered on its place, so
+/// ([hearSoon]), and those go before the fill of older places
+/// ([hearLater]). A window is [windowMs] long and centered on its place, so
 /// that the place's word lies in its middle, where whisper's word times are
 /// surest. A place that a kept or queued window covers is not heard again.
 ///
@@ -220,6 +221,12 @@ class HeardWindows {
   /// wait, unless a kept or queued window covers it.
   void hearSoon(Edition edition, AudioPosition place) =>
       unawaited(_request(edition, place, _Priority.listening));
+
+  /// The window that covers [place] of [edition]: a kept one, else one
+  /// heard behind every other window, for the fill of older places. Null as
+  /// for [hear].
+  Future<HeardWindow?> hearLater(Edition edition, AudioPosition place) =>
+      _request(edition, place, _Priority.fill);
 
   Future<HeardWindow?> _request(
     Edition edition,

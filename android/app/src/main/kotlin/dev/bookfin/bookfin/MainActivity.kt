@@ -4,7 +4,10 @@ import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
@@ -12,6 +15,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.StatFs
 import android.provider.Settings
 import java.io.File
@@ -19,6 +23,7 @@ import java.io.File
 class MainActivity : AudioServiceActivity() {
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var networkEvents: EventChannel.EventSink? = null
+    private var powerReceiver: BroadcastReceiver? = null
     private val mainHandler = Handler(Looper.getMainLooper())
     private val connectivity: ConnectivityManager
         get() = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -62,6 +67,22 @@ class MainActivity : AudioServiceActivity() {
 
     private fun publishNetwork() {
         mainHandler.post { networkEvents?.success(mediaNetwork()) }
+    }
+
+    // Whether the phone is on power and whether battery saver is on, for the
+    // fill of heard windows (lib/speech/platform_io.dart). The battery's
+    // sticky broadcast holds the power source, so reading it needs no
+    // permission.
+    private fun power(): Map<String, Boolean> {
+        val battery = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val plugged = battery?.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+        val saver = (getSystemService(Context.POWER_SERVICE) as PowerManager).isPowerSaveMode
+        return mapOf("charging" to (plugged != 0), "saver" to saver)
+    }
+
+    private fun stopPowerEvents() {
+        powerReceiver?.let { unregisterReceiver(it) }
+        powerReceiver = null
     }
 
     private fun stopNetworkEvents() {
@@ -112,6 +133,23 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/power")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+                    stopPowerEvents()
+                    val receiver = object : BroadcastReceiver() {
+                        override fun onReceive(context: Context, intent: Intent) = events.success(power())
+                    }
+                    powerReceiver = receiver
+                    registerReceiver(receiver, IntentFilter().apply {
+                        addAction(Intent.ACTION_POWER_CONNECTED)
+                        addAction(Intent.ACTION_POWER_DISCONNECTED)
+                        addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+                    })
+                    events.success(power())
+                }
+                override fun onCancel(arguments: Any?) = stopPowerEvents()
+            })
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/media-network")
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
@@ -137,6 +175,7 @@ class MainActivity : AudioServiceActivity() {
 
     override fun onDestroy() {
         stopNetworkEvents()
+        stopPowerEvents()
         super.onDestroy()
     }
 }

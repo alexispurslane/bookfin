@@ -395,6 +395,9 @@ class Playback extends ChangeNotifier {
         return List.unmodifiable(entries);
       });
 
+  /// The bound edition [id] of this account, or null.
+  Edition? editionOf(String id) => _editions[id]?.$2;
+
   /// Each bound edition by its id, with its book.
   Map<String, (Book, Edition)> get _editions => _editionIndex.of(_books, () {
     final editions = <String, (Book, Edition)>{};
