@@ -866,3 +866,13 @@ In S2, a new data source owns the heard windows of each audio edition: their tim
 - The reference map comes from a larger whisper model, not from a forced aligner. Its own error is a few hundred milliseconds of token time.
 - The anchor map simulation used exact anchors and continuous listening. Real anchors are off by a few words, and listening skips around.
 - Each reading-place version was tuned on the data that measured it. The fourth version ran on the LibriVox places only.
+
+## Decision on speech search (user, 2026-11-11)
+
+1. Build S2: the anchor map plus speech at the tap.
+2. The anchor map keeps an anchor every 5 minutes of listening, plus one at
+   each bookmark and jump.
+3. Speech works only on downloaded audiobooks. Streamed audiobooks use
+   matched chapters, or switch screens and say why.
+4. When speech is still working at the tap, Go to waits for the sentence,
+   with a short progress state and Cancel.
