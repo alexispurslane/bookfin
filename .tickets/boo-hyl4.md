@@ -39,3 +39,7 @@ Review (reviewer agent, 2026-11-11) of fd2d5836 resolved: (C1/D1) Played, Interr
 **2026-11-11T16:20:41Z**
 
 Design B merged to main (t3/48870466, ae3b1e63); format, analyze lib test and 2669 tests pass on merged main. Follow-up in progress: swipe to delete and an open row of normal height, after user feedback that the open row's highlight was too big.
+
+**2026-11-11T16:38:53Z**
+
+Follow-up to user feedback (the open row's highlight was too tall, about 56 points against 29, and crowded the tiles): the open row now keeps the closed row's height and content. Delete is a swipe toward the start of any row (end-to-start only), on the error color, and the row springs back because the sheet still confirms. Each row has a Delete accessibility action. Name or Rename is a pencil tile at the right end of a bookmark's Go to line, as tall as the tile and at least 48 points. Screenshots: ~/.cache/bookfin/previews/boo-hyl4/built2/.

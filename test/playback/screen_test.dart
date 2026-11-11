@@ -3,6 +3,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -303,9 +304,16 @@ void main() {
       await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
       expect(find.text('Went to a bookmark'), findsOneWidget);
-      await tester.tap(find.text('Revised'));
-      await tester.pumpAndSettle();
-      await tester.runAsync(() => tester.tap(find.byTooltip('Delete')));
+      // The delete saves in real time, so it starts outside the fake
+      // clock, from the row's Delete action for a screen reader.
+      final semantics = tester.ensureSemantics();
+      await tester.runAsync(
+        () async => tester.semantics.customAction(
+          find.semantics.byLabel(RegExp('Revised')),
+          const CustomSemanticsAction(label: 'Delete'),
+        ),
+      );
+      semantics.dispose();
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.widgetWithText(FilledButton, 'Delete'));

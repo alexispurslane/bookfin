@@ -274,13 +274,18 @@ The timeline follows design B with these details, which the decision did not set
 
 - An entry has two ends when `HistoryEvent.moved` is true: its kind can change the place (`changesPosition`), and its two places differ (`samePlace`). So Played, Paused, Closed and "Opened" at the start of a reading visit show one place. "Opened at the place from Pixel 8" shows two.
 - The tile of an entry with one place has the role word "Go to".
-- The route spans its row, from the left edge of the time column to the right edge of Delete.
-- Name or Rename on a bookmark is a pencil icon to the left of Delete. Delete stays at the right end of every open row.
-- Delete keeps a touch target of 48 by 48 points. So an open row is taller than a closed row.
+- The route spans its row, from the left edge of the time column to the right edge of the place text.
+- An open row has the same height and content as a closed row: the time, the mark, the label and the place text. Only its highlight shows that it is open.
+- A swipe of a row toward its start (right to left) reports Delete, on an open row or a closed row. The swipe shows a delete glyph on the theme's error color behind the row. A swipe toward the end does nothing.
+- The swipe does not remove the row. The sheet asks for confirmation, so the row springs back. The entry leaves the timeline when its records change.
+- Each row has a "Delete" accessibility action that reports the same Delete, so a TalkBack user can delete without a swipe.
+- Name or Rename on a bookmark is a pencil button at the right end of its Go to line. The button has the height of the tile and is at least 48 points tall.
 - The rail runs beside the rows. It does not cross the tiles of an open route.
 - A tile shows the chapter and the quote of its place on its third line. For a place outside the open book, that line shows more of the quote than the place text. If the quote has six words or fewer, the place text shows all of it, so `describeTextPlace` gives no separate quote.
 - `HistoryTimeline.onGoBack` is now `onGoBefore`. `onGoTo` reports the After tile and the tile of an entry with one place.
 - A listening move's distance subtracts the whole seconds that its two place texts show (`audioSeconds`). It names every unit from the largest one that is not zero to the smallest one that is not zero, such as "40 s", "1 m 31 s" or "1 h 0 m 5 s". A move within one shown second reads as its verb alone, such as "Moved".
 - The method `_end` in `lib/playback/timeline.dart` describes the place of every tile. Cross-edition Go to (boo-z3is) can map a place there.
 
-Screenshots of the built sheet are in `~/.cache/bookfin/previews/boo-hyl4/built/`.
+The first build put Delete, Name and Rename in the open row as buttons with touch targets of 48 points. The user found that this made the open row's highlight too tall (about 56 points against 29) and crowded the tiles. So Delete became the swipe and Name moved beside the tile.
+
+Screenshots of the first build are in `~/.cache/bookfin/previews/boo-hyl4/built/`. Screenshots of the swipe build, with one frame in the middle of a swipe, are in `~/.cache/bookfin/previews/boo-hyl4/built2/`.

@@ -2,6 +2,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -37,12 +38,10 @@ void main() {
   );
 
   /// Opens the History tool and the choices of the bookmark named [name].
-  Future<void> openBookmark(WidgetTester tester, String name) async {
+  Future<void> showHistory(WidgetTester tester) async {
     await tester.ensureVisible(find.text('History'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('History'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(name));
     await tester.pumpAndSettle();
   }
 
@@ -70,8 +69,8 @@ void main() {
       final bookmark = playback.bookmarks.single;
       final historyCount = playback.history.length;
       await showPlayer(tester);
-      await openBookmark(tester, 'Arrival');
-      await tester.tap(find.byTooltip('Delete'));
+      await showHistory(tester);
+      await tester.fling(find.text('Arrival'), const Offset(-400, 0), 1000);
       await tester.pumpAndSettle();
       expect(find.text('Delete bookmark?'), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
@@ -103,8 +102,17 @@ void main() {
       );
       final historyIds = playback.history.map((event) => event.id).toList();
       await showPlayer(tester);
-      await openBookmark(tester, 'Remove this');
-      await tester.runAsync(() => tester.tap(find.byTooltip('Delete')));
+      await showHistory(tester);
+      // The delete saves in real time, so it starts outside the fake clock,
+      // from the row's Delete action for a screen reader.
+      final semantics = tester.ensureSemantics();
+      await tester.runAsync(
+        () async => tester.semantics.customAction(
+          find.semantics.byLabel(RegExp('Remove this')),
+          const CustomSemanticsAction(label: 'Delete'),
+        ),
+      );
+      semantics.dispose();
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.widgetWithText(FilledButton, 'Delete'));

@@ -106,11 +106,12 @@ void main() {
 
   /// Shows [entries] on a phone that is 360 points wide, with the system
   /// text size at 130%, as the narrowest common Android phone with large
-  /// text.
-  Future<void> showTimeline(
+  /// text. Returns the entries, which a test changes as the records change.
+  Future<ValueNotifier<List<TimelineEntry>>> showTimeline(
     WidgetTester tester,
-    List<TimelineEntry> entries,
+    List<TimelineEntry> shown,
   ) async {
+    final entries = ValueNotifier(shown);
     tester.view.physicalSize = const Size(1080, 2280);
     tester.view.devicePixelRatio = 3;
     tester.platformDispatcher.textScaleFactorTestValue = 1.3;
@@ -121,7 +122,7 @@ void main() {
         theme: bookfinTheme(Brightness.light),
         home: Scaffold(
           body: HistoryTimeline(
-            entries: ValueNotifier(entries),
+            entries: entries,
             describe: describe,
             onGoBefore: (event) => reports.add(('before', event)),
             onGoTo: (entry) => reports.add(('go', entry)),
@@ -132,6 +133,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    return entries;
   }
 
   final everything = <TimelineEntry>[
@@ -155,7 +157,17 @@ void main() {
   Finder tile(String role) =>
       find.ancestor(of: find.text(role), matching: find.byType(InkWell)).first;
 
-  Finder delete() => find.widgetWithIcon(IconButton, Icons.delete_outline);
+  /// The Name or Rename button of an open bookmark.
+  Finder rename() => find.byTooltip('Name');
+
+  /// The reports, with each bookmark entry as its bookmark.
+  List<Object> bookmarkReports() => [
+    for (final report in reports)
+      switch (report) {
+        (final String kind, BookmarkEntry(:final bookmark)) => (kind, bookmark),
+        _ => report,
+      },
+  ];
 
   group('a move is a route with two ends', () {
     testWidgets('a closed move shows the place where it went behind an '
@@ -269,27 +281,79 @@ void main() {
       expect(find.text('GO TO'), findsOneWidget);
     });
 
-    testWidgets('a bookmark offers its place, a name and Delete', (
-      tester,
-    ) async {
+    testWidgets('a bookmark offers its place and a name', (tester) async {
       await showTimeline(tester, everything);
       await open(tester, 'Bookmark');
       await tester.tap(tile('GO TO'));
-      await tester.tap(find.byTooltip('Name'));
-      await tester.tap(delete());
-      expect(
-        [
-          for (final report in reports)
-            switch (report) {
-              (final String kind, BookmarkEntry(:final bookmark)) => (
-                kind,
-                bookmark,
-              ),
-              _ => report,
-            },
-        ],
-        [('go', mark), ('rename', mark), ('delete', mark)],
+      await tester.tap(rename());
+      expect(bookmarkReports(), [('go', mark), ('rename', mark)]);
+    });
+  });
+
+  group('a swipe deletes', () {
+    testWidgets('a swipe toward the start of a row reports Delete, and the '
+        'row springs back until the records change', (tester) async {
+      final entries = await showTimeline(tester, everything);
+      final before = tester.getRect(row('Paused').first);
+      await tester.drag(row('Paused').first, const Offset(-300, 0));
+      await tester.pumpAndSettle();
+      final (kind, entry) = reports.single as (String, ActionEntry);
+      expect((kind, entry.event), ('delete', pause));
+      expect(tester.getRect(row('Paused').first), before);
+      entries.value = [
+        for (final entry in everything)
+          if (entry.id != pause.id) entry,
+      ];
+      await tester.pumpAndSettle();
+      expect(find.text('Paused', findRichText: true), findsNothing);
+    });
+
+    testWidgets('a swipe on an open bookmark reports Delete', (tester) async {
+      await showTimeline(tester, everything);
+      await open(tester, 'Bookmark');
+      await tester.drag(row('Bookmark').first, const Offset(-300, 0));
+      await tester.pumpAndSettle();
+      expect(bookmarkReports(), [('delete', mark)]);
+      expect(find.text('GO TO'), findsOneWidget);
+    });
+
+    testWidgets('a row part way through a swipe shows the delete glyph '
+        'behind it', (tester) async {
+      await showTimeline(tester, everything);
+      expect(find.byIcon(Icons.delete_outline), findsNothing);
+      final swipe = await tester.startGesture(
+        tester.getCenter(row('Paused').first),
       );
+      await swipe.moveBy(const Offset(-40, 0));
+      await swipe.moveBy(const Offset(-60, 0));
+      await tester.pump();
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+      expect(reports, isEmpty);
+      await swipe.up();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('a swipe toward the end of a row deletes nothing', (
+      tester,
+    ) async {
+      await showTimeline(tester, everything);
+      await tester.drag(row('Paused').first, const Offset(300, 0));
+      await tester.pumpAndSettle();
+      expect(reports, isEmpty);
+    });
+
+    testWidgets('the Delete action of a row reports Delete without a swipe', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await showTimeline(tester, everything);
+      tester.semantics.customAction(
+        find.semantics.byLabel(RegExp('Paused')),
+        const CustomSemanticsAction(label: 'Delete'),
+      );
+      final (kind, entry) = reports.single as (String, ActionEntry);
+      expect((kind, entry.event), ('delete', pause));
+      semantics.dispose();
     });
   });
 
@@ -310,28 +374,30 @@ void main() {
   });
 
   group('an open entry keeps one shape', () {
-    testWidgets('Delete sits at the right end of its row on every entry', (
-      tester,
-    ) async {
+    testWidgets('an open row is as tall as a closed row and still shows its '
+        'place', (tester) async {
       await showTimeline(tester, everything);
-      final ends = <double>{};
-      for (final label in [
-        'Moved back 40 s',
-        'Paused',
-        'Changed chapter',
-        'Bookmark',
+      for (final (label, place) in [
+        ('Moved back 40 s', '→ 1:02:15'),
+        ('Paused', '1:02:15'),
+        ('Changed chapter', '→ “I told some of you'),
+        ('Bookmark', '1:15'),
       ]) {
+        final closed = tester.getRect(row(label).first).height;
         await open(tester, label);
-        final button = tester.getRect(delete());
-        final line = tester.getRect(row(label).first);
-        expect(button.right, line.right, reason: label);
-        expect(button.center.dy, closeTo(line.center.dy, 0.5), reason: label);
-        ends.add(button.right);
+        expect(tester.getRect(row(label).first).height, closed, reason: label);
+        expect(
+          find.descendant(
+            of: row(label).first,
+            matching: find.textContaining(place),
+          ),
+          findsOneWidget,
+          reason: label,
+        );
       }
-      expect(ends, hasLength(1));
     });
 
-    testWidgets('the route spans its row, from the time to Delete', (
+    testWidgets('the route spans its row, from the time to the place', (
       tester,
     ) async {
       await showTimeline(tester, everything);
@@ -343,6 +409,21 @@ void main() {
       final pausedLine = tester.getRect(row('Paused').first);
       expect(tester.getRect(tile('GO TO')).left, pausedLine.left);
       expect(tester.getRect(tile('GO TO')).right, pausedLine.right);
+    });
+
+    testWidgets('Name sits at the right end of the Go to line of a bookmark, '
+        'as tall as the tile and at least 48 points tall', (tester) async {
+      await showTimeline(tester, everything);
+      await open(tester, 'Bookmark');
+      final line = tester.getRect(row('Bookmark').first);
+      final place = tester.getRect(tile('GO TO'));
+      final name = tester.getRect(rename());
+      expect(place.left, line.left);
+      expect(name.right, line.right);
+      expect(name.left, greaterThan(place.right));
+      expect(name.top, place.top);
+      expect(name.height, place.height);
+      expect(name.height, greaterThanOrEqualTo(48));
     });
 
     testWidgets('each line of a tile stays on one line on a narrow phone '

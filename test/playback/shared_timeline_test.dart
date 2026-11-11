@@ -359,11 +359,11 @@ void main() {
   ) async {
     await showBookHistory(tester);
 
-    await tester.tap(
+    await tester.fling(
       inTimeline(find.text('Changed chapter', findRichText: true)),
+      const Offset(-400, 0),
+      1000,
     );
-    await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.byTooltip('Delete')));
     await tester.pumpAndSettle();
     expect(find.text('Delete history action?'), findsOneWidget);
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
@@ -380,11 +380,11 @@ void main() {
       'keeps the others', (tester) async {
     await showBookHistory(tester);
 
-    await tester.tap(
+    await tester.fling(
       inTimeline(find.text('Changed chapter', findRichText: true)),
+      const Offset(-400, 0),
+      1000,
     );
-    await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.byTooltip('Delete')));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await tester.pumpAndSettle();

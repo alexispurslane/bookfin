@@ -6,6 +6,7 @@ import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:bookfin/playback/timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -234,12 +235,17 @@ void main() {
   });
 
   testWidgets('an action can be deleted from the timeline', (tester) async {
+    final semantics = tester.ensureSemantics();
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
-    await tester.pumpAndSettle();
+    // The delete saves in real time, so it starts outside the fake clock,
+    // from the row's Delete action for a screen reader.
     await tester.runAsync(
-      () => tester.tap(inTimeline(find.byTooltip('Delete'))),
+      () async => tester.semantics.customAction(
+        find.semantics.byLabel(RegExp('Jumped ahead 30 s')),
+        const CustomSemanticsAction(label: 'Delete'),
+      ),
     );
+    semantics.dispose();
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
@@ -262,9 +268,11 @@ void main() {
     tester,
   ) async {
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
-    await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.byTooltip('Delete')));
+    await tester.fling(
+      inTimeline(find.text('Jumped ahead 30 s')),
+      const Offset(-400, 0),
+      1000,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
@@ -429,7 +437,12 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.byTooltip('Delete'));
+      await tester.fling(
+        find.text('Jumped ahead 30 s'),
+        const Offset(-400, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, ActionEntry);
       expect((kind, entry.event), ('delete', jump));

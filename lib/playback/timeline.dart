@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import '../catalog/glass.dart';
 import '../catalog/model.dart';
@@ -212,8 +213,10 @@ Future<void> _confirmDelete(
 /// went, after an arrow, and a tap opens the route as two tiles of one
 /// size, Before on the left and After on the right. An entry that did not
 /// move, and a bookmark, open as one tile with their one place. A tap on a
-/// tile goes to its place. An open row offers Delete at its end, where its
-/// place was, and a bookmark also offers Name or Rename there. When the
+/// tile goes to its place. An open row keeps the shape of a closed one, and
+/// only its highlight shows that it is open. A bookmark offers Name or
+/// Rename beside its tile. A swipe of a row toward its start, or the row's
+/// Delete action for a screen reader, offers Delete. When the
 /// entries hold both media, a glyph on the rail marks the medium of each
 /// entry. The timeline changes no records itself: it reports each choice
 /// through its callbacks.
@@ -259,7 +262,8 @@ class HistoryTimeline extends StatefulWidget {
   /// Reports Name or Rename on a bookmark.
   final ValueChanged<Bookmark<Place>> onRename;
 
-  /// Reports Delete on an entry. The listener has not confirmed it yet.
+  /// Reports Delete on an entry. The listener has not confirmed it yet,
+  /// so the row stays until the entry leaves [entries].
   final ValueChanged<TimelineEntry> onDelete;
 
   @override
@@ -314,8 +318,8 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   /// One entry: its time of day, its mark on the rail, what happened and
   /// where. A move names the place where it went after an arrow. With
   /// [mixed], the mark is a glyph of the entry's medium. An open entry
-  /// shows its route under the row, and its other choices at the row's
-  /// end, where its place was.
+  /// shows its route under the row. A swipe of the row toward its start
+  /// reports Delete.
   Widget _row(
     BuildContext context,
     TimelineEntry entry, {
@@ -410,34 +414,19 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
                 ),
               ),
               const SizedBox(width: 8),
-              // The route shows the places of an open entry, so its choices
-              // take the place text's spot, and Delete is always last.
-              if (open) ...[
-                if (entry case BookmarkEntry(:final bookmark))
-                  IconButton(
-                    tooltip: bookmark.title == null ? 'Name' : 'Rename',
-                    icon: const Icon(Icons.edit_outlined, size: 20),
-                    onPressed: () => widget.onRename(bookmark),
-                  ),
-                IconButton(
-                  tooltip: 'Delete',
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  onPressed: () => widget.onDelete(entry),
+              // A quote can be long, so the place takes at most a third of
+              // the screen's width.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width / 3,
                 ),
-              ] else
-                // A quote can be long, so the place takes at most a third
-                // of the screen's width.
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.sizeOf(context).width / 3,
-                  ),
-                  child: Text(
-                    _moveOf(entry) == null ? words.short : '→ ${words.short}',
-                    style: small,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: Text(
+                  _moveOf(entry) == null ? words.short : '→ ${words.short}',
+                  style: small,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
             ],
           ),
         ),
@@ -456,7 +445,45 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
               bottom: 0,
               child: Container(width: 1.5, color: scheme.outlineVariant),
             ),
-            row,
+            // A swiped row slides within its own bounds, not over the
+            // sheet's edge.
+            ClipRRect(
+              borderRadius: _rowRadius,
+              child: Dismissible(
+                key: ValueKey(entry.id),
+                direction: DismissDirection.endToStart,
+                background: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: scheme.error,
+                    borderRadius: _rowRadius,
+                  ),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 20,
+                        color: scheme.onError,
+                      ),
+                    ),
+                  ),
+                ),
+                // The listener confirms a delete, and the entry leaves when
+                // its records change, so the row always springs back.
+                confirmDismiss: (_) async {
+                  widget.onDelete(entry);
+                  return false;
+                },
+                child: Semantics(
+                  customSemanticsActions: {
+                    const CustomSemanticsAction(label: 'Delete'): () =>
+                        widget.onDelete(entry),
+                  },
+                  child: row,
+                ),
+              ),
+            ),
           ],
         ),
         if (open)
@@ -470,11 +497,34 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
 
   /// The places of an open [entry], as tiles across its row: Before and
   /// After for a move, in the order that they happened, and the one place
-  /// of an entry that did not move.
+  /// of an entry that did not move. A bookmark's Name or Rename sits at the
+  /// end of its tile's line, as tall as the tile.
   Widget _route(TimelineEntry entry) {
     final move = _moveOf(entry);
     if (move == null) {
-      return _end('Go to', entry.place, () => widget.onGoTo(entry));
+      final place = _end('Go to', entry.place, () => widget.onGoTo(entry));
+      if (entry case BookmarkEntry(:final bookmark)) {
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: place),
+              const SizedBox(width: 8),
+              _Tile(
+                onTap: () => widget.onRename(bookmark),
+                child: Tooltip(
+                  message: bookmark.title == null ? 'Name' : 'Rename',
+                  child: const SizedBox.square(
+                    dimension: 48,
+                    child: Icon(Icons.edit_outlined, size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return place;
     }
     return IntrinsicHeight(
       child: Row(
@@ -613,7 +663,6 @@ class _PlaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final night = theme.brightness == Brightness.dark;
     final detail = [
       ?words.chapter,
       if (words.quote case final quote?) '“$quote”',
@@ -626,6 +675,56 @@ class _PlaceTile extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       semanticsLabel: semanticsLabel,
     );
+    return _Tile(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            line(
+              role.toUpperCase(),
+              TextStyle(
+                fontSize: 10,
+                letterSpacing: 0.6,
+                color: scheme.onSurfaceVariant,
+              ),
+              semanticsLabel: role,
+            ),
+            line(
+              words.short,
+              TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: glowAccent(theme),
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            if (detail.isNotEmpty)
+              line(
+                detail,
+                TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A button of an open timeline entry, as a tile with a thin outline that
+/// shows [child] and calls [onTap].
+class _Tile extends StatelessWidget {
+  const _Tile({required this.onTap, required this.child});
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final night = theme.brightness == Brightness.dark;
     return MergeSemantics(
       child: Semantics(
         button: true,
@@ -638,41 +737,7 @@ class _PlaceTile extends StatelessWidget {
             side: BorderSide(color: scheme.outlineVariant),
           ),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  line(
-                    role.toUpperCase(),
-                    TextStyle(
-                      fontSize: 10,
-                      letterSpacing: 0.6,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    semanticsLabel: role,
-                  ),
-                  line(
-                    words.short,
-                    TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: glowAccent(theme),
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                  if (detail.isNotEmpty)
-                    line(
-                      detail,
-                      TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          child: InkWell(onTap: onTap, child: child),
         ),
       ),
     );
