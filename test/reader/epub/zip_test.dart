@@ -28,7 +28,7 @@ Uint8List _noise(int length) {
 
 /// The EPUB [archive] with the central directory entry of [name] changed:
 /// its uncompressed [size] and its [crc].
-Uint8List _withEntry(Uint8List archive, String name, {int? size, int? crc}) {
+Uint8List withEntry(Uint8List archive, String name, {int? size, int? crc}) {
   final bytes = Uint8List.fromList(archive);
   final data = ByteData.sublistView(bytes);
   final wanted = utf8.encode(name);
@@ -44,6 +44,36 @@ Uint8List _withEntry(Uint8List archive, String name, {int? size, int? crc}) {
     return bytes;
   }
   throw StateError('$name is not in the archive.');
+}
+
+/// The EPUB [archive] with the general purpose [flags] of [name], in its
+/// directory entry and in its local header.
+Uint8List withFlags(Uint8List archive, String name, int flags) {
+  final bytes = Uint8List.fromList(archive);
+  final data = ByteData.sublistView(bytes);
+  final wanted = utf8.encode(name);
+  var found = 0;
+  for (var at = 0; at + 46 <= bytes.length; at++) {
+    final signature = data.getUint32(at, Endian.little);
+    final (flagsAt, nameAt) = switch (signature) {
+      0x02014b50 => (at + 8, at + 46),
+      0x04034b50 => (at + 6, at + 30),
+      _ => (-1, -1),
+    };
+    if (flagsAt < 0) continue;
+    final length = data.getUint16(
+      signature == 0x02014b50 ? at + 28 : at + 26,
+      Endian.little,
+    );
+    if (length != wanted.length ||
+        !_same(bytes.sublist(nameAt, nameAt + length), wanted)) {
+      continue;
+    }
+    data.setUint16(flagsAt, flags, Endian.little);
+    found++;
+  }
+  if (found != 2) throw StateError('$name is not in the archive.');
+  return bytes;
 }
 
 bool _same(List<int> a, List<int> b) {
@@ -152,31 +182,63 @@ void main() {
     );
   });
 
-  group('admission refuses a book', () {
+  // A chapter that fails the ZIP check shows a note instead of its text
+  // (t5-gk30), so admission keeps none of its bytes.
+  group('admission keeps none of the bytes of a chapter', () {
+    /// The chapter of [publication].
+    String chapter(Publication publication) =>
+        utf8.decode(publication.resources['OPS/one.xhtml']!);
+
     test('whose entry expands past the size that its directory gives', () {
       // The chapter expands to far more than 1,000 bytes, but stays below
       // the ratio limit that the directory alone can show.
       final book = epub(chapter: '<html><body>${' ' * 2000000}</body></html>');
 
-      expect(
-        () => Publication.admit(_withEntry(book, 'OPS/one.xhtml', size: 1000)),
-        throwsFormatException,
+      final publication = Publication.admit(
+        withEntry(book, 'OPS/one.xhtml', size: 1000),
       );
+
+      expect(chapter(publication), contains('could not be read'));
+      expect(chapter(publication).length, lessThan(1000));
     });
 
     test('whose entry does not have the CRC-32 that its directory gives', () {
       final book = epub();
-      final chapter = utf8.encode(
+      final start = utf8.encode(
         '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>River</title>',
       );
 
-      expect(
-        () => Publication.admit(
-          _withEntry(book, 'OPS/one.xhtml', crc: getCrc32(chapter)),
-        ),
-        throwsFormatException,
+      final publication = Publication.admit(
+        withEntry(book, 'OPS/one.xhtml', crc: getCrc32(start)),
       );
+
+      expect(chapter(publication), contains('could not be read'));
+      expect(chapter(publication), isNot(contains('A river')));
     });
+  });
+
+  test('a file whose ZIP flags name its DEFLATE level is read as it is '
+      '(t5-gk30)', () {
+    // Bit 1 asks for the best compression. Some EPUB tools set it.
+    final publication = Publication.admit(
+      withFlags(epub(), 'OPS/one.xhtml', 0x0002),
+    );
+
+    expect(
+      utf8.decode(publication.resources['OPS/one.xhtml']!),
+      contains('A river'),
+    );
+  });
+
+  test('an encrypted file shows the note instead of its bytes (t5-gk30)', () {
+    final publication = Publication.admit(
+      withFlags(epub(), 'OPS/one.xhtml', 0x0001),
+    );
+
+    expect(
+      utf8.decode(publication.resources['OPS/one.xhtml']!),
+      contains('could not be read'),
+    );
   });
 
   test('a book from disk still admits whole', () {

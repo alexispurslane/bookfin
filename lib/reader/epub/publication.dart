@@ -119,10 +119,20 @@ class Publication {
   /// again. Without [digest], admission hashes them. Throws a
   /// [FormatException] that a person can read when the book cannot be
   /// admitted.
+  ///
+  /// A chapter of the reading order whose file the book file lacks, or
+  /// holds damaged, keeps its place and shows a short note instead of its
+  /// text (t5-gk30). This holds for the first chapter too: the book opens
+  /// at the note, and the reader turns to the next chapter. A contents
+  /// entry that names a file outside the reading order is left out. A book
+  /// whose container or package document is missing or damaged is still
+  /// refused, because it has no reading order to keep.
   static Publication admit(Uint8List bytes, [String? digest]) {
     try {
+      final (:files, :damaged) = _unpack(bytes);
       return _Admission(
-        _unpack(bytes),
+        files,
+        damaged,
         digest ?? sha256.convert(bytes).toString(),
       ).run();
     } on FormatException {
@@ -467,6 +477,13 @@ final class _KeptFiles extends _Files {
   }
 }
 
+/// The document that stands in for a chapter that the book file lacks or
+/// holds damaged (t5-gk30): [message] in one short centered line, as the
+/// reader's other notices show.
+String _note(String message) =>
+    '<html xmlns="http://www.w3.org/1999/xhtml"><head><title></title>'
+    '</head><body><p style="text-align:center">$message</p></body></html>';
+
 String _identityOf(String digest) => sha256
     .convert(
       utf8.encode('${Publication.policy}/${Publication.revision}/$digest'),
@@ -547,7 +564,18 @@ String _relative(String base, String target, [String fragment = '']) {
       '${fragment.isEmpty ? '' : '#${Uri.encodeComponent(fragment)}'}';
 }
 
-Map<String, Uint8List> _unpack(Uint8List bytes) {
+/// The files of the EPUB archive [bytes], by name, and the names of the
+/// files that the archive holds but that cannot be read: a file that uses
+/// a ZIP feature that admission does not support, exceeds a size limit,
+/// has a local header that does not match its directory entry, or does not
+/// expand to its size and CRC-32. Admission treats such a file as damaged
+/// (t5-gk30). It does not expand a damaged file past its declared size.
+///
+/// Throws a [FormatException] when the archive itself cannot be read
+/// safely: its directory is broken, it has too many files or too many
+/// expanded bytes, or a file name is unsafe or repeated, names another
+/// file in its local header, or shares bytes with another file.
+({Map<String, Uint8List> files, Set<String> damaged}) _unpack(Uint8List bytes) {
   if (bytes.length > Publication.maxArchiveBytes || bytes.length < 22) {
     throw const FormatException(
       'EPUB archive exceeds the 64 MiB limit or is incomplete.',
@@ -569,54 +597,68 @@ Map<String, Uint8List> _unpack(Uint8List bytes) {
     throw const FormatException('Unsupported EPUB ZIP directory.');
   }
   final count = word(end + 10);
-  var cursor = integer(end + 16);
+  final directory = integer(end + 16);
+  var cursor = directory;
   if (count == 0 || count > 4096 || cursor + integer(end + 12) != end) {
     throw const FormatException('EPUB exceeds archive entry limits.');
   }
   final output = <String, Uint8List>{};
+  final damaged = <String>{};
   final names = <String>{};
   final ranges = <(int, int)>[];
   var expanded = 0;
   for (var index = 0; index < count; index++) {
-    if (cursor + 46 > end || integer(cursor) != 0x02014b50) {
+    // The directory record of this file.
+    final entry = cursor;
+    if (entry + 46 > end || integer(entry) != 0x02014b50) {
       throw const FormatException('Invalid EPUB ZIP entry.');
     }
-    final flags = word(cursor + 8);
-    final method = word(cursor + 10);
-    final compressed = integer(cursor + 20);
-    final size = integer(cursor + 24);
-    final nameLength = word(cursor + 28);
-    final next =
-        cursor + 46 + nameLength + word(cursor + 30) + word(cursor + 32);
-    final local = integer(cursor + 42);
-    if (next > end ||
-        nameLength > 512 ||
-        (flags & ~0x808) != 0 ||
-        (method != 0 && method != 8) ||
-        word(cursor + 34) != 0 ||
-        ((integer(cursor + 38) >> 16) & 0xf000) == 0xa000 ||
-        size > Publication.maxResourceBytes ||
-        compressed > Publication.maxArchiveBytes ||
-        (size > 1024 * 1024 && size > compressed * 250) ||
-        (expanded += size) > Publication.maxExpandedBytes ||
-        local + 30 > integer(end + 16) ||
-        integer(local) != 0x04034b50 ||
-        word(local + 6) != flags ||
-        word(local + 8) != method) {
+    final flags = word(entry + 8);
+    final method = word(entry + 10);
+    final compressed = integer(entry + 20);
+    final size = integer(entry + 24);
+    final nameLength = word(entry + 28);
+    final next = entry + 46 + nameLength + word(entry + 30) + word(entry + 32);
+    final local = integer(entry + 42);
+    if (next > end || nameLength > 512) {
       throw const FormatException(
         'EPUB entry exceeds limits or uses unsupported ZIP features.',
       );
     }
     final name = utf8.decode(
-      bytes.sublist(cursor + 46, cursor + 46 + nameLength),
+      bytes.sublist(entry + 46, entry + 46 + nameLength),
     );
-    final directory = name.endsWith('/');
-    final path = directory ? name.substring(0, name.length - 1) : name;
+    final folder = name.endsWith('/');
+    final path = folder ? name.substring(0, name.length - 1) : name;
+    if (!_canonical(path) || !names.add(path)) {
+      throw const FormatException(
+        'EPUB contains unsafe, duplicate, or overlapping paths.',
+      );
+    }
+    cursor = next;
+    // Bits 1 and 2 name the DEFLATE level, bit 3 a data descriptor after
+    // the data, and bit 11 a UTF-8 name. Any other flag, such as
+    // encryption, makes the file unreadable here.
+    if ((flags & ~0x80e) != 0 ||
+        (method != 0 && method != 8) ||
+        word(entry + 34) != 0 ||
+        ((integer(entry + 38) >> 16) & 0xf000) == 0xa000 ||
+        size > Publication.maxResourceBytes ||
+        compressed > Publication.maxArchiveBytes ||
+        (size > 1024 * 1024 && size > compressed * 250) ||
+        local + 30 > directory ||
+        integer(local) != 0x04034b50 ||
+        word(local + 6) != flags ||
+        word(local + 8) != method) {
+      damaged.add(path);
+      continue;
+    }
     final start = local + 30 + word(local + 26) + word(local + 28);
-    if (!_canonical(path) ||
-        !names.add(path) ||
-        start + compressed > integer(end + 16) ||
-        utf8.decode(bytes.sublist(local + 30, local + 30 + word(local + 26))) !=
+    if (start + compressed > directory) {
+      damaged.add(path);
+      continue;
+    }
+    if (utf8.decode(bytes.sublist(local + 30, local + 30 + word(local + 26))) !=
             name ||
         ranges.any(
           (range) => local < range.$2 && start + compressed > range.$1,
@@ -626,27 +668,39 @@ Map<String, Uint8List> _unpack(Uint8List bytes) {
       );
     }
     ranges.add((local, start + compressed));
-    final content = Uint8List.sublistView(bytes, start, start + compressed);
-    final unpacked = method == 0
-        ? Uint8List.fromList(content)
-        : inflateEntry(content, size);
-    if (unpacked.length != size || crc32(unpacked) != integer(cursor + 16)) {
+    if ((expanded += size) > Publication.maxExpandedBytes) {
       throw const FormatException(
-        'EPUB resource checksum or length does not match.',
+        'EPUB entry exceeds limits or uses unsupported ZIP features.',
       );
     }
-    if (!directory) output[name] = unpacked;
-    cursor = next;
+    final content = Uint8List.sublistView(bytes, start, start + compressed);
+    try {
+      final unpacked = method == 0
+          ? Uint8List.fromList(content)
+          : inflateEntry(content, size);
+      if (unpacked.length != size || crc32(unpacked) != integer(entry + 16)) {
+        throw const FormatException('The file does not match its CRC-32.');
+      }
+      if (!folder) output[name] = unpacked;
+    } on FormatException {
+      damaged.add(path);
+    }
   }
   if (cursor != end) {
     throw const FormatException('EPUB ZIP directory length does not match.');
   }
-  return output;
+  return (files: output, damaged: damaged);
 }
 
 class _Admission {
-  _Admission(this.raw, this.digest);
+  _Admission(this.raw, this.damaged, this.digest);
+
+  /// The files of the archive, by name. A chapter that the archive lacks,
+  /// or holds damaged, gets a note document here.
   final Map<String, Uint8List> raw;
+
+  /// The files that the archive holds but that cannot be read.
+  final Set<String> damaged;
   final String digest;
   final output = <String, Uint8List>{};
   final types = <String, String>{};
@@ -737,15 +791,38 @@ class _Admission {
       final id = item.getAttribute('id');
       final path = _resolve(package, item.getAttribute('href') ?? '');
       final mime = item.getAttribute('media-type') ?? '';
-      if (id == null ||
-          ids.containsKey(id) ||
-          path == null ||
-          !raw.containsKey(path)) {
+      if (id == null || ids.containsKey(id) || path == null) {
         throw const FormatException(
           'EPUB manifest has missing or ambiguous local resources.',
         );
       }
       ids[id] = path;
+      if (!raw.containsKey(path)) {
+        // The book file lacks this file or holds it damaged (t5-gk30). A
+        // chapter keeps its place in the reading order and shows a short
+        // note, so the places in the other chapters stay where they were.
+        // Any other file is left out.
+        if (_documents.contains(mime) && !types.containsKey(path)) {
+          raw[path] = utf8.encode(
+            _note(
+              damaged.contains(path)
+                  ? 'This chapter could not be read from the book file.'
+                  : 'This chapter is missing from the book file.',
+            ),
+          );
+          warnings.add(
+            'Some chapters are missing from the book file or damaged. Each '
+            'shows a short note instead of its text.',
+          );
+        } else {
+          item.parent?.children.remove(item);
+          warnings.add(
+            'Some publication resources are missing from the book file or '
+            'damaged, and were left out.',
+          );
+          continue;
+        }
+      }
       if (!_types.contains(mime) || types.containsKey(path)) {
         item.parent?.children.remove(item);
         warnings.add(
@@ -832,16 +909,6 @@ class _Admission {
     for (final entry in ncx) {
       final document = _xml(entry.key);
       navMap ??= document;
-      for (final node in document.descendants.whereType<XmlElement>()) {
-        if (node.name.local == 'content') {
-          final path = _resolve(entry.key, node.getAttribute('src') ?? '');
-          if (!documents.contains(path)) {
-            throw const FormatException(
-              'EPUB contents points outside the reading order.',
-            );
-          }
-        }
-      }
       _put(
         entry.key,
         entry.value,

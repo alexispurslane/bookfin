@@ -247,7 +247,7 @@ void main() {
     }
   });
 
-  test('XML entities, encrypted books, and oversized resources fail before rendering', () {
+  test('XML entities and encrypted books fail before rendering', () {
     expect(
       () => Publication.admit(
         epub(
@@ -262,12 +262,20 @@ void main() {
       ),
       throwsFormatException,
     );
-    expect(
-      () => Publication.admit(
-        epub(extra: {'huge': Uint8List(Publication.maxResourceBytes + 1)}),
+  });
+
+  test('a chapter over the resource limit is never expanded, and shows a '
+      'note instead (t5-gk30)', () {
+    final publication = Publication.admit(
+      epub(
+        chapter:
+            '<html><body>${' ' * Publication.maxResourceBytes}</body></html>',
       ),
-      throwsFormatException,
     );
+
+    final chapter = publication.resources['OPS/one.xhtml']!;
+    expect(chapter.length, lessThan(1000));
+    expect(utf8.decode(chapter), contains('could not be read'));
   });
 
   test(
