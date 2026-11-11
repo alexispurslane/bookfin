@@ -19,3 +19,7 @@ User requests a dedicated root index.html section about the built-in Flutter EPU
 **2026-11-11T00:08:31Z**
 
 Continued Sol xhigh homepage leaf on t3/foreground-pdf-reflow. taskId node:delegated-task:command%3Amcp%3Aff882773-a396-4499-bcf0-cd83fba58315%3Athread-send%3Asol-xhigh-homepage-epub-comparison-20261110-1; childThreadId thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-20261110-boo-54l1-homepage-1; clientRequestId sol-xhigh-homepage-epub-comparison-20261110-1. Evidence-led comparison and cross-platform renderer claims; no heavy benchmark jobs, devices or live-site deployment. Parent handles release build in parallel.
+
+**2026-11-11T00:14:43Z**
+
+User requests new same-emulator shell-app comparison for KOReader engine, Android WebView and current Bookfin EPUB engine. Supersedes historical timing table plan. Writer steered to continue section layout/verified architecture copy while leaving numeric comparison pending boo-kf2g. Parent will supply reviewed results; no live-site troubleshooting.
