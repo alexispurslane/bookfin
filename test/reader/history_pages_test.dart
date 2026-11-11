@@ -124,7 +124,7 @@ void main() {
     expect(before, greaterThan(1));
     expect(inTimeline(find.text('→ p. $before')), findsOneWidget);
     await tester.tap(
-      inTimeline(find.text('Went to a search result', findRichText: true)),
+      inTimeline(find.text('From search', findRichText: true)),
     );
     await tester.pumpAndSettle();
     expect(
@@ -245,7 +245,7 @@ void main() {
     Finder inTimeline(Finder finder) =>
         find.descendant(of: find.byType(HistoryTimeline), matching: finder);
     await tester.tap(
-      inTimeline(find.text('Moved ahead 30 s', findRichText: true)),
+      inTimeline(find.text('Ahead 30 s', findRichText: true)),
     );
     await tester.pumpAndSettle();
     final after = find

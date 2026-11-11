@@ -289,3 +289,63 @@ The timeline follows design B with these details, which the decision did not set
 The first build put Delete, Name and Rename in the open row as buttons with touch targets of 48 points. The user found that this made the open row's highlight too tall (about 56 points against 29) and crowded the tiles. So Delete became the swipe and Name moved beside the tile.
 
 Screenshots of the first build are in `~/.cache/bookfin/previews/boo-hyl4/built/`. Screenshots of the swipe build, with one frame in the middle of a swipe, are in `~/.cache/bookfin/previews/boo-hyl4/built2/`.
+
+## Short row labels (2026-11-11)
+
+A narrow phone with large text cut the labels of a timeline with two lanes. At 360 points wide and 130% text, "Jumped ahead 30 s" and "Went to a search result" ended in "…". The user asked for the shortest labels that keep one meaning, and for lanes that are only as narrow as the labels still need.
+
+A visible label now names only what set the new place:
+
+- "Ahead" or "Back" with a distance names a move whose distance is known. "Back" is a direction in the book, never a step back in time (finding 1).
+- "From" with a source names a move to a place that the source gave: History, a bookmark, the other edition, a search result, a link or another device.
+- Every other kind keeps its words.
+
+A screen reader reads the full words, and the book's title in a timeline of several books. A move to a place of the other edition that the chapters estimate keeps "about" in its spoken words.
+
+| Old visible label | New visible label | Spoken label |
+| --- | --- | --- |
+| Moved ahead 40 s | Ahead 40 s | Moved ahead 40 s |
+| Moved back 40 s | Back 40 s | Moved back 40 s |
+| Jumped ahead 30 s | Ahead 30 s | Jumped ahead 30 s |
+| Jumped back 30 s | Back 30 s | Jumped back 30 s |
+| Moved ahead 12 pages | Ahead 12 pages | Moved ahead 12 pages |
+| Moved back 1 page | Back 1 page | Moved back 1 page |
+| Went back in history | From History | Went to a place from History |
+| Went to a bookmark | From bookmark | Went to a bookmark |
+| Went to about where you listened | From audiobook | Went to about where you listened in the audiobook |
+| Went to about where you read | From ebook | Went to about where you read in the ebook |
+| Went to about a listening bookmark | From audiobook bookmark | Went to about a bookmark in the audiobook |
+| Went to about a reading bookmark | From ebook bookmark | Went to about a bookmark in the ebook |
+| Opened at the place from Pixel 8 | From Pixel 8 | Opened at the place from Pixel 8 |
+| Went to a search result | From search | Went to a search result |
+| Followed a link | From link | Followed a link |
+
+The spoken words of a move from History changed too, because "Went back in history" used "back" for time.
+
+These labels did not change: "Changed chapter", "Undid a move", "Paused", "Played", "Interrupted", "Stopped", "Finished", "Opened" and "Closed". A move without a known distance keeps its verb: "Moved ahead" and "Moved back" for a reading move before the pages are known, and "Moved" or "Jumped" for a move within one shown second.
+
+A listening place has no leading zero under an hour, as the approved mockup shows: "00:30" is now "0:30", and "05:00" is now "5:00". From an hour on, it reads "1:02:15" as before. `audioTime` makes this change in every screen: the timeline, the player, the chapter list, the bookmarks and the sync choices.
+
+The row layout:
+
+- One lane stays 24 points wide. Each of two lanes is 16 points wide, down from 18. A medium glyph is 12 points, down from 13, so it keeps 2 points of space on each side. The bookmark mark stays 13 points.
+- 16 points is the widest lane that keeps the usual labels in full. With 18-point lanes, "Ahead 12 m 40 s" ends in "…" even after the shorter labels. With 14-point lanes, the reading glyph almost touches the label.
+- The rows sit 8 points inside the sides of the History's glass sheet, down from 16. The sheet itself keeps 8 points from the screen edges. With the old 16 points, a row on a 360-point phone is 312 points wide, and "Ahead 12 m 40 s" next to "→ 1:14:55" lacks about 14 points. The lanes cannot give that room back, because each lane must hold its 12-point glyph.
+- The inset is the space between the highlight of an open row and its content, on each side. It is max(6, 68 − w) points, where w is the width of the time "10:58 PM" in the shown text size and the phone's clock format.
+- The time sits at the end of a column that is w + inset wide, at least 68 points. So the widest time starts one inset from the highlight's left edge.
+- Every row's place text ends one inset before the row's right edge. So an open row's place text keeps the same inset from the highlight's right edge, and closed rows keep their column.
+- The row formats its time with the phone's clock format, as the rest of the app does. Before this change, the row showed "10:58 PM" on a phone set to 24-hour time.
+
+At 360 points and 130% text, in the History's glass sheet and the Outfit font, the labels need this room. The room depends on the width of the row's place text.
+
+| Label | Needs (points) | Room (points) | Shows in full |
+| --- | --- | --- | --- |
+| Ahead 12 m 40 s, with → 1:14:55 | 134.7 | 137.1 | Yes |
+| Ahead 120 pages, with → p. 254 | 142.2 | 147.7 | Yes |
+| Changed chapter | 145.0 | 147.7 | Yes |
+| From History | 107.9 | 147.7 | Yes |
+| From audiobook | 135.6 | 147.7 | Yes |
+| From ebook bookmark, with → 1:14:55 | 187.9 | 137.1 | No |
+| From audiobook bookmark | 224.1 | 147.7 | No |
+
+`test/playback/timeline_fit_test.dart` draws the timeline in its glass sheet. It keeps the first five in full, and it keeps the inset equal on both sides of an open row on a 12-hour clock and on a 24-hour clock. The two labels of a bookmark of the other edition still end in "…" on such a phone. The user decides between two ways out: keep them as they are, or show "From bookmark" for every bookmark and keep the edition only in the spoken words.

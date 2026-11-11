@@ -142,7 +142,7 @@ void main() {
       expect(text, contains(audio.title.title));
       expect(text, contains('Pixel 8'));
       expect(text, contains('Pixel Tablet'));
-      expect(text, contains('00:00'));
+      expect(text, contains('0:00'));
       expect(text, contains('not in the current library'));
       expect(text, isNot(contains('epubcfi(')));
       expect(text, isNot(contains('"version"')));

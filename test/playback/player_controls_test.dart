@@ -90,8 +90,8 @@ void main() {
     expect(starts, 1);
     expect(ends, isEmpty);
     expect(slider().value, 95000 / 150000);
-    expect(find.text('01:35'), findsOneWidget);
-    expect(find.text('00:55 left'), findsOneWidget);
+    expect(find.text('1:35'), findsOneWidget);
+    expect(find.text('0:55 left'), findsOneWidget);
 
     slider().onChangeEnd!(95000 / 150000);
     await tester.pump();
@@ -247,7 +247,7 @@ void main() {
                 context,
                 heading: 'Edit bookmark',
                 title: 'The letter',
-                place: 'At 01:15',
+                place: 'At 1:15',
               ),
             ),
             child: const Text('Edit'),
@@ -266,7 +266,7 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         unawaited(await openEditor(tester));
 
-        final place = tester.getRect(find.text('At 01:15'));
+        final place = tester.getRect(find.text('At 1:15'));
         final label = tester.getRect(find.text('Title (optional)'));
         expect(label.top, greaterThanOrEqualTo(place.bottom));
       });
@@ -275,7 +275,7 @@ void main() {
     testWidgets('returns the edited title and note', (tester) async {
       final edited = await openEditor(tester);
       expect(find.text('Edit bookmark'), findsOneWidget);
-      expect(find.text('At 01:15'), findsOneWidget);
+      expect(find.text('At 1:15'), findsOneWidget);
       expect(find.text('The letter'), findsOneWidget);
       await tester.enterText(
         find.widgetWithText(TextField, 'Title (optional)'),

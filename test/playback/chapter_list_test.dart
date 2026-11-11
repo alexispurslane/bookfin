@@ -64,7 +64,7 @@ void main() {
       ),
     );
     expect(row('Arrival', '20:00'), findsOneWidget);
-    expect(row('Home', '05:00'), findsOneWidget);
+    expect(row('Home', '5:00'), findsOneWidget);
   });
 
   testWidgets('the chapter sheet reports the tapped chapter, then closes', (

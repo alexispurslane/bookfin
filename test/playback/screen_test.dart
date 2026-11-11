@@ -303,7 +303,7 @@ void main() {
 
       await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
-      expect(find.text('Went to a bookmark'), findsOneWidget);
+      expect(find.text('From bookmark'), findsOneWidget);
       // The delete saves in real time, so it starts outside the fake
       // clock, from the row's Delete action for a screen reader.
       final semantics = tester.ensureSemantics();

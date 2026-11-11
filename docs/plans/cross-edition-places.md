@@ -257,7 +257,7 @@ The timeline keeps one list per book, newest first and grouped by day. It shows 
 2. A row keeps its own place in its own words. A listening entry in the reader still reads "1:02:15".
 3. An open entry of the other medium shows where its places land. If no landing exists, the entry says why and which screen Go to opens: "The chapters of these editions do not match, so this opens the audiobook."
 4. Each choice that goes to a place names the landing. By chapters, it reads "about p. 134" or "about 1:02:15". By speech, it reads "p. 134". If Go to switches screens as today, the choice names the place in its own words, such as "1:02:15", beside the reason of item 3.
-5. A mapped move appears in the open edition's lane: "Went to about where you listened", "Went to where you listened" by speech, or "Went to about a listening bookmark".
+5. A mapped move appears in the open edition's lane: "Went to about where you listened", "Went to where you listened" by speech, or "Went to about a listening bookmark". The timeline now shows "From audiobook" or "From audiobook bookmark", and a screen reader reads the longer words ("Short row labels" in `docs/plans/history-choice.md`).
 
 | Time | Listening lane | Reading lane | What happened | Place |
 | --- | --- | --- | --- | --- |

@@ -160,7 +160,7 @@ void main() {
     await show(tester, [ActionEntry(heard)], landingOf: inReader);
 
     expect(find.text('→ 1:02:15'), findsOneWidget);
-    await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
+    await tester.tap(find.text('Ahead 40 s', findRichText: true));
     await tester.pumpAndSettle();
 
     expect(inTile('BEFORE', find.text('about p. 123')), findsOneWidget);
@@ -177,7 +177,7 @@ void main() {
       ActionEntry(heard),
     ], landingOf: (place) => (words: describe(place), note: unmatched));
 
-    await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
+    await tester.tap(find.text('Ahead 40 s', findRichText: true));
     await tester.pumpAndSettle();
 
     final note = find.text(unmatched);
@@ -211,7 +211,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
+    await tester.tap(find.text('Ahead 40 s', findRichText: true));
     await tester.pumpAndSettle();
 
     expect(inTile('BEFORE', find.text(unmatched)), findsOneWidget);
@@ -223,7 +223,7 @@ void main() {
   ) async {
     await show(tester, [ActionEntry(heard)]);
 
-    await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
+    await tester.tap(find.text('Ahead 40 s', findRichText: true));
     await tester.pumpAndSettle();
 
     expect(inTile('AFTER', find.text('1:02:15')), findsOneWidget);
@@ -244,7 +244,7 @@ void main() {
         tester.getCenter(find.byWidget(line.widget)).dx,
     }, hasLength(2));
     // Each label starts after both lanes.
-    for (final label in ['Moved ahead 40 s', 'Moved ahead 12 pages']) {
+    for (final label in ['Ahead 40 s', 'Ahead 12 pages']) {
       expect(
         tester.getTopLeft(find.text(label, findRichText: true)).dx,
         greaterThan(reread.dx),
@@ -267,25 +267,25 @@ void main() {
         HistoryAction.historyRestore,
         listening(1000),
         reading(1),
-        'Went to about where you listened',
+        'From audiobook',
       ),
       (
         HistoryAction.bookmarkRestore,
         listening(1000),
         reading(1),
-        'Went to about a listening bookmark',
+        'From audiobook bookmark',
       ),
       (
         HistoryAction.historyRestore,
         reading(1),
         listening(1000),
-        'Went to about where you read',
+        'From ebook',
       ),
       (
         HistoryAction.bookmarkRestore,
         reading(1),
         listening(1000),
-        'Went to about a reading bookmark',
+        'From ebook bookmark',
       ),
     ];
     for (final (kind, other, own, label) in cases) {
