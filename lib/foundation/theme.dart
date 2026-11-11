@@ -622,6 +622,12 @@ class _BookfinScreenStackState extends State<BookfinScreenStack>
 /// The warm light behind the player's cover at night, and its chapter line.
 const theaterGlow = Color(0xFFE4B58A);
 
+/// The color of the player's marks, chapter lines and places to go:
+/// [theaterGlow] at night, and the theme's primary color by day.
+Color glowAccent(ThemeData theme) => theme.brightness == Brightness.dark
+    ? theaterGlow
+    : theme.colorScheme.primary;
+
 /// The player stage at night: a dark theater with cream type and a cream
 /// play button. [night] is the app's night theme.
 ThemeData theaterTheme(ThemeData night) {

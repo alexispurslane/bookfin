@@ -133,7 +133,7 @@ Existing JSON names stay. Three names are new.
 | `link` (new) | None | A link on the page, Go to note | "Followed a link" |
 | `search` (new) | None | A search result | "Went to a search result" |
 | `bookmarkRestore` | Go to a bookmark | Go to a bookmark | "Went to a bookmark" |
-| `historyRestore` | Go back or Go to on a move | Go back or Go to on a move | "Went back in history" |
+| `historyRestore` | Before or After on a move | Before or After on a move | "Went back in history" |
 | `undo` | Undo | Undo | "Undid a move" |
 | `open` (new) | None | See decision 2 | "Opened", "Opened at the place from Pixel 8" |
 | `close` (new, design 2B only) | None | Leaving the reader | "Closed" |
@@ -159,7 +159,7 @@ The reader session (`ReaderSession`) is already the one owner of navigation. Eve
 | Link, Go to note | `followLink(href)`, new. It replaces the screen's use of `goToContents` for links. | `link` |
 | Search result | `openHit(hit)` | `search` |
 | Bookmark | `restoreBookmark(id)` | `bookmarkRestore` |
-| Timeline Go back, Go to | `restoreHistory(id, previous:)` (new) | `historyRestore` |
+| Timeline Before, After | `restoreHistory(id, previous:)` (new) | `historyRestore` |
 | Undo | `undoMove()` (new) | `undo` |
 
 ```mermaid
@@ -298,7 +298,7 @@ The reader uses the player's History sheet and widget:
 
 - A glass sheet titled History, over the open book, with the entries grouped by day.
 - Each entry is one line: the time of day, a dot or a bookmark on the rail, what happened, and the short place.
-- A tap on an entry shows the detail line and the choices: Go back to where a move began, Go to where it ended, Go to, Name or Rename a bookmark, and Delete.
+- A tap on an entry opens it. A move shows two tiles: Before, where it began, and After, where it ended. Any other entry shows one tile with its one place. A tap on a tile goes to its place. The open row offers Name or Rename for a bookmark, and Delete. `docs/plans/history-choice.md` (design B) gives the details.
 - Delete asks for the same confirmation as in the player.
 - A choice that goes to a place closes the sheet. The reader then shows the place and offers Undo.
 - The header shows the save status of the reading records. If a save failed, it offers Retry saving.

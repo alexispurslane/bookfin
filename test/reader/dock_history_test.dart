@@ -360,7 +360,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('River mark'));
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining(RegExp(r'^Go to ')));
+      await tester.tap(find.text('GO TO'));
       await tester.pumpAndSettle();
 
       expect(find.byType(HistoryTimeline), findsNothing);

@@ -6,6 +6,7 @@ import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:bookfin/playback/timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -132,26 +133,24 @@ void main() {
     }
   });
 
-  testWidgets('a tap on an action offers going back to where it began', (
-    tester,
-  ) async {
+  testWidgets('Before on an action returns to where it began', (tester) async {
     await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(inTimeline(find.text('Go back to 00:00')));
+      await tester.tap(inTimeline(find.text('BEFORE')));
       await playback.flush();
     });
     await tester.pumpAndSettle();
     expect(playback.editionMilliseconds, 0);
   });
 
-  testWidgets('Go to on an action returns to where it ended', (tester) async {
+  testWidgets('After on an action returns to where it ended', (tester) async {
     await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(inTimeline(find.text('Go to 00:30')));
+      await tester.tap(inTimeline(find.text('AFTER')));
       await playback.flush();
     });
     await tester.pumpAndSettle();
@@ -165,7 +164,7 @@ void main() {
     await tester.tap(inTimeline(find.text('Bookmark')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(inTimeline(find.text('Go to 01:15')));
+      await tester.tap(inTimeline(find.text('GO TO')));
       await playback.flush();
     });
     await tester.pumpAndSettle();
@@ -236,12 +235,17 @@ void main() {
   });
 
   testWidgets('an action can be deleted from the timeline', (tester) async {
+    final semantics = tester.ensureSemantics();
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
-    await tester.pumpAndSettle();
+    // The delete saves in real time, so it starts outside the fake clock,
+    // from the row's Delete action for a screen reader.
     await tester.runAsync(
-      () => tester.tap(inTimeline(find.byTooltip('Delete'))),
+      () async => tester.semantics.customAction(
+        find.semantics.byLabel(RegExp('Jumped ahead 30 s')),
+        const CustomSemanticsAction(label: 'Delete'),
+      ),
     );
+    semantics.dispose();
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
@@ -264,9 +268,11 @@ void main() {
     tester,
   ) async {
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
-    await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.byTooltip('Delete')));
+    await tester.fling(
+      inTimeline(find.text('Jumped ahead 30 s')),
+      const Offset(-400, 0),
+      1000,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
@@ -284,7 +290,7 @@ void main() {
     await tester.tap(inTimeline(find.text('Bookmark')));
     await tester.pumpAndSettle();
     // The save runs in real time, so it starts outside the fake clock.
-    await tester.runAsync(() => tester.tap(inTimeline(find.text('Name'))));
+    await tester.runAsync(() => tester.tap(inTimeline(find.byTooltip('Name'))));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Title (optional)'),
@@ -376,7 +382,7 @@ void main() {
                 ),
                 TextPosition() => throw StateError('No reading place here.'),
               },
-              onGoBack: (event) => reports.add(('back', event)),
+              onGoBefore: (event) => reports.add(('back', event)),
               onGoTo: (entry) => reports.add(('go', entry)),
               onRename: (bookmark) => reports.add(('rename', bookmark)),
               onDelete: (entry) => reports.add(('delete', entry)),
@@ -394,17 +400,17 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('Go back reports the action whose start to return to', (
+    testWidgets('Before reports the action whose start to return to', (
       tester,
     ) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.text('Go back to 00:00'));
+      await choose(tester, 'Jumped ahead 30 s', find.text('BEFORE'));
       expect(reports, [('back', jump)]);
     });
 
-    testWidgets('Go to on an action reports that action', (tester) async {
+    testWidgets('After on an action reports that action', (tester) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.text('Go to 00:30'));
+      await choose(tester, 'Jumped ahead 30 s', find.text('AFTER'));
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, ActionEntry);
       expect((kind, entry.event), ('go', jump));
@@ -412,7 +418,7 @@ void main() {
 
     testWidgets('Go to on a bookmark reports that bookmark', (tester) async {
       await showTimeline(tester);
-      await choose(tester, 'Bookmark', find.text('Go to 01:15'));
+      await choose(tester, 'Bookmark', find.text('GO TO'));
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, BookmarkEntry);
       expect((kind, entry.bookmark), ('go', mark));
@@ -422,7 +428,7 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester);
-      await choose(tester, 'Bookmark', find.text('Name'));
+      await choose(tester, 'Bookmark', find.byTooltip('Name'));
       expect(reports, [('rename', mark)]);
       expect(find.byType(TextField), findsNothing);
     });
@@ -431,7 +437,12 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.byTooltip('Delete'));
+      await tester.fling(
+        find.text('Jumped ahead 30 s'),
+        const Offset(-400, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, ActionEntry);
       expect((kind, entry.event), ('delete', jump));
@@ -492,7 +503,7 @@ void main() {
             ]),
             describe: (place) =>
                 (short: '', chapter: null, quote: null, along: null),
-            onGoBack: (_) {},
+            onGoBefore: (_) {},
             onGoTo: (_) {},
             onRename: (_) {},
             onDelete: (_) {},

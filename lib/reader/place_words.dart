@@ -13,7 +13,8 @@ import 'document.dart';
 ///   among the book's pages, such as "p. 134", once the map knows every
 ///   page, else as its share of the book, such as "37%", as the scrub bar's
 ///   drag label does. Its chapter comes from the map.
-/// - Any other place reads as the first words of its quote.
+/// - Any other place reads as the first words of its quote. Its [quote]
+///   is null when those words are the whole quote.
 ///
 /// [address] is null when [place] is not in the open book. Page numbers
 /// depend on the text size and the screen, so a caller asks again when the
@@ -53,10 +54,13 @@ PlaceWords describeTextPlace(
       along: AlongText(page: target.page, fraction: fraction),
     );
   }
+  final shown = quote == null ? null : _firstWords(quote);
   return (
-    short: quote == null ? 'Saved place' : '“${_firstWords(quote)}”',
+    short: shown == null ? 'Saved place' : '“$shown”',
     chapter: null,
-    quote: quote,
+    // A short quote reads whole in the place text, so a separate quote
+    // would only repeat it.
+    quote: shown == quote ? null : quote,
     along: null,
   );
 }

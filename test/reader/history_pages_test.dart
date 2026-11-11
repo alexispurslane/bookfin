@@ -1,6 +1,6 @@
 // The shared History timeline over the open book, with the session's real
 // pager: a reading place reads as its page among the book's pages, which
-// follow the text size, and Go back shows the place in the reader.
+// follow the text size, and Before shows the place in the reader.
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/records.dart';
@@ -18,7 +18,7 @@ import 'session_test.dart' show book, edition, source;
 
 void main() {
   testWidgets('a reading move reads as the page where it ended, and a larger '
-      'text size shows a later page; Go back shows where it began', (
+      'text size shows a later page; Before shows where it began', (
     tester,
   ) async {
     final downloads = LocalFiles()
@@ -86,7 +86,7 @@ void main() {
         int.parse(reader.describe(place).short.substring('p. '.length));
     final before = pageOf(chapterTwo);
     expect(before, greaterThan(1));
-    expect(inTimeline(find.text('p. $before')), findsOneWidget);
+    expect(inTimeline(find.text('→ p. $before')), findsOneWidget);
     await tester.tap(
       inTimeline(find.text('Went to a search result', findRichText: true)),
     );
@@ -109,13 +109,15 @@ void main() {
     expect(inTimeline(find.text('p. $after')), findsOneWidget);
     expect(inTimeline(find.text('p. $before')), findsNothing);
 
-    await tester.tap(inTimeline(find.text('Go back to p. 1')));
+    // The open move shows where it began on its Before tile.
+    expect(inTimeline(find.text('p. 1')), findsOneWidget);
+    await tester.tap(inTimeline(find.text('BEFORE')));
     await tester.pump();
     await waitForPage(tester, reader, (shown) => shown.page.section == 0);
     await settleReader(
       tester,
       () => find.byType(HistoryTimeline).evaluate().isEmpty,
-      reason: 'Go back did not close the timeline',
+      reason: 'Before did not close the timeline',
     );
     expect(
       (reader.visibleAddress! as EpubAddress).resource,

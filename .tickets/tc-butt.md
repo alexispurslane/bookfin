@@ -1,6 +1,6 @@
 ---
 id: tc-butt
-status: open
+status: closed
 deps: []
 links: [boo-hyl4, tc-p3j8]
 created: 2026-11-11T15:31:25Z
@@ -17,3 +17,9 @@ Found during boo-hyl4 on 2026-11-11 (docs/plans/history-choice.md, side finding)
 
 An open move with a device name reads 'Opened at the place from <device>' in the timeline, for listening and for reading. An open move without a device name (the start of a reading visit) still reads 'Opened'. A widget test covers both.
 
+
+## Notes
+
+**2026-11-11T15:54:14Z**
+
+HistoryTimeline._label reads HistoryEvent.device: an open move with a device reads 'Opened at the place from <device>' for listening and reading; without one it reads 'Opened'. Widget tests in test/playback/timeline_route_test.dart.

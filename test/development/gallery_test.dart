@@ -249,7 +249,7 @@ void main() {
     expect(slider(tester).position, 2 * 12480000 ~/ 12);
   });
 
-  testWidgets('Go back in the production timeline restores the sample place', (
+  testWidgets('Before in the production timeline restores the sample place', (
     tester,
   ) async {
     await showGallery(tester);
@@ -258,7 +258,7 @@ void main() {
     expect(find.byType(HistoryTimeline), findsOneWidget);
     await tester.tap(find.textContaining('Jumped ahead'));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Go back to'));
+    await tester.tap(find.text('BEFORE'));
     await tester.pumpAndSettle();
     expect(slider(tester).position, 62 * 60000 + 9000);
   });
@@ -270,9 +270,11 @@ void main() {
     await openScreen(tester, 'Player & history');
     await reveal(tester, 'player', find.textContaining('Jumped ahead'));
     expect(find.byType(HistoryTimeline), findsOneWidget);
-    await tester.tap(find.textContaining('Jumped ahead'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Delete'));
+    await tester.fling(
+      find.textContaining('Jumped ahead'),
+      const Offset(-400, 0),
+      1000,
+    );
     await tester.pumpAndSettle();
     expect(find.text('Delete history action?'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
