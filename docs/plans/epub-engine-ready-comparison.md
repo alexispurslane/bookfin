@@ -59,3 +59,24 @@ One fresh read-only Sol xhigh reviewer checks endpoint comparability, clocks,
 content validation, sample selection, raw-to-summary arithmetic, scope, and
 design. The lead resolves findings with evidence. The parent owns integration
 and ticket closure. No production renderer optimization belongs in this run.
+
+## Revised goal (user, 2026-11-11)
+
+The user restated the goal. Work that the emulator makes disproportionately
+slow or fast, compared with a real phone, must be excluded from every
+engine's timed interval in the same way. Software rasterization (the
+emulator draws with the CPU where a phone uses the GPU) is the example the
+user gave. Work that costs about the same on the emulator and on a phone,
+such as parsing, layout, shaping, pagination, and image decoding on the CPU,
+stays inside every engine's interval.
+
+This replaces the Option A scope above. The aim is again one symmetric
+interval per engine. For each engine, classify each step as emulator-skewed
+or not, from the engine's source and the emulator's graphics configuration.
+Exclude the skewed steps for all three engines. When an engine fuses a
+skewed step with an unskewed one (KOReader decodes images inside its CPU
+Draw), measure or isolate the unskewed part if you can, and state the
+remaining asymmetry in the report. Note that KOReader rasterizes on the CPU
+on a phone too, so its drawing is not emulator-skewed in the same way as
+Flutter or WebView GPU rasterization. Decide this classification with
+evidence and report it to the parent before publishing claims.

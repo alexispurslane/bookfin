@@ -27,3 +27,7 @@ Started Sol xhigh ticket lead. taskId node:delegated-task:command%3Amcp%3A9af129
 **2026-11-11T13:53:53Z**
 
 Endpoint audit found no equivalent pre-raster page-image endpoint in pinned KOReader: images decode during Draw. Parent selected Option A to preserve the user-requested exclusion of drawing: report genuine non-equivalent milestones plus limited layout/navigation and retained reference-copy intervals. No equal-work ranking or homepage replacement from readiness diagnostics. Option B matched raster output would add drawing to the requested interval and is outside this run. Lead continues fresh 108-job schedule, post-timing correctness validation, one review and fixes. Branch t3/rerun-epub-preparation-benchmark; worktree t3-d6d84f15.
+
+**2026-11-11T14:38:31Z**
+
+Sol lead stopped: Codex usage limit. Its partial work is commit 403629c6 on t3/rerun-epub-preparation-benchmark. User restated the goal: exclude emulator-skewed work (for example software rasterization) symmetrically from all engines, keep work that costs the same on emulator and phone. Plan section 'Revised goal' replaces the Option A scope. New lead: Claude Opus 5.5 xhigh.
