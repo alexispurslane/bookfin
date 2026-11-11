@@ -189,12 +189,5 @@ void main() {
       );
       expect(outline.length, greaterThan(100000));
     });
-
-    test('a PDF has no text outline yet', () async {
-      expect(
-        measure(Uint8List.fromList('%PDF-1.7'.codeUnits), 'pdf'),
-        throwsUnsupportedError,
-      );
-    });
   });
 }

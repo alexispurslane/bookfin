@@ -47,17 +47,16 @@ Future<Publication> loadPublication(VerifiedFile original) async =>
 /// The text outline of the downloaded ebook [original] of [source]. One
 /// worker isolate reads the admitted book that Bookfin kept, or admits or
 /// converts the file and keeps it, as the reader does, and measures the
-/// outline there. Only the small outline comes back. A PDF has no outline
-/// yet (t9-nl30), so it throws an [UnsupportedError].
+/// outline there. Only the small outline comes back. A PDF's outline comes
+/// from its bookmarks and its text layer, on PDFium's worker (see
+/// [PdfRuntime.measureOutline]).
 Future<TextOutline> measureDownloadedOutline(
   VerifiedFile original,
   SourceFile source,
 ) async {
   final file = await _verifiedFile(original.uri);
   return switch (await _containerOf(file, source)) {
-    'pdf' => throw UnsupportedError(
-      'Bookfin cannot measure the outline of a PDF yet.',
-    ),
+    'pdf' => PdfRuntime.instance.measureOutline(file.path),
     'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
     _ => _readAdmitted(file, original.digest, measureTextOutline),
   };

@@ -143,7 +143,7 @@ void main() {
       store: store,
       measure: (text) async {
         measured++;
-        if (unsupported) throw UnsupportedError('A PDF has no outline yet.');
+        if (unsupported) throw UnsupportedError('No ebook files here.');
         if (unreadable) throw const FormatException('A broken EPUB.');
         return download;
       },

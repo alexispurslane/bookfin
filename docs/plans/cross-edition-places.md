@@ -1,6 +1,6 @@
 # Go to a place of the other edition inside the open edition
 
-Epic: boo-z3is, under boo-fs0n. Written 2026-11-11 with two designs, A and B. Status: the user chose design A (see "Decision" at the end). Steps 2 to 7 of design A are built. Step 8, the PDF outline, waits. Design B is not scheduled.
+Epic: boo-z3is, under boo-fs0n. Written 2026-11-11 with two designs, A and B. Status: the user chose design A (see "Decision" at the end). Steps 2 to 8 of design A are built, with the self-check of boo-bxap. Design B is not scheduled.
 
 Read this with three other documents:
 
@@ -282,7 +282,7 @@ flowchart TD
 | Listening track, listening Undo offer, listening bookmarks | `Playback`, unchanged | Player, timeline controller |
 | Reading track, reading Undo offer, reading bookmarks | `ReaderSession`, unchanged | Reader, timeline controller |
 | Audio outline of an audio edition | `audioOutline(Edition)`, a pure function of the catalog. `Playback.chapters` uses it too. | `Crossings`, `Playback` |
-| Text outline of an ebook edition | `measureTextOutline`, in the reader package, in a worker isolate | `Crossings` |
+| Text outline of an ebook edition | `measureTextOutline` for an EPUB or MOBI, in a worker isolate. `PdfRuntime.measureOutline` for a PDF, on PDFium's worker isolate. | `Crossings` |
 | The anchors of a pair of editions, and the landing of a place | `Crossings`, a new app-wide data source. It keeps the outlines and alignments that it derives. | Timeline controller |
 | Which landing a choice uses, and the fallback | `openHistory`, the timeline controller | `HistoryTimeline` |
 | A landing in words | The open owner: `Playback.describe` for an audio landing, `ReaderSession.describeLanding` (new) for a text landing | `HistoryTimeline` |
@@ -421,13 +421,25 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 4. The anchors cover less than three tenths of the audio time. This catches abridged recordings and other editions. Until boo-bxap, the limit was half.
 5. The anchors fail the self-check: hidden one at a time, the inner anchors land more than two pages from their own starts, at the median. The note says "The chapters of these editions do not line up" (boo-bxap).
 6. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
-7. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
+7. The ebook is a PDF without bookmarks. Its outline has no contents entries, so the note says that one of the editions has no chapters (t9-nl30).
 
-Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. Two more cases give no landing: the ebook is a PDF (item 7), and Bookfin cannot read the downloaded ebook.
+Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. One more case gives no landing: Bookfin cannot read the downloaded ebook, as for a damaged or encrypted PDF.
+
+### The PDF outline
+
+As built in t9-nl30, `pdfOutlineOf` makes the text outline of a PDF edition:
+
+- Each source page is a part, named `page:N` as a PDF place names its page. A part holds the visible characters of the page's text layer, as the reader extracts it.
+- Each bookmark is a contents entry at its nesting depth, in the order of the outline. The matcher pairs titles at every depth, as it does with the levels of an EPUB's contents. The ordinal fill uses the depth of its neighboring anchors. So the PDF path needs no choice of one level.
+- A bookmark starts at its page, after the visible characters above its place there. An /XYZ destination names the height of its place. Other destinations start at the top of their page.
+- A PDF reading place lies at the start of its source page. In the reader, a landing in a PDF shows the start of its page. Ticket t3-tkpa can place a reading place of the PDF text view inside its page.
+- A page without a text layer is a picture or a blank page when at least half of the book's pages have a text layer. It holds no characters.
+- A book where most pages have no text layer is a scan. Each of its pages without a text layer counts as 1600 visible characters, a printed page of about 330 words. So places fall by pages, the way the scrub bar already measures a PDF. Recognition of every page would cost minutes of phone CPU for one Go to. A refusal would lose every scanned book with bookmarks, and Bookfin reads scanned books.
 
 ### Engine rules
 
 - `measureTextOutline` parses every section of the book once, in one `Isolate.run` for each ebook edition. The matching runs in a second hop, once for each pair of editions. Its table has at most about 200 × 200 cells.
+- A PDF outline needs PDFium, which runs on pdfrx's one worker isolate. `measurePdfOutline` opens its own handle of the file there and reads the bookmarks. Then it counts each page's text layer in slices of about 8 ms, as low-priority work. So a page that the reader asks for waits at most about one slice. Only the counts come back to the UI isolate.
 - `Crossings` keeps each text outline in a small JSON cache, keyed by edition id and file revision, with an atomic write. A removed download keeps its outline, so its reading places still map. A later launch does not parse the book again.
 - The History sheet draws at once with each entry's own words. After the alignment arrives, the landing words fill in. No spinner shows.
 - A mapped move saves through the existing move path. These new tests prove the data safety of engine rule 3:
@@ -556,7 +568,7 @@ Design A:
 | 5 | `Crossings`: landings, caches and invariants | 4 |
 | 6 | Mapped moves: `counterpartOf` and `matchedBy`, `goToLanding` in `ReaderSession` and `Playback`, with the data-safety tests | 5 |
 | 7 | The History sheet: the routing rule, `landingOf`, the detail line, the fallback and the two lanes | 6 |
-| 8 | PDF editions: the PDF outline from PDFium bookmarks and characters from the text layer. Until then a PDF refuses. | 7 |
+| 8 | PDF editions: the PDF outline from PDFium bookmarks and characters from the text layer (t9-nl30, see "The PDF outline") | 7 |
 
 The thresholds of step 4 (the rate band, the coverage limit and the one-page margin) can change after step 1 measures the real library. Step 7 and boo-hyl4 both change `lib/playback/timeline.dart`, so they merge one after the other.
 

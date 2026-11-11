@@ -16,7 +16,9 @@ import 'column_layout.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
+import 'pdf_outline.dart';
 import 'running_lines.dart';
+import 'text_outline.dart';
 import 'word_bands.dart';
 
 /// How the reader shows a PDF page. The reader session owns the choice for
@@ -761,8 +763,29 @@ class PdfRuntime {
     return book;
   });
 
+  /// The text outline of the PDF file at [path], from its bookmarks and its
+  /// text layer (see [measurePdfOutline]). Its PDFium work runs on pdfrx's
+  /// worker as background work, beside the open books, and [shutdown]
+  /// waits for it.
+  Future<TextOutline> measureOutline(String path) async {
+    await _admit(() => _initialization ??= pdfrxFlutterInitialize());
+    final work = measurePdfOutline(path);
+    _measuring.add(work);
+    try {
+      return await work;
+    } finally {
+      _measuring.remove(work);
+    }
+  }
+
+  /// The outline measurements that run.
+  final Set<Future<TextOutline>> _measuring = {};
+
   Future<void> shutdown() => _admit(() async {
-    await Future.wait(_books.toList().map((book) => book.dispose()));
+    await Future.wait([
+      ..._books.toList().map((book) => book.dispose()),
+      for (final work in _measuring) work.then((_) {}, onError: (_) {}),
+    ]);
     await native.PdfrxEntryFunctions.instance.stopBackgroundWorker();
     _initialization = null;
   });
