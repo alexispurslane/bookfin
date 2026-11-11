@@ -1,0 +1,4 @@
+Bookfin bundles the English tiny.en model of OpenAI Whisper, which OpenAI
+released under the MIT License, converted to the ggml format and quantized
+to 5 bits by the whisper.cpp project (ggml-tiny.en-q5_1.bin).
+Bookfin transcribes audiobooks on this device only. No audio leaves it.

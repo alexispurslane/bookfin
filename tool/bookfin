@@ -22,6 +22,7 @@ case "$command" in
       printf 'SKIP: darwin_native_tools_test.sh tests the macOS SDK and signer, which only the macOS shell has.\n'
     fi
     bash test/native/ocr_worker_test.sh
+    bash test/native/speech_package_test.sh
     flutter test --reporter expanded
     ;;
   analyze)
@@ -35,6 +36,7 @@ case "$command" in
     flutter build apk --debug --target-platform android-arm64 "$@"
     python3 tool/reader/native_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     python3 tool/reader/ocr_package.py verify build/app/outputs/flutter-apk/app-debug.apk
+    python3 tool/reader/speech_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     ;;
   build-macos|run-macos|accept-macos)
     if [[ ${BOOKFIN_MACOS_SHELL:-} != 1 ]]; then

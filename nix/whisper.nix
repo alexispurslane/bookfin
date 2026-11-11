@@ -1,6 +1,6 @@
 { pkgs }:
-# whisper.cpp for the speech prototype of boo-snng
-# (tool/research/cross_edition/speech_probe). Not part of Bookfin.
+# whisper.cpp for Bookfin's speech search (boo-vh77, native/speech) and for
+# the speech prototype of boo-snng (tool/research/cross_edition/speech_probe).
 let
   # The commit of the ggerganov/whisper.cpp model repository on Hugging Face.
   revision = "5359861c739e955e79d9a303bcbc70fb988958b1";
@@ -10,11 +10,34 @@ let
       url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/${revision}/ggml-${name}.bin";
       inherit sha256;
     };
+  # whisper.cpp 1.9.5 of the pinned nixpkgs. The source carries its own
+  # ggml, so the Android, host and probe builds use the same code.
+  source = pkgs.whisper-cpp.src;
+  # The model that the app bundles: tiny.en at 5 bits, 32 MB
+  # (docs/plans/cross-edition-places.md, "Decision on speech search").
+  # tool/reader/speech_package.py pins its SHA-256 too.
+  bundledModel = model "tiny.en-q5_1" "0avwdkk937kh9xnmsfvbi1bl3pdxdia1pwj7gmmrpw6fy5k5fz67";
 in
 {
-  # whisper.cpp 1.9.5 of the pinned nixpkgs. The source carries its own
-  # ggml, so the Android and host builds of the probe use the same code.
-  source = pkgs.whisper-cpp.src;
+  inherit source bundledModel;
+  # bookfin_speech for the machine of the dev shell, so that tests run
+  # whisper and the window decoder. The macOS app does not bundle it yet
+  # (t2-0kl0).
+  hostLibrary = pkgs.stdenv.mkDerivation {
+    pname = "bookfin-speech-host";
+    version = "1.9.5";
+    src = ../native/speech;
+    nativeBuildInputs = [ pkgs.cmake ];
+    cmakeFlags = [
+      "-DWHISPER_SOURCE=${source}"
+      "-DCMAKE_BUILD_TYPE=Release"
+    ];
+    buildPhase = "cmake --build . --target bookfin_speech --parallel 4";
+    installPhase = ''
+      mkdir -p "$out/lib"
+      cp libbookfin_speech${pkgs.stdenv.hostPlatform.extensions.sharedLibrary} "$out/lib/"
+    '';
+  };
   # whisper-cli with Metal, for the reference transcripts on the Mac.
   host = pkgs.whisper-cpp;
   models = pkgs.linkFarm "whisper-models" [
@@ -24,7 +47,7 @@ in
     }
     {
       name = "ggml-tiny.en-q5_1.bin";
-      path = model "tiny.en-q5_1" "0avwdkk937kh9xnmsfvbi1bl3pdxdia1pwj7gmmrpw6fy5k5fz67";
+      path = bundledModel;
     }
     {
       name = "ggml-tiny.en-q8_0.bin";
