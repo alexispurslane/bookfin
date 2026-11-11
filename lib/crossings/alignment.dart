@@ -203,6 +203,14 @@ enum Refusal {
 
   /// The recording's length is unknown, so no place has a share of it.
   unmeasured,
+
+  /// The place lies more than one page outside every pair of matched
+  /// chapters: in text or audio that only one edition has, such as an
+  /// introduction that the narrator does not read.
+  outsideMatches,
+
+  /// This phone never measured the ebook, because it never downloaded it.
+  noOutline,
 }
 
 /// The alignment of an audio edition with an ebook edition: matched
