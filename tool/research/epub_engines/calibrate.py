@@ -14,11 +14,19 @@ def words(text):
     return re.findall(r"[a-z0-9]+", unicodedata.normalize("NFKD", text).lower())
 
 
-def has_source_excerpt(rendered, source):
+def has_source_excerpt(rendered, source, headings=()):
     shown = words(rendered)
     original = " " + " ".join(words(source)) + " "
-    return any(" " + " ".join(shown[index:index+8]) + " " in original
-               for index in range(len(shown)-7))
+    if any(" " + " ".join(shown[index:index+8]) + " " in original
+           for index in range(len(shown)-7)):
+        return True
+    for heading in headings:
+        title = words(heading)
+        if title and re.fullmatch(r"[ivxlcdm]+", title[0]):
+            title = title[1:]
+        if len(title) >= 3 and len(shown) <= len(title) + 2 and " " + " ".join(title) + " " in " " + " ".join(shown) + " ":
+            return True
+    return False
 
 
 def main():
@@ -60,12 +68,14 @@ def main():
             document = ElementTree.fromstring(archive.read(book["sections"][section]["path"]))
             body = next(element for element in document.iter() if element.tag.endswith("}body"))
             source = " ".join(body.itertext())
+            headings = [" ".join(element.itertext()) for element in body.iter()
+                        if element.tag.rsplit("}", 1)[-1] in ("h1", "h2", "h3", "hgroup")]
         picture = path.with_suffix(".png")
         ocr = subprocess.run(["tesseract", str(picture), "stdout", "--tessdata-dir", str(model), "-l", "eng", "--psm", "3"],
                              text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         path.with_suffix(".ocr.txt").write_text(ocr.stdout)
-        source_validated = has_source_excerpt(row["visible_text"], source)
-        ocr_validated = has_source_excerpt(ocr.stdout, source)
+        source_validated = has_source_excerpt(row["visible_text"], source, headings)
+        ocr_validated = has_source_excerpt(ocr.stdout, source, headings)
         image_reviewed = row["book"] != "illustrated" or reviews.get(key, {}).get("capture_sha256") == row["capture_sha256"]
         entry = {**row, "source_section": section, "source_path": book["sections"][section]["path"],
                  "source_validated": source_validated, "ocr_validated": ocr_validated,

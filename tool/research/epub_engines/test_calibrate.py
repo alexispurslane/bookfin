@@ -23,6 +23,15 @@ class SourceEvidenceTest(unittest.TestCase):
         source = "She said, ‘Alice was beginning to get very tired of sitting.’"
         self.assertTrue(has_source_excerpt("ALICE was beginning\nto get very tired of sitting", source))
 
+    def test_a_title_only_page_must_show_the_complete_independent_source_heading(self):
+        source = 'II The Pool of Tears Curiouser and curiouser! cried Alice.'
+        headings = ['II The Pool of Tears']
+        self.assertTrue(has_source_excerpt('II\nThe Pool of Tears', source, headings))
+        self.assertTrue(has_source_excerpt('THE POOL OF TEARS\nIl', source, headings))
+        self.assertFalse(has_source_excerpt('The Pool', source, headings))
+        self.assertFalse(has_source_excerpt('III A Caucus-Race', source, headings))
+        self.assertFalse(has_source_excerpt('The Pool of Tears', source))
+
     def test_reference_promotion_requires_successful_workload_assertions(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
