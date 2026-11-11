@@ -140,6 +140,8 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
           scale: View.of(context).devicePixelRatio,
         );
         final preparationSource = Timeline.now;
+        // The frames that painted since the request ran inside preparation.
+        final framesInPreparation = _painted.length;
         if (!identical(_pager!.shown.value!.picture, picture)) {
           await _until(() => identical(_pager!.shown.value!.picture, picture));
         }
@@ -201,6 +203,7 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
             'calibration_round_trip_ns': _clockRoundTrip,
           },
           'engine_ready_ns': ready,
+          'frames_in_preparation': framesInPreparation,
           if (frame != null) ...{
             'drawn_source_us': frame.timing.timestampInMicroseconds(
               ui.FramePhase.rasterFinish,

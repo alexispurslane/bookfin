@@ -238,8 +238,10 @@ public final class BenchmarkActivity extends Activity {
                     JSONObject metadata = new JSONObject(raw);
                     metadata.put("engine_ready_ns", ready);
                     metadata.put("visual_state_requested_ns", SystemClock.elapsedRealtimeNanos());
-                    // Chromium answers once the compositor frame that holds the page's
-                    // current DOM state was rasterized and submitted.
+                    // Android documents the answer as the moment when the DOM state at this
+                    // request is ready to be drawn in the WebView's next draw. Chromium answers
+                    // when the compositor activates the frame that holds that state, after its
+                    // tiles are rasterized (QueueReportTimeSwapPromise::DidActivate).
                     web.postVisualStateCallback(ready, new WebView.VisualStateCallback() {
                         @Override public void onComplete(long requestId) {
                             try {

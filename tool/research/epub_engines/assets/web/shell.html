@@ -3,6 +3,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <link rel="icon" href="data:,">
 <style>html,body{margin:0;padding:0;background:#f6efe2}#reader{width:360px;height:640px}</style>
+<script>
+// Watches animation frames: the frame that runs now, and how many frames ran
+// a callback. epub.js keeps its own reference to requestAnimationFrame when
+// it loads, so this script runs before epub.js. A frame runs from its first
+// callback until the next task, which comes after the frame's rendering, so
+// a preparation that ends just after a frame can still name that frame. Its
+// callbacks share one vsync time, which tells two frames apart.
+const frameWatch = {running: null, count: 0};
+(() => {
+    const request = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = callback => request(vsync => {
+        if (!frameWatch.running || frameWatch.running.vsync !== vsync) {
+            const frame = {vsync, start: performance.now()};
+            frameWatch.running = frame;
+            frameWatch.count++;
+            setTimeout(() => { if (frameWatch.running === frame) frameWatch.running = null; });
+        }
+        callback(vsync);
+    });
+})();
+</script>
 <script src="jszip.min.js"></script><script src="epub.min.js"></script></head>
 <body><div id="reader"></div><script>
 let book;
@@ -72,6 +93,15 @@ function reportFrame(eventId, describe) {
     });
 }
 
+// The animation frame that runs now, in browser and Android time, or nulls
+// between frames. If preparation ends inside a frame, that frame draws the
+// page.
+function runningFrame() {
+    const frame = frameWatch.running;
+    return {running_frame_vsync_source_ms:frame && frame.vsync, running_frame_vsync_ns:frame && androidTime(frame.vsync),
+        running_frame_start_source_ms:frame && frame.start, running_frame_start_ns:frame && androidTime(frame.start)};
+}
+
 async function resourcesReady() {
     const contents = rendition.getContents();
     await Promise.all(contents.map(content => content.document.fonts.ready));
@@ -82,13 +112,14 @@ async function resourcesReady() {
     return images;
 }
 
-async function report(operation, eventId, engineStart) {
+async function report(operation, eventId, engineStart, framesAtStart) {
     const operationReturned = performance.now();
     const decoded = await resourcesReady();
     const location = rendition.currentLocation();
     const contents = rendition.getContents();
     contents.forEach(content => content.document.documentElement.getBoundingClientRect());
     const preparation = performance.now();
+    const running = runningFrame();
     // Android requests the drawn-page callback before this call returns. A frame
     // whose vsync came first can still lead; collection counts later answers.
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
@@ -97,6 +128,7 @@ async function report(operation, eventId, engineStart) {
         engine_start_source_ms:engineStart, operation_returned_source_ms:operationReturned, preparation_source_ms:preparation,
         engine_start_ns:androidTime(engineStart), operation_returned_ns:androidTime(operationReturned),
         preparation_ns:androidTime(preparation), phase_clock:phaseClock,
+        ...running, frames_in_preparation:frameWatch.count - framesAtStart,
         page_images:decoded.map(image => image.getAttribute("src")),
         spine_index: location.start.index, href: location.start.href,
         end_cfi:location.end.cfi, displayed:location.start.displayed,
@@ -121,6 +153,7 @@ async function report(operation, eventId, engineStart) {
 
 async function execute(operation, eventId) {
     const engineStart = performance.now();
+    const framesAtStart = frameWatch.count;
     if (operation === "fresh_open" || operation === "cached_reopen") {
         textSize = 18;
         if (rendition) rendition.destroy();
@@ -160,7 +193,7 @@ async function execute(operation, eventId) {
     } else if (operation !== "paginate") {
         throw Error("Unknown operation: " + operation);
     }
-    await report(operation, eventId, engineStart);
+    await report(operation, eventId, engineStart, framesAtStart);
 }
 
 async function setSize(size) {

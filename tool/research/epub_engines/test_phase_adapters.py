@@ -1,16 +1,22 @@
 import json
 from pathlib import Path
+import re
 import subprocess
 import unittest
 
 
 def run_shell(program):
-    """Runs the web shell's script in Node with stubbed browser globals."""
+    """Runs the web shell's inline scripts in Node with stubbed browser
+    globals. runFrame(vsync) runs every animation frame callback requested
+    so far, as one browser frame."""
     shell = (Path(__file__).parent / "assets/web/shell.html").read_text()
-    script = shell.rsplit("<script>", 1)[1].split("</script>", 1)[0]
+    script = "\n".join(re.findall(r"<script>(.*?)</script>", shell, re.S))
     prelude = """
         let ticks = 0;
-        global.window = {};
+        global.window = global;
+        const animationFrames = [];
+        global.requestAnimationFrame = callback => { animationFrames.push(callback); };
+        const runFrame = vsync => animationFrames.splice(0).forEach(callback => callback(vsync));
         global.fetch = () => new Promise(() => {});
         global.performance = {now: () => Math.floor(++ticks / 10) / 10};
         global.Probe = {clockNs: () => String(1e9 + ticks * 10000)};
@@ -45,17 +51,15 @@ class WebPageImagesTest(unittest.TestCase):
 class WebDrawingFrameTest(unittest.TestCase):
     def test_the_first_frame_after_preparation_the_next_vsync_and_the_page_text_are_reported_after_two_frames(self):
         report = run_shell("""
-            const frames = [];
             const calls = [];
-            global.requestAnimationFrame = callback => { frames.push(callback); };
             Probe.frame = raw => calls.push(JSON.parse(raw));
             phaseClock = {offset_ns: 5000000};
             reportFrame("run/3", () => ({visible_text: "page"}));
-            const requested = frames.length;
+            const requested = animationFrames.length;
             ticks = 989;
-            if (frames[0]) frames[0](9.5);
+            runFrame(9.5);
             ticks = 1159;
-            if (frames[1]) frames[1](26.2);
+            runFrame(26.2);
             const duringFrames = calls.length;
             setTimeout(() => console.log(JSON.stringify({requested, duringFrames, calls})));
         """)
@@ -84,9 +88,84 @@ class WebDrawingFrameTest(unittest.TestCase):
             Probe.ready = () => order.push("ready");
             Probe.frame = () => { order.push("frame"); console.log(JSON.stringify(order)); };
             phaseClock = {offset_ns: 0};
-            report("page_turn", "run/3", 0);
+            report("page_turn", "run/3", 0, 0);
         """)
         self.assertEqual(order, ["ready", "text", "frame"])
+
+
+# A page whose preparation is one frame long: the box, section and place that
+# report() reads.
+PAGE = """
+    const box = {left: 0, top: 0, right: 360, bottom: 640};
+    const section = {sectionIndex: 0, range: () => ({startContainer: {textContent: "text"}, startOffset: 0,
+                                                     endContainer: {}, endOffset: 0,
+                                                     cloneRange() { return {setEnd() {}, toString: () => "page"}; }}),
+                     document: {fonts: {ready: Promise.resolve()}, images: [], body: {innerText: "text"},
+                                documentElement: {getBoundingClientRect: () => box},
+                                defaultView: {frameElement: {getBoundingClientRect: () => box}}}};
+    const place = {cfi: "epubcfi(/6/2)", index: 0, href: "a.xhtml", displayed: {page: 1, total: 2}};
+    rendition = {getContents: () => [section], views: () => [], currentLocation: () => ({start: place, end: place})};
+    global.document = {getElementById: () => ({getBoundingClientRect: () => box})};
+"""
+
+
+class WebFrameWatchTest(unittest.TestCase):
+    NO_FRAME = {"running_frame_vsync_source_ms": None, "running_frame_vsync_ns": None,
+                "running_frame_start_source_ms": None, "running_frame_start_ns": None}
+
+    def test_a_preparation_that_ends_inside_an_animation_frame_names_that_frame(self):
+        frames = run_shell("""
+            phaseClock = {offset_ns: 5000000};
+            const seen = [];
+            requestAnimationFrame(() => Promise.resolve().then(() => seen.push(runningFrame())));
+            ticks = 989;
+            runFrame(9.5);
+            setTimeout(() => { seen.push(runningFrame()); console.log(JSON.stringify(seen)); });
+        """)
+        self.assertEqual(frames, [{"running_frame_vsync_source_ms": 9.5, "running_frame_vsync_ns": 14_500_000,
+                                   "running_frame_start_source_ms": 9.9, "running_frame_start_ns": 14_900_000},
+                                  self.NO_FRAME])
+
+    def test_each_frame_counts_once_however_many_callbacks_it_runs(self):
+        count = run_shell("""
+            requestAnimationFrame(() => {});
+            requestAnimationFrame(() => {});
+            runFrame(9.5);
+            requestAnimationFrame(() => {});
+            runFrame(26.2);
+            console.log(JSON.stringify(frameWatch.count));
+        """)
+        self.assertEqual(count, 2)
+
+    def test_the_ready_report_names_the_running_frame_and_counts_the_frames_in_preparation(self):
+        reports = run_shell(PAGE + """
+            const readies = [];
+            Probe.ready = raw => readies.push(JSON.parse(raw));
+            Probe.frame = () => {};
+            phaseClock = {offset_ns: 0};
+            const before = frameWatch.count;
+            requestAnimationFrame(() => {});
+            runFrame(4.0);
+            requestAnimationFrame(() => report("page_turn", "run/3", 0, before));
+            runFrame(20.6);
+            setTimeout(() => console.log(JSON.stringify(readies.map(ready =>
+                [ready.frames_in_preparation, ready.running_frame_vsync_source_ms]))));
+        """)
+        self.assertEqual(reports, [[2, 20.6]])
+
+    def test_a_preparation_that_ends_between_frames_names_no_running_frame(self):
+        reports = run_shell(PAGE + """
+            const readies = [];
+            Probe.ready = raw => readies.push(JSON.parse(raw));
+            Probe.frame = () => {};
+            phaseClock = {offset_ns: 0};
+            requestAnimationFrame(() => {});
+            runFrame(4.0);
+            setTimeout(() => report("page_turn", "run/3", 0, frameWatch.count));
+            setTimeout(() => console.log(JSON.stringify(readies.map(ready =>
+                [ready.frames_in_preparation, ready.running_frame_vsync_ns]))));
+        """)
+        self.assertEqual(reports, [[0, None]])
 
 if __name__ == "__main__":
     unittest.main()

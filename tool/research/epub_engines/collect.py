@@ -8,18 +8,23 @@ from results import ENGINES, frame_wait, summarize
 from validation import certify
 
 
+def later_vsync(row):
+    """The first vsync after the start of the WebView frame that drew the
+    page, in Android nanoseconds. If preparation ended inside a running
+    frame, it is the measured vsync of the first frame after preparation.
+    Otherwise it follows the drawing frame's start, which can come after the
+    next vsync if the frame started late."""
+    if row.get("running_frame_vsync_ns") is not None:
+        return row["frame_vsync_ns"]
+    period = row["next_frame_vsync_ns"] - row["frame_vsync_ns"]
+    return row["frame_vsync_ns"] + period * (1 + max(0, row["frame_start_ns"] - row["frame_vsync_ns"]) // period)
+
+
 def answered_after_a_later_vsync(row):
     """Whether Android answered a WebView page after a vsync that followed the
     start of the frame that drew the page: the page reached Android's drawing
-    only at a later vsync. If preparation ended inside a running frame, the
-    later vsync is the measured one of the first frame after preparation.
-    Otherwise it is the first vsync after the drawing frame's start, which
-    can come after the next vsync if the frame started late."""
-    if row.get("running_frame_vsync_ns") is not None:
-        return row["drawn_ns"] > row["frame_vsync_ns"]
-    period = row["next_frame_vsync_ns"] - row["frame_vsync_ns"]
-    later = row["frame_vsync_ns"] + period * (1 + max(0, row["frame_start_ns"] - row["frame_vsync_ns"]) // period)
-    return row["drawn_ns"] > later
+    only at a later vsync."""
+    return row["drawn_ns"] > later_vsync(row)
 
 
 def accepted(row):

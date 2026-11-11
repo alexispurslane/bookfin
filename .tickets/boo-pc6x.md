@@ -2,7 +2,7 @@
 id: boo-pc6x
 status: in_progress
 deps: []
-links: []
+links: [t2-er9m]
 created: 2026-11-11T13:47:11Z
 type: task
 priority: 1
@@ -55,3 +55,7 @@ Headline run sym-drawn3 (host GPU, emulator-5558, shells of 584205e2, runner of 
 **2026-11-11T18:25:17Z**
 
 Drawn page now leaves out only the wait until the drawing frame's vsync; a WebView preparation that ends inside a running animation frame subtracts nothing; collect drops rows of jobs without an accepted quiet-host record and writes frames.json.
+
+**2026-11-11T18:34:32Z**
+
+WebView shell records the animation frame running at the end of preparation (frame watcher before epub.js) and both shells count frames inside preparation. Red: old shells fail the new device assertion; green: one job each for Bookfin prose, WebView prose/long/illustrated and KOReader prose. Reviewer finding D4 recorded as t2-er9m.

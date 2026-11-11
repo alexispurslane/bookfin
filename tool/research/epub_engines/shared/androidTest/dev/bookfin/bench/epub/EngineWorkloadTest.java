@@ -70,6 +70,11 @@ public final class EngineWorkloadTest {
                     assertFalse(row.getString("drawn_scope").isEmpty());
                 }
                 if (row.getString("engine").equals("koreader")) assertTrue("KOReader repeats its page draw after timing", row.getLong("redraw_duration_ns") > 0);
+                else assertTrue("Bookfin and WebView count the frames that ran inside preparation", row.optInt("frames_in_preparation", -1) >= 0);
+                if (step.getBoolean("measured") && row.getString("engine").equals("bookfin")) {
+                    JSONObject frame = row.getJSONObject("drawn_frame");
+                    assertTrue("The page's frame starts to build at or after its vsync", frame.getLong("vsyncStart_us") <= frame.getLong("buildStart_us"));
+                }
                 if (row.getString("engine").equals("webview")) assertTrue("WebView records the images it awaited for the shown page", row.has("page_images"));
                 if (row.getString("engine").equals("webview")) {
                     long shellDrawn = row.optLong("shell_drawn_ns", 0);
@@ -80,6 +85,11 @@ public final class EngineWorkloadTest {
                         row.getLong("preparation_ns") <= frameStart && frameStart < row.getLong("drawn_ns"));
                     assertTrue("WebView reports the vsync of the page's frame and of the next frame",
                         row.optLong("frame_vsync_ns", 0) > 0 && row.optLong("next_frame_vsync_ns", 0) > row.getLong("frame_vsync_ns"));
+                    boolean running = !row.isNull("running_frame_vsync_ns");
+                    assertEquals("WebView reports the vsync and the start of a running frame together", running, !row.isNull("running_frame_start_ns"));
+                    if (running) assertTrue("A running frame started at or after its vsync and before preparation ended",
+                        row.getLong("running_frame_vsync_ns") <= row.getLong("running_frame_start_ns")
+                            && row.getLong("running_frame_start_ns") <= row.getLong("preparation_ns"));
                 }
                 assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
                 assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns"));
