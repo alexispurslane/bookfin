@@ -32,8 +32,8 @@ void main() {
         in books.entries) {
       final publication = Publication.admit(made[name]!);
 
-      test('$name is still the book whose places epub.js saved', () {
-        expect(admittedFilesDigest(publication), record['identity']);
+      test('$name is still the book whose places epub.js saved', () async {
+        expect(await admittedFilesDigest(publication), record['identity']);
       });
 
       _placeTests(name, () => publication, record);

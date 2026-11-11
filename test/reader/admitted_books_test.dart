@@ -42,11 +42,17 @@ SourceFile _source(String container) => SourceFile(
 
 String _digest(List<int> bytes) => sha256.convert(bytes).toString();
 
-/// A download of [bytes] in a folder of its own, as Downloads keeps it.
+/// A download of [bytes] in a folder of its own, as Downloads keeps it. It
+/// is removed after the test, once the loads of it wrote their records, as
+/// a removal of a download waits for them.
 Future<File> _download(List<int> bytes) async {
   final folder = await Directory.systemTemp.createTemp('bookfin-admitted-');
-  addTearDown(() => folder.delete(recursive: true));
-  return File('${folder.path}/complete').writeAsBytes(bytes);
+  final file = File('${folder.path}/complete');
+  addTearDown(() async {
+    await AdmittedBooks.written(file);
+    await folder.delete(recursive: true);
+  });
+  return file.writeAsBytes(bytes);
 }
 
 /// The kept record of the download [file].
@@ -241,10 +247,10 @@ void main() {
 
       final digest = await downloads.readLocalFile(source, (file) async {
         await loadReadingDocument(file, source);
+        await derivedFilesWritten(file);
         return file.digest;
       });
       expect(digest, _digest(bytes));
-      await AdmittedBooks.written(File('${directory.path}/complete'));
       expect(
         await Directory('${directory.path}/.bookfin-admitted').exists(),
         isTrue,
@@ -491,6 +497,79 @@ void main() {
     });
   });
 
+  group('the images and fonts of a kept record (boo-yjq6)', () {
+    /// The position of [part] in [bytes].
+    int indexOf(List<int> bytes, List<int> part) {
+      search:
+      for (var at = 0; at + part.length <= bytes.length; at++) {
+        for (var index = 0; index < part.length; index++) {
+          if (bytes[at + index] != part[index]) continue search;
+        }
+        return at;
+      }
+      throw StateError('The part is not in the bytes.');
+    }
+
+    final dot = File('tool/research/readers/fixtures/dot.png')
+        .readAsBytesSync();
+
+    Future<Publication> admit(Uint8List bytes) async =>
+        Publication.admit(bytes, _digest(bytes));
+
+    test('a reopened book holds its documents, and reads an image from its '
+        'record only when a page asks for it', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      await _openHere(file, _digest(bytes), 'policy-1', () => admit(bytes));
+      final reopened = await _openHere(
+        file,
+        _digest(bytes),
+        'policy-1',
+        () => throw StateError('The book admitted again.'),
+      );
+      expect(reopened.resources, contains('OPS/one.xhtml'));
+      expect(reopened.resources, isNot(contains('OPS/dot.png')));
+
+      // The image's bytes in the record change after the reopen.
+      final record = await _record(file).readAsBytes();
+      final at = indexOf(record, dot);
+      final changed = [...dot]..last ^= 0xff;
+      record.setRange(at, at + dot.length, changed);
+      await _record(file).writeAsBytes(record);
+
+      expect(await reopened.bytesOf('OPS/dot.png'), changed);
+      reopened.checkInvariants();
+    });
+
+    test('an image whose record was replaced since the reopen reads as '
+        'missing, so its page draws its alt text', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      await _openHere(file, _digest(bytes), 'policy-1', () => admit(bytes));
+      final reopened = await _openHere(
+        file,
+        _digest(bytes),
+        'policy-1',
+        () => admit(bytes),
+      );
+
+      await _openHere(file, _digest(bytes), 'policy-2', () => admit(bytes));
+
+      expect(await reopened.bytesOf('OPS/dot.png'), isNull);
+    });
+
+    test(
+      'a book that was just admitted reads its images from memory',
+      () async {
+        final bytes = epub();
+        final publication = await admit(bytes);
+
+        expect(publication.resources, isNot(contains('OPS/dot.png')));
+        expect(await publication.bytesOf('OPS/dot.png'), dot);
+      },
+    );
+  });
+
   group('a MOBI', () {
     test('a second open reads the kept admitted book, without its '
         'conversion or its file', () async {
@@ -641,11 +720,11 @@ void main() {
 
   group('admission', () {
     test('keeps an image whose header is sound, without decoding its '
-        'pixels', () {
+        'pixels', () async {
       final publication = Publication.admit(_books['broken-image.epub']!.$1);
 
       expect(publication.imageSizes['OPS/plate.jpg'], (40, 30));
-      expect(publication.resources, contains('OPS/plate.jpg'));
+      expect(await publication.bytesOf('OPS/plate.jpg'), isNotNull);
     });
 
     for (final (name, image) in [

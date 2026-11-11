@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
@@ -273,6 +274,28 @@ void main() {
       downloads.dispose();
     },
   );
+
+  test('an open gives its book before the files that its load derived are '
+      'written, and keeps the download lent until they are', () async {
+    final downloads = _LendingFiles()
+      ..files[source.key] = Uri.file('/verified.epub');
+    final writes = Completer<void>();
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: (_) async => Publication.admit(epub()),
+      derivedWrites: (_) => writes.future,
+    );
+    await reader.bind(account(), [book]);
+
+    await reader.open(book, edition);
+
+    expect(reader.publication, isNotNull);
+    expect(downloads.lent, 1, reason: 'A removal must wait for the writes.');
+    writes.complete();
+    await pumpEventQueue();
+    expect(downloads.lent, 0);
+  });
 }
 
 class DeferredSearch implements DocumentNavigator {
@@ -302,4 +325,23 @@ class DeferredSearch implements DocumentNavigator {
     double width,
     Future<void> abandon,
   ) => Completer<PagePreview>().future;
+}
+
+/// Local files that count the reads that hold a download lent.
+class _LendingFiles extends LocalFiles {
+  var lent = 0;
+
+  @override
+  Future<T?> readLocalFile<T>(
+    SourceFile source,
+    Future<T> Function(VerifiedFile original) read, {
+    void Function(bool Function() live)? onOwnership,
+  }) async {
+    lent++;
+    try {
+      return await super.readLocalFile(source, read, onOwnership: onOwnership);
+    } finally {
+      lent--;
+    }
+  }
 }

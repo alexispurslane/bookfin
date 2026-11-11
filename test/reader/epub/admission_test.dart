@@ -226,7 +226,7 @@ const identities = {
 void main() {
   group('the admitted files of a known book stay the same', () {
     void pin(String name, Uint8List Function() bytes, {Object? skip}) {
-      test(name, () {
+      test(name, () async {
         final (digest, files) = identities[name]!;
         final publication = Publication.admit(bytes());
         expect(
@@ -235,7 +235,7 @@ void main() {
           reason: 'The book itself changed, so its files prove nothing.',
         );
         expect(
-          admittedFilesDigest(publication),
+          await admittedFilesDigest(publication),
           files,
           reason:
               'Admission output changed, and the saved places and bookmarks '
@@ -317,7 +317,7 @@ void main() {
     });
 
     test('of each showcase book is English, and the files that saved '
-        'places point into stay the same', () {
+        'places point into stay the same', () async {
       for (final (name, title, author, chapters) in [
         ('frost', 'First Frost', 'Mara Ellison', media.firstFrost),
         ('salt', 'Salt and Lantern', 'J. Okafor', media.saltAndLantern),
@@ -328,7 +328,7 @@ void main() {
         );
         expect(publication.language, 'en', reason: name);
         expect(
-          admittedFilesDigest(publication),
+          await admittedFilesDigest(publication),
           identities[name]!.$2,
           reason: name,
         );

@@ -182,7 +182,7 @@ void _image(
 /// its page source.
 Future<Map<String, ui.Image>> decodeImages(
   Iterable<LaidPage> pages,
-  Uint8List? Function(String path) bytes, {
+  Future<Uint8List?> Function(String path) bytes, {
   double scale = 1,
 }) async {
   final wanted = <String, ui.Rect>{};
@@ -201,19 +201,20 @@ Future<Map<String, ui.Image>> decodeImages(
   final images = <String, ui.Image>{};
   await Future.wait([
     for (final MapEntry(key: path, value: rect) in wanted.entries)
-      if (bytes(path) case final encoded?)
-        () async {
-          try {
-            final codec = await ui.instantiateImageCodec(
-              encoded,
-              targetWidth: (rect.width * scale).ceil().clamp(1, 4096),
-            );
-            images[path] = (await codec.getNextFrame()).image;
-            codec.dispose();
-          } catch (_) {
-            // A broken image draws as an outline.
-          }
-        }(),
+      () async {
+        try {
+          final encoded = await bytes(path);
+          if (encoded == null) return;
+          final codec = await ui.instantiateImageCodec(
+            encoded,
+            targetWidth: (rect.width * scale).ceil().clamp(1, 4096),
+          );
+          images[path] = (await codec.getNextFrame()).image;
+          codec.dispose();
+        } catch (_) {
+          // A broken image draws as an outline.
+        }
+      }(),
   ]);
   return images;
 }

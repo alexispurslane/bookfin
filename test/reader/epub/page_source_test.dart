@@ -635,11 +635,7 @@ void main() {
     );
 
     final prefix = 'bookfin-${publication.identity.substring(0, 12)}';
-    await BookFonts.load(
-      section.fonts,
-      (path) => publication.resources[path],
-      prefix,
-    );
+    await BookFonts.load(section.fonts, publication.bytesOf, prefix);
     final reference = layoutSection(section);
     final fallback = layoutSection(
       prepareSections([

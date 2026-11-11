@@ -39,8 +39,11 @@ Future<void> loadReaderFont() async {
 /// changes, so tests compare it with the identity that fixtures recorded,
 /// to show that admission still gives the files that their places point
 /// into.
-String admittedFilesDigest(Publication publication) {
-  final paths = publication.resources.keys.toList()..sort();
+Future<String> admittedFilesDigest(Publication publication) async {
+  final paths = publication.mediaTypes.keys.toList()..sort();
+  final files = {
+    for (final path in paths) path: (await publication.bytesOf(path))!,
+  };
   return sha256
       .convert(
         utf8.encode(
@@ -51,7 +54,7 @@ String admittedFilesDigest(Publication publication) {
               [
                 path,
                 publication.mediaTypes[path],
-                sha256.convert(publication.resources[path]!).toString(),
+                sha256.convert(files[path]!).toString(),
               ],
           ]),
         ),

@@ -95,6 +95,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           speed: speed,
           pageSettings: pageSettings,
           surveyStore: SurveyFiles.new,
+          derivedWrites: derivedFilesWritten,
         );
   // Crossings measures an ebook's outline only when the History first asks
   // for a landing in it, so no launch step waits for it.

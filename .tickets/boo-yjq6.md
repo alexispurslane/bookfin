@@ -43,3 +43,7 @@ Quick win 6 (start the open with this phone's last page settings): LastPageSetti
 **2026-11-11T21:17:30Z**
 
 Quick win 7 (the load returns before the record write ends): AdmittedBooks.load runs read/admit and the caller's use in one worker, gives the record as TransferableTypedData, and a worker of its own writes it atomically after; a later load of the same download waits for that write (AdmittedBooks.written). EPUB, MOBI and the outline measure all load this way. Host bench, median of 5: the write that left the path took prose 2.6, long 3.8, illustrated 8.7, divine 26.7, MOBI 2.9 ms; fresh load 82.8 -> 78.8, 119.6 -> 117.5, 100.9 -> 86.7, 261.6 -> 239.2, 330.8 -> 320.2 ms.
+
+**2026-11-11T21:34:09Z**
+
+Quick win 8 (images and fonts read from the record when a page draws them; Publication.revision 4): the record lists the text files first, so a reopen reads the header and the text block, and Publication.bytesOf reads an image or a font from its byte range while the record still begins with its key line. Host bench (admission_benchmark_test), cached open, median of 7, before -> after: prose 1.9 -> 1.9 ms, long 3.1 -> 2.3, illustrated 11.3 -> 2.9, divine 29.1 -> 7.0, MOBI 2.5 -> 1.6. Found and fixed a race from quick win 7: the record write ran outside the download's read, so a removal during it could fail or leave the record behind. The session now gets the book at once but keeps the download lent until the record is written (ReaderSession.derivedWrites), and the outline measure waits for it. Page map writes still run outside a read, as before.

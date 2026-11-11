@@ -1554,11 +1554,7 @@ class PageSource {
   /// Registers the embedded fonts that [prepared] draws with.
   Future<void> _loadFonts(PreparedSection prepared) async {
     if (prepared.fonts.isEmpty) return;
-    await BookFonts.load(
-      prepared.fonts,
-      (path) => _publication.resources[path],
-      _fontPrefix,
-    );
+    await BookFonts.load(prepared.fonts, _publication.bytesOf, _fontPrefix);
   }
 
   /// The size in pixels of the book's main text as pages of [settings]
@@ -1768,7 +1764,7 @@ class PageSource {
     if (_broken.contains(key)) return null;
     return _decoding[key] ??= () async {
       try {
-        final bytes = _publication.resources[key.path];
+        final bytes = await _publication.bytesOf(key.path);
         if (bytes == null) throw StateError('The image is missing.');
         final codec = await ui.instantiateImageCodec(
           bytes,

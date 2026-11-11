@@ -145,11 +145,7 @@ class _ProbeState extends State<_Probe> {
       );
       prepareMs += _ms(watch);
       if (prepared.fonts.isNotEmpty) {
-        await BookFonts.load(
-          prepared.fonts,
-          (path) => publication.resources[path],
-          prefix,
-        );
+        await BookFonts.load(prepared.fonts, publication.bytesOf, prefix);
       }
       watch = Stopwatch()..start();
       final run = LayoutRun(prepared);

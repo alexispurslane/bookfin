@@ -392,7 +392,7 @@ void main() {
           'session on a page whose first line holds it, and the store gets '
           'no changed record', () async {
         final publication = showcase(name);
-        expect(admittedFilesDigest(publication), record['identity']);
+        expect(await admittedFilesDigest(publication), record['identity']);
         final document = EpubDocument(publication);
         var opened = 0;
         for (final size in recordedSizes) {

@@ -599,7 +599,7 @@ class _BenchmarkState extends State<_Benchmark> {
     mark = Timeline.now;
     await BookFonts.load(
       prepared.fonts,
-      (font) => publication.resources[font],
+      publication.bytesOf,
       'bookfin-probe-${Timeline.now}',
     );
     final fonts = Timeline.now - mark;

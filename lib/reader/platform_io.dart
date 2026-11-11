@@ -43,6 +43,12 @@ Future<ReaderDocument> loadReadingDocument(
 Future<Publication> loadPublication(VerifiedFile original) async =>
     _admitted(await _verifiedFile(original.uri), original.digest);
 
+/// Completes once the files that the loads of the download [original]
+/// wrote beside it after they gave their book are written: the kept
+/// admitted book ([AdmittedBooks.written]).
+Future<void> derivedFilesWritten(VerifiedFile original) =>
+    AdmittedBooks.written(File.fromUri(original.uri));
+
 /// The text outline of the downloaded ebook [original] of [source]. One
 /// worker isolate reads the admitted book that Bookfin kept, or admits or
 /// converts the file and keeps it, as the reader does, and measures the
@@ -53,13 +59,17 @@ Future<TextOutline> measureDownloadedOutline(
   SourceFile source,
 ) async {
   final file = await _verifiedFile(original.uri);
-  return switch (await _containerOf(file, source)) {
+  final outline = await switch (await _containerOf(file, source)) {
     'pdf' => throw UnsupportedError(
       'Bookfin cannot measure the outline of a PDF yet.',
     ),
     'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
     _ => _readAdmitted(file, original.digest, measureTextOutline),
   };
+  // The caller's read of the download ends when this does, so the kept
+  // admitted book is written before a removal can start.
+  await AdmittedBooks.written(file);
+  return outline;
 }
 
 /// The container of the downloaded [file] of [source], in lowercase:

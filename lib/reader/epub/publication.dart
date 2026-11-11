@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -13,6 +14,7 @@ import 'zip.dart';
 class Publication {
   Publication._(
     this.resources,
+    this._files,
     this.mediaTypes,
     this.originalDigest,
     this.identity,
@@ -41,7 +43,15 @@ class Publication {
       "connect-src 'none'; frame-src 'none'; object-src 'none'; "
       "base-uri https://bookfin-publication.invalid; form-action 'none'";
 
+  /// The admitted files that are not images or fonts, by path: the
+  /// documents, the style sheets, the NCX, the package document and the
+  /// container. Images and fonts come through [bytesOf].
   final Map<String, Uint8List> resources;
+
+  /// The admitted images and fonts.
+  final _Files _files;
+
+  /// The media type of every admitted file, by path.
   final Map<String, String> mediaTypes;
   final String originalDigest;
 
@@ -99,8 +109,10 @@ class Publication {
   /// [mainTextSize] makes the cascade part of admission's output: raise the
   /// revision when a change to the cascade changes the main text size of a
   /// book. Revision 2 added [mainTextSize]. Revision 3 named [identity] by
-  /// the policy, the revision and the digest (boo-yjq6).
-  static const revision = 3;
+  /// the policy, the revision and the digest (boo-yjq6). Revision 4 put the
+  /// images and fonts after the other files, so that a reopen reads them
+  /// only when a page draws them (boo-yjq6).
+  static const revision = 4;
 
   /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
   /// digest that Downloads verified, so admission does not hash the bytes
@@ -125,12 +137,20 @@ class Publication {
   /// The publication as bytes that [decode] reads back into an equal
   /// publication: every admitted file and every admitted fact. The bytes
   /// come as parts to put one after the other, so that a caller copies
-  /// them once, into the buffer that it writes.
+  /// them once, into the buffer that it writes. Only a publication that
+  /// [admit] gave holds its images and fonts to encode.
   ///
   /// The bytes are the length of a JSON header as a 32-bit little-endian
-  /// number, that header in UTF-8, and then each resource's bytes in the
-  /// order that the header lists them.
+  /// number, that header in UTF-8, and then each file's bytes in the order
+  /// that the header lists them: first [resources], then the images and
+  /// fonts.
   List<Uint8List> encode() {
+    final files = switch (_files) {
+      _HeldFiles(:final bytes) => bytes,
+      _KeptFiles() => throw StateError(
+        'A reopened publication reads its images and fonts from its record.',
+      ),
+    };
     final header = utf8.encode(
       jsonEncode({
         'originalDigest': originalDigest,
@@ -151,7 +171,10 @@ class Publication {
             path: [width, height],
         },
         'resources': [
-          for (final MapEntry(key: path, value: bytes) in resources.entries)
+          for (final MapEntry(key: path, value: bytes) in [
+            ...resources.entries,
+            ...files.entries,
+          ])
             [path, mediaTypes[path], bytes.length],
         ],
       }),
@@ -161,33 +184,70 @@ class Publication {
         ..buffer.asByteData().setUint32(0, header.length, Endian.little),
       header,
       ...resources.values,
+      ...files.values,
     ];
   }
 
-  /// The publication that [encode] wrote into [bytes]. Each resource gets
-  /// bytes of its own, so a resource that goes to a worker does not take
-  /// the others along. Throws a [FormatException] when [bytes] are not such
-  /// a record, for example when they were cut short.
-  static Publication decode(Uint8List bytes) {
+  /// The publication that [encode] wrote into the file at [path] after the
+  /// bytes [head], from the position of [file], an open handle of it.
+  ///
+  /// It reads the header and [resources] now. Each image and font is read
+  /// from the file when [bytesOf] asks for it, while the file still begins
+  /// with [head]. Each resource gets bytes of its own, so a resource that
+  /// goes to a worker does not take the others along. Throws a
+  /// [FormatException] when the file does not hold such a publication, for
+  /// example when it was cut short, and a [FileSystemException] when it
+  /// cannot be read.
+  static Future<Publication> decode(
+    RandomAccessFile file, {
+    required String path,
+    required Uint8List head,
+  }) async {
     try {
-      final length = ByteData.sublistView(bytes).getUint32(0, Endian.little);
-      final header = jsonDecode(
-        utf8.decode(Uint8List.sublistView(bytes, 4, 4 + length)),
-      ) as Map<String, dynamic>;
+      final end = await file.length();
+      Future<Uint8List> read(int count) async {
+        final bytes = await file.read(count);
+        if (bytes.length != count) {
+          throw const FormatException('The record was cut short.');
+        }
+        return bytes;
+      }
+
+      final length = ByteData.sublistView(await read(4))
+          .getUint32(0, Endian.little);
+      final header =
+          jsonDecode(utf8.decode(await read(length))) as Map<String, dynamic>;
       List<String> strings(Object? value) =>
           List.unmodifiable((value as List).cast<String>());
+      final entries = [
+        for (final entry in header['resources'] as List)
+          ((entry as List)[0] as String, entry[1] as String, entry[2] as int),
+      ];
+      final types = {for (final (path, type, _) in entries) path: type};
+      final texts = entries.takeWhile((entry) => !_binary(entry.$2)).toList();
+      final kept = entries.skip(texts.length).toList();
+      if (types.length != entries.length ||
+          entries.any((entry) => entry.$3 < 0) ||
+          kept.any((entry) => !_binary(entry.$2))) {
+        throw const FormatException('The record lists its files wrongly.');
+      }
+      final block = await read(
+        texts.fold(0, (total, entry) => total + entry.$3),
+      );
       final resources = <String, Uint8List>{};
-      final types = <String, String>{};
-      var offset = 4 + length;
-      for (final entry in header['resources'] as List) {
-        final path = (entry as List)[0] as String;
-        final size = entry[2] as int;
-        types[path] = entry[1] as String;
-        resources[path] = Uint8List.fromList(
-          Uint8List.sublistView(bytes, offset, offset += size),
+      var offset = 0;
+      for (final (name, _, size) in texts) {
+        resources[name] = Uint8List.fromList(
+          Uint8List.sublistView(block, offset, offset += size),
         ).asUnmodifiableView();
       }
-      if (offset != bytes.length || resources.length != types.length) {
+      final ranges = <String, (int, int)>{};
+      var position = await file.position();
+      for (final (name, _, size) in kept) {
+        ranges[name] = (position, size);
+        position += size;
+      }
+      if (position != end) {
         throw const FormatException('The record has bytes left over.');
       }
       final spine = strings(header['spine']);
@@ -198,6 +258,7 @@ class Publication {
       }
       return Publication._(
         Map.unmodifiable(resources),
+        _KeptFiles(path, head, Map.unmodifiable(ranges)),
         Map.unmodifiable({
           for (final path in types.keys.toList()..sort()) path: types[path]!,
         }),
@@ -226,9 +287,26 @@ class Publication {
       );
     } on FormatException {
       rethrow;
+    } on FileSystemException {
+      rethrow;
     } catch (_) {
       throw const FormatException('The kept admitted book is unreadable.');
     }
+  }
+
+  /// The bytes of the admitted file at [path], or null when the book did
+  /// not admit it.
+  ///
+  /// An image or a font of a reopened book comes from the book's kept
+  /// record, so the reopen did not read it. It is null when the record
+  /// changed since the reopen or cannot be read: the page then draws the
+  /// image's alt text, or the text in the reader font.
+  Future<Uint8List?> bytesOf(String path) async {
+    if (resources[path] case final bytes?) return bytes;
+    return switch (_files) {
+      _HeldFiles(:final bytes) => bytes[path],
+      final _KeptFiles kept => kept.read(path),
+    };
   }
 
   String? pathFor(Uri url) {
@@ -242,7 +320,7 @@ class Publication {
     final segments = url.pathSegments;
     if (segments.length < 2 || segments.first != identity) return null;
     final path = segments.skip(1).join('/');
-    return _canonical(path) && resources.containsKey(path) ? path : null;
+    return _canonical(path) && mediaTypes.containsKey(path) ? path : null;
   }
 
   bool permitsNavigation(Uri url) {
@@ -251,7 +329,8 @@ class Publication {
   }
 
   /// Throws when one of these invariants fails:
-  /// - every resource is canonical, within the size limits and typed;
+  /// - every admitted file is canonical, within the size limits and typed;
+  /// - [resources] holds every admitted file but the images and fonts;
   /// - every spine path is an admitted document;
   /// - [bookStyles] holds exactly the admitted style sheets;
   /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
@@ -270,13 +349,22 @@ class Publication {
     }
 
     final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
-    if (resources.values.any((bytes) => bytes.length > maxResourceBytes) ||
-        resources.values.fold<int>(0, (total, bytes) => total + bytes.length) >
+    final sizes = {
+      for (final MapEntry(key: path, value: bytes) in resources.entries)
+        path: bytes.length,
+      ..._files.sizes,
+    };
+    if (sizes.values.any((size) => size > maxResourceBytes) ||
+        sizes.values.fold<int>(0, (total, size) => total + size) >
             maxExpandedBytes ||
-        resources.keys.any((path) => !_canonical(path)) ||
+        sizes.keys.any((path) => !_canonical(path)) ||
         !resources.keys.toSet().containsAll(spine) ||
         spine.any((path) => !_documents.contains(mediaTypes[path])) ||
-        resources.keys.toSet().difference(mediaTypes.keys.toSet()).isNotEmpty) {
+        sizes.length != resources.length + _files.sizes.length ||
+        sizes.length != mediaTypes.length ||
+        !mediaTypes.keys.every(sizes.containsKey) ||
+        resources.keys.any((path) => _binary(mediaTypes[path]!)) ||
+        _files.sizes.keys.any((path) => !_binary(mediaTypes[path]!))) {
       throw StateError(
         'Publication resources, reading order, and media types disagree.',
       );
@@ -315,6 +403,70 @@ class Publication {
 /// place does not match on it (see ReaderDocument.restore). The page maps
 /// of a book are keyed by it, so a book lays them out again once after a
 /// new revision.
+/// Whether a file of [mime] is an image or a font: a file that layout does
+/// not read, which a reopened book reads only when a page draws it.
+bool _binary(String mime) =>
+    mime.startsWith('image/') || mime.startsWith('font/');
+
+/// The admitted images and fonts of a publication: held in memory after
+/// admission, or kept in the book's record after a reopen.
+sealed class _Files {
+  /// The size in bytes of each file, by path.
+  Map<String, int> get sizes;
+}
+
+/// The images and fonts that admission holds in memory.
+final class _HeldFiles extends _Files {
+  _HeldFiles(this.bytes);
+  final Map<String, Uint8List> bytes;
+
+  @override
+  Map<String, int> get sizes => {
+    for (final MapEntry(key: path, value: file) in bytes.entries)
+      path: file.length,
+  };
+}
+
+/// The images and fonts of a reopened book: ranges of its record at [path],
+/// which hold them while the file begins with [head].
+final class _KeptFiles extends _Files {
+  _KeptFiles(this.path, this.head, this.ranges);
+  final String path;
+  final Uint8List head;
+
+  /// The start and the length of each file in the record, by path.
+  final Map<String, (int, int)> ranges;
+
+  @override
+  Map<String, int> get sizes => {
+    for (final MapEntry(key: name, value: (_, length)) in ranges.entries)
+      name: length,
+  };
+
+  /// The file [name] from the record, or null when the book has no such
+  /// file, or the record changed or cannot be read.
+  Future<Uint8List?> read(String name) async {
+    final (start, length) = ranges[name] ?? (-1, 0);
+    if (start < 0) return null;
+    RandomAccessFile? file;
+    try {
+      file = await File(path).open();
+      final begins = await file.read(head.length);
+      if (begins.length != head.length) return null;
+      for (var index = 0; index < head.length; index++) {
+        if (begins[index] != head[index]) return null;
+      }
+      await file.setPosition(start);
+      final bytes = await file.read(length);
+      return bytes.length == length ? bytes : null;
+    } on FileSystemException {
+      return null;
+    } finally {
+      await file?.close();
+    }
+  }
+}
+
 String _identityOf(String digest) => sha256
     .convert(
       utf8.encode('${Publication.policy}/${Publication.revision}/$digest'),
@@ -726,7 +878,16 @@ class _Admission {
         if (types[path] == 'text/css') path: styles[path]!,
     });
     return Publication._(
-      Map.unmodifiable(output),
+      Map.unmodifiable({
+        for (final path in paths)
+          if (!_binary(types[path]!)) path: output[path]!,
+      }),
+      _HeldFiles(
+        Map.unmodifiable({
+          for (final path in paths)
+            if (_binary(types[path]!)) path: output[path]!,
+        }),
+      ),
       Map.unmodifiable({for (final path in paths) path: types[path]!}),
       digest,
       _identityOf(digest),

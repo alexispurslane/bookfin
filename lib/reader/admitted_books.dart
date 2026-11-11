@@ -151,34 +151,47 @@ abstract final class AdmittedBooks {
   /// The publication of [record] when its key is [key], or null. A record
   /// with another key is a book that changed or an older policy, which the
   /// next write replaces. A record that cannot be read is set aside.
+  ///
+  /// The publication reads its images and fonts from [record] later, while
+  /// the record still begins with its key line.
   static Future<Publication?> _kept(File record, List<int> key) async {
-    final Uint8List bytes;
+    final RandomAccessFile file;
     try {
       if (await FileSystemEntity.type(record.path, followLinks: false) !=
           FileSystemEntityType.file) {
         return null;
       }
-      bytes = await record.readAsBytes();
+      file = await record.open();
     } on FileSystemException {
       return null;
     }
     try {
-      final end = bytes.indexOf(0x0a);
-      if (end < 0 || end > 1024) {
-        throw const FormatException('The record has no key.');
+      try {
+        final start = await file.read(1025);
+        final end = start.indexOf(0x0a);
+        if (end < 0) throw const FormatException('The record has no key.');
+        final kept = utf8.decode(Uint8List.sublistView(start, 0, end));
+        if (jsonDecode(kept) is! List) {
+          throw const FormatException('The record has no key.');
+        }
+        if (!listEquals(utf8.encode(kept), key)) return null;
+        await file.setPosition(end + 1);
+        return await Publication.decode(
+          file,
+          path: record.path,
+          head: Uint8List.sublistView(start, 0, end + 1),
+        );
+      } finally {
+        await file.close();
       }
-      final kept = utf8.decode(Uint8List.sublistView(bytes, 0, end));
-      if (jsonDecode(kept) is! List) {
-        throw const FormatException('The record has no key.');
-      }
-      if (!listEquals(utf8.encode(kept), key)) return null;
-      return Publication.decode(Uint8List.sublistView(bytes, end + 1));
     } on FormatException {
       try {
         await record.rename('${record.path}.unreadable');
       } on FileSystemException {
         // The next write replaces the record.
       }
+      return null;
+    } on FileSystemException {
       return null;
     }
   }

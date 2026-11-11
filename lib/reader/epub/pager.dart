@@ -322,7 +322,7 @@ class EpubPager implements DocumentNavigator {
         ui.PlatformDispatcher.instance.implicitView?.devicePixelRatio ?? 1;
     final images = await decodeImages(
       [page],
-      (path) => _publication.resources[path],
+      _publication.bytesOf,
       scale: scale,
     );
     return LaidNote._(

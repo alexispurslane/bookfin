@@ -122,14 +122,16 @@ void main() {
   });
 
   test('an admitted publication keeps its resources unchanged and its identity '
-      'follows its content', () {
+      'follows its content', () async {
     final publication = Publication.admit(epub());
+    final dot = (await publication.bytesOf('OPS/dot.png'))!;
     expect(
-      publication.resources['OPS/dot.png'],
+      dot,
       File('tool/research/readers/fixtures/dot.png').readAsBytesSync(),
     );
+    expect(() => dot[0] = 0, throwsUnsupportedError);
     expect(
-      () => publication.resources['OPS/dot.png']![0] = 0,
+      () => publication.resources['OPS/one.xhtml']![0] = 0,
       throwsUnsupportedError,
     );
     expect(Publication.admit(epub()).identity, publication.identity);
@@ -142,7 +144,7 @@ void main() {
     publication.checkInvariants();
   });
 
-  test('local styles, PNG, fonts, headings, and encoded destination fragments survive', () {
+  test('local styles, PNG, fonts, headings, and encoded destination fragments survive', () async {
     final font = File('docs/mockups/fonts/source-serif-4-latin.woff2')
         .readAsBytesSync();
     final opf = utf8
@@ -175,14 +177,14 @@ void main() {
       'Sepia square',
     );
     expect(document.findAllElements('h1').single.getAttribute('id'), 'café');
-    expect(publication.resources['OPS/Fonts/font.woff2'], font);
+    expect(await publication.bytesOf('OPS/Fonts/font.woff2'), font);
     expect(
       utf8.decode(publication.resources['OPS/book.css']!),
       contains('font-family:Book'),
     );
   });
 
-  test('only the exact local single-JPEG SVG wrapper uses a raster fallback', () {
+  test('only the exact local single-JPEG SVG wrapper uses a raster fallback', () async {
     final jpeg = raster.encodeJpg(
       raster.Image(width: 2, height: 3)..setPixelRgb(0, 0, 255, 0, 0),
     );
@@ -210,7 +212,7 @@ void main() {
         ),
       );
       final chapter = utf8.decode(publication.resources['OPS/one.xhtml']!);
-      expect(publication.resources['OPS/cover.jpg'], jpeg);
+      expect(await publication.bytesOf('OPS/cover.jpg'), jpeg);
       expect(chapter.contains('src="cover.jpg"'), svg == wrapper);
       expect(
         chapter.contains('Unsupported image: Cover drawing'),

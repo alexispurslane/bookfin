@@ -38,7 +38,7 @@ class CorpusBook {
 
   int get sections => publication.spine.length;
 
-  Uint8List? resource(String path) => publication.resources[path];
+  Future<Uint8List?> resource(String path) => publication.bytesOf(path);
 
   /// What preparing section [index] reads.
   SectionSource source(int index) {
