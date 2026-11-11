@@ -433,3 +433,14 @@ If the answers pick speech, design B adds five tickets. All of them follow step 
 - Marks of the other edition's bookmarks on the scrub bar or the position slider.
 - Whole-book alignment in the background and highlighting of the spoken word while listening.
 - Keeping the two editions' places in step automatically. The user's rule is that a jump never changes the other edition's place.
+
+## Decision (user, 2026-11-11)
+
+1. Listening place into the ebook: design A, matched chapters. The landing
+   is labeled as approximate ("about p. 134").
+2. Reading place into the audiobook: build design A now. The user decides
+   on speech (design B) after using A on real books.
+3. Chapters that cannot be matched: Go to switches screens as today, and
+   the entry says why before the tap.
+
+Design B is not scheduled. It stays recorded here for the later decision.

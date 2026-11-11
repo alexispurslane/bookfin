@@ -27,3 +27,7 @@ Design written in docs/plans/cross-edition-places.md: two designs. A pairs audio
 Measured on public data (155 LibriVox recordings against 39 corpus EPUB editions, 206 pairings): 175 pairings anchor at least 90% of their sections, and 8 have too few anchors, so A refuses them. For one-reader pairings, A misses a hidden chapter start by 0.36 pages (18 s) at the median. At the 90th percentile, it misses by 1.39 pages (69 s). A whole-book share gives 5.2 and 22.4 pages. A whisper.cpp tiny.en probe found all 12 test windows in the right place, at 0.7 to 0.9 s per window on the Mac CPU.
 
 Open questions for the user: placement in the reader, placement in the player, and books whose chapters do not match. New ticket t3-a4fi measures the real library, which needs a sign-in. The design does not depend on boo-hyl4's choice buttons: the timeline gets one input, landingOf(place).
+
+**2026-11-11T15:43:57Z**
+
+User decisions 2026-11-11: A (matched chapters) for audio to text; A now for text to audio, speech decided after use; unmatched chapters switch screens and say why. Implementation of design A delegated.
