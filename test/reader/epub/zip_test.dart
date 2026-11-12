@@ -230,6 +230,23 @@ void main() {
     );
   });
 
+  test('a book whose every file names its DEFLATE level and a UTF-8 name '
+      'opens as it is (t5-gk30)', () {
+    // One of the user's books sets flags 0x0802 on every file, the stored
+    // ones too. Before t5-gk30 this refused the whole book.
+    var book = epub();
+    for (final file in ZipDecoder().decodeBytes(book).files) {
+      book = withFlags(book, file.name, 0x0802);
+    }
+
+    final publication = Publication.admit(book);
+
+    expect(
+      utf8.decode(publication.textFiles['OPS/one.xhtml']!),
+      contains('A river'),
+    );
+  });
+
   test('an encrypted file shows the note instead of its bytes (t5-gk30)', () {
     final publication = Publication.admit(
       withFlags(epub(), 'OPS/one.xhtml', 0x0001),
