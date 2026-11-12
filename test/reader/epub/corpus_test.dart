@@ -14,6 +14,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/mobi.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -113,8 +114,7 @@ Future<CorpusBook> _open(CorpusEntry book, Uint8List bytes) async =>
     book.format == 'azw3'
     ? CorpusBook(
         (await importMobi(
-          book.file,
-          sha256.convert(bytes).toString(),
+          VerifiedFile(book.file.uri, sha256.convert(bytes).toString()),
         )).publication,
       )
     : CorpusBook.open(bytes);

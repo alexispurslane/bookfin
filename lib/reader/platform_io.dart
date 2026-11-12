@@ -20,7 +20,7 @@ Future<ReaderDocument> loadReadingDocument(
   final file = await _verifiedFile(original.uri);
   final container = await _containerOf(file, source);
   if (container == 'mobi' || container == 'azw3') {
-    return importMobi(file, original.digest);
+    return importMobi(original);
   }
   if (container == 'pdf') {
     return PdfRuntime.instance.open(
@@ -33,21 +33,44 @@ Future<ReaderDocument> loadReadingDocument(
   // The fingerprint names the page maps' key. Its first call asks the
   // platform, beside the admission.
   final engine = textEngineFingerprint();
-  final publication = await _admitted(file, original.digest);
+  final publication = await _admitted(original);
   return EpubDocument(
     publication,
     pageMaps: BookPageMaps(file, book: publication.identity, engine: engine),
   );
 }
 
-Future<Publication> loadPublication(VerifiedFile original) async =>
-    _admitted(await _verifiedFile(original.uri), original.digest);
+Future<Publication> loadPublication(VerifiedFile original) async {
+  await _verifiedFile(original.uri);
+  return _admitted(original);
+}
 
-/// Completes once the files that the loads of the download [original]
-/// wrote beside it after they gave their book are written: the kept
-/// admitted book ([AdmittedBooks.written]).
-Future<void> derivedFilesWritten(VerifiedFile original) =>
-    AdmittedBooks.written(File.fromUri(original.uri));
+/// Prepares the downloaded ebook [original] of [source] for reading, so
+/// that its first open reads the admitted book that Bookfin keeps: it
+/// admits an EPUB, or converts a MOBI to EPUB and admits that, and keeps
+/// the results beside the download ([AdmittedBooks.prepare]). A book whose
+/// results are kept costs a read of their key. A PDF needs nothing.
+/// Downloads runs it under a hold of the download when the download
+/// completes and at launch. Throws when the book cannot be admitted: its
+/// open then reports why.
+Future<void> prepareDownloadedBook(
+  VerifiedFile original,
+  SourceFile source,
+) async {
+  final file = await _verifiedFile(original.uri);
+  switch (await _containerOf(file, source)) {
+    case 'pdf':
+      return;
+    case 'mobi' || 'azw3':
+      await prepareMobi(original);
+    default:
+      await AdmittedBooks.prepare(
+        original,
+        Publication.policy,
+        _admission(original),
+      );
+  }
+}
 
 /// The text outline of the downloaded ebook [original] of [source]. One
 /// worker isolate reads the admitted book that Bookfin kept, or admits or
@@ -60,15 +83,11 @@ Future<TextOutline> measureDownloadedOutline(
   SourceFile source,
 ) async {
   final file = await _verifiedFile(original.uri);
-  final outline = await switch (await _containerOf(file, source)) {
+  return switch (await _containerOf(file, source)) {
     'pdf' => PdfRuntime.instance.measureOutline(file.path),
-    'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
-    _ => _readAdmitted(file, original.digest, measureTextOutline),
+    'mobi' || 'azw3' => readMobi(original, measureTextOutline),
+    _ => _readAdmitted(original, measureTextOutline),
   };
-  // The caller's read of the download ends when this does, so the kept
-  // admitted book is written before a removal can start.
-  await AdmittedBooks.written(file);
-  return outline;
 }
 
 /// The container of the downloaded [file] of [source], in lowercase:
@@ -92,27 +111,28 @@ Future<String> _containerOf(File file, SourceFile source) async {
   }
 }
 
-/// The admitted publication of the downloaded EPUB [file], whose SHA-256 is
-/// [digest]. A worker reads the admitted book that Bookfin kept, or admits
-/// the file and keeps it.
-Future<Publication> _admitted(File file, String digest) =>
-    _readAdmitted(file, digest, (publication) => publication);
+/// The admitted publication of the downloaded EPUB [original]. A worker
+/// reads the admitted book that Bookfin kept, or admits the file and keeps
+/// it.
+Future<Publication> _admitted(VerifiedFile original) =>
+    _readAdmitted(original, (publication) => publication);
 
 /// What [use] gives for the admitted publication of [_admitted], run in the
 /// same worker, so that only its result comes back.
 Future<T> _readAdmitted<T>(
-  File file,
-  String digest,
+  VerifiedFile original,
   T Function(Publication publication) use,
-) {
-  final path = file.path;
-  return AdmittedBooks.load(
-    file,
-    digest,
-    Publication.policy,
-    () async => Publication.admit(await File(path).readAsBytes(), digest),
-    use,
-  );
+) =>
+    AdmittedBooks.load(original, Publication.policy, _admission(original), use);
+
+/// The admission of the downloaded EPUB [original], which can run in a
+/// worker. It is made in a scope of its own, so that it captures only the
+/// file's path and digest, and not the lent file (see `_conversion` in
+/// mobi.dart).
+Future<Publication> Function() _admission(VerifiedFile original) {
+  final path = File.fromUri(original.uri).path;
+  final digest = original.digest;
+  return () async => Publication.admit(await File(path).readAsBytes(), digest);
 }
 
 Future<File> _verifiedFile(Uri uri) async {

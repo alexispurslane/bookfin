@@ -18,9 +18,22 @@ class LocalDownloads extends Downloads {
     required this.freeBytes,
     required MediaPolicy policy,
     this.clock = DateTime.now,
+    this.prepare,
   }) : super(policy) {
     policy.addListener(_networkChanged);
   }
+
+  /// Prepares each saved file of a text edition for reading, such as by
+  /// admitting the ebook and keeping the result beside it: once its
+  /// download completes, and once after each restoration of the saved
+  /// files, as at launch. Preparations run one at a time, in the
+  /// background. Each one runs under a hold of its download
+  /// ([VerifiedFile.hold]), so a removal of the download waits for it, and
+  /// other reads do not. A preparation that fails changes nothing that
+  /// Downloads shows: the reader meets the same failure when it opens the
+  /// file. Null prepares nothing.
+  final Future<void> Function(VerifiedFile original, SourceFile source)?
+  prepare;
 
   final Directory root;
   final Future<int> Function() freeBytes;
@@ -46,6 +59,17 @@ class LocalDownloads extends Downloads {
   Future<void> _commands = Future.value();
   final Set<Future<void>> _operations = {};
   final Map<String, Object> _reading = {};
+
+  /// The work that reads hold ([VerifiedFile.hold]) and that still runs, by
+  /// source id. A removal of the source's files waits for it.
+  final Map<String, Set<Future<void>>> _held = {};
+
+  /// How many removals of each source id began. A read's holds run only
+  /// while no removal of its source began since the read started.
+  final Map<String, int> _removals = {};
+
+  /// The end of the last preparation that waits or runs ([prepare]).
+  Future<void> _preparing = Future.value();
   HttpClient? _client;
   String? _active;
   Completer<void>? _activeStopped;
@@ -289,6 +313,9 @@ class LocalDownloads extends Downloads {
     _ready = true;
     _emit();
     _schedule();
+    for (final record in _records.values) {
+      if (record.complete) _prepareLater(record.source);
+    }
   }
 
   Future<void> _safeDirectory(Directory directory) async {
@@ -616,14 +643,33 @@ class LocalDownloads extends Downloads {
 
   @override
   Future<void> remove(Edition edition) {
-    if (_reading.isNotEmpty) {
-      try {
-        _current(edition).forEach(_reading.remove);
-      } on StateError {
-        return _command(() => _remove(edition));
-      }
+    try {
+      _current(edition).forEach(_beginRemoval);
+    } on StateError {
+      // The removal command reports it.
     }
     return _command(() => _remove(edition));
+  }
+
+  /// Notes that a removal of source [id] began: its reads lose their
+  /// ownership, and work that they hold from now on does not run.
+  void _beginRemoval(String id) {
+    _reading.remove(id);
+    _removals[id] = (_removals[id] ?? 0) + 1;
+  }
+
+  /// Completes once no work that reads of source [id] hold runs. The
+  /// removal of the source began, so no such work starts.
+  Future<void> _heldEnded(String id) async {
+    _beginRemoval(id);
+    // Held work can hold more work before it ends.
+    for (
+      var held = _held[id]?.toList();
+      held != null && held.isNotEmpty;
+      held = _held[id]?.toList()
+    ) {
+      await Future.wait(held);
+    }
   }
 
   Future<void> _remove(Edition edition) async {
@@ -638,6 +684,10 @@ class LocalDownloads extends Downloads {
       }
     }
 
+    guard();
+    for (final id in ids) {
+      await _heldEnded(id);
+    }
     guard();
     try {
       for (final record in records) {
@@ -797,7 +847,12 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<void> removeRetained(RetainedDownload download) => _command(() async {
+  Future<void> removeRetained(RetainedDownload download) {
+    if (_idPattern.hasMatch(download.id)) _beginRemoval(download.id);
+    return _command(() => _removeRetained(download));
+  }
+
+  Future<void> _removeRetained(RetainedDownload download) async {
     final generation = _generation;
     void guard() {
       if (_disposed ||
@@ -824,12 +879,14 @@ class LocalDownloads extends Downloads {
         identity.revision != download.revision) {
       throw StateError('The saved download identity cannot be verified.');
     }
+    await _heldEnded(download.id);
+    guard();
     try {
       await _deleteOwnedFiles(directory, guard);
     } finally {
       if (generation == _generation) _emit();
     }
-  });
+  }
 
   Future<void> _deleteOwnedFiles(
     Directory directory,
@@ -893,9 +950,17 @@ class LocalDownloads extends Downloads {
               generation == _generation &&
               identical(_reading[id], token),
         );
+        final lend = _Lend(id, generation, _removals[id] ?? 0);
         try {
-          result = await read(file);
+          result = await read(
+            VerifiedFile.lent(
+              file.uri,
+              file.digest,
+              hold: (work) => _hold(lend, work),
+            ),
+          );
         } finally {
+          lend.reading = false;
           if (identical(_reading[id], token)) _reading.remove(id);
         }
       });
@@ -907,6 +972,61 @@ class LocalDownloads extends Downloads {
       }
     }
   }
+
+  /// Runs [work] under [lend], as [VerifiedFile.hold] describes.
+  Future<void> _hold(_Lend lend, Future<void> Function() work) {
+    if (!lend.reading && lend.holding == 0) {
+      throw StateError('A download can be held only while it is lent.');
+    }
+    if (_disposed ||
+        lend.generation != _generation ||
+        (_removals[lend.id] ?? 0) != lend.removals) {
+      return Future.value();
+    }
+    lend.holding++;
+    final held = Future.sync(work);
+    final ended = held.then<void>((_) {}, onError: (Object _) {});
+    final holds = _held.putIfAbsent(lend.id, () => {})..add(ended);
+    unawaited(
+      ended.whenComplete(() {
+        lend.holding--;
+        holds.remove(ended);
+        if (holds.isEmpty && identical(_held[lend.id], holds)) {
+          _held.remove(lend.id);
+        }
+      }),
+    );
+    return held;
+  }
+
+  /// Prepares the saved file of [source] after the preparations before it,
+  /// when it is a file of a text edition (see [prepare]).
+  void _prepareLater(SourceFile source) {
+    final prepare = this.prepare;
+    if (prepare == null || !_ofText(_id(source))) return;
+    _preparing = _preparing.then((_) async {
+      if (_disposed) return;
+      try {
+        // The read ends once the preparation started, so other reads wait
+        // only for its lookup.
+        final started = await readLocalFile(
+          source,
+          (original) async =>
+              (held: original.hold(() => prepare(original, source))),
+        );
+        await started?.held;
+      } catch (_) {
+        // The reader prepares the file when it opens it.
+      }
+    });
+  }
+
+  /// Whether a bound text edition holds source [id].
+  bool _ofText(String id) => _editions.values.any(
+    (edition) =>
+        edition.kind == EditionKind.text &&
+        (_editionSources[edition.id]?.contains(id) ?? false),
+  );
 
   /// Finds the verified saved file of [source] in the catalog that is current
   /// when the lookup ends. A bind during the lookup that keeps the source
@@ -1044,6 +1164,7 @@ class LocalDownloads extends Downloads {
         record.error = null;
         record.complete = true;
         await _persist(record);
+        if (record.complete) _prepareLater(record.source);
       } catch (error) {
         if (!_disposed &&
             generation == _generation &&
@@ -1438,13 +1559,22 @@ class LocalDownloads extends Downloads {
   Future<void> get idle async {
     await _planned;
     await _binding;
-    while (_operations.isNotEmpty) {
-      await Future.wait(_operations.toList());
+    while (true) {
+      while (_operations.isNotEmpty) {
+        await Future.wait(_operations.toList());
+      }
+      while (_worker != null) {
+        await _worker;
+      }
+      await _writes;
+      final preparing = _preparing;
+      await preparing;
+      if (identical(preparing, _preparing) &&
+          _operations.isEmpty &&
+          _worker == null) {
+        return;
+      }
     }
-    while (_worker != null) {
-      await _worker;
-    }
-    await _writes;
   }
 
   Future<void> _command(Future<void> Function() action) {
@@ -1584,6 +1714,24 @@ class _Record {
     diskVersion++;
     savedLength = length;
   }
+}
+
+/// One read of a source's saved file ([LocalDownloads.readLocalFile]), and
+/// the work that it holds.
+class _Lend {
+  _Lend(this.id, this.generation, this.removals);
+
+  /// The source id, the catalog generation and the count of the source's
+  /// removals when the read began.
+  final String id;
+  final int generation;
+  final int removals;
+
+  /// Whether the read runs.
+  bool reading = true;
+
+  /// How many pieces of held work run.
+  int holding = 0;
 }
 
 class _MediaError implements Exception {

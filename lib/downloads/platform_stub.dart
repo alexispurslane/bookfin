@@ -2,8 +2,10 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import 'downloads.dart';
 
-Future<Downloads> createDownloads(MediaPolicy policy) async =>
-    UnavailableDownloads(policy);
+Future<Downloads> createDownloads(
+  MediaPolicy policy, {
+  Future<void> Function(VerifiedFile original, SourceFile source)? prepare,
+}) async => UnavailableDownloads(policy);
 
 class UnavailableDownloads extends Downloads {
   UnavailableDownloads(super.policy);

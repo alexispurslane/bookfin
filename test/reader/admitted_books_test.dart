@@ -226,8 +226,7 @@ void main() {
 
       await expectLater(
         AdmittedBooks.load(
-          file,
-          digest,
+          VerifiedFile(file.uri, digest),
           Publication.policy,
           () async => Publication.admit(bytes, digest),
           (_) => throw const FormatException('No outline in this book.'),
@@ -236,6 +235,28 @@ void main() {
       );
 
       await AdmittedBooks.written(file);
+      expect(await _record(file).exists(), isTrue);
+    });
+
+    test('a load writes its record under a hold of the download, so that '
+        'a removal of the download waits for the write', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final held = <Future<void>>[];
+      final lent = VerifiedFile.lent(
+        file.uri,
+        _digest(bytes),
+        hold: (work) {
+          final done = work();
+          held.add(done);
+          return done;
+        },
+      );
+
+      await loadReadingDocument(lent, _source('epub'));
+
+      expect(held, hasLength(1));
+      await Future.wait(held);
       expect(await _record(file).exists(), isTrue);
     });
 
@@ -278,16 +299,13 @@ void main() {
         ),
       ]);
 
+      // The read ends once the book loads. Its record is written after,
+      // under a hold of the download.
       final digest = await downloads.readLocalFile(source, (file) async {
         await loadReadingDocument(file, source);
-        await derivedFilesWritten(file);
         return file.digest;
       });
       expect(digest, _digest(bytes));
-      expect(
-        await Directory('${directory.path}/.bookfin-admitted').exists(),
-        isTrue,
-      );
 
       await downloads.remove(edition);
       await downloads.idle;
@@ -622,6 +640,134 @@ void main() {
     });
   });
 
+  group('the preparation of a download (boo-sy2d)', () {
+    test('the first open of a prepared EPUB reads the kept record, not the '
+        'downloaded file', () async {
+      final bytes = showcaseBooks()['showcase-frost']!;
+      final file = await _download(bytes);
+
+      await prepareDownloadedBook(
+        VerifiedFile(file.uri, _digest(bytes)),
+        _source('epub'),
+      );
+      // The kept record is the only source left: the file is no EPUB now.
+      await file.writeAsBytes(List.filled(bytes.length, 0));
+      final opened = await _open(file, _digest(bytes), 'epub');
+
+      expect(
+        _facts(opened.publication),
+        _facts(Publication.admit(bytes, _digest(bytes))),
+      );
+    });
+
+    test('the first open of a prepared MOBI neither converts nor reads the '
+        'file, and the conversion is kept', () async {
+      final bytes = _books['pg11-kf8.mobi']!.$1;
+      final file = await _download(bytes);
+
+      await prepareDownloadedBook(
+        VerifiedFile(file.uri, _digest(bytes)),
+        _source('mobi'),
+      );
+      final converted = Directory('${file.parent.path}/.bookfin-mobi')
+          .list(recursive: true)
+          .where((entry) => entry.path.endsWith('.epub'));
+      expect(await converted.length, 1);
+      await file.writeAsBytes(List.filled(bytes.length, 0));
+      final opened = await _open(file, _digest(bytes), 'mobi');
+
+      expect(opened.format, 'mobi');
+      expect(opened.originalDigest, _digest(bytes));
+    });
+
+    test('a PDF needs no preparation', () async {
+      final file = await _download(utf8.encode('%PDF-1.4 not parsed'));
+
+      await prepareDownloadedBook(
+        VerifiedFile(file.uri, 'digest'),
+        _source(''),
+      );
+
+      expect(await file.parent.list().map((entry) => entry.path).toList(), [
+        file.path,
+      ]);
+    });
+
+    test('a book whose record is current is not admitted again', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final log = File('${file.parent.path}/admissions');
+
+      for (var round = 0; round < 2; round++) {
+        await AdmittedBooks.prepare(
+          VerifiedFile(file.uri, _digest(bytes)),
+          'policy-1',
+          _logged(log, bytes),
+        );
+      }
+
+      expect(await log.readAsString(), 'admitted\n');
+    });
+
+    test('a book whose record has an older key, as after an update of the '
+        'admission, is admitted again, and its next open reads it', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final log = File('${file.parent.path}/admissions');
+      final original = VerifiedFile(file.uri, _digest(bytes));
+      await AdmittedBooks.prepare(original, 'policy-1', _logged(log, bytes));
+
+      await AdmittedBooks.prepare(original, 'policy-2', _logged(log, bytes));
+      await AdmittedBooks.load(
+        original,
+        'policy-2',
+        _logged(log, bytes),
+        (publication) => publication.identity,
+      );
+
+      expect(await log.readAsString(), 'admitted\nadmitted\n');
+    });
+
+    test('an open during a preparation waits for it, and does not admit the '
+        'book again', () async {
+      final bytes = showcaseBooks()['showcase-frost']!;
+      final file = await _download(bytes);
+      final log = File('${file.parent.path}/admissions');
+      final original = VerifiedFile(file.uri, _digest(bytes));
+
+      final preparing = AdmittedBooks.prepare(
+        original,
+        'policy-1',
+        _logged(log, bytes),
+      );
+      final identity = await AdmittedBooks.load(
+        original,
+        'policy-1',
+        _logged(log, bytes),
+        (publication) => publication.identity,
+      );
+      await preparing;
+
+      expect(identity, Publication.admit(bytes, _digest(bytes)).identity);
+      expect(await log.readAsString(), 'admitted\n');
+    });
+
+    test('a book that cannot be admitted fails its preparation and keeps no '
+        'record', () async {
+      final bytes = utf8.encode('not a zip archive');
+      final file = await _download(bytes);
+
+      await expectLater(
+        prepareDownloadedBook(
+          VerifiedFile(file.uri, _digest(bytes)),
+          _source('epub'),
+        ),
+        throwsA(anything),
+      );
+      expect(await _record(file).exists(), isFalse);
+    });
+  });
+
   group('a place saved before the admission cache', () {
     for (final MapEntry(key: name, value: (bytes, container))
         in _books.entries) {
@@ -824,4 +970,15 @@ Future<Directory> _savedDownload(
     }),
   );
   return directory;
+}
+
+/// An admission of [bytes] that adds a line to [log] each time it runs. It
+/// captures only a path and bytes, so it can run in a worker.
+Future<Publication> Function() _logged(File log, List<int> bytes) {
+  final path = log.path;
+  final book = Uint8List.fromList(bytes);
+  return () async {
+    await File(path).writeAsString('admitted\n', mode: FileMode.append);
+    return Publication.admit(book, _digest(book));
+  };
 }

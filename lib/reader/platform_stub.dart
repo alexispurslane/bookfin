@@ -16,8 +16,11 @@ Future<Publication> loadPublication(VerifiedFile original) async =>
       'EPUB reading is available in the Android app.',
     );
 
-/// No ebook loads on this platform, so no files that they write.
-Future<void> derivedFilesWritten(VerifiedFile original) async {}
+/// No ebook loads on this platform, so none needs preparation.
+Future<void> prepareDownloadedBook(
+  VerifiedFile original,
+  SourceFile source,
+) async {}
 
 /// No ebook downloads on this platform, so no text outlines.
 Future<TextOutline> measureDownloadedOutline(

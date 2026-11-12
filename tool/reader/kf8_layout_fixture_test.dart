@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/mobi.dart';
 import 'package:crypto/crypto.dart';
@@ -16,7 +17,7 @@ void main() {
     final original = await File('tool/research/readers/fixtures/pg11-kf8.mobi')
         .copy('$output/original.mobi');
     final digest = sha256.convert(await original.readAsBytes()).toString();
-    final document = await importMobi(original, digest);
+    final document = await importMobi(VerifiedFile(original.uri, digest));
     addTearDown(document.dispose);
     expect(
       document.originalDigest,
@@ -59,7 +60,7 @@ void main() {
     };
     final admitted = await files(publication);
     expect(admitted, await files(document.publication));
-    final cached = await importMobi(original, digest);
+    final cached = await importMobi(VerifiedFile(original.uri, digest));
     addTearDown(cached.dispose);
     expect(cached.identity, document.identity);
     expect(await files(cached.publication), admitted);

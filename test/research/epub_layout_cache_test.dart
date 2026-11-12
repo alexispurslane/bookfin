@@ -17,6 +17,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
@@ -69,8 +70,7 @@ void main() {
       final corpus = book.format == 'azw3'
           ? CorpusBook(
               (await importMobi(
-                book.file,
-                sha256.convert(bytes).toString(),
+                VerifiedFile(book.file.uri, sha256.convert(bytes).toString()),
               )).publication,
             )
           : CorpusBook.open(bytes);

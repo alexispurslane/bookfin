@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart' show VerifiedFile;
+import 'package:bookfin/reader/admitted_books.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/text_outline.dart';
@@ -168,6 +169,9 @@ void main() {
     Future<TextOutline?> measure(Uint8List bytes, String container) async {
       final file = File('${folder.path}/book.$container');
       await file.writeAsBytes(bytes);
+      // The admitted record is written after the outline comes back. In the
+      // app, Downloads holds the download until then.
+      addTearDown(() => AdmittedBooks.written(file));
       return measureDownloadedOutline(
         VerifiedFile(file.uri, sha256.convert(bytes).toString()),
         SourceFile(

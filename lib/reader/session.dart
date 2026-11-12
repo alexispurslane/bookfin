@@ -195,7 +195,6 @@ class ReaderSession extends ChangeNotifier {
     this.speed,
     this.pageSettings,
     this.surveyStore,
-    this.derivedWrites,
   }) {
     _signals = [
       _placeChanges = _Signal(() => (_visibleAddress, _position)),
@@ -230,13 +229,6 @@ class ReaderSession extends ChangeNotifier {
   final ReadingStore store;
   final PublicationLoader load;
   final DocumentLoader? loadDocument;
-
-  /// Completes once the files that the loads of a download wrote beside it
-  /// after they gave their book, such as the kept admitted book, are
-  /// written. An open gives its book at once, but it keeps the download
-  /// lent until then, so that a removal of the download waits for them.
-  /// Null when the loads write nothing later, as in tests of other things.
-  final Future<void> Function(VerifiedFile original)? derivedWrites;
 
   /// Makes the kept survey of an opened PDF (see [SurveyFiles]), or null
   /// when PDFs are not surveyed, as in tests of other things.
@@ -711,33 +703,21 @@ class ReaderSession extends ChangeNotifier {
       if (selected.kind != EditionKind.text || selected.files.length != 1) {
         throw const FormatException('Choose a single-file ebook edition.');
       }
-      // The read gives the document as soon as it loads, and keeps the
-      // download lent until the files that the load derived are written.
-      final loaded = Completer<ReaderDocument?>();
-      downloads
-          .readLocalFile<ReaderDocument>(selected.files.single, (file) async {
-            if (file.uri.scheme != 'file') {
-              throw const FormatException(
-                'The reader requires a verified local download.',
-              );
-            }
-            final document = loadDocument == null
-                ? EpubDocument(await load(file))
-                : await loadDocument!(file, selected.files.single);
-            loaded.complete(document);
-            await derivedWrites?.call(file);
-            return document;
-          })
-          .then(
-            (document) {
-              if (!loaded.isCompleted) loaded.complete(document);
-            },
-            onError: (Object error, StackTrace stack) {
-              if (!loaded.isCompleted) loaded.completeError(error, stack);
-            },
-          )
-          .ignore();
-      final admitted = await loaded.future;
+      // The loads hold the download for the files that they write beside
+      // it after they gave their book ([VerifiedFile.hold]).
+      final admitted = await downloads.readLocalFile<ReaderDocument>(
+        selected.files.single,
+        (file) async {
+          if (file.uri.scheme != 'file') {
+            throw const FormatException(
+              'The reader requires a verified local download.',
+            );
+          }
+          return loadDocument == null
+              ? EpubDocument(await load(file))
+              : await loadDocument!(file, selected.files.single);
+        },
+      );
       if (admitted == null) {
         throw const FormatException(
           'Download this ebook before reading. Only verified local files can open.',

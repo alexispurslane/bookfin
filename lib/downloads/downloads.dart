@@ -8,9 +8,32 @@ import '../catalog/model.dart';
 /// the digest when the download completed, and its file still matched it at
 /// the time of the read.
 class VerifiedFile {
-  const VerifiedFile(this.uri, this.digest);
+  const VerifiedFile(this.uri, this.digest) : _hold = null;
+
+  /// The file that a read of [Downloads.readLocalFile] lends, whose
+  /// [hold] calls [hold].
+  const VerifiedFile.lent(
+    this.uri,
+    this.digest, {
+    required Future<void> Function(Future<void> Function() work) this._hold,
+  });
+
   final Uri uri;
   final String digest;
+  final Future<void> Function(Future<void> Function() work)? _hold;
+
+  /// Runs [work], such as a write of a file derived from this download,
+  /// while Downloads keeps the download: a removal of the download waits
+  /// until [work] ends, and other reads do not wait. Gives the end of
+  /// [work], with its error.
+  ///
+  /// A read of [Downloads.readLocalFile] can hold its file while the read
+  /// runs, and later while work that it held runs. A hold after that is a
+  /// bug, and throws a [StateError]. Once a removal of the download began,
+  /// [work] does not run. A file that Downloads did not lend, as a test
+  /// makes, has no download to keep, so [work] runs at once.
+  Future<void> hold(Future<void> Function() work) =>
+      _hold == null ? work() : _hold(work);
 }
 
 enum MediaNetwork { unknown, disconnected, wifi, mobile }
@@ -227,7 +250,8 @@ abstract class Downloads extends ChangeNotifier {
       throw UnsupportedError('Retained storage is unavailable.');
   Future<Uri?> localFile(SourceFile source);
 
-  /// Keep a verified original and its derived files owned until loading ends.
+  /// Keep a verified original and its derived files owned until loading ends,
+  /// and then until the work that [read] holds ([VerifiedFile.hold]) ends.
   /// [read] receives the saved file and the digest that it matches. A null
   /// result means the source is no longer locally available.
   Future<T?> readLocalFile<T>(

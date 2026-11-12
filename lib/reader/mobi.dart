@@ -7,6 +7,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 
 import '../downloads/derived_files.dart';
+import '../downloads/downloads.dart';
 import '../sync/device.dart';
 import 'admitted_books.dart';
 import 'document.dart';
@@ -15,52 +16,66 @@ import 'epub/publication.dart';
 
 Future<void> _imports = Future.value();
 
-/// The document of the downloaded MOBI [original], whose bytes have the
-/// SHA-256 [digest]. Its first open converts it to EPUB and admits that
-/// EPUB. Later opens read the admitted book that Bookfin kept, and neither
-/// convert, read nor hash the MOBI.
-Future<EpubDocument> importMobi(File original, String digest) async {
+/// The document of the downloaded MOBI [original]. Its first open converts
+/// it to EPUB and admits that EPUB, unless Downloads prepared it
+/// ([prepareMobi]). Later opens read the admitted book that Bookfin kept,
+/// and neither convert, read nor hash the MOBI.
+Future<EpubDocument> importMobi(VerifiedFile original) async {
   // The fingerprint names the page maps' key. Its first call asks the
   // platform, beside the import.
   final engine = textEngineFingerprint();
-  final publication = await readMobi(
-    original,
-    digest,
-    (publication) => publication,
-  );
+  final publication = await readMobi(original, (publication) => publication);
   return EpubDocument.mobi(
     publication,
-    digest,
+    original.digest,
     pageMaps: BookPageMaps(
-      original,
+      File.fromUri(original.uri),
       book: publication.identity,
       engine: engine,
     ),
   );
 }
 
-/// What [use] gives for the publication of the MOBI [original], whose
-/// SHA-256 is [digest], run in the worker isolate that reads the admitted
-/// book that Bookfin kept, or converts and admits the file and keeps it, as
-/// [importMobi] does. Only the result of [use] comes back. Conversions run
-/// one at a time.
+/// What [use] gives for the publication of the MOBI [original], run in the
+/// worker isolate that reads the admitted book that Bookfin kept, or
+/// converts and admits the file and keeps it, as [importMobi] does. Only
+/// the result of [use] comes back. Conversions run one at a time.
 Future<T> readMobi<T>(
-  File original,
-  String digest,
+  VerifiedFile original,
   T Function(Publication publication) use,
 ) {
-  final path = original.path;
+  final convert = _conversion(original);
   final read = _imports.then(
-    (_) => AdmittedBooks.load(
-      original,
-      digest,
-      EpubDocument.mobiPolicy,
-      () => _convert(path, digest),
-      use,
-    ),
+    (_) => AdmittedBooks.load(original, EpubDocument.mobiPolicy, convert, use),
   );
   _imports = read.then<void>((_) {}, onError: (Object error) {});
   return read;
+}
+
+/// Prepares the downloaded MOBI [original] for reading, as
+/// [AdmittedBooks.prepare] does: it converts the MOBI to EPUB and keeps the
+/// conversion, then admits the EPUB and keeps the admitted book, unless
+/// the admitted book is kept already. Conversions run one at a time.
+Future<void> prepareMobi(VerifiedFile original) {
+  final convert = _conversion(original);
+  final prepared = _imports.then(
+    (_) => AdmittedBooks.prepare(original, EpubDocument.mobiPolicy, convert),
+  );
+  _imports = prepared.then<void>((_) {}, onError: (Object error) {});
+  return prepared;
+}
+
+/// The conversion and admission of the downloaded MOBI [original], which
+/// can run in a worker.
+///
+/// IMPORTANT: A closure holds every variable of its scope that a closure of
+/// that scope captures. So the conversion is made in a scope of its own,
+/// where it captures only the file's path and digest, and not the lent file,
+/// whose hold reaches Downloads, which no isolate message can carry.
+Future<Publication> Function() _conversion(VerifiedFile original) {
+  final path = File.fromUri(original.uri).path;
+  final digest = original.digest;
+  return () => _convert(path, digest);
 }
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from

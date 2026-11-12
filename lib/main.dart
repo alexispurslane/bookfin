@@ -66,8 +66,11 @@ Future<void> runBookfin({bool gallery = false}) async {
   final (:downloads, :playback, :covers) = await openSources(
     restoreAppearance: appearance.restore,
     restoreLayout: layout.restore,
-    openDownloads: () async =>
-        gallery ? null : await createDownloads(MediaPolicy()),
+    // Downloads prepares each saved ebook for reading in the background, so
+    // that its first open reads the admitted book (boo-sy2d).
+    openDownloads: () async => gallery
+        ? null
+        : await createDownloads(MediaPolicy(), prepare: prepareDownloadedBook),
     // The system media player draws the blurred cover that the covers make.
     // Playback starts without waiting for the covers to open.
     openPlayback: (downloads) => createPlayback(
@@ -95,7 +98,6 @@ Future<void> runBookfin({bool gallery = false}) async {
           speed: speed,
           pageSettings: pageSettings,
           surveyStore: SurveyFiles.new,
-          derivedWrites: derivedFilesWritten,
         );
   // Crossings measures an ebook's outline only when the History first asks
   // for a landing in it, so no launch step waits for it.

@@ -13,6 +13,7 @@ import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 
 import '../downloads/derived_files.dart';
+import '../downloads/downloads.dart';
 import 'epub/publication.dart';
 
 /// The admitted book that Bookfin keeps for each download.
@@ -28,31 +29,37 @@ import 'epub/publication.dart';
 /// of its own writes the record after. An open of the same download waits
 /// for that write ([written]), so it reads the record instead of admitting
 /// the book again.
+///
+/// Downloads prepares each saved ebook when its download completes and at
+/// launch ([prepare], boo-sy2d), so the first open of a book normally
+/// finds its record kept, also after an update that changed
+/// [Publication.revision].
 abstract final class AdmittedBooks {
   /// What [use] gives for the publication of the downloaded file
-  /// [original], whose bytes have the SHA-256 [digest], read under the
-  /// reading policy [policy].
+  /// [original], read under the reading policy [policy].
   ///
   /// One worker isolate reads the publication from the kept record, or
   /// admits the book with [admit], as [read] does, and runs [use] on it.
   /// Only the result of [use] comes back. When the book was admitted, a
-  /// worker of its own writes its record after, as [keep] does. When [use]
-  /// throws, the load worker writes the record before the error leaves it,
-  /// so the next load does not admit the book again. The load first waits
-  /// for the record writes of [original] that an earlier load started
-  /// ([written]).
+  /// worker of its own writes its record after, as [keep] does, under a
+  /// hold of the download ([VerifiedFile.hold]), so that a removal of the
+  /// download waits for it. When [use] throws, the load worker writes the
+  /// record before the error leaves it, so the next load does not admit the
+  /// book again. The load first waits for the record writes of [original]
+  /// that an earlier load or a [prepare] started ([written]).
   ///
   /// [admit] and [use] run in the worker, so they must capture only values
   /// that can be sent to another isolate.
   static Future<T> load<T>(
-    File original,
-    String digest,
+    VerifiedFile original,
     String policy,
     Future<Publication> Function() admit,
     T Function(Publication publication) use,
   ) async {
-    await written(original);
-    final path = original.path;
+    final file = File.fromUri(original.uri);
+    await written(file);
+    final path = file.path;
+    final digest = original.digest;
     final (result, record) = await Isolate.run(() async {
       final (publication, record) = await read(
         File(path),
@@ -69,8 +76,44 @@ abstract final class AdmittedBooks {
       }
       return (result, record);
     });
-    if (record != null) _keepLater(record);
+    if (record != null) unawaited(_keepLater(record, original));
     return result;
+  }
+
+  /// Makes the kept record of the downloaded file [original], under the
+  /// reading policy [policy], current, so that the next [load] reads it.
+  ///
+  /// When the kept record's key names [original]'s digest, [policy] and
+  /// [Publication.revision], nothing more runs: the check reads only the
+  /// key. Otherwise one worker isolate admits the book with [admit] and
+  /// writes its record, as [load] and [keep] do, and the publication stays
+  /// in the worker. A [load] of [original] that starts meanwhile waits for
+  /// the write ([written]), and reads the record. Throws what [admit]
+  /// throws, and then writes no record.
+  ///
+  /// It writes beside the download, so it runs under a hold of the download
+  /// ([VerifiedFile.hold]), as Downloads' preparations do. [admit] runs in
+  /// the worker, so it must capture only values that can be sent to another
+  /// isolate.
+  static Future<void> prepare(
+    VerifiedFile original,
+    String policy,
+    Future<Publication> Function() admit,
+  ) {
+    final file = File.fromUri(original.uri);
+    final record = _recordOf(file);
+    final key = _keyOf(policy, original.digest);
+    final path = file.path;
+    final digest = original.digest;
+    // The preparation is one write of the record from its first step, so a
+    // load that starts during the key check waits for it too.
+    return _track(record.path, () async {
+      if (await _keyed(record, key)) return;
+      await Isolate.run(() async {
+        final (_, admitted) = await read(File(path), digest, policy, admit);
+        if (admitted != null) await keep(admitted);
+      });
+    });
   }
 
   /// The publication of the downloaded file [original], whose bytes have the
@@ -94,7 +137,7 @@ abstract final class AdmittedBooks {
     Future<Publication> Function() admit,
   ) async {
     final record = _recordOf(original);
-    final key = utf8.encode(jsonEncode([Publication.revision, policy, digest]));
+    final key = _keyOf(policy, digest);
     if (await _kept(record, key) case final kept?) return (kept, null);
     final publication = await admit();
     return (
@@ -126,18 +169,28 @@ abstract final class AdmittedBooks {
   }
 
   /// Writes [record] in a worker isolate of its own, as [keep] does, after
-  /// the load that admitted the book returned. [written] completes once the
-  /// write ends.
-  static void _keepLater(AdmittedRecord record) {
-    final path = record._path;
-    final writes = _writes[path] = (_writes[path] ?? Future.value()).then(
-      (_) => _keepInWorker(record),
+  /// the load of [original] that admitted the book returned, under a hold
+  /// of the download. [written] completes once the write ends.
+  static Future<void> _keepLater(
+    AdmittedRecord record,
+    VerifiedFile original,
+  ) => original.hold(() => _track(record._path, () => _keepInWorker(record)));
+
+  /// Runs [write], a write of the record at [path], after the writes of it
+  /// before it, so that [written] waits for it. Gives the end of [write],
+  /// with its error.
+  static Future<void> _track(String path, Future<void> Function() write) {
+    final done = (_writes[path] ?? Future.value()).then((_) => write());
+    final ended = _writes[path] = done.then<void>(
+      (_) {},
+      onError: (Object _) {},
     );
     unawaited(
-      writes.whenComplete(() {
-        if (identical(_writes[path], writes)) _writes.remove(path);
+      ended.whenComplete(() {
+        if (identical(_writes[path], ended)) _writes.remove(path);
       }),
     );
+    return done;
   }
 
   /// Writes [record] in a worker isolate of its own. It is static, so that
@@ -147,13 +200,37 @@ abstract final class AdmittedBooks {
   static Future<void> _keepInWorker(AdmittedRecord record) =>
       Isolate.run(() => keep(record)).catchError((Object _) {});
 
-  /// Completes once the record writes of [original] that [load] started in
-  /// this isolate ended.
+  /// Completes once the record writes of [original] that [load] or
+  /// [prepare] started in this isolate ended.
   static Future<void> written(File original) =>
       _writes[_recordOf(original).path] ?? Future.value();
 
-  /// The record writes that [load] started, by record path.
+  /// The record writes that [load] and [prepare] started, by record path.
   static final _writes = <String, Future<void>>{};
+
+  /// The key line of a record of a download whose bytes have the SHA-256
+  /// [digest], read under [policy].
+  static List<int> _keyOf(String policy, String digest) =>
+      utf8.encode(jsonEncode([Publication.revision, policy, digest]));
+
+  /// Whether [record] begins with the key line [key]. It reads only the
+  /// key, so a record whose later bytes are damaged counts as kept: the
+  /// next [load] sets it aside and admits the book in full.
+  static Future<bool> _keyed(File record, List<int> key) async {
+    try {
+      final file = await record.open();
+      try {
+        final start = await file.read(key.length + 1);
+        return start.length == key.length + 1 &&
+            start.last == 0x0a &&
+            listEquals(Uint8List.sublistView(start, 0, key.length), key);
+      } finally {
+        await file.close();
+      }
+    } on FileSystemException {
+      return false;
+    }
+  }
 
   /// The record of the download [original].
   static File _recordOf(File original) =>
