@@ -241,7 +241,7 @@ Future<BookReport> checkBook(
   }
   report.sections = book.sections;
   try {
-    report.support = checkSupport(book);
+    report.support = await checkSupport(book);
   } catch (error, stack) {
     report.exceptions.add(CaughtException('support', error, stack));
   }

@@ -37,7 +37,7 @@ void main() {
         final publication = (document as EpubDocument).publication;
         publication.checkInvariants();
         final text = publication.spine
-            .map((path) => utf8.decode(publication.resources[path]!))
+            .map((path) => utf8.decode(publication.textFiles[path]!))
             .join();
         expect(text, contains(fixture == 'pg11-kf8' ? 'Alice' : 'The river'));
         expect(

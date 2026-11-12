@@ -20,7 +20,7 @@ class CorpusBook {
   CorpusBook(this.publication)
     : fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}',
       _spine = spineSteps(
-        utf8.decode(publication.resources[publication.packagePath]!),
+        utf8.decode(publication.textFiles[publication.packagePath]!),
       );
 
   /// Admits [bytes].
@@ -38,7 +38,7 @@ class CorpusBook {
 
   int get sections => publication.spine.length;
 
-  Uint8List? resource(String path) => publication.resources[path];
+  Future<Uint8List?> resource(String path) => publication.bytesOf(path);
 
   /// What preparing section [index] reads.
   SectionSource source(int index) {
@@ -46,7 +46,7 @@ class CorpusBook {
     return SectionSource(
       index: index,
       path: path,
-      xhtml: utf8.decode(publication.resources[path]!),
+      xhtml: utf8.decode(publication.textFiles[path]!),
       fontPrefix: fontPrefix,
       styleSheets: publication.bookStyles,
       imageSizes: publication.imageSizes,

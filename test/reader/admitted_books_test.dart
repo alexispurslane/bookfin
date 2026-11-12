@@ -12,6 +12,8 @@ import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:bookfin/reader/admitted_books.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/dom.dart' show EpubPlace;
+import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/places.dart';
@@ -40,16 +42,40 @@ SourceFile _source(String container) => SourceFile(
 
 String _digest(List<int> bytes) => sha256.convert(bytes).toString();
 
-/// A download of [bytes] in a folder of its own, as Downloads keeps it.
+/// A download of [bytes] in a folder of its own, as Downloads keeps it. It
+/// is removed after the test, once the loads of it wrote their records, as
+/// a removal of a download waits for them.
 Future<File> _download(List<int> bytes) async {
   final folder = await Directory.systemTemp.createTemp('bookfin-admitted-');
-  addTearDown(() => folder.delete(recursive: true));
-  return File('${folder.path}/complete').writeAsBytes(bytes);
+  final file = File('${folder.path}/complete');
+  addTearDown(() async {
+    await AdmittedBooks.written(file);
+    await folder.delete(recursive: true);
+  });
+  return file.writeAsBytes(bytes);
 }
 
 /// The kept record of the download [file].
 File _record(File file) =>
     File('${file.parent.path}/.bookfin-admitted/publication');
+
+/// The publication of the download [file] as [AdmittedBooks.read] gives it
+/// in this isolate, once its record is kept.
+Future<Publication> _openHere(
+  File file,
+  String digest,
+  String policy,
+  Future<Publication> Function() admit,
+) async {
+  final (publication, record) = await AdmittedBooks.read(
+    file,
+    digest,
+    policy,
+    admit,
+  );
+  if (record != null) await AdmittedBooks.keep(record);
+  return publication;
+}
 
 /// Every admitted fact of [publication], in a form that compares by value.
 Map<String, Object?> _facts(Publication publication) => {
@@ -74,7 +100,7 @@ Map<String, Object?> _facts(Publication publication) => {
   'mainTextSize': publication.mainTextSize,
   'resources': {
     for (final MapEntry(key: path, value: bytes)
-        in publication.resources.entries)
+        in publication.textFiles.entries)
       path: _digest(bytes),
   },
 };
@@ -155,12 +181,25 @@ void main() {
     for (final (name, damage) in [
       ('garbage', (Uint8List kept) => utf8.encode('not a kept book')),
       ('cut short', (Uint8List kept) => kept.sublist(0, kept.length ~/ 2)),
+      // The largest header length that the record can name, far past its
+      // end (boo-yjq6 review).
+      (
+        'naming a header past its end',
+        (Uint8List kept) => Uint8List.fromList(kept)
+          ..setRange(kept.indexOf(0x0a) + 1, kept.indexOf(0x0a) + 5, [
+            0xff,
+            0xff,
+            0xff,
+            0xff,
+          ]),
+      ),
     ]) {
       test('a kept record that is $name is set aside, and the book admits '
           'in full', () async {
         final bytes = showcaseBooks()['showcase-frost']!;
         final file = await _download(bytes);
         final first = await _open(file, _digest(bytes), 'epub');
+        await AdmittedBooks.written(file);
         final record = _record(file);
         final unreadable = damage(await record.readAsBytes());
         await record.writeAsBytes(unreadable);
@@ -178,6 +217,27 @@ void main() {
         expect(_facts(third.publication), _facts(first.publication));
       });
     }
+
+    test('a load whose use of the book fails still keeps the record of the '
+        'book that it admitted', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final digest = _digest(bytes);
+
+      await expectLater(
+        AdmittedBooks.load(
+          file,
+          digest,
+          Publication.policy,
+          () async => Publication.admit(bytes, digest),
+          (_) => throw const FormatException('No outline in this book.'),
+        ),
+        throwsFormatException,
+      );
+
+      await AdmittedBooks.written(file);
+      expect(await _record(file).exists(), isTrue);
+    });
 
     test('removing a download removes its kept admitted book', () async {
       final root = await Directory.systemTemp.createTemp('bookfin-removal-');
@@ -220,6 +280,7 @@ void main() {
 
       final digest = await downloads.readLocalFile(source, (file) async {
         await loadReadingDocument(file, source);
+        await derivedFilesWritten(file);
         return file.digest;
       });
       expect(digest, _digest(bytes));
@@ -290,6 +351,7 @@ void main() {
       final bytes = sized('9pt');
       final file = await _download(bytes);
       await _open(file, _digest(bytes), 'epub');
+      await AdmittedBooks.written(file);
       final record = _record(file);
       // The same number of bytes, so the record's header keeps its length.
       final damaged = latin1.encode(
@@ -317,7 +379,7 @@ void main() {
         return Publication.admit(bytes, digest);
       }
 
-      await AdmittedBooks.open(file, digest, 'policy-1', admit);
+      await _openHere(file, digest, 'policy-1', admit);
       // The record as revision 1 kept it, before it held the size.
       final record = _record(file);
       final kept = await record.readAsBytes();
@@ -327,12 +389,7 @@ void main() {
         ...kept.sublist(end),
       ]);
 
-      final reopened = await AdmittedBooks.open(
-        file,
-        digest,
-        'policy-1',
-        admit,
-      );
+      final reopened = await _openHere(file, digest, 'policy-1', admit);
 
       expect(admissions, 2);
       expect(reopened.mainTextSize, 12);
@@ -350,8 +407,8 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
 
       expect(admissions, 1);
     });
@@ -365,11 +422,73 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-2', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-2', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-2', admit);
+      await _openHere(file, _digest(bytes), 'policy-2', admit);
 
       expect(admissions, 2);
+    });
+
+    test('an admission gives its record to keep and writes nothing, and the '
+        'record that it keeps opens the book without an admission', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      var admissions = 0;
+      Future<Publication> admit() async {
+        admissions++;
+        return Publication.admit(bytes, _digest(bytes));
+      }
+
+      final (admitted, record) = await AdmittedBooks.read(
+        file,
+        _digest(bytes),
+        'policy-1',
+        admit,
+      );
+      expect(record, isNotNull);
+      expect(await _record(file).exists(), isFalse);
+
+      await AdmittedBooks.keep(record!);
+      final (kept, none) = await AdmittedBooks.read(
+        file,
+        _digest(bytes),
+        'policy-1',
+        admit,
+      );
+
+      expect(admissions, 1);
+      expect(none, isNull);
+      expect(_facts(kept), _facts(admitted));
+    });
+
+    test('a book whose record was never written, as when the app stopped '
+        'before the write, admits again at the next open', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      var admissions = 0;
+      Future<Publication> admit() async {
+        admissions++;
+        return Publication.admit(bytes, _digest(bytes));
+      }
+
+      await AdmittedBooks.read(file, _digest(bytes), 'policy-1', admit);
+      final again = await _openHere(file, _digest(bytes), 'policy-1', admit);
+
+      expect(admissions, 2);
+      again.checkInvariants();
+    });
+
+    test('a load gives the book before its record is written, and the next '
+        'load waits for that record instead of admitting again', () async {
+      final bytes = showcaseBooks()['showcase-frost']!;
+      final file = await _download(bytes);
+      final first = await _open(file, _digest(bytes), 'epub');
+      // The kept record is the only source left: the file is no EPUB now.
+      await file.writeAsBytes(List.filled(bytes.length, 0));
+
+      final second = await _open(file, _digest(bytes), 'epub');
+
+      expect(_facts(second.publication), _facts(first.publication));
     });
 
     test('a write that stopped midway leaves the kept book readable', () async {
@@ -381,18 +500,13 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
       // A process that was killed while it wrote left its partial file.
       final kept = await _record(file).readAsBytes();
       await File('${_record(file).parent.path}/publication-killed.partial')
           .writeAsBytes(kept.sublist(0, kept.length ~/ 3));
 
-      final again = await AdmittedBooks.open(
-        file,
-        _digest(bytes),
-        'policy-1',
-        admit,
-      );
+      final again = await _openHere(file, _digest(bytes), 'policy-1', admit);
 
       expect(admissions, 1);
       again.checkInvariants();
@@ -405,7 +519,7 @@ void main() {
       // A file where the record's folder belongs.
       await File('${file.parent.path}/.bookfin-admitted').writeAsString('');
 
-      final publication = await AdmittedBooks.open(
+      final publication = await _openHere(
         file,
         _digest(bytes),
         'policy-1',
@@ -414,6 +528,79 @@ void main() {
 
       expect(publication.spine, ['OPS/one.xhtml']);
     });
+  });
+
+  group('the images and fonts of a kept record (boo-yjq6)', () {
+    /// The position of [part] in [bytes].
+    int indexOf(List<int> bytes, List<int> part) {
+      search:
+      for (var at = 0; at + part.length <= bytes.length; at++) {
+        for (var index = 0; index < part.length; index++) {
+          if (bytes[at + index] != part[index]) continue search;
+        }
+        return at;
+      }
+      throw StateError('The part is not in the bytes.');
+    }
+
+    final dot = File('tool/research/readers/fixtures/dot.png')
+        .readAsBytesSync();
+
+    Future<Publication> admit(Uint8List bytes) async =>
+        Publication.admit(bytes, _digest(bytes));
+
+    test('a reopened book holds its documents, and reads an image from its '
+        'record only when a page asks for it', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      await _openHere(file, _digest(bytes), 'policy-1', () => admit(bytes));
+      final reopened = await _openHere(
+        file,
+        _digest(bytes),
+        'policy-1',
+        () => throw StateError('The book admitted again.'),
+      );
+      expect(reopened.textFiles, contains('OPS/one.xhtml'));
+      expect(reopened.textFiles, isNot(contains('OPS/dot.png')));
+
+      // The image's bytes in the record change after the reopen.
+      final record = await _record(file).readAsBytes();
+      final at = indexOf(record, dot);
+      final changed = [...dot]..last ^= 0xff;
+      record.setRange(at, at + dot.length, changed);
+      await _record(file).writeAsBytes(record);
+
+      expect(await reopened.bytesOf('OPS/dot.png'), changed);
+      reopened.checkInvariants();
+    });
+
+    test('an image whose record was replaced since the reopen reads as '
+        'missing, so its page draws its alt text', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      await _openHere(file, _digest(bytes), 'policy-1', () => admit(bytes));
+      final reopened = await _openHere(
+        file,
+        _digest(bytes),
+        'policy-1',
+        () => admit(bytes),
+      );
+
+      await _openHere(file, _digest(bytes), 'policy-2', () => admit(bytes));
+
+      expect(await reopened.bytesOf('OPS/dot.png'), isNull);
+    });
+
+    test(
+      'a book that was just admitted reads its images from memory',
+      () async {
+        final bytes = epub();
+        final publication = await admit(bytes);
+
+        expect(publication.textFiles, isNot(contains('OPS/dot.png')));
+        expect(await publication.bytesOf('OPS/dot.png'), dot);
+      },
+    );
   });
 
   group('a MOBI', () {
@@ -446,9 +633,16 @@ void main() {
         for (final open in ['first', 'later']) {
           final document = await _open(file, _digest(bytes), container);
           expect(document.originalDigest, saved['original'], reason: open);
-          if (name != 'broken-image.epub') {
-            expect(document.identity, saved['processed'], reason: open);
-          }
+          // Since boo-yjq6, an EPUB's identity names the policy, the
+          // admission revision and the file's digest, so its places carry
+          // an older identity. A MOBI's identity did not change.
+          expect(
+            document.identity,
+            container == 'epub'
+                ? isNot(saved['processed'])
+                : saved['processed'],
+            reason: open,
+          );
           final address = document.restore(saved);
           expect(address, isNotNull, reason: open);
 
@@ -480,13 +674,90 @@ void main() {
     }
   });
 
+  group('the identity of policy, revision and digest (boo-yjq6)', () {
+    const engine = 'install-1\nbuild-1\nen-US';
+
+    /// Lays out every section of [publication] at [readerPage] with the page
+    /// maps of the download [file] under the book identity [book], and gives
+    /// the map that the source keeps.
+    Future<List<KeptSection>> layOutWhole(
+      File file,
+      Publication publication,
+      String book,
+    ) async {
+      final pageMaps = BookPageMaps(
+        file,
+        book: book,
+        engine: Future.value(engine),
+      );
+      final scheduler = TestScheduler();
+      final source = PageSource(
+        publication,
+        schedule: scheduler.schedule,
+        pageMaps: pageMaps,
+      )..settings = readerPage;
+      addTearDown(source.dispose);
+      final dom = (await scheduler.until(source.section(0))).dom;
+      source.show(
+        await scheduler.until(
+          source.pageAt(
+            EpubPlace(0, dom.body.order, 0),
+            anchored: true,
+            urgent: true,
+          ),
+        ),
+      );
+      await scheduler.settle();
+      for (var tries = 0; tries < 400; tries++) {
+        if (await pageMaps.read(readerPage) case final kept?) return kept;
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      fail('The page map was never kept.');
+    }
+
+    test('the first open after the change lays out the page map once again, '
+        'and the next open reads it', () async {
+      final (bytes, _) = _books['showcase-frost.epub']!;
+      final file = await _download(bytes);
+      final document = await _open(file, _digest(bytes), 'epub');
+      // The map that an open before boo-yjq6 kept, under the identity that
+      // hashed every admitted file.
+      final before =
+          (_placesBefore['showcase-frost.epub'] as Map)['processed'] as String;
+      await layOutWhole(file, document.publication, before);
+
+      final maps = BookPageMaps(
+        file,
+        book: document.identity,
+        engine: Future.value(engine),
+      );
+      expect(await maps.read(readerPage), isNull);
+      final laid = await layOutWhole(
+        file,
+        document.publication,
+        document.identity,
+      );
+
+      final next = await _open(file, _digest(bytes), 'epub');
+      expect(next.identity, document.identity);
+      expect(
+        await BookPageMaps(
+          file,
+          book: next.identity,
+          engine: Future.value(engine),
+        ).read(readerPage),
+        laid,
+      );
+    });
+  });
+
   group('admission', () {
     test('keeps an image whose header is sound, without decoding its '
-        'pixels', () {
+        'pixels', () async {
       final publication = Publication.admit(_books['broken-image.epub']!.$1);
 
       expect(publication.imageSizes['OPS/plate.jpg'], (40, 30));
-      expect(publication.resources, contains('OPS/plate.jpg'));
+      expect(await publication.bytesOf('OPS/plate.jpg'), isNotNull);
     });
 
     for (final (name, image) in [
@@ -502,7 +773,7 @@ void main() {
         );
 
         expect(publication.imageSizes, isNot(contains('OPS/dot.png')));
-        expect(publication.resources, isNot(contains('OPS/dot.png')));
+        expect(publication.textFiles, isNot(contains('OPS/dot.png')));
         expect(
           publication.warnings,
           contains(
@@ -520,7 +791,7 @@ void main() {
         expect(
           publication.spineSteps,
           spineSteps(
-            utf8.decode(publication.resources[publication.packagePath]!),
+            utf8.decode(publication.textFiles[publication.packagePath]!),
           ),
         );
       }

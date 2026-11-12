@@ -19,10 +19,10 @@ void main() {
         final publication = Publication.admit(bytes);
         publication.checkInvariants();
         final root = Directory('.cache/reader-corpus/${sample['id']}');
-        for (final entry in publication.resources.entries) {
-          final file = File('${root.path}/${entry.key}');
+        for (final path in publication.mediaTypes.keys) {
+          final file = File('${root.path}/$path');
           await file.parent.create(recursive: true);
-          await file.writeAsBytes(entry.value);
+          await file.writeAsBytes((await publication.bytesOf(path))!);
         }
         expect(publication.spine, isNotEmpty);
         exported.add({
@@ -34,7 +34,7 @@ void main() {
           'original': publication.originalDigest,
           'processed': publication.identity,
           'spine': publication.spine.length,
-          'resources': publication.resources.length,
+          'resources': publication.mediaTypes.length,
           'warnings': publication.warnings,
         });
       },

@@ -37,7 +37,7 @@ double widthIn(String family, {double? wght}) {
 const outfit = FontFaceRule(family: 'outfit', path: 'epub/fonts/outfit.woff');
 
 /// The publication files that [outfit] and its neighbours name.
-Uint8List? files(String path) => switch (path) {
+Future<Uint8List?> files(String path) async => switch (path) {
   'epub/fonts/outfit.woff' => fixture('outfit-ascii.woff'),
   'epub/fonts/outfit.woff2' => fixture('outfit-ascii.woff2'),
   _ => null,

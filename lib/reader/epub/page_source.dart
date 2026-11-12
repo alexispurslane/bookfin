@@ -330,7 +330,7 @@ class PageSource {
   ) async {
     final layout = _layoutFor(index, _current);
     final path = _publication.spine[index];
-    final xhtml = _publication.resources[path]!;
+    final xhtml = _publication.textFiles[path]!;
     if (layout.prepared != null || xhtml.length < _partBytes) {
       return find((await section(index)).dom);
     }
@@ -1516,7 +1516,7 @@ class PageSource {
         _worker,
         layout.index,
         path,
-        _publication.resources[path]!,
+        _publication.textFiles[path]!,
         _publication.bookStyles,
         _publication.imageSizes,
         _publication.language,
@@ -1554,11 +1554,7 @@ class PageSource {
   /// Registers the embedded fonts that [prepared] draws with.
   Future<void> _loadFonts(PreparedSection prepared) async {
     if (prepared.fonts.isEmpty) return;
-    await BookFonts.load(
-      prepared.fonts,
-      (path) => _publication.resources[path],
-      _fontPrefix,
-    );
+    await BookFonts.load(prepared.fonts, _publication.bytesOf, _fontPrefix);
   }
 
   /// The size in pixels of the book's main text as pages of [settings]
@@ -1568,13 +1564,13 @@ class PageSource {
     if (settings.sizesMainText) return Future.value(settings.fontSize);
     final spine = _publication.spine;
     final samples = mainTextSamples([
-      for (final path in spine) _publication.resources[path]!.length,
+      for (final path in spine) _publication.textFiles[path]!.length,
     ]);
     return _measureInWorker(
       _worker,
       samples,
       [for (final index in samples) spine[index]],
-      [for (final index in samples) _publication.resources[spine[index]]!],
+      [for (final index in samples) _publication.textFiles[spine[index]]!],
       _publication.bookStyles,
       _fontPrefix,
       settings,
@@ -1768,7 +1764,7 @@ class PageSource {
     if (_broken.contains(key)) return null;
     return _decoding[key] ??= () async {
       try {
-        final bytes = _publication.resources[key.path];
+        final bytes = await _publication.bytesOf(key.path);
         if (bytes == null) throw StateError('The image is missing.');
         final codec = await ui.instantiateImageCodec(
           bytes,

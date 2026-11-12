@@ -302,7 +302,7 @@ void main() {
       final page = await source.pageAt(place, anchored: true, urgent: true);
       expect(page.endPlace, EpubPlace(0, label.order, label.text.length - 1));
       final spine = spineStep(
-        String.fromCharCodes(publication.resources[publication.packagePath]!),
+        String.fromCharCodes(publication.textFiles[publication.packagePath]!),
         0,
       );
       expect(placeOf(section.dom, 0, cfiOf(spine, section.dom, place)), place);

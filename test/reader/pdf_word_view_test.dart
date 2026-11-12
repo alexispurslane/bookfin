@@ -274,7 +274,7 @@ void main() {
   }) async {
     final book = (await tester.runAsync(
       () async => PdfRuntime.instance.open(
-        await File(path).readAsBytes(),
+        path,
         path.hashCode.toRadixString(16).padLeft(64, '0'),
         textSupply: textSupply,
         hop: hop ?? runInWorker,

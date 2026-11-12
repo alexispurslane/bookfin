@@ -5,12 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'book.dart';
 import 'support.dart';
 
-SupportReport check(String body, {String css = ''}) =>
+Future<SupportReport> check(String body, {String css = ''}) =>
     checkSupport(CorpusBook.open(madeUpEpub([body], css: css)));
 
 void main() {
-  test('a plain prose book passes the support check', () {
-    final report = check(
+  test('a plain prose book passes the support check', () async {
+    final report = await check(
       '<h1>One</h1><p>Prose with <em>emphasis</em>.</p><hr/>'
       '<blockquote><p>A quote.</p></blockquote>',
       css: 'p{text-indent:1em;margin:0} h1{text-align:center}',
@@ -19,8 +19,8 @@ void main() {
     expect(report.supportedSections, 1);
   });
 
-  test('a table of rows passes, and a rowspan is an approximation', () {
-    final report = check(
+  test('a table of rows passes, and a rowspan is an approximation', () async {
+    final report = await check(
       '<table><tr><td rowspan="2">A</td><td>B</td></tr>'
       '<tr><td>C</td></tr></table>',
     );
@@ -28,8 +28,8 @@ void main() {
     expect(report.approximated.keys, contains('rowspan counted as 1'));
   });
 
-  test('a flex row and a grid are drawn as blocks', () {
-    final report = check(
+  test('a flex row and a grid are drawn as blocks', () async {
+    final report = await check(
       '<div class="row"><p>A</p></div><div class="grid"><p>B</p></div>',
       css: '.row{display:flex}.grid{display:grid}',
     );
@@ -40,21 +40,27 @@ void main() {
     );
   });
 
-  test('vertical writing is a feature that the renderer does not support', () {
-    final report = check('<p>Text</p>', css: 'p{writing-mode:vertical-rl}');
-    expect(report.unsupported.keys, contains('vertical writing'));
-  });
+  test(
+    'vertical writing is a feature that the renderer does not support',
+    () async {
+      final report = await check(
+        '<p>Text</p>',
+        css: 'p{writing-mode:vertical-rl}',
+      );
+      expect(report.unsupported.keys, contains('vertical writing'));
+    },
+  );
 
-  test('a rule that matches no element does not count', () {
-    final report = check(
+  test('a rule that matches no element does not count', () async {
+    final report = await check(
       '<p>Text</p>',
       css: '.missing{position:absolute;left:10px}',
     );
     expect(report.supported, isTrue);
   });
 
-  test('text moved off the page is an approximation, not a failure', () {
-    final report = check(
+  test('text moved off the page is an approximation, not a failure', () async {
+    final report = await check(
       '<h1 class="hidden">Title</h1><p>Text</p>',
       css: '.hidden{position:absolute;left:-999em}',
     );
@@ -65,8 +71,11 @@ void main() {
     );
   });
 
-  test('a drop cap is drawn as plain text and reported', () {
-    final report = check('<p>Text</p>', css: 'p::first-letter{font-size:3em}');
+  test('a drop cap is drawn as plain text and reported', () async {
+    final report = await check(
+      '<p>Text</p>',
+      css: 'p::first-letter{font-size:3em}',
+    );
     expect(report.supported, isTrue);
     expect(
       report.approximated.keys,
@@ -74,30 +83,33 @@ void main() {
     );
   });
 
-  test('automatic hyphenation of English text is not an approximation', () {
-    final report = check(
-      '<div lang="en-GB"><p>Text</p></div>',
-      css: 'p{hyphens:auto}',
-    );
-    expect(report.approximated, isEmpty);
-  });
+  test(
+    'automatic hyphenation of English text is not an approximation',
+    () async {
+      final report = await check(
+        '<div lang="en-GB"><p>Text</p></div>',
+        css: 'p{hyphens:auto}',
+      );
+      expect(report.approximated, isEmpty);
+    },
+  );
 
   test('automatic hyphenation of text without hyphenation patterns is '
-      'an approximation', () {
+      'an approximation', () async {
     for (final body in [
       '<div lang="de"><p>Text</p></div>',
       '<p>Text with no language</p>',
     ]) {
-      final report = check(body, css: 'p{hyphens:auto}');
+      final report = await check(body, css: 'p{hyphens:auto}');
       expect(report.approximated.keys, [
         'automatic hyphenation without patterns',
       ], reason: body);
     }
   });
 
-  test('a hyphenation style attribute follows the element language', () {
-    final english = check('<p lang="en" style="hyphens:auto">Text</p>');
-    final german = check('<p lang="de" style="hyphens:auto">Text</p>');
+  test('a hyphenation style attribute follows the element language', () async {
+    final english = await check('<p lang="en" style="hyphens:auto">Text</p>');
+    final german = await check('<p lang="de" style="hyphens:auto">Text</p>');
     expect(english.approximated, isEmpty);
     expect(german.approximated.keys, [
       'automatic hyphenation without patterns',

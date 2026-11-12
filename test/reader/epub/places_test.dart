@@ -876,10 +876,10 @@ void main() {
       final resource = saved['resource']! as String;
       final index = publication.spine.indexOf(resource);
       final section = DomSection.parse(
-        utf8.decode(publication.resources[resource]!),
+        utf8.decode(publication.textFiles[resource]!),
       );
       final spine = spineStep(
-        utf8.decode(publication.resources[publication.packagePath]!),
+        utf8.decode(publication.textFiles[publication.packagePath]!),
         index,
       );
       final cfi = saved['cfi']! as String;

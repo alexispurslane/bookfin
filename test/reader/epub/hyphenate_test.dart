@@ -1,5 +1,7 @@
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/hyphenate.dart';
+import 'package:bookfin/reader/epub/hyphenation_en.dart';
+import 'package:bookfin/reader/epub/hyphenation_en_tables.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
@@ -115,6 +117,32 @@ double drawnWidth(Piece piece, int unit) => piece.paragraph
 
 void main() {
   setUpAll(loadReaderFont);
+
+  group('the const tables of hyphenation_en_tables.dart', () {
+    // tool/reader/hyphenation_tables.dart writes them from
+    // hyphenation_en.dart. Run it again when either changes.
+    for (final (name, patterns, exceptions, patternTable, exceptionTable) in [
+      (
+        'American',
+        enUsPatterns,
+        enUsExceptions,
+        enUsPatternTable,
+        enUsExceptionTable,
+      ),
+      (
+        'British',
+        enGbPatterns,
+        enGbExceptions,
+        enGbPatternTable,
+        enGbExceptionTable,
+      ),
+    ]) {
+      test('hold the $name patterns and exceptions', () {
+        expect(patternTable, hyphenationPatterns(patterns));
+        expect(exceptionTable, hyphenationExceptions(exceptions));
+      });
+    }
+  });
 
   group('Liang hyphenation with the TeX patterns', () {
     test('an English word breaks where the patterns allow', () {

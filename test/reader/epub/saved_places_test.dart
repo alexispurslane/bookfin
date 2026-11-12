@@ -32,8 +32,8 @@ void main() {
         in books.entries) {
       final publication = Publication.admit(made[name]!);
 
-      test('$name is still the book whose places epub.js saved', () {
-        expect(publication.identity, record['identity']);
+      test('$name is still the book whose places epub.js saved', () async {
+        expect(await admittedFilesDigest(publication), record['identity']);
       });
 
       _placeTests(name, () => publication, record);
@@ -380,7 +380,7 @@ void _report(String book, String what, int passed, int total) =>
 /// The publication of a recorded book, with what its places need.
 class _Book {
   _Book(this.publication)
-    : _opf = utf8.decode(publication.resources[publication.packagePath]!);
+    : _opf = utf8.decode(publication.textFiles[publication.packagePath]!);
 
   final Publication publication;
   final String _opf;

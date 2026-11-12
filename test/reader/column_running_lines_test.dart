@@ -45,7 +45,7 @@ void main() {
 
   Future<PdfBook> margins() async {
     final book = await PdfRuntime.instance.open(
-      await File(marginsBook).readAsBytes(),
+      marginsBook,
       'f' * 64,
       hop: runInWorker,
     );

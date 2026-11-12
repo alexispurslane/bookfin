@@ -22,14 +22,16 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/platform_io.dart';
+import 'package:bookfin/reader/last_page_settings.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
+import 'last_page_settings_test.dart' show MemoryPageSettingsStore;
 import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/epubjs_fixtures.dart'
     show fixture, immediateSource, pageAt, recordedSizes;
-import 'epub/helpers.dart' show loadReaderFont, readerPage;
+import 'epub/helpers.dart' show admittedFilesDigest, loadReaderFont, readerPage;
 import 'epub/page_source_test.dart' as pages show book;
 import 'epub/page_source_test.dart' show paragraphs;
 
@@ -263,12 +265,14 @@ void main() {
   ReaderSession sessionOf(
     Publication? publication, {
     DocumentLoader? loadDocument,
+    LastPageSettings? pageSettings,
   }) {
     final reader = ReaderSession(
       downloads: downloads,
       store: store,
       load: (_) async => publication!,
       loadDocument: loadDocument,
+      pageSettings: pageSettings,
     );
     sessions.add(reader);
     return reader;
@@ -279,9 +283,14 @@ void main() {
     Publication? publication, {
     Edition? edition,
     DocumentLoader? loadDocument,
+    LastPageSettings? pageSettings,
   }) async {
     final chosen = edition ?? epubEdition;
-    final reader = sessionOf(publication, loadDocument: loadDocument);
+    final reader = sessionOf(
+      publication,
+      loadDocument: loadDocument,
+      pageSettings: pageSettings,
+    );
     await reader.bind(account(), [bookOf(chosen)]);
     await reader.open(bookOf(chosen), chosen);
     reader.checkInvariants();
@@ -383,7 +392,7 @@ void main() {
           'session on a page whose first line holds it, and the store gets '
           'no changed record', () async {
         final publication = showcase(name);
-        expect(publication.identity, record['identity']);
+        expect(await admittedFilesDigest(publication), record['identity']);
         final document = EpubDocument(publication);
         var opened = 0;
         for (final size in recordedSizes) {
@@ -1005,6 +1014,37 @@ void main() {
         final page = await after(reader, () => reader.goToContents(entry.href));
         expect((page.section, page.start), (section, const PageStart(0, 0)));
       }
+    });
+
+    test("each shown page keeps its settings as this phone's last page "
+        'settings, which the next session opens its books with', () async {
+      final kept = MemoryPageSettingsStore();
+      final first = LastPageSettings(kept);
+      final reader = await open(
+        showcase('showcase-frost'),
+        pageSettings: first,
+      );
+      await present(reader);
+      expect(first.value, readerPage);
+      const larger = PageSettings(
+        width: 412,
+        height: 671,
+        fontSize: 26,
+        night: false,
+      );
+      await present(reader, larger);
+      expect(first.value, larger);
+      await pumpEventQueue();
+
+      final relaunched = LastPageSettings(kept);
+      await relaunched.restore();
+      final again = await open(
+        showcase('showcase-frost'),
+        pageSettings: relaunched,
+      );
+      expect(relaunched.value, larger);
+      await present(again, larger);
+      expect(again.message, isNull);
     });
 
     test('widgets that follow the open book learn of the pager, and closing '

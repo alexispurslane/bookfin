@@ -243,8 +243,7 @@ void main() {
     'the public opening-letter fixture keeps its cap in the image bands',
     () async {
       final book = await PdfRuntime.instance.open(
-        await File('test/reader/fixtures/reflow/drop-cap-page.pdf')
-            .readAsBytes(),
+        'test/reader/fixtures/reflow/drop-cap-page.pdf',
         'e' * 64,
       );
       addTearDown(book.dispose);
@@ -294,7 +293,7 @@ void main() {
     () async {
       final supply = FixtureRecognition('scanned-page')..textArrives.complete();
       final book = await PdfRuntime.instance.open(
-        await File(ravenPage).readAsBytes(),
+        ravenPage,
         'd' * 64,
         textSupply: supply,
       );

@@ -26,7 +26,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final publication = threeSections();
   const sections = ['OPS/one.xhtml', 'OPS/two.xhtml', 'OPS/three.xhtml'];
-  int size(String resource) => publication.resources[resource]!.length;
+  int size(String resource) => publication.textFiles[resource]!.length;
   final whole = sections.map(size).reduce((a, b) => a + b);
 
   /// A place [progress] of the way through section [resource], as the

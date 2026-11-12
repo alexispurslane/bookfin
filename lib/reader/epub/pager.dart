@@ -74,7 +74,11 @@ class LaidNote {
 ///   dropped kept page map gave the shown page a higher one.
 class EpubPager implements DocumentNavigator {
   /// The pager of [document]. It opens at [initial] once the first
-  /// [present] gives it page settings. [onPlace] receives each new place of
+  /// [present] gives it page settings. [expected] are the page settings
+  /// that this phone showed its last page with, if known: the pager starts
+  /// to prepare the section of [initial], or the book's first section, with
+  /// them at once, and uses that work when the first [present] gives equal
+  /// settings. [onPlace] receives each new place of
   /// the shown page. [onWarning] receives a message for the person. When
   /// [initial] cannot be found, the pager shows the book's start, reports
   /// no place for it, so the saved place stays, and then warns.
@@ -88,6 +92,7 @@ class EpubPager implements DocumentNavigator {
   EpubPager(
     EpubDocument document, {
     this._initial,
+    PageSettings? expected,
     required this._onPlace,
     required this._onWarning,
     this._onShow,
@@ -99,6 +104,7 @@ class EpubPager implements DocumentNavigator {
            PageSource(document.publication, pageMaps: document.pageMaps) {
     _source.bookPages.addListener(_renumber);
     _source.keptMapDropped.addListener(_recount);
+    if (expected != null) _begin(expected);
   }
 
   static const _mismatch =
@@ -118,6 +124,11 @@ class EpubPager implements DocumentNavigator {
   /// The saved place to open at, until a page for it or for the book's
   /// start is shown.
   ReaderAddress? _initial;
+
+  /// The place of [_initial] that the pager began to find before the first
+  /// [present], with the settings that it began with, until the open uses
+  /// it or drops it.
+  ({PageSettings settings, Future<EpubPlace?> place})? _head;
 
   /// The settings of the shown page, and the settings that the viewport
   /// presented last.
@@ -311,7 +322,7 @@ class EpubPager implements DocumentNavigator {
         ui.PlatformDispatcher.instance.implicitView?.devicePixelRatio ?? 1;
     final images = await decodeImages(
       [page],
-      (path) => _publication.resources[path],
+      _publication.bytesOf,
       scale: scale,
     );
     return LaidNote._(
@@ -490,7 +501,7 @@ class EpubPager implements DocumentNavigator {
           SearchSection(
             index: index,
             path: path,
-            xhtml: _publication.resources[path]!,
+            xhtml: _publication.textFiles[path]!,
             spine: steps[index],
           ),
       ],
@@ -584,6 +595,33 @@ class EpubPager implements DocumentNavigator {
     return done;
   }
 
+  /// Begins the open with [settings], this phone's last page settings,
+  /// before the viewport presents its own (boo-yjq6): it prepares the
+  /// section of the saved place and finds the place there, or prepares the
+  /// book's first section. A first [present] of equal settings finds that
+  /// work in the page source. Other settings leave it as the page source's
+  /// previous settings, and the open starts again with them.
+  void _begin(PageSettings settings) {
+    bool positive(double value) => value > 0 && value.isFinite;
+    if (!positive(settings.width) ||
+        !positive(settings.height) ||
+        !positive(settings.fontSize)) {
+      throw ArgumentError.value(
+        settings,
+        'expected',
+        'needs a page area and a text size',
+      );
+    }
+    _source.settings = settings;
+    final initial = _initial;
+    if (initial is EpubAddress) {
+      final place = _resolve(initial)..ignore();
+      _head = (settings: settings, place: place);
+    } else {
+      _source.section(0).ignore();
+    }
+  }
+
   /// Shows the page for the settings that the viewport presented last, at
   /// the shown place, or opens the book.
   Future<void> _apply() async {
@@ -600,8 +638,13 @@ class EpubPager implements DocumentNavigator {
     }
     // Open the book.
     final initial = _initial;
+    final head = _head;
+    _head = null;
     if (initial is EpubAddress) {
-      if (await _resolve(initial) case final place?) {
+      final found = head != null && head.settings == settings
+          ? head.place
+          : _resolve(initial);
+      if (await found case final place?) {
         final page = await _source.pageAt(place, anchored: true, urgent: true);
         _show(page, place, steps);
         _initial = null;

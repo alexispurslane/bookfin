@@ -53,10 +53,7 @@ Future<TextOutline> measure(String path) => measureDownloadedOutline(
 /// The visible characters of each page of the PDF at [path], as the reader
 /// extracts its text layer: its characters that are not white space.
 Future<List<int>> readerCharacters(String path) async {
-  final book = await PdfRuntime.instance.open(
-    File(path).readAsBytesSync(),
-    'd' * 64,
-  );
+  final book = await PdfRuntime.instance.open(path, 'd' * 64);
   try {
     return [
       for (var page = 1; page <= book.pageCount; page++)

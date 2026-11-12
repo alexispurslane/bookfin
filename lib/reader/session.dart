@@ -17,6 +17,7 @@ import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
 import 'place_words.dart';
+import 'last_page_settings.dart';
 import 'reading_speed.dart';
 import 'survey_files.dart';
 
@@ -192,7 +193,9 @@ class ReaderSession extends ChangeNotifier {
     required this.load,
     this.loadDocument,
     this.speed,
+    this.pageSettings,
     this.surveyStore,
+    this.derivedWrites,
   }) {
     _signals = [
       _placeChanges = _Signal(() => (_visibleAddress, _position)),
@@ -227,6 +230,13 @@ class ReaderSession extends ChangeNotifier {
   final ReadingStore store;
   final PublicationLoader load;
   final DocumentLoader? loadDocument;
+
+  /// Completes once the files that the loads of a download wrote beside it
+  /// after they gave their book, such as the kept admitted book, are
+  /// written. An open gives its book at once, but it keeps the download
+  /// lent until then, so that a removal of the download waits for them.
+  /// Null when the loads write nothing later, as in tests of other things.
+  final Future<void> Function(VerifiedFile original)? derivedWrites;
 
   /// Makes the kept survey of an opened PDF (see [SurveyFiles]), or null
   /// when PDFs are not surveyed, as in tests of other things.
@@ -290,6 +300,11 @@ class ReaderSession extends ChangeNotifier {
   /// The person's reading speed, which the pager's page turns feed and
   /// [timeLeft] reads. Without it, the session estimates no time.
   final ReadingSpeed? speed;
+
+  /// The page settings of the last page that this phone showed, which each
+  /// shown page of an EPUB updates. A pager starts to open its book with
+  /// them before the reader's first layout presents the settings.
+  final LastPageSettings? pageSettings;
   ReaderDocument? _document;
   ReaderDocument? get document => _document;
   Book? _book;
@@ -696,19 +711,33 @@ class ReaderSession extends ChangeNotifier {
       if (selected.kind != EditionKind.text || selected.files.length != 1) {
         throw const FormatException('Choose a single-file ebook edition.');
       }
-      final admitted = await downloads.readLocalFile<ReaderDocument>(
-        selected.files.single,
-        (file) async {
-          if (file.uri.scheme != 'file') {
-            throw const FormatException(
-              'The reader requires a verified local download.',
-            );
-          }
-          return loadDocument == null
-              ? EpubDocument(await load(file))
-              : await loadDocument!(file, selected.files.single);
-        },
-      );
+      // The read gives the document as soon as it loads, and keeps the
+      // download lent until the files that the load derived are written.
+      final loaded = Completer<ReaderDocument?>();
+      downloads
+          .readLocalFile<ReaderDocument>(selected.files.single, (file) async {
+            if (file.uri.scheme != 'file') {
+              throw const FormatException(
+                'The reader requires a verified local download.',
+              );
+            }
+            final document = loadDocument == null
+                ? EpubDocument(await load(file))
+                : await loadDocument!(file, selected.files.single);
+            loaded.complete(document);
+            await derivedWrites?.call(file);
+            return document;
+          })
+          .then(
+            (document) {
+              if (!loaded.isCompleted) loaded.complete(document);
+            },
+            onError: (Object error, StackTrace stack) {
+              if (!loaded.isCompleted) loaded.completeError(error, stack);
+            },
+          )
+          .ignore();
+      final admitted = await loaded.future;
       if (admitted == null) {
         throw const FormatException(
           'Download this ebook before reading. Only verified local files can open.',
@@ -794,10 +823,15 @@ class ReaderSession extends ChangeNotifier {
         final pager = _pager = EpubPager(
           admitted,
           initial: _initialAddress,
+          expected: pageSettings?.value,
           onPlace: (address) => acceptAddress(generation, address),
           onWarning: (message) => warn(generation, message),
           onShow: (read) {
-            if (_live(generation)) speed?.pageShown(read: read);
+            if (!_live(generation)) return;
+            speed?.pageShown(read: read);
+            if (_pager?.shown.value?.page.settings case final settings?) {
+              pageSettings?.keep(settings);
+            }
           },
         );
         pager.bookPages.addListener(_repage);
@@ -1709,7 +1743,7 @@ class ReaderSession extends ChangeNotifier {
 /// another isolate.
 Future<List<ContentsEntry>> _contentsOf(Publication publication) async {
   if (publication.contents.isNotEmpty) return publication.contents;
-  final package = publication.resources[publication.packagePath]!;
+  final package = publication.textFiles[publication.packagePath]!;
   // NOTE: A hop costs a few milliseconds, more than reading a small package
   // document.
   final linear = package.length < 64 << 10

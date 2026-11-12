@@ -23,6 +23,9 @@ Future<ReadBook?> bookWordsReader(
   SourceFile source,
 ) async => null;
 
+/// No ebook loads on this platform, so no files that they write.
+Future<void> derivedFilesWritten(VerifiedFile original) async {}
+
 /// No ebook downloads on this platform, so no text outlines.
 Future<TextOutline> measureDownloadedOutline(
   VerifiedFile original,

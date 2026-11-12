@@ -87,7 +87,7 @@ BookWords bookWordsOf(Publication publication) {
   final offsets = <int>[];
   var visible = 0;
   for (final path in publication.spine) {
-    final bytes = publication.resources[path];
+    final bytes = publication.textFiles[path];
     if (bytes == null) continue;
     visible = _addSection(bytes, visible, words, offsets);
   }

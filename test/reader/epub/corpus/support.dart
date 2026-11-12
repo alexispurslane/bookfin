@@ -37,14 +37,14 @@ class SupportReport {
 
 /// Checks every section of [book], styled for a page [width] by [height]
 /// pixels.
-SupportReport checkSupport(
+Future<SupportReport> checkSupport(
   CorpusBook book, {
   double width = 412,
   double height = 671,
-}) {
+}) async {
   final report = SupportReport()..sections = book.sections;
   final opf = String.fromCharCodes(
-    book.publication.resources[book.publication.packagePath]!,
+    book.publication.textFiles[book.publication.packagePath]!,
   );
   if (RegExp(r'page-progression-direction="rtl"').hasMatch(opf)) {
     report.unsupported['right-to-left page order'] = {
@@ -64,7 +64,7 @@ SupportReport checkSupport(
       // A face that BookFonts cannot register, such as WOFF 2, draws in
       // the reader font.
       for (final face in sheet.fontFaces) {
-        final bytes = book.resource(face.path);
+        final bytes = await book.resource(face.path);
         if (bytes == null || sfntOf(bytes) == null) {
           note(const _Finding('embedded fonts drawn in the reader font'));
         }

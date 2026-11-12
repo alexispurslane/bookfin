@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:ffi/ffi.dart';
@@ -52,7 +51,13 @@ Future<T> readMobi<T>(
 ) {
   final path = original.path;
   final read = _imports.then(
-    (_) => Isolate.run(() async => use(await admittedMobi(path, digest))),
+    (_) => AdmittedBooks.load(
+      original,
+      digest,
+      EpubDocument.mobiPolicy,
+      () => _convert(path, digest),
+      use,
+    ),
   );
   _imports = read.then<void>((_) {}, onError: (Object error) {});
   return read;
@@ -60,14 +65,18 @@ Future<T> readMobi<T>(
 
 /// The admitted publication of the MOBI at [path], whose SHA-256 is
 /// [digest], read in the calling isolate, which must not be the UI
-/// isolate: the conversion that Bookfin kept, else a new one.
-Future<Publication> admittedMobi(String path, String digest) =>
-    AdmittedBooks.open(
-      File(path),
-      digest,
-      EpubDocument.mobiPolicy,
-      () => _convert(path, digest),
-    );
+/// isolate: the conversion that Bookfin kept, else a new one, which is then
+/// kept.
+Future<Publication> admittedMobi(String path, String digest) async {
+  final (publication, record) = await AdmittedBooks.read(
+    File(path),
+    digest,
+    EpubDocument.mobiPolicy,
+    () => _convert(path, digest),
+  );
+  if (record != null) await AdmittedBooks.keep(record);
+  return publication;
+}
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from
 /// the conversion that Bookfin kept, else from a new conversion.

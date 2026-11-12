@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
@@ -27,7 +26,7 @@ Future<ReaderDocument> loadReadingDocument(
   }
   if (container == 'pdf') {
     return PdfRuntime.instance.open(
-      await file.readAsBytes(),
+      file.path,
       original.digest,
       textSupply:
           textSupply ?? (Platform.isAndroid ? BundledEnglishText() : null),
@@ -46,6 +45,12 @@ Future<ReaderDocument> loadReadingDocument(
 Future<Publication> loadPublication(VerifiedFile original) async =>
     _admitted(await _verifiedFile(original.uri), original.digest);
 
+/// Completes once the files that the loads of the download [original]
+/// wrote beside it after they gave their book are written: the kept
+/// admitted book ([AdmittedBooks.written]).
+Future<void> derivedFilesWritten(VerifiedFile original) =>
+    AdmittedBooks.written(File.fromUri(original.uri));
+
 /// The text outline of the downloaded ebook [original] of [source]. One
 /// worker isolate reads the admitted book that Bookfin kept, or admits or
 /// converts the file and keeps it, as the reader does, and measures the
@@ -57,11 +62,15 @@ Future<TextOutline> measureDownloadedOutline(
   SourceFile source,
 ) async {
   final file = await _verifiedFile(original.uri);
-  return switch (await _containerOf(file, source)) {
+  final outline = await switch (await _containerOf(file, source)) {
     'pdf' => PdfRuntime.instance.measureOutline(file.path),
     'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
     _ => _readAdmitted(file, original.digest, measureTextOutline),
   };
+  // The caller's read of the download ends when this does, so the kept
+  // admitted book is written before a removal can start.
+  await AdmittedBooks.written(file);
+  return outline;
 }
 
 /// The container of the downloaded [file] of [source], in lowercase:
@@ -99,19 +108,29 @@ Future<T> _readAdmitted<T>(
   T Function(Publication publication) use,
 ) {
   final path = file.path;
-  return Isolate.run(() async => use(await _admittedEpub(path, digest)));
+  return AdmittedBooks.load(
+    file,
+    digest,
+    Publication.policy,
+    () async => Publication.admit(await File(path).readAsBytes(), digest),
+    use,
+  );
 }
 
 /// The admitted publication of the EPUB at [path], whose SHA-256 is
 /// [digest], read in the calling isolate, which must not be the UI
-/// isolate: the admitted book that Bookfin kept, else a new admission.
-Future<Publication> _admittedEpub(String path, String digest) =>
-    AdmittedBooks.open(
-      File(path),
-      digest,
-      Publication.policy,
-      () async => Publication.admit(await File(path).readAsBytes(), digest),
-    );
+/// isolate: the admitted book that Bookfin kept, else a new admission,
+/// which is then kept.
+Future<Publication> _admittedEpub(String path, String digest) async {
+  final (publication, record) = await AdmittedBooks.read(
+    File(path),
+    digest,
+    Publication.policy,
+    () async => Publication.admit(await File(path).readAsBytes(), digest),
+  );
+  if (record != null) await AdmittedBooks.keep(record);
+  return publication;
+}
 
 /// A reader of the words of the downloaded ebook [original] of [source],
 /// for the worker of the book's words (see [BookSearch]). It reads the

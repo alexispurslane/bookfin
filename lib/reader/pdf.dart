@@ -738,19 +738,28 @@ class PdfRuntime {
     return operation;
   }
 
-  /// Opens the PDF [bytes], whose SHA-256 is [digest]. Downloads computed
-  /// the digest when the download completed, so the open does not hash the
-  /// file again. Each page text is prepared through [hop].
+  /// Opens the PDF file at [path], whose SHA-256 is [digest]. Downloads
+  /// computed the digest when the download completed, so the open does not
+  /// hash the file again. PDFium reads the file itself, so its bytes never
+  /// come into this isolate (boo-yjq6). The open measures only the first
+  /// page, and the book measures each other page when it first uses it
+  /// (boo-yjq6). Each page text is prepared through [hop].
+  ///
+  /// NOTE: PDFium keeps the file open and reads its pages after the
+  /// Downloads read that gave [path] ended. That is safe because Downloads
+  /// replaces a file by a rename and removes it by an unlink: the open
+  /// handle keeps the verified bytes. A removed PDF's space returns when
+  /// the book closes.
   Future<PdfBook> open(
-    Uint8List bytes,
+    String path,
     String digest, {
     PdfTextSupply? textSupply,
     IsolateHop hop = compute,
   }) => _admit(() async {
     await (_initialization ??= pdfrxFlutterInitialize());
-    final document = await native.PdfDocument.openData(
-      bytes,
-      sourceName: digest,
+    final document = await native.PdfDocument.openFile(
+      path,
+      useProgressiveLoading: true,
     );
     if (document.isEncrypted || document.pages.isEmpty) {
       await document.dispose();
@@ -824,6 +833,9 @@ class _NativePdfBook extends PdfBook {
   final native.PdfDocument _document;
   final Set<Future<void>> _work = {};
   final Map<int, Future<PreparedPdfPage>> _layers = {};
+
+  /// The measurements of pages that run now, by page number.
+  final Map<int, Future<void>> _pageMeasurements = {};
   Future<void>? _closing;
   bool _disposed = false;
   @override
@@ -859,11 +871,35 @@ class _NativePdfBook extends PdfBook {
     );
   }
 
-  native.PdfPage _page(int number) {
+  /// Throws an [ArgumentError] when this PDF has no source page [number].
+  void _check(int number) {
     if (number < 1 || number > pageCount) {
       throw ArgumentError('Choose a source page in this PDF.');
     }
-    return _document.pages[number - 1];
+  }
+
+  /// Source page [number], measured.
+  ///
+  /// The open measured only the first page. Until PDFium measures another
+  /// page, pdfrx gives it the size of a measured page as a guess, and it
+  /// has no text and draws nothing. So the first use of a page measures it.
+  /// Nothing needs the sizes of all pages: the book map counts pages.
+  Future<native.PdfPage> _page(int number) async {
+    _check(number);
+    if (!_document.pages[number - 1].isLoaded) {
+      // The block returns nothing: the removed future is this one, and
+      // whenComplete would wait for it.
+      await (_pageMeasurements[number] ??= _document
+          .reloadPages(pageNumbersToReload: [number])
+          .whenComplete(() {
+            _pageMeasurements.remove(number);
+          }));
+    }
+    final page = _document.pages[number - 1];
+    if (!page.isLoaded) {
+      throw StateError('PDFium did not measure page $number.');
+    }
+    return page;
   }
 
   Future<T> _run<T>(Future<T> Function() action) {
@@ -933,13 +969,14 @@ class _NativePdfBook extends PdfBook {
     if (_closing != null) {
       return Future.error(StateError('This PDF is closed.'));
     }
-    final page = _page(sourcePage);
+    _check(sourcePage);
     if (_layers.length >= 16 && !_layers.containsKey(sourcePage)) {
       _layers.remove(_layers.keys.first);
     }
     return _layers.putIfAbsent(
       sourcePage,
       () => _run(() async {
+        final page = await _page(sourcePage);
         final raw = await page.loadText();
         final source = raw?.fullText ?? '';
         if (source.length > _pageTextLimit) {
@@ -985,7 +1022,7 @@ class _NativePdfBook extends PdfBook {
     if (!width.isFinite || width <= 0) {
       throw ArgumentError('PDF render width must be positive.');
     }
-    final page = _page(sourcePage);
+    final page = await _page(sourcePage);
     var fullWidth = width.clamp(120, 1600).toDouble();
     var fullHeight = page.height * fullWidth / page.width;
     if (fullHeight > 4000) {
@@ -1033,7 +1070,7 @@ class _NativePdfBook extends PdfBook {
         'pixels on each side.',
       );
     }
-    final page = _page(sourcePage);
+    final page = await _page(sourcePage);
     final image = await page.render(
       x: left,
       y: top,

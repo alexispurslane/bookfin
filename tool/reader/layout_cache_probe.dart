@@ -125,7 +125,7 @@ class _ProbeState extends State<_Probe> {
     final samples = <double>[];
     for (var index = 0; index < spine.length; index++) {
       final path = spine[index];
-      final xhtml = publication.resources[path]!;
+      final xhtml = publication.textFiles[path]!;
       final styles = publication.bookStyles;
       final sizes = publication.imageSizes;
       final language = publication.language;
@@ -145,11 +145,7 @@ class _ProbeState extends State<_Probe> {
       );
       prepareMs += _ms(watch);
       if (prepared.fonts.isNotEmpty) {
-        await BookFonts.load(
-          prepared.fonts,
-          (path) => publication.resources[path],
-          prefix,
-        );
+        await BookFonts.load(prepared.fonts, publication.bytesOf, prefix);
       }
       watch = Stopwatch()..start();
       final run = LayoutRun(prepared);

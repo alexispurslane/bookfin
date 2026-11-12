@@ -5,27 +5,64 @@
 // (hyphenation_en.dart), and the rules of Chromium's hyphenation for the
 // words that it breaks. Prepare runs it in a worker isolate, so it uses no
 // dart:ui.
+//
+// The patterns are const tables (hyphenation_en_tables.dart), which every
+// worker of the app shares, so a new worker does not build them from the
+// strings again (boo-yjq6). tool/reader/hyphenation_tables.dart writes them
+// with [hyphenationPatterns] and [hyphenationExceptions].
 import 'dart:typed_data';
 
-import 'hyphenation_en.dart';
+import 'hyphenation_en_tables.dart';
+
+/// The pattern table of the TeX patterns [patterns], separated by spaces:
+/// the levels of each pattern by the key of its letters (see
+/// [Hyphenator._code]). The
+/// key of each shorter start of a pattern maps to an empty list, so that a
+/// lookup can stop at the first key that no pattern starts with.
+Map<int, List<int>> hyphenationPatterns(String patterns) {
+  final table = <int, List<int>>{};
+  for (final pattern in patterns.split(' ')) {
+    final levels = <int>[0];
+    var key = 0;
+    var letters = 0;
+    for (final code in pattern.codeUnits) {
+      if (code >= 0x30 && code <= 0x39) {
+        levels.last = code - 0x30;
+      } else {
+        if (letters > 0) table.putIfAbsent(key, () => const []);
+        key = key * 28 + Hyphenator._code(code);
+        letters++;
+        levels.add(0);
+      }
+    }
+    if (letters > Hyphenator._longest) {
+      throw StateError('The hyphenation pattern $pattern is too long.');
+    }
+    table[key] = levels;
+  }
+  return table;
+}
+
+/// The exception table of the TeX exceptions [exceptions], separated by
+/// spaces: the breaks of each word, as [Hyphenator.breaks] gives them, by
+/// the word without its hyphens.
+Map<String, List<int>> hyphenationExceptions(String exceptions) => {
+  for (final word in exceptions.split(' '))
+    word.replaceAll('-', ''): [
+      for (var index = 0, hyphens = 0; index < word.length; index++)
+        if (word.codeUnitAt(index) == 0x2d) index - hyphens++,
+    ],
+};
 
 /// Liang hyphenation with the TeX patterns and exceptions of one language.
 final class Hyphenator {
-  Hyphenator._(String patterns, String exceptions) {
-    for (final pattern in patterns.split(' ')) {
-      _addPattern(pattern);
-    }
-    for (final word in exceptions.split(' ')) {
-      final breaks = <int>[];
-      for (var index = 0; index < word.length; index++) {
-        if (word.codeUnitAt(index) == 0x2d) breaks.add(index - breaks.length);
-      }
-      _exceptions[word.replaceAll('-', '')] = breaks;
-    }
-  }
+  /// The hyphenation of the pattern table [_patterns] and the exception
+  /// table [_exceptions], as [hyphenationPatterns] and
+  /// [hyphenationExceptions] give them.
+  const Hyphenator(this._patterns, this._exceptions);
 
-  static final _american = Hyphenator._(enUsPatterns, enUsExceptions);
-  static final _british = Hyphenator._(enGbPatterns, enGbExceptions);
+  static const _american = Hyphenator(enUsPatternTable, enUsExceptionTable);
+  static const _british = Hyphenator(enGbPatternTable, enGbExceptionTable);
 
   /// The hyphenator for [language], a BCP 47 language tag such as `en-GB`,
   /// or null when no patterns cover it. British English has its own
@@ -38,40 +75,17 @@ final class Hyphenator {
     return null;
   }
 
-  /// The levels of each pattern, by the key of its letters (see [_key]).
-  /// The key of each shorter start of a pattern maps to an empty list, so
-  /// that a lookup can stop at the first key that no pattern starts with.
-  final _patterns = <int, Uint8List>{};
-  final _exceptions = <String, List<int>>{};
-  static final _start = Uint8List(0);
+  final Map<int, List<int>> _patterns;
+  final Map<String, List<int>> _exceptions;
 
   /// The most letters of a pattern, the dots at a word's edges included.
   /// 28 to the power of 11 is below 2 to the power of 53, so a key stays
   /// exact in every Dart number.
   static const _longest = 11;
 
-  void _addPattern(String pattern) {
-    final levels = <int>[0];
-    var key = 0;
-    var letters = 0;
-    for (final code in pattern.codeUnits) {
-      if (code >= 0x30 && code <= 0x39) {
-        levels.last = code - 0x30;
-      } else {
-        if (letters > 0) _patterns.putIfAbsent(key, () => _start);
-        key = key * 28 + _code(code);
-        letters++;
-        levels.add(0);
-      }
-    }
-    if (letters > _longest) {
-      throw StateError('The hyphenation pattern $pattern is too long.');
-    }
-    _patterns[key] = Uint8List.fromList(levels);
-  }
-
   /// The number that stands for [code] in a key: 1 to 26 for the letters a
-  /// to z, 27 for the dot at a word's edge.
+  /// to z, 27 for the dot at a word's edge. A key is the number in base 28
+  /// whose digits are the numbers of a pattern's letters, first to last.
   static int _code(int code) => code == 0x2e ? 27 : code - 0x60;
 
   /// The breaks that hyphenation allows in [word]: for each, the number of

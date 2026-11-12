@@ -145,7 +145,7 @@ void main() {
 
   Future<PdfBook> open(String path, {PdfTextSupply? textSupply}) async {
     final book = await PdfRuntime.instance.open(
-      await File(path).readAsBytes(),
+      path,
       'd' * 64,
       textSupply: textSupply,
       hop: hop,

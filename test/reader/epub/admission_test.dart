@@ -1,8 +1,7 @@
 // Admission keeps what the native renderer needs beside the admitted files:
 // the book's own style sheets, the sizes of its images and its contents. The
-// admitted files themselves stay byte for byte, because the publication
-// identity hashes every one of them and every saved place of a book matches
-// on that identity.
+// admitted files themselves stay byte for byte, because every saved place of
+// a book points into them.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -16,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as raster;
 
 import '../../../tool/showcase_media.dart' as media;
+import 'helpers.dart' show admittedFilesDigest;
 
 /// An EPUB archive with the package document at `OPS/book.opf` and [files]
 /// beside it, by archive path.
@@ -152,7 +152,7 @@ List<(String, String, int)> listed(Publication publication) => [
 
 /// A showcase book from `tool/showcase_media.dart`, zipped again with a
 /// fixed file time, because the showcase stamps each file with the time it
-/// was made and the identity hashes the archive bytes too.
+/// was made and the admitted files digest hashes the archive bytes too.
 Uint8List showcase(
   String id,
   String title,
@@ -163,8 +163,9 @@ Uint8List showcase(
   modified: DateTime(2026, 11, 7),
 );
 
-/// The sha-256 of each book's bytes and the publication identity that
-/// admission gave it before tc-acl5, by book.
+/// The sha-256 of each book's bytes and the digest of its admitted files
+/// ([admittedFilesDigest]) since tc-acl5, by book. Before boo-yjq6, the
+/// digest of the admitted files was the publication identity.
 const identities = {
   'frost': (
     '53bd37512798f89a6af0db87b0e57b7c004f1fde4736e78d19268d89c3573f53',
@@ -223,22 +224,24 @@ const identities = {
 };
 
 void main() {
-  group('the publication identity of a known book stays the same', () {
+  group('the admitted files of a known book stay the same', () {
     void pin(String name, Uint8List Function() bytes, {Object? skip}) {
-      test(name, () {
-        final (digest, identity) = identities[name]!;
+      test(name, () async {
+        final (digest, files) = identities[name]!;
         final publication = Publication.admit(bytes());
         expect(
           publication.originalDigest,
           digest,
-          reason: 'The book itself changed, so its identity proves nothing.',
+          reason: 'The book itself changed, so its files prove nothing.',
         );
         expect(
-          publication.identity,
-          identity,
+          await admittedFilesDigest(publication),
+          files,
           reason:
-              'Admission output changed, so every saved place and bookmark of '
-              'this book would stop matching it.',
+              'Admission output changed, and the saved places and bookmarks '
+              'of this book point into it. Make sure that they still open, '
+              'and raise Publication.revision so that kept admitted books '
+              'admit again.',
         );
         publication.checkInvariants();
       }, skip: skip);
@@ -313,8 +316,8 @@ void main() {
       );
     });
 
-    test('of each showcase book is English, and the identity that saved '
-        'places match on stays the same', () {
+    test('of each showcase book is English, and the files that saved '
+        'places point into stay the same', () async {
       for (final (name, title, author, chapters) in [
         ('frost', 'First Frost', 'Mara Ellison', media.firstFrost),
         ('salt', 'Salt and Lantern', 'J. Okafor', media.saltAndLantern),
@@ -324,7 +327,11 @@ void main() {
           showcase(name, title, author, chapters),
         );
         expect(publication.language, 'en', reason: name);
-        expect(publication.identity, identities[name]!.$2, reason: name);
+        expect(
+          await admittedFilesDigest(publication),
+          identities[name]!.$2,
+          reason: name,
+        );
       }
     });
   });
@@ -334,8 +341,8 @@ void main() {
     final publication = Publication.admit(standardEbook());
     expect(publication.bookStyles['OPS/css/core.css'], core);
     expect(publication.bookStyles['OPS/css/local.css'], startsWith(namespace));
-    expect(publication.resources['OPS/css/core.css'], isEmpty);
-    expect(publication.resources['OPS/css/local.css'], isEmpty);
+    expect(publication.textFiles['OPS/css/core.css'], isEmpty);
+    expect(publication.textFiles['OPS/css/local.css'], isEmpty);
     publication.checkInvariants();
   });
 
@@ -487,7 +494,7 @@ void main() {
         hop: <M, R>(FutureOr<R> Function(M) work, M input) async => work(input),
       ))!;
       int size(int part) =>
-          publication.resources[publication.spine[part]]!.length;
+          publication.textFiles[publication.spine[part]]!.length;
       final whole = size(0) + size(1) + size(2);
       expect(
         [for (final chapter in book.chapters) chapter.title],

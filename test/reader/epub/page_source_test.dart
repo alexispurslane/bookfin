@@ -635,18 +635,14 @@ void main() {
     );
 
     final prefix = 'bookfin-${publication.identity.substring(0, 12)}';
-    await BookFonts.load(
-      section.fonts,
-      (path) => publication.resources[path],
-      prefix,
-    );
+    await BookFonts.load(section.fonts, publication.bytesOf, prefix);
     final reference = layoutSection(section);
     final fallback = layoutSection(
       prepareSections([
         SectionSource(
           index: 0,
           path: publication.spine.single,
-          xhtml: utf8.decode(publication.resources[publication.spine.single]!),
+          xhtml: utf8.decode(publication.textFiles[publication.spine.single]!),
           fontPrefix: 'bookfin-ffffffffffff',
           styleSheets: publication.bookStyles,
         ),

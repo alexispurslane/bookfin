@@ -64,7 +64,7 @@ void main() {
 
   setUpAll(() async {
     margins = await PdfRuntime.instance.open(
-      await File(marginsBook).readAsBytes(),
+      marginsBook,
       'e' * 64,
       hop: runInWorker,
     );

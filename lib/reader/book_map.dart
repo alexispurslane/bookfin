@@ -106,7 +106,7 @@ class BookMap {
     final publication = document.publication;
     final spine = publication.spine;
     final sizes = [
-      for (final path in spine) publication.resources[path]!.length,
+      for (final path in spine) publication.textFiles[path]!.length,
     ];
     final parts = {for (final (index, path) in spine.indexed) path: index};
     final entries = [
@@ -119,7 +119,7 @@ class BookMap {
     }
     final sections = [
       for (final MapEntry(key: part, value: ids) in wanted.entries)
-        (bytes: publication.resources[spine[part]]!, ids: ids),
+        (bytes: publication.textFiles[spine[part]]!, ids: ids),
     ];
     final bytes = sections.fold(
       0,

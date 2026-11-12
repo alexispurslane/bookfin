@@ -29,7 +29,7 @@ import '../downloads/verified_reads.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final publication = threeSections();
-  int size(String resource) => publication.resources[resource]!.length;
+  int size(String resource) => publication.textFiles[resource]!.length;
   final whole =
       size('OPS/one.xhtml') + size('OPS/two.xhtml') + size('OPS/three.xhtml');
 

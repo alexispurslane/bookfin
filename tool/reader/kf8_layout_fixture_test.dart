@@ -15,7 +15,8 @@ void main() {
     }
     final original = await File('tool/research/readers/fixtures/pg11-kf8.mobi')
         .copy('$output/original.mobi');
-    final document = await importMobi(original);
+    final digest = sha256.convert(await original.readAsBytes()).toString();
+    final document = await importMobi(original, digest);
     addTearDown(document.dispose);
     expect(
       document.originalDigest,
@@ -51,15 +52,21 @@ void main() {
       '2f6de175d5f69498afb7d8e941dfed0253e11881cfd1628556f959db71ec8fa8',
     );
     final publication = Publication.admit(converted);
-    expect(publication.resources, document.publication.resources);
-    final cached = await importMobi(original);
+    // Every admitted file, the images and fonts too.
+    Future<Map<String, Uint8List>> files(Publication publication) async => {
+      for (final path in publication.mediaTypes.keys)
+        path: (await publication.bytesOf(path))!,
+    };
+    final admitted = await files(publication);
+    expect(admitted, await files(document.publication));
+    final cached = await importMobi(original, digest);
     addTearDown(cached.dispose);
     expect(cached.identity, document.identity);
-    expect(cached.publication.resources, publication.resources);
-    for (final entry in publication.resources.entries) {
-      final file = File('$output/publication/${entry.key}');
+    expect(await files(cached.publication), admitted);
+    for (final MapEntry(key: path, value: bytes) in admitted.entries) {
+      final file = File('$output/publication/$path');
       await file.parent.create(recursive: true);
-      await file.writeAsBytes(entry.value);
+      await file.writeAsBytes(bytes);
     }
     await File('$output/publication.json').writeAsString(
       jsonEncode({

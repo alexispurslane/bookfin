@@ -32,32 +32,27 @@ abstract final class BookFonts {
 
   /// Registers each of [faces] once, under its family in the book whose
   /// faces carry [prefix] (`FontFaceRule.familyIn`), from the bytes that
-  /// [bytes] gives for its path. A face that fails to load is skipped, so
-  /// its runs draw in the reader font ([missing]). When the future
-  /// completes, every one of [faces] that can load is registered.
+  /// [bytes] gives for its path. A face without bytes or that fails to load
+  /// is skipped, so its runs draw in the reader font ([missing]). When the
+  /// future completes, every one of [faces] that can load is registered.
   static Future<void> load(
     Iterable<FontFaceRule> faces,
-    Uint8List? Function(String path) bytes,
+    Future<Uint8List?> Function(String path) bytes,
     String prefix,
   ) {
     final waits = <Future<void>>[];
-    final fresh = <(String, String), Uint8List>{};
+    final fresh = <(String, String)>[];
     for (final face in faces) {
       final key = (face.familyIn(prefix), face.path);
       if (_loads[key] case final pending?) {
         waits.add(pending);
-      } else if (bytes(face.path) case final file?) {
-        fresh[key] = file;
-      } else {
-        _loads[key] = Future.value();
+      } else if (!fresh.contains(key)) {
+        fresh.add(key);
       }
     }
     if (fresh.isNotEmpty) {
-      final registration = _register([
-        for (final MapEntry(key: (family, _), value: file) in fresh.entries)
-          (family, file),
-      ]);
-      for (final key in fresh.keys) {
+      final registration = _register(fresh, bytes);
+      for (final key in fresh) {
         _loads[key] = registration;
       }
       waits.add(registration);
@@ -65,9 +60,22 @@ abstract final class BookFonts {
     return Future.wait(waits);
   }
 
-  /// Converts every file of [fresh] in one worker isolate, then registers
+  /// Reads the file of every face of [faces], a family and a path each,
+  /// with [bytes], converts the files in one worker isolate, then registers
   /// each font that converts under its family.
-  static Future<void> _register(List<(String, Uint8List)> fresh) async {
+  static Future<void> _register(
+    List<(String, String)> faces,
+    Future<Uint8List?> Function(String path) bytes,
+  ) async {
+    final read = await Future.wait([
+      for (final (_, path) in faces)
+        bytes(path).then<Uint8List?>((file) => file, onError: (_) => null),
+    ]);
+    final fresh = [
+      for (final (index, file) in read.indexed)
+        if (file != null) (faces[index].$1, file),
+    ];
+    if (fresh.isEmpty) return;
     final files = [for (final (_, file) in fresh) file];
     final fonts = await Isolate.run(
       () => [for (final file in files) sfntOf(file)],
