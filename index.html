@@ -454,7 +454,8 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
           </thead>
           <tbody>
             <tr data-operation="fresh_open"><th scope="row">First open after download</th><td data-engine="bookfin">65.4</td><td data-engine="webview">355.3</td><td data-engine="koreader">127.9</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">31.2</td><td data-engine="webview">289.0</td><td data-engine="koreader">17.4</td></tr>
+            <tr data-operation="cached_reopen_readable"><th scope="row">Reopen: page readable</th><td data-engine="bookfin">9.6</td><td data-engine="webview">289.0</td><td data-engine="koreader">17.4</td></tr>
+            <tr data-operation="cached_reopen_interactive"><th scope="row">Reopen: page responds to touch</th><td data-engine="bookfin">31.2</td><td data-engine="webview">289.0</td><td data-engine="koreader">17.4</td></tr>
             <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">8.2</td><td data-engine="webview">52.5</td><td data-engine="koreader">2.6</td></tr>
             <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">4.2</td><td data-engine="webview">47.8</td><td data-engine="koreader">3.1</td></tr>
             <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">35.6</td><td data-engine="webview">64.8</td><td data-engine="koreader">70.0</td></tr>
@@ -462,7 +463,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         </table>
       </div>
       <p class="epub-evidence">Each time runs from the request until the engine has drawn the page: on the GPU for Bookfin and WebView, and on the CPU for KOReader, which always draws that way. The idle wait for the screen’s next refresh is left out, because KOReader has no such wait. These are emulator results, not phone timings.</p>
-      <p class="epub-evidence">Bookfin prepares each ebook in the background when its download finishes, so the first open uses that work. An open with no preparation takes 195.5 ms. A cached reopen shows the last page as a saved picture after 9.6 ms, and the table gives the time to the real page. <a href="docs/marketing/epub-renderer/README.md#rerun-on-current-main-november-12-2026">Books, method, and remaining differences</a>.</p>
+      <p class="epub-evidence">Bookfin prepares each ebook in the background when its download finishes, so the first open uses that work. An open with no preparation takes 195.5 ms. On a reopen, Bookfin first shows a saved picture of the last page, then lays the page out. A tap on the picture waits and acts when the laid-out page is ready. WebView and KOReader show the page only after they lay it out, so their two reopen times are the same. A first open has no saved picture, so its page is readable and responds at the same time. <a href="docs/marketing/epub-renderer/README.md#rerun-on-current-main-november-12-2026">Books, method, and remaining differences</a>.</p>
     </div>
   </section>
 
