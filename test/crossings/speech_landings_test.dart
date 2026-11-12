@@ -164,7 +164,9 @@ void main() {
       var changed = false;
       crossings_.changes.addListener(() => changed = true);
       hearing.gates.first.complete();
-      await pumpEventQueue();
+      // The search runs in a worker isolate, so the test waits for the
+      // speech work itself, which a landing shares.
+      await crossings_.landing(place, from: audio, into: ebookEdition());
       expect(changed, isTrue);
       final landed = now();
       expect((landed as TextLanding).matchedBy, MatchedBy.speech);

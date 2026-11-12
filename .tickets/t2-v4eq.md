@@ -23,3 +23,7 @@ Built the speech stage. lib/speech/place.dart: landHeard, densePairs, ReadingSea
 **2026-11-12T01:28:14Z**
 
 Review fixes: (B2) landHeard keeps a landing inside the body, so the narrator's closing words or a spoken heading land on the body's last or first word instead of an index outside the book. (B3) speech work that fails with a bug is forgotten and rethrown, so a later request tries again; an Exception, including a stopped worker, refuses this time. (B5) speech's ebook reader writes nothing beside a download: it reads the kept admitted book, admits an EPUB again in memory, and reads a MOBI only after the reader or the outline measurement converted it (keptMobi), in line with t4-3o9f. The plan's 'estimate of found windows': a reading place between two anchors now shows the anchors' estimate while speech works, and every Refining estimate reads 'about'.
+
+**2026-11-12T01:55:16Z**
+
+A full run under load failed 'shows the estimate of matched chapters while speech works, then the word' once: after it released the window, the test waited with pumpEventQueue for a search that runs in a worker isolate. It now awaits the landing, which shares the speech work.
