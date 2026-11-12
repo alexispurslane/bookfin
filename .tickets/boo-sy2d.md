@@ -1,6 +1,6 @@
 ---
 id: boo-sy2d
-status: in_progress
+status: closed
 deps: [boo-yjq6]
 links: []
 created: 2026-11-11T20:09:32Z
@@ -31,3 +31,7 @@ Step 2 (the kept page): layout records the builder calls of each paragraph that 
 **2026-11-12T01:52:00Z**
 
 Review (one reviewer, changes required) resolved: B1/Q1 the session keeps the shown page only when EpubPager.opensAtShown (a main run cut it and it holds the place that the pager reported last), test 'a page kept after a jump into the middle of a page and a new text size...' (red without the check). B2 depicts compares numbers within 1/1000 px (KeptPage.alike), and the encoder cuts rules to the rows that drawPage's clip shows plus 1 px, test 'a kept page depicts its page when a run from that page cut it, as a reopen does...' over the sample sections and odd settings (red before). B3 _keepShown catches every failure, and flush saves the place before it keeps the page. B4 a failed preparation keeps its key (.bookfin-admitted/failed) and the next preparation with that key does nothing; the open still admits. B5 one set of text-source ids per restoration. B6 a PDF edition reads no kept page. Q2 KeptPages.write skips a page that the file keeps already, and the key uses encodeTextPosition; the session keeps no copy. Q4 AdmittedBooks.prepare takes its own hold. Q5 _held has a documented, checked invariant. Q6 RunStyle owns toJson/fromJson, with a round-trip test. F4 a lent file goes through prepareDownloadedBook for an EPUB and a MOBI (red when the MOBI closure captures it). The session tests now wait until the open's load started before they read readingKeptPage (they were vacuous). Q7: recipe recording measured on host, 400-paragraph section: median 87.6 ms with, 86.2 ms without (noise). Left: B7 (an open in the few milliseconds before prepareDownloadedBook registers its write admits in parallel; a removal can wait up to one preparation), Q3 (VerifiedFile keeps its hold closure; the F4 test guards worker captures).
+
+**2026-11-12T03:24:45Z**
+
+Merged to main at 2ca16904 (orchestrator finished the merge after the agent's disk filled). Emulator-5560 medians, drawn page, 3 pairs per book, load 8 to 18: first open after download before/after prose 149.9/61.9, long 203.0/63.0, illustrated 221.8/70.7, divine 392.3/76.1, wealth MOBI 604.7/56.3 ms. Reopen before 34 to 40 ms of blank paper; after, the kept page shows at 9.0 to 10.4 ms and the true page at 32.8 to 38.6 ms (no delay within noise). Kept page matched the true page in 45 of 45 reopens. Kept page file 1.6 to 4.3 KB per opened book. Check on the merged tree: format clean, analyze clean, 3017 passed, 25 skipped, 1 failed (t3-5o5r, passed 3 of 3 alone).

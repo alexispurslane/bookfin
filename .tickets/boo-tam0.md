@@ -1,6 +1,6 @@
 ---
 id: boo-tam0
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-11T19:29:29Z
