@@ -1,6 +1,6 @@
 ---
 id: t2-uyth
-status: in_progress
+status: closed
 deps: [t2-8kxe, t2-67a3]
 links: []
 created: 2026-11-11T22:44:17Z

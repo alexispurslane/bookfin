@@ -1,6 +1,6 @@
 ---
 id: t2-xkzt
-status: in_progress
+status: closed
 deps: [t2-uyth]
 links: []
 created: 2026-11-11T22:44:17Z

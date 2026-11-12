@@ -1,6 +1,6 @@
 ---
 id: t2-8kxe
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-11T22:44:17Z

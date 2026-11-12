@@ -1,6 +1,6 @@
 ---
 id: t2-v4eq
-status: in_progress
+status: closed
 deps: [t2-ou1t, t2-xkzt]
 links: []
 created: 2026-11-11T22:44:17Z
