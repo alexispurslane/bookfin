@@ -6,8 +6,13 @@ test "${BOOKFIN_NIX_SHELL:-}" = 1 || { echo 'Run through nix develop --command b
 evidence="$root/${EPUB_BENCH_EVIDENCE:-tool/research/epub_engines/evidence}"
 mkdir -p "$evidence"
 test -f .cache/epub-engines/assets/manifest.json || { echo 'Run prepare.py first' >&2; exit 1; }
+# EPUB_BENCH_ONLY=bookfin rebuilds only the Bookfin shell and its test
+# package, and keeps the WebView and KOReader packages of an earlier build.
+only="${EPUB_BENCH_ONLY:-}"
 ndk="$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64"
 native=.cache/epub-engines/jni/arm64-v8a
+gradle="$(cat .cache/epub-engines/source-path.txt)/gradle-9.3.1/bin/gradle"
+if test "$only" != bookfin; then
 "$ndk/bin/aarch64-linux-android29-clang++" -std=c++17 -O3 -fPIC -shared -static-libstdc++ \
   tool/research/epub_engines/native/bridge.cpp -L"$native" \
   -l:libkoreader-monolibtic.so -l:libluajit.so -ljnigraphics -llog \
@@ -17,8 +22,8 @@ if ! test -f .cache/epub-engines/benchmark.keystore; then
     -keypass benchmark -alias benchmark -dname 'CN=Public EPUB benchmark' -keyalg RSA -validity 10000 >/dev/null 2>&1
 fi
 printf 'sdk.dir=%s\n' "$ANDROID_HOME" > tool/research/epub_engines/native/local.properties
-gradle="$(cat .cache/epub-engines/source-path.txt)/gradle-9.3.1/bin/gradle"
 "$gradle" -p tool/research/epub_engines/native :app:assembleWebviewRelease :app:assembleKoreaderRelease :app:assembleWebviewReleaseAndroidTest :app:assembleKoreaderReleaseAndroidTest --no-daemon --console=plain > "$evidence/native-build.txt" 2>&1
+fi
 mkdir -p tool/research/epub_engines/bookfin/.cache
 cp .cache/epub-engines/assets/SourceSerif4.ttf tool/research/epub_engines/bookfin/.cache/SourceSerif4.ttf
 cd tool/research/epub_engines/bookfin

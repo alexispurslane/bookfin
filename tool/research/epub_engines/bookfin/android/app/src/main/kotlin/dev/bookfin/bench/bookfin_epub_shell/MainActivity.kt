@@ -44,7 +44,7 @@ class MainActivity : FlutterActivity() {
                             original.outputStream().use { output -> input.copyTo(output) }
                         }
                         evidence.loadReferences()
-                        runOnUiThread { result.success(mapOf("book" to book, "run_id" to run, "round" to (intent.data?.getQueryParameter("round")?.toInt() ?: -1), "path" to original.absolutePath, "specification" to specification.toString(), "workload" to parsed.getJSONArray("workload").toString(), "process_start_ns" to android.os.Process.getStartElapsedRealtime()*1000000L)) }
+                        runOnUiThread { result.success(mapOf("book" to book, "run_id" to run, "round" to (intent.data?.getQueryParameter("round")?.toInt() ?: -1), "variant" to (intent.data?.getQueryParameter("variant") ?: "standard"), "path" to original.absolutePath, "specification" to specification.toString(), "workload" to parsed.getJSONArray("workload").toString(), "process_start_ns" to android.os.Process.getStartElapsedRealtime()*1000000L)) }
                     } catch (error: Exception) {
                         runOnUiThread { result.error("FIXTURE", error.toString(), null) }
                     }

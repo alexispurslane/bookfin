@@ -7,6 +7,10 @@ from fractions import Fraction
 
 ENGINES = ("bookfin", "webview", "koreader")
 OPERATIONS = ("fresh_open", "cached_reopen", "page_turn", "chapter_crossing", "font_change")
+# A Bookfin fresh open of a book that Bookfin prepared at download (boo-sy2d)
+# is a cell of its own, apart from the cold fresh open.
+PREPARED_AT_DOWNLOAD = "prepared_at_download"
+PREPARED_OPEN = "fresh_open_prepared"
 BOUNDARY = "request_to_reference_window_copy"
 PREPARATION_SCOPES = {
     "bookfin": "flutter_picture_and_decoded_page_images",
@@ -30,9 +34,17 @@ def summarize(rows):
     return result
 
 
+def cell_operation(row):
+    """The action of a row's cell: its operation, or the prepared fresh open."""
+    if row.get("variant") == PREPARED_AT_DOWNLOAD and row.get("operation") == "fresh_open":
+        return PREPARED_OPEN
+    return row.get("operation")
+
+
 def _summarize(rows, spec):
     start, end, engines, scopes = spec["start"], spec["end"], spec["engines"], spec["scopes"]
     less, check = spec.get("less", lambda row: 0), spec.get("check", lambda row: None)
+    select, operations = spec.get("select", lambda row: True), spec.get("operations", OPERATIONS)
     grouped = defaultdict(list)
     excluded = []
     seen = set()
@@ -43,13 +55,13 @@ def _summarize(rows, spec):
         if identity in seen:
             raise ValueError(f"duplicate sample id: {identity}")
         seen.add(identity)
-        if scopes is not None and row.get("engine") not in engines:
+        if scopes is not None and row.get("engine") not in engines or not select(row):
             continue
         reason = _invalid(row) or (_invalid_phases(row) if scopes is not None else None) or check(row)
         if reason:
             excluded.append({"id": identity, "reason": reason})
         else:
-            grouped[(row["engine"], row["book"], row["operation"])].append(row)
+            grouped[(row["engine"], row["book"], cell_operation(row))].append(row)
     cells = []
     exact_means = {}
     for (engine, book, operation), samples in sorted(grouped.items()):
@@ -70,13 +82,15 @@ def _summarize(rows, spec):
             "median_ms": _milliseconds(middle),
             "p90_ms": _milliseconds(durations[math.ceil(count * Fraction(9, 10)) - 1]),
         })
-    complete = len(cells) == len(engines) * 3 * len(OPERATIONS) and all(
-        cell["count"] >= (10 if cell["operation"] == "fresh_open" else 30)
+    found = {(cell["engine"], cell["book"], cell["operation"]) for cell in cells}
+    complete = all((engine, book, operation) in found for engine in engines
+                   for book in ("prose", "long", "illustrated") for operation in operations) and all(
+        cell["count"] >= (10 if cell["operation"].startswith("fresh_open") else 30)
         and cell["rounds"] >= 10 for cell in cells
     )
     means = []
     for engine in engines:
-        for operation in OPERATIONS:
+        for operation in OPERATIONS + (PREPARED_OPEN,):
             books = [cell for cell in cells if cell["engine"] == engine and cell["operation"] == operation]
             if len(books) == 3:
                 means.append({"engine": engine, "operation": operation, "book_count": 3,
@@ -198,6 +212,55 @@ def _invalid_drawing(row):
     return None
 
 
+def kept_frame_wait(row):
+    """Nanoseconds from the moment the kept page was handed to the viewport
+    until the vsync of the frame that first drew it, or zero when that
+    vsync came first. The same rule as `frame_wait`."""
+    vsync = row["kept_drawn_frame"]["vsyncStart_us"] * 1000 + row["phase_clock"]["offset_ns"]
+    return max(0, vsync - row["kept_ready_ns"])
+
+
+def _invalid_kept_page(row):
+    """Why a cached reopen gives no kept-page sample, or None."""
+    if row.get("kept_drawn_scope") != KEPT_SCOPE:
+        return f'no kept page drawn: {row.get("kept_status") or "unknown"}'
+    if row.get("kept_depicts_page") is not True:
+        return "the kept page does not depict the true page"
+    offset = row["phase_clock"]["offset_ns"]
+    for field in ("kept_ready", "kept_drawn"):
+        value, source = row.get(f"{field}_ns"), row.get(f"{field}_source_us")
+        if type(value) is not int or type(source) not in (int, float) or not math.isfinite(source) \
+                or abs(source * 1000 + offset - value) > 1:
+            return "missing kept page time or kept page time conversion mismatch"
+    frame = row.get("kept_drawn_frame")
+    if not isinstance(frame, dict) or any(type(frame.get(phase)) is not int
+                                          for phase in ("vsyncStart_us", "buildStart_us", "rasterFinish_us")):
+        return "missing kept page frame timing"
+    if frame["rasterFinish_us"] != row["kept_drawn_source_us"] or not frame["vsyncStart_us"] <= frame["buildStart_us"] \
+            or not row["engine_start_source_us"] < frame["buildStart_us"] <= frame["rasterFinish_us"] \
+            or not row["engine_start_ns"] < row["kept_ready_ns"]:
+        return "kept page frame outside the reopen"
+    if type(row.get("drawn_ns")) is not int or not row["kept_drawn_ns"] < row["drawn_ns"]:
+        return "the kept page did not draw before the true page"
+    return None
+
+
+def _invalid_download_preparation(row):
+    """Why a prepared process gives no preparation sample, or None."""
+    offset = row["phase_clock"]["offset_ns"]
+    for field in ("download_preparation_start", "download_preparation_end"):
+        value, source = row.get(f"{field}_ns"), row.get(f"{field}_source_us")
+        if type(value) is not int or type(source) not in (int, float) or not math.isfinite(source) \
+                or abs(source * 1000 + offset - value) > 1:
+            return "missing preparation time or preparation time conversion mismatch"
+    if not row["download_preparation_start_ns"] < row["download_preparation_end_ns"] < row["engine_start_ns"]:
+        return "preparation at download overlaps the open"
+    return None
+
+
+KEPT_SCOPE = "flutter_raster_finish_of_first_frame_with_kept_page"
+
+
 # Each interval starts when the engine's own code receives the request. The
 # drawn page ends when the engine has drawn the requested page: on the GPU
 # for Bookfin and WebView, on the CPU for KOReader. It leaves out only the
@@ -210,6 +273,20 @@ INTERVALS = {
                    "boundary": "engine_start_ns_to_drawn_ns_less_wait_until_drawing_frame_vsync"},
     "prepared_page": {"start": "engine_start_ns", "end": "preparation_ns",
                       "engines": ENGINES, "scopes": PREPARATION_SCOPES},
+    # The kept page that a Bookfin cached reopen draws before its true page
+    # (boo-sy2d), with the drawn page's rule for the wait.
+    "kept_page": {"start": "engine_start_ns", "end": "kept_drawn_ns", "engines": ("bookfin",),
+                  "scopes": {"bookfin": KEPT_SCOPE}, "less": kept_frame_wait, "check": _invalid_kept_page,
+                  "select": lambda row: row.get("operation") == "cached_reopen", "operations": ("cached_reopen",),
+                  "boundary": "engine_start_ns_to_kept_drawn_ns_less_wait_until_kept_frame_vsync"},
+    # The preparation that the app runs in the background when a download
+    # completes. It is not on the open's path.
+    "download_preparation": {"start": "download_preparation_start_ns", "end": "download_preparation_end_ns",
+                             "engines": ("bookfin",),
+                             "scopes": {"bookfin": "prepare_downloaded_book_call_to_return"},
+                             "check": _invalid_download_preparation,
+                             "select": lambda row: row.get("variant") == PREPARED_AT_DOWNLOAD,
+                             "operations": (PREPARED_OPEN,)},
     "koreader_before_draw": {"start": "engine_start_ns", "end": "operation_returned_ns",
                              "engines": ("koreader",),
                              "scopes": {"koreader": "koreader_layout_before_drawing"}},
@@ -228,7 +305,11 @@ def _invalid(row):
         return "unknown engine or book"
     if row.get("operation") not in OPERATIONS:
         return "unknown operation"
-    expected_cache = "fresh_document" if row["operation"] == "fresh_open" else "warm_document"
+    if row.get("variant") not in (None, "standard", PREPARED_AT_DOWNLOAD) \
+            or row.get("variant") == PREPARED_AT_DOWNLOAD and (row["engine"], row["operation"]) != ("bookfin", "fresh_open"):
+        return "unknown process variant"
+    expected_cache = {"fresh_open": "fresh_document", PREPARED_OPEN: PREPARED_AT_DOWNLOAD}.get(
+        cell_operation(row), "warm_document")
     if row.get("cache") != expected_cache:
         return "cache boundary mismatch"
     if row.get("boundary") != BOUNDARY or row.get("clock") != "android_elapsed_realtime_ns":

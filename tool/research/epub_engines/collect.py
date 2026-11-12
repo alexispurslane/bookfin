@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import statistics
 
-from results import ENGINES, frame_wait, summarize
+from results import ENGINES, PREPARED_AT_DOWNLOAD, frame_wait, kept_frame_wait, summarize
 from validation import certify
 
 
@@ -61,6 +61,14 @@ def answer_known(row):
         and row["next_frame_vsync_ns"] > row["frame_vsync_ns"]
 
 
+def statistics_count(values):
+    """(value, count) pairs of the values."""
+    counts = {}
+    for value in values:
+        counts[str(value)] = counts.get(str(value), 0) + 1
+    return counts.items()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("runs", type=Path)
@@ -99,7 +107,11 @@ def main():
     for engine in ("bookfin", "webview", "koreader"):
         for book in ("prose", "long", "illustrated"):
             selected = [row for row in certified if row["engine"] == engine and row["book"] == book]
-            fresh = [row for row in selected if row["operation"] == "fresh_open"]
+            fresh = [row for row in selected if row["operation"] == "fresh_open"
+                     and row.get("variant") != PREPARED_AT_DOWNLOAD]
+            prepared_opens = [row for row in selected if row.get("variant") == PREPARED_AT_DOWNLOAD]
+            reopens = [row for row in selected if row["operation"] == "cached_reopen" and accepted(row)]
+            kept_drawn = [row for row in reopens if type(row.get("kept_drawn_ns")) is int]
             verified_fresh = [row for row in fresh if row.get("content_verified") and row.get("window_copy_verified")]
             preparation = [row for row in selected if row["operation"] == "paginate"]
             measurements = [row for row in selected if row["measured"]]
@@ -133,6 +145,19 @@ def main():
                           "webview_answer_after_next_vsync_count": sum(map(answered_after_a_later_vsync, answered)) if answered else None,
                           "webview_preparation_in_running_frame_count":
                               sum(row.get("running_frame_vsync_ns") is not None for row in answered) if answered else None})
+            if engine == "bookfin":
+                facts[-1].update({
+                    "prepared_at_download_process_count": len({row["process_start_ns"] for row in prepared_opens}),
+                    "kept_page_written_count": sum(row.get("kept_written") is True for row in preparation),
+                    "cached_reopen_count": len(reopens),
+                    "cached_reopen_kept_status": dict(sorted(statistics_count(row.get("kept_status") for row in reopens))),
+                    "kept_page_drawn_count": len(kept_drawn),
+                    "kept_page_depicts_count": sum(row.get("kept_depicts_page") is True for row in kept_drawn),
+                    "kept_page_wait_median_ms": statistics.median(kept_frame_wait(row) / 1e6 for row in kept_drawn) if kept_drawn else None,
+                    "kept_to_true_page_median_ms": statistics.median((row["drawn_ns"] - row["kept_drawn_ns"]) / 1e6 for row in kept_drawn) if kept_drawn else None,
+                    "open_expected_settings_equal_shown_count": sum(row.get("expected_settings_equal_shown") is True
+                                                                    for row in fresh + prepared_opens + reopens),
+                    "open_count": len(fresh + prepared_opens + reopens)})
     summary["independent_processes_complete"] = len(facts) == 9 and all(fact["independent_process_start_count"] >= 10 for fact in facts)
     summary["complete"] = summary["complete"] and summary["independent_processes_complete"]
     for interval in summary["intervals"].values():

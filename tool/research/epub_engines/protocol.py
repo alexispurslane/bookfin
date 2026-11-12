@@ -24,21 +24,40 @@ def workload():
     return steps
 
 
+# A Bookfin process whose book Bookfin prepared at download, as the app does
+# when a download completes (boo-sy2d). It runs only the fresh open, which
+# must be the first open of a new process, as the cold fresh open is.
+PREPARED_AT_DOWNLOAD = "prepared_at_download"
+
+
 def schedule(rounds=12):
+    """The balanced schedule. Each round and book has the three engines'
+    standard processes, with the ids and order of the earlier runs, and one
+    Bookfin process prepared at download. That process takes each of the
+    four places in a book's group three times in twelve rounds."""
     if type(rounds) is not int or rounds < 3 or rounds % 3:
         raise ValueError("rounds must be a positive multiple of three")
     jobs = []
     for round_index in range(rounds):
         for book_order in range(3):
             book = BOOKS[(book_order + round_index) % 3]
+            group = []
             for engine_order in range(3):
                 engine = ENGINES[(engine_order + round_index + BOOKS.index(book)) % 3]
-                jobs.append({
+                group.append({
                     "run_id": f"round-{round_index:02d}-{book}-{engine}",
                     "round": round_index, "book": book, "engine": engine,
                     "engine_order": engine_order, "book_order": book_order,
                     "steps": workload(),
                 })
+            place = (round_index + BOOKS.index(book)) % 4
+            group.insert(place, {
+                "run_id": f"round-{round_index:02d}-{book}-bookfin-prepared",
+                "round": round_index, "book": book, "engine": "bookfin",
+                "variant": PREPARED_AT_DOWNLOAD, "place": place, "book_order": book_order,
+                "steps": workload()[:1],
+            })
+            jobs.extend(group)
     return jobs
 
 

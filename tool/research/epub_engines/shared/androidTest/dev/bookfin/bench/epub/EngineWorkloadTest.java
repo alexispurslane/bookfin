@@ -27,15 +27,20 @@ public final class EngineWorkloadTest {
         String selected = arguments.getString("book", "prose");
         String run = arguments.getString("run", "calibration-test");
         String round = arguments.getString("round", "-1");
+        // A Bookfin process whose book was prepared at download runs only the fresh open.
+        String variant = arguments.getString("variant", "standard");
+        assertTrue("Only Bookfin prepares a book at download", variant.equals("standard")
+            || variant.equals("prepared_at_download") && context.getPackageName().equals("dev.bookfin.bench.bookfin_epub_shell"));
         boolean calibration = run.startsWith("calibration-");
         JSONObject manifest = new JSONObject(new String(context.getAssets().open("manifest.json").readAllBytes(), StandardCharsets.UTF_8));
         JSONObject book = manifest.getJSONObject("books").getJSONObject(selected);
-        JSONArray steps = manifest.getJSONArray("workload");
+        JSONArray workload = manifest.getJSONArray("workload");
+        JSONArray steps = variant.equals("standard") ? workload : new JSONArray().put(workload.getJSONObject(0));
         File directory = new File(context.getExternalFilesDir(null), "runs/" + run);
         assertFalse("Run ids must be independent; previous evidence exists", directory.exists());
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         assertNotNull("The release shell has a launch Activity", intent);
-        intent.setData(Uri.parse("epubbench://run?book=" + selected + "&run=" + run + "&round=" + round));
+        intent.setData(Uri.parse("epubbench://run?book=" + selected + "&run=" + run + "&round=" + round + "&variant=" + variant));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         Activity activity = instrumentation.startActivitySync(intent);
         try {
@@ -95,6 +100,12 @@ public final class EngineWorkloadTest {
                     if (running) assertTrue("A running frame started at or after its vsync and before preparation ended",
                         row.getLong("running_frame_vsync_ns") <= row.getLong("running_frame_start_ns")
                             && row.getLong("running_frame_start_ns") <= row.getLong("preparation_ns"));
+                }
+                if (!variant.equals("standard")) {
+                    assertEquals(variant, row.getString("variant"));
+                    assertTrue("The book was prepared before the open, as at the end of its download",
+                        row.getLong("download_preparation_start_ns") < row.getLong("download_preparation_end_ns")
+                            && row.getLong("download_preparation_end_ns") < row.getLong("engine_start_ns"));
                 }
                 assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
                 assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns") + slack);

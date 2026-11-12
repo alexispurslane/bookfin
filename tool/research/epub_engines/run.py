@@ -128,6 +128,7 @@ def main():
                      "-e", "class", "dev.bookfin.bench.epub.EngineWorkloadTest",
                      "-e", "book", job["book"], "-e", "run", job["run_id"],
                      "-e", "round", str(job["round"]),
+                     *(["-e", "variant", job["variant"]] if "variant" in job else []),
                      package + ".test/androidx.test.runner.AndroidJUnitRunner"], log), load)
                 (args.output / (job["run_id"] + "-instrumentation.txt")).write_text(output)
                 run(["adb", "-s", args.serial, "pull", remote, str(destination)], log, allow_failure="OK (1 test)" not in output)
