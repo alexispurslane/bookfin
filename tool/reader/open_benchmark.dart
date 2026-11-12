@@ -76,7 +76,6 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/derived_files.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/document.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/hyphenate.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
@@ -554,7 +553,6 @@ class _BenchmarkState extends State<_Benchmark> {
       index: section,
       path: path,
       xhtml: utf8.decode(xhtml),
-      fontPrefix: 'bookfin-probe',
       styleSheets: styles,
       imageSizes: sizes,
       language: language,
@@ -595,15 +593,6 @@ class _BenchmarkState extends State<_Benchmark> {
     final (reused, sent, _) = await port.first as (int, int, PreparedSection);
     final copy = Timeline.now - sent;
 
-    // The book's faces, registered under a new name.
-    mark = Timeline.now;
-    await BookFonts.load(
-      prepared.fonts,
-      publication.bytesOf,
-      'bookfin-probe-${Timeline.now}',
-    );
-    final fonts = Timeline.now - mark;
-
     // The page source's own prepare, layout and picture of the section's
     // middle page.
     final pages = PageSource(publication)..settings = settings;
@@ -629,7 +618,6 @@ class _BenchmarkState extends State<_Benchmark> {
       'section': section,
       'characters': prepared.dom.visibleLength,
       'flowItems': prepared.flow.length,
-      'faces': prepared.fonts.length,
       'emptyHop': _ms(hop),
       'startCall': _ms(startCall),
       'workerCall': _ms(call),
@@ -637,7 +625,6 @@ class _BenchmarkState extends State<_Benchmark> {
       'prepare': _ms(work),
       'prepareReused': _ms(reused),
       'copyBack': _ms(copy),
-      'fonts': _ms(fonts),
       'sourcePrepare': _ms(ready),
       'anchoredLayout': _ms(layout),
       'picture': _ms(picture),

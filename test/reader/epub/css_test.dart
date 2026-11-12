@@ -10,7 +10,7 @@ import 'helpers.dart';
 /// The computed style of the element with id [id] in [body] under [css].
 Style styleOf(String id, String body, String css) {
   final source = section(body, css: css);
-  final (:styles, faces: _) = styleSection(
+  final styles = styleSection(
     source,
     DomSection.parse(source.xhtml),
     readerPage,
@@ -34,14 +34,9 @@ Map<String, Style> linkedStyles(
         '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T</title>'
         '<link href="$link" rel="stylesheet" type="text/css"/></head>'
         '<body>$body</body></html>',
-    fontPrefix: testFontPrefix,
     styleSheets: sheets,
   );
-  final (:styles, faces: _) = styleSection(
-    source,
-    DomSection.parse(source.xhtml),
-    settings,
-  );
+  final styles = styleSection(source, DomSection.parse(source.xhtml), settings);
   return {
     for (final MapEntry(key: element, value: style) in styles.entries)
       ?element.id: style,
@@ -352,55 +347,16 @@ void main() {
     expect((night.textAlign, night.italic), (Align.center, false));
   });
 
-  test('a font face names its family, its first supported publication '
-      'file, its weight and its style', () {
+  test('a font face rule styles nothing, and the rules after it apply', () {
     final sheet = StyleSheet.parse(
-      '@font-face{font-family:"Old Face";'
-      'src:url("../fonts/old.woff2") format("woff2"),'
-      ' url("../fonts/old.woff") format("woff");'
-      'font-weight:bold;font-style:italic}'
-      '@font-face{font-family:Plain;src:local("Plain"),'
-      ' url(https://example.com/plain.ttf), url(../fonts/plain.otf.woff2),'
-      ' url(../fonts/plain.ttf)}'
-      '@font-face{font-family:Remote;src:url(https://example.com/r.ttf)}'
-      '@font-face{src:url(../fonts/nameless.ttf)}'
-      '@media print{@font-face{font-family:Paper;src:url(../fonts/p.ttf)}}',
-      path: 'epub/css/fonts.css',
+      '@font-face{font-family:Book;src:url(../fonts/book.woff)}'
+      'p{font-style:italic}',
+      path: 'epub/css/book.css',
     );
-    expect(sheet.fontFaces, const [
-      FontFaceRule(
-        family: 'old face',
-        path: 'epub/fonts/old.woff',
-        weight: 700,
-        italic: true,
-      ),
-      FontFaceRule(family: 'plain', path: 'epub/fonts/plain.ttf'),
-    ]);
-  });
-
-  test('an imported sheet brings its font faces', () {
-    final source = SectionSource(
-      index: 0,
-      path: 'epub/text/one.xhtml',
-      xhtml:
-          '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T</title>'
-          '<link href="../css/main.css" rel="stylesheet"/></head>'
-          '<body><p>A</p></body></html>',
-      fontPrefix: testFontPrefix,
-      styleSheets: {
-        'epub/css/main.css': '@import "fonts/faces.css";',
-        'epub/css/fonts/faces.css':
-            '@font-face{font-family:Book;src:url(book.ttf)}',
-      },
+    expect(
+      [for (final rule in sheet.rules) rule.selector.compounds.single.tag],
+      ['p'],
     );
-    final (styles: _, :faces) = styleSection(
-      source,
-      DomSection.parse(source.xhtml),
-      readerPage,
-    );
-    expect(faces, const [
-      FontFaceRule(family: 'book', path: 'epub/css/fonts/book.ttf'),
-    ]);
   });
 
   test('a sheet keeps its first 20,000 rules', () {

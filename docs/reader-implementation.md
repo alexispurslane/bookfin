@@ -12,7 +12,7 @@ Admission output stays byte for byte the same, because the identity is part of e
 
 `ReaderSession` owns the current account, the source edition, the admitted publication, the saved reading position, the search generation and the reader commands. Asynchronous results carry a session generation. A change of account, credential, source or book makes old results void. Only a complete file from `Downloads.localFile` reaches the file loader. The loader refuses URLs that are not files and symbolic-link files, checks the archive size, and runs admission outside the UI isolate.
 
-`EpubPager` owns the shown place and the shown page. It reports each new place to the session once, through `onPlace`. `PageSource` owns the prepared sections, the layout runs, the laid pages, the decoded images and the embedded fonts of one open book. `EpubViewport` draws the shown page and reports gestures. The design document lists every owner.
+`EpubPager` owns the shown place and the shown page. It reports each new place to the session once, through `onPlace`. `PageSource` owns the prepared sections, the layout runs, the laid pages and the decoded images of one open book. `EpubViewport` draws the shown page and reports gestures. The design document lists every owner.
 
 Reading positions and bookmarks use the existing `TextPosition`, record identifiers, account keys and personal-record persistence. `LocalResumeStore.reading` is an adapter for a reading section in the account record, not a second bookmark database. Record merges keep both the audio and the reading sections. Audio positions do not convert to text positions.
 
@@ -37,7 +37,7 @@ The 16 MiB resource limit and the 128 MiB total limit also apply to processed by
 | Fonts | Local TTF, OTF, WOFF and WOFF2 files are admitted. The renderer registers TTF, OTF and WOFF 1 faces. A WOFF 2 face, or a face that does not load, draws in the reader font. |
 | Unsupported editions | Fixed-layout metadata, encrypted or obfuscated resources, and files that are not EPUB report an error. A MOBI or AZW3 book converts to an EPUB with libmobi first. |
 
-The renderer lays out real XHTML and CSS: block layout, tables, images, embedded fonts and hyphenation. It provides contents, internal links, page turns, text sizes, and cream and night themes. It also provides search, bookmarks with titles and notes, resume, screen reader semantics and text selection. "What stays unsupported" in the design document lists what it approximates.
+The renderer lays out real XHTML and CSS: block layout, tables, images and hyphenation. It draws all text in the reader font or in monospace, never in a font of the book. It provides contents, internal links, page turns, text sizes, and cream and night themes. It also provides search, bookmarks with titles and notes, resume, screen reader semantics and text selection. "What stays unsupported" in the design document lists what it approximates.
 
 ## Locations and search
 

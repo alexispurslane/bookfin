@@ -30,7 +30,6 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import 'css.dart';
 import 'dom.dart';
-import 'fonts.dart';
 import 'prepare.dart';
 import 'table.dart';
 
@@ -3513,20 +3512,14 @@ class _Built {
   }
 }
 
-/// The family that draws [family]: the reader font for an embedded face that
-/// did not load, as for a face that prepare cannot read, and else [family].
-String _drawn(String family) =>
-    BookFonts.missing(family) ? readerFontFamily : family;
-
 ui.FontWeight _weight(int weight) =>
     ui.FontWeight.values[((weight / 100).round() - 1).clamp(0, 8)];
 
 /// The text style that draws a run in [style] with [ink].
 ui.TextStyle runTextStyle(RunStyle style, ui.Color ink) {
-  final family = _drawn(style.family);
   return ui.TextStyle(
     color: ink,
-    fontFamily: family,
+    fontFamily: style.family,
     // A character that a face lacks draws in the reader font, not in the
     // platform's default font, and an arrow that both lack draws in the
     // arrow font, not in the platform's emoji font.
@@ -3555,7 +3548,7 @@ ui.TextStyle runTextStyle(RunStyle style, ui.Color ink) {
       // Flutter would pick the font's true bold, which is wider.
       ui.FontVariation(
         'wght',
-        family == readerFontFamily ? 400 : style.weight.toDouble(),
+        style.family == readerFontFamily ? 400 : style.weight.toDouble(),
       ),
     ],
   );
@@ -3578,7 +3571,7 @@ ui.ParagraphStyle blockParagraphStyle(RunStyle container, Align align) {
     // The block's own font and line height form a strut, as CSS's root
     // inline box does.
     strutStyle: ui.StrutStyle(
-      fontFamily: _drawn(container.family),
+      fontFamily: container.family,
       fontSize: container.size,
       height: height == null ? null : height / container.size,
       leadingDistribution: ui.TextLeadingDistribution.even,

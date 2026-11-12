@@ -252,7 +252,6 @@ SectionSource _withMainText(SectionSource source, double mainText) =>
       index: source.index,
       path: source.path,
       xhtml: source.xhtml,
-      fontPrefix: source.fontPrefix,
       styleSheets: source.styleSheets,
       imageSizes: source.imageSizes,
       language: source.language,

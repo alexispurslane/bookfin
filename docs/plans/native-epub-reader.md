@@ -45,7 +45,7 @@ Ticket keys E1 to E22 name the tickets. The table in "Order of work" maps each k
 | Main run | The layout run of a section that starts at the section start. |
 | True page | A page that a main run cut. |
 | Anchored page | A page that starts at the line that holds a given place. While the true page of the place is not known, the pager shows an anchored page. |
-| Page source | `PageSource`: the owner of prepared sections, layout runs, page starts, laid pages, decoded images and embedded fonts for one open book. |
+| Page source | `PageSource`: the owner of prepared sections, layout runs, page starts, laid pages and decoded images for one open book. |
 | Pager | `EpubPager`: the owner of the shown place and the shown page. It implements `DocumentNavigator`. |
 
 ## Modules
@@ -83,7 +83,6 @@ flowchart TB
 | `css.dart` | Style sheets, selectors, at-rules and the cascade | A worker |
 | `prepare.dart` | `PageSettings`, `SectionSource`, `PreparedSection`, flow items, styled runs and `prepareSections` | A worker |
 | `hyphenate.dart` | Liang hyphenation and its patterns | A worker |
-| `fonts.dart` | `BookFonts`: the face list, WOFF conversion and face registration | A worker and the UI isolate |
 | `layout.dart` | `LayoutRun`, `PageStart`, `LaidPage` and `lineStart` | The UI isolate |
 | `table.dart` | The grid layout of a table item | The UI isolate |
 | `paint.dart` | `drawPage`: a laid page into a `ui.Picture` | The UI isolate |
@@ -106,7 +105,6 @@ Each piece of state has one owner. Only the owner changes it. Everyone else read
 | Style cascade result: computed styles, styled runs, flow items | `PreparedSection` | Layout runs | The page source's cache |
 | Laid-out pages, page starts and their cache | `PageSource` | The pager asks for pages. Deck previews go through the pager. | The open book, current and previous settings |
 | Decoded images | `PageSource` | `drawPage` | Least recently used |
-| Embedded fonts | `BookFonts`, inside the page source | Layout | The process. Flutter cannot unload a font. |
 | Current page settings | `EpubPager`. The viewport presents new values. | Page source | The open book |
 | Shown place and shown page | `EpubPager` | The viewport draws the page. The session receives each new place as an `EpubAddress`. | The open book |
 | Page index of the shown section | Nobody stores it. It follows from the shown page. | | |
@@ -236,7 +234,6 @@ If the reader stays, the directions reach both ends of the book, so the whole bo
 | Page starts | Section and settings | Every section laid out in this session. They are integers only. | | Book close. The previous settings' starts stay as above. |
 | Laid pages: paragraphs, strip slices and the picture | Section, settings and page start | 24 pages | The shown page and its two neighbors | Eviction disposes the paragraphs and the picture. |
 | Decoded images | Path and decode width | 32 MiB | Images of the shown page | Book close |
-| Embedded fonts | Book identity and face | None | All | Process exit |
 
 The previous settings stay so that a toggle of the reader dock costs nothing. Hiding the dock makes the page area taller, which is a settings change. E20 measures memory on the phone and changes these limits.
 
@@ -401,17 +398,18 @@ The trial showed that every epub.js place lands on the page that shows it (661 o
 - `<style>` elements and `style` attributes come from the admitted DOM, because the DOM is part of the identity. Standard Ebooks books use linked sheets only.
 - The native CSS parser is the safety boundary. It resolves `url()` and `@import` only to files in the publication and loads nothing else. It limits rules per sheet, selector length and nesting depth. It runs in a worker, so a slow sheet cannot stall a frame.
 - The trial parser already skips `@namespace` and matches `epub|type` attributes. So Standard Ebooks books get their small caps, verse indents and title blocks.
-- E5 adds `@import` and `@font-face`, and sets `prefers-color-scheme` from the theme.
+- E5 adds `@import`, and sets `prefers-color-scheme` from the theme. The parser skips `@font-face` rules (see Book fonts).
 
-### Embedded fonts (E5)
+### Book fonts (E5, then boo-iv7q)
 
-- A `@font-face` rule names a family and a `src: url()` to a font file in the publication.
-- The worker converts WOFF 1 to SFNT (zlib per table). WOFF 2 needs Brotli and table transforms, so such a face uses the reader font, and the corpus report lists it.
-- The page source registers each face once with `ui.loadFontFromList`, before a section that uses it lays out. The family name is per book: `bookfin-<first 12 hex digits of the identity>-<family>`.
-- The prepare worker resolves each run's family list to one family. That family is a registered face, the reader font, or `monospace`, as in the trial.
-- A face whose file does not load draws in the reader font, as a WOFF 2 face does. `BookFonts` records which families registered, and layout draws a family that did not register in the reader font.
-- Layout sets the `opsz` axis of every font to the text size, as Chromium does. It sets the `wght` axis of an embedded face to the CSS weight, as Chromium does. The reader font keeps `wght` 400, because its `@font-face` rule names no weights.
-- Flutter cannot unload a font, so faces stay for the process. A character that a face lacks draws in the reader font.
+EPUB and MOBI text always draws in the reader font. The user decided this on 2026-11-12 (boo-iv7q). E5 drew a book's own `@font-face` fonts, and boo-iv7q removed that code.
+
+- The CSS parser skips `@font-face` rules. The reader never reads a book's font files and never registers a font.
+- The prepare worker resolves each run's family list to one family. It takes the first family that the reader has: the reader font for `serif` and the reader font's names, and `monospace` for `monospace`. It passes over every other family, also a family that the book embeds. When no family matches, the run draws in the reader font.
+- So `font-family: BookFont, monospace` draws in monospace, and `font-family: BookFont, serif` draws in the reader font.
+- Layout sets the `opsz` axis of every font to the text size, as Chromium does. It sets the `wght` axis of monospace to the CSS weight, as Chromium does. The reader font keeps `wght` 400, because its `@font-face` rule names no weights.
+- A character that the reader font lacks draws in a fallback font of the system. A book that uses its own font for symbols or for another script can show different glyphs than its author meant.
+- Every run draws in a font that the app bundles or that the system has. So a new process can draw a kept page (boo-sy2d) of any EPUB or MOBI before its book loads.
 
 ### Hyphenation (E16)
 
@@ -485,7 +483,7 @@ The libmobi conversion stays. A MOBI or AZW3 book converts to an EPUB, admission
 
 ### What stays unsupported
 
-Vertical writing and right-to-left page order lay out as left-to-right pages. Flutter still shapes right-to-left words within a line. MathML is removed by admission. Inline SVG shows its label. `::first-letter`, generated content and multiple columns render as plain text in one column. `text-wrap: pretty` breaks lines greedily. A WOFF 2 face uses the reader font. A `rowspan` counts as 1.
+Vertical writing and right-to-left page order lay out as left-to-right pages. Flutter still shapes right-to-left words within a line. MathML is removed by admission. Inline SVG shows its label. `::first-letter`, generated content and multiple columns render as plain text in one column. `text-wrap: pretty` breaks lines greedily. A book's own fonts draw in the reader font. A `rowspan` counts as 1.
 
 ## Testing
 
@@ -510,7 +508,7 @@ Each ticket writes its tests first, in the language of the domain. These are the
 - TalkBack reads the text of the shown page in order, and its scroll actions turn pages.
 - A long press selects text, and Copy reports the selected text.
 - The scrub deck draws the true page of a place, with neighbors that exactly one page holds each.
-- Standard Ebooks books get their own styles, and embedded fonts draw their glyphs.
+- Standard Ebooks books get their own styles. Text that names a font of the book draws in the reader font.
 - A simple table lays out as a grid, and a page breaks between rows.
 - Hyphenated words break where the patterns allow and show a hyphen.
 
@@ -657,7 +655,6 @@ E21 waits for this choice. Nothing else depends on it.
 
 - Phone speed is not measured. The host numbers come from JIT code and CPU raster. E20 measures the Pixel 8 and tunes the budget and the limits.
 - Memory of laid paragraphs is not measured. Flutter keeps paragraphs in native memory. The cache limits bound it, and E20 measures it.
-- Embedded fonts stay registered for the life of the process. Opening many books with fonts grows memory a little each time.
 - Selection needs a custom `Selectable` render object for pages drawn from pictures. It is the largest piece of new UI code.
 - After a settings change, the first turn past an anchored page can repeat a few lines once.
 - Admission is frozen. A later change to admission output stops every saved place of the books that it changes from matching. Such a change needs its own migration design first.

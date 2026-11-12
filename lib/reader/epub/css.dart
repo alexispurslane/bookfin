@@ -214,50 +214,9 @@ class StyleRule {
   final int order;
 }
 
-/// One `@font-face` rule: a font file of the publication and the family,
-/// weight and style that it draws.
-class FontFaceRule {
-  const FontFaceRule({
-    required this.family,
-    required this.path,
-    this.weight = 400,
-    this.italic = false,
-  });
-
-  /// The family that the rule declares, in lower case, because CSS matches
-  /// family names without regard to case.
-  final String family;
-
-  /// The publication path of the font file.
-  final String path;
-
-  /// The CSS font weight that the face draws, from 100 to 900.
-  final int weight;
-  final bool italic;
-
-  /// The family that the face registers under in the book whose faces carry
-  /// [prefix] (`SectionSource.fontPrefix`).
-  String familyIn(String prefix) => '$prefix-$family';
-
-  @override
-  bool operator ==(Object other) =>
-      other is FontFaceRule &&
-      other.family == family &&
-      other.path == path &&
-      other.weight == weight &&
-      other.italic == italic;
-
-  @override
-  int get hashCode => Object.hash(family, path, weight, italic);
-
-  @override
-  String toString() =>
-      'FontFaceRule($family, $path, $weight${italic ? ', italic' : ''})';
-}
-
 /// A parsed style sheet.
 class StyleSheet {
-  StyleSheet._(this.rules, this.pseudoRules, this.fontFaces);
+  StyleSheet._(this.rules, this.pseudoRules);
 
   /// Parses [css], the text of the file at publication [path]. `url()` and
   /// `@import` resolve against [path] and only to publication paths, so
@@ -278,7 +237,7 @@ class StyleSheet {
     final output = _Output(firstOrder, media, read ?? (_) => null);
     if (path != null) output.readPaths.add(path);
     _SheetParser(css, path, 0, output).parseSheet();
-    return StyleSheet._(output.rules, output.pseudoRules, output.fontFaces);
+    return StyleSheet._(output.rules, output.pseudoRules);
   }
 
   /// The rules that style elements.
@@ -288,9 +247,6 @@ class StyleSheet {
   /// which the renderer does not draw. Their selectors match the
   /// element that the pseudo-element belongs to.
   final List<StyleRule> pseudoRules;
-
-  /// The `@font-face` rules that apply.
-  final List<FontFaceRule> fontFaces;
 }
 
 /// What `@media` conditions see.
@@ -362,8 +318,7 @@ const maxNesting = 32;
 /// How many sheets deep imports reach below a linked sheet.
 const maxImportDepth = 4;
 
-/// What every sheet of one parse adds to: the rules and font faces in
-/// cascade order, the next order, and the paths of the sheets read.
+/// What every sheet of one parse adds to: the rules in cascade order, the next order, and the paths of the sheets read.
 class _Output {
   _Output(this.order, this.media, this.textOf);
   int order;
@@ -373,7 +328,6 @@ class _Output {
   final String? Function(String path) textOf;
   final rules = <StyleRule>[];
   final pseudoRules = <StyleRule>[];
-  final fontFaces = <FontFaceRule>[];
   final readPaths = <String>{};
 }
 
@@ -478,8 +432,6 @@ class _SheetParser {
           nesting + 1,
         );
         if (_ended) return;
-      case 'font-face':
-        if (apply) _fontFace(text.substring(open + 1, close));
       default:
         break;
     }
@@ -498,60 +450,6 @@ class _SheetParser {
       if (css == null) return;
       _SheetParser(css, target, depth + 1, output).parseSheet();
     }
-  }
-
-  void _fontFace(String body) {
-    String? family;
-    String? file;
-    var weight = 400;
-    var italic = false;
-    for (final declaration in parseDeclarations(body)) {
-      final value = declaration.value.trim();
-      final lower = value.toLowerCase();
-      switch (declaration.property) {
-        case 'font-family':
-          family = lower.replaceAll(RegExp(r'''^["']|["']$'''), '').trim();
-        case 'src':
-          file = _fontFile(value);
-        case 'font-weight':
-          // A variable face names a range. Its first weight stands for it.
-          weight = switch (_tokens(lower).firstOrNull) {
-            'bold' => 700,
-            final token? => int.tryParse(token) ?? 400,
-            null => 400,
-          };
-        case 'font-style':
-          italic = lower.startsWith('italic') || lower.startsWith('oblique');
-      }
-    }
-    if (family == null || family.isEmpty || file == null) return;
-    output.fontFaces.add(
-      FontFaceRule(family: family, path: file, weight: weight, italic: italic),
-    );
-  }
-
-  /// The publication path of the first source in the `src` [value] that the
-  /// renderer can read, as Chromium takes the first source that it
-  /// supports. WOFF 2, EOT and SVG fonts are not read.
-  String? _fontFile(String value) {
-    for (final part in _splitTop(value, ',')) {
-      final source = part.trim();
-      if (!source.toLowerCase().startsWith('url(')) continue;
-      if (_reference(source) case (final reference, final hints)) {
-        final format = RegExp(r'''format\(\s*["']?([^"')\s]+)''')
-            .firstMatch(hints.toLowerCase())
-            ?.group(1);
-        final readable = format == null
-            ? !RegExp(
-                r'\.(woff2|eot|svgz?)$',
-                caseSensitive: false,
-              ).hasMatch(reference.split('#').first)
-            : _readableFormats.contains(format);
-        if (!readable) continue;
-        if (_resolve(reference) case final target?) return target;
-      }
-    }
-    return null;
   }
 
   String? _resolve(String reference) {
@@ -614,15 +512,6 @@ class _SheetParser {
     }
   }
 }
-
-const _readableFormats = {
-  'woff',
-  'truetype',
-  'opentype',
-  'woff-variations',
-  'truetype-variations',
-  'opentype-variations',
-};
 
 /// The reference at the start of [text], a `url()` or a string, and the
 /// text after it, or null.

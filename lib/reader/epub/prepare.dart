@@ -118,7 +118,6 @@ class SectionSource {
     required this.index,
     required this.path,
     required this.xhtml,
-    required this.fontPrefix,
     this.styleSheets = const {},
     this.imageSizes = const {},
     this.language,
@@ -135,12 +134,6 @@ class SectionSource {
   /// The CSS text of each style sheet that the section can reach through
   /// links and `@import`, by its publication path.
   final Map<String, String> styleSheets;
-
-  /// The start of the family name of each of the book's embedded faces:
-  /// `bookfin-` and the first 12 hex digits of the publication identity.
-  /// Flutter registers fonts for the whole process, so the prefix keeps one
-  /// book's faces apart from another book's faces of the same family.
-  final String fontPrefix;
 
   /// The width and height in pixels of each image, by its publication path.
   /// An image without an entry has no intrinsic size.
@@ -192,7 +185,7 @@ List<int> mainTextSamples(List<int> lengths) {
 /// (`Publication.mainTextSize`).
 double measureMainTextSize(List<SectionSource> samples) => _mostCharacters(
   samples,
-  (source, dom) => _styleSection(source, dom, _mainTextPage, 1).styles,
+  (source, dom) => _styleSection(source, dom, _mainTextPage, 1),
 );
 
 /// The page that [measureMainTextSize] styles the book for.
@@ -212,7 +205,7 @@ const _mainTextPage = PageSettings(
 double shownMainTextSize(List<SectionSource> samples, PageSettings settings) =>
     _mostCharacters(
       samples,
-      (source, dom) => styleSection(source, dom, settings).styles,
+      (source, dom) => styleSection(source, dom, settings),
     );
 
 /// The font size that covers the most visible characters of [samples],
@@ -256,8 +249,7 @@ class PreparedSection {
     this.settings,
     this.dom,
     this.flow,
-    this.styles,
-    this.fonts, {
+    this.styles, {
     this.firstPrepared = 0,
     this.reachesEnd = true,
   });
@@ -272,10 +264,6 @@ class PreparedSection {
 
   /// The text styles that the flow items name by index.
   final List<RunStyle> styles;
-
-  /// The embedded faces that [styles] draw with. Each must be registered
-  /// (`BookFonts.load`) before the section lays out.
-  final List<FontFaceRule> fonts;
 
   /// The first flow item that a part of the section ([preparePart])
   /// prepared: the item after its last [SkippedItem]. 0 for a whole
@@ -443,19 +431,12 @@ class PreparedSection {
         widows: paragraph.widows,
       );
     }
-    return PreparedSection._(
-      index,
-      settings,
-      dom,
-      [
-        ...boxes,
-        ...items,
-        for (var close = 0; close < boxes.length + depth; close++)
-          const BlockEnd(),
-      ],
-      styles,
-      fonts,
-    );
+    return PreparedSection._(index, settings, dom, [
+      ...boxes,
+      ...items,
+      for (var close = 0; close < boxes.length + depth; close++)
+        const BlockEnd(),
+    ], styles);
   }
 }
 
@@ -575,23 +556,16 @@ _prepare(
   Map<DomElement, Style> styled = const {},
 }) {
   final parsed = dom ?? DomSection.parse(source.xhtml);
-  final (:styles, faces: declared) = styleSection(
+  final styles = styleSection(
     source,
     parsed,
     settings,
     until: until,
     styled: styled,
   );
-  final faces = _Faces(declared, source.fontPrefix);
   final builder = _BoxBuilder(styles, until: until);
   final body = builder.block(parsed.body);
-  final flattener = _Flattener(
-    source,
-    settings,
-    styles,
-    faces,
-    skipBefore: from,
-  );
+  final flattener = _Flattener(source, settings, styles, skipBefore: from);
   flattener.block(body, settings.width);
   return (
     section: PreparedSection._(
@@ -600,7 +574,6 @@ _prepare(
       parsed,
       flattener.flow,
       flattener.runStyles,
-      faces.used.toList(),
       firstPrepared: flattener.firstPrepared,
       reachesEnd: !builder.cut,
     ),
@@ -1109,12 +1082,12 @@ class ImageSizing {
 // Styles.
 
 /// The computed style of each element of [dom], the parsed [source], under
-/// its style sheets and the reader's rules for [settings], and the
-/// `@font-face` rules of those sheets. With [until], only the elements up
-/// to the node [until] in document order have a style. [styled] holds the
-/// styles that an earlier call computed for the same [dom] and [settings]:
-/// they are kept, and only the other elements are styled.
-({Map<DomElement, Style> styles, List<FontFaceRule> faces}) styleSection(
+/// its style sheets and the reader's rules for [settings]. With [until],
+/// only the elements up to the node [until] in document order have a
+/// style. [styled] holds the styles that an earlier call computed for the
+/// same [dom] and [settings]: they are kept, and only the other elements
+/// are styled.
+Map<DomElement, Style> styleSection(
   SectionSource source,
   DomSection dom,
   PageSettings settings, {
@@ -1133,7 +1106,7 @@ class ImageSizing {
 /// [fontScale] (see [Cascade.fontScale]), or, when [fontScale] is null,
 /// with the body's font size set to the reader's text size, as epub.js
 /// sets it.
-({Map<DomElement, Style> styles, List<FontFaceRule> faces}) _styleSection(
+Map<DomElement, Style> _styleSection(
   SectionSource source,
   DomSection dom,
   PageSettings settings,
@@ -1184,10 +1157,7 @@ class ImageSizing {
   }
 
   visit(dom.root, rootStyle);
-  return (
-    styles: styles,
-    faces: [for (final sheet in sheets) ...sheet.fontFaces],
-  );
+  return styles;
 }
 
 /// The book's style sheets that section [dom] uses, linked or in style
@@ -1630,17 +1600,10 @@ String? _marker(String type, int number) {
 /// Turns a tree of boxes into flow items, with every length that the width
 /// of its containing block decides in pixels.
 class _Flattener {
-  _Flattener(
-    this.source,
-    this.settings,
-    this.styles,
-    this.faces, {
-    this.skipBefore,
-  });
+  _Flattener(this.source, this.settings, this.styles, {this.skipBefore});
   final SectionSource source;
   final PageSettings settings;
   final Map<DomElement, Style> styles;
-  final _Faces faces;
 
   /// The first node of a part of the section: a paragraph, an image or a
   /// table whose nodes all come before it is a [SkippedItem]. Null when
@@ -2130,7 +2093,7 @@ class _Flattener {
 
   /// The index of the run style of [style].
   int _styleOf(Style style) => _byStyle[style] ??= () {
-    final run = _runStyle(style, faces.familyOf(style));
+    final run = _runStyle(style, _familyOf(style));
     return _byValue.putIfAbsent(run, () {
       runStyles.add(run);
       return runStyles.length - 1;
@@ -2170,54 +2133,21 @@ RunStyle _runStyle(Style style, String family) => RunStyle(
   oldstyleFigures: style.oldstyleFigures,
 );
 
-/// A section's embedded faces by family, and the faces that its runs use.
-class _Faces {
-  _Faces(Iterable<FontFaceRule> faces, this.prefix) {
-    for (final face in faces) {
-      (_byFamily[face.family] ??= []).add(face);
+/// The family to draw [style] with: the first of its families that the
+/// renderer has, the reader's font or monospace, and else the reader's font.
+/// A family that the book embeds with `@font-face` is passed over like any
+/// other family that the renderer lacks, so the book's own fonts never draw
+/// (boo-iv7q).
+String _familyOf(Style style) {
+  for (final name in style.fontFamily) {
+    switch (name.toLowerCase()) {
+      case 'bookfinserif' || 'source serif 4' || 'serif':
+        return readerFontFamily;
+      case 'monospace':
+        return 'monospace';
     }
   }
-
-  final String prefix;
-  final _byFamily = <String, List<FontFaceRule>>{};
-
-  /// The faces that the runs use, in the order of first use.
-  final used = <FontFaceRule>{};
-
-  /// The family to draw [style] with: the first of its families that is
-  /// embedded or that the renderer has. That is an embedded family, the
-  /// reader's font or monospace, and else the reader's font. The face of an
-  /// embedded family that suits [style] joins [used].
-  String familyOf(Style style) {
-    for (final name in style.fontFamily) {
-      final family = name.toLowerCase();
-      if (_byFamily[family] case final faces?) {
-        final face = _nearest(faces, style);
-        used.add(face);
-        return face.familyIn(prefix);
-      }
-      switch (family) {
-        case 'bookfinserif' || 'source serif 4' || 'serif':
-          return readerFontFamily;
-        case 'monospace':
-          return 'monospace';
-      }
-    }
-    return readerFontFamily;
-  }
-
-  /// The face of [faces] that CSS font matching picks for [style], in a
-  /// simple form: the same slant if one has it, then the nearest weight.
-  static FontFaceRule _nearest(List<FontFaceRule> faces, Style style) {
-    final slant = faces.where((face) => face.italic == style.italic).toList();
-    return (slant.isEmpty ? faces : slant).reduce(
-      (best, face) =>
-          (face.weight - style.fontWeight).abs() <
-              (best.weight - style.fontWeight).abs()
-          ? face
-          : best,
-    );
-  }
+  return readerFontFamily;
 }
 
 String _sameLength(String original, String changed) =>

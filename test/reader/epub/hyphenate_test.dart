@@ -270,7 +270,6 @@ void main() {
                   '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T'
                   '</title><style>p{hyphens:auto}</style></head>'
                   '<body>$body</body></html>',
-              fontPrefix: testFontPrefix,
               language: language,
             ),
           ], readerPage).single;

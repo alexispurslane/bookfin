@@ -36,7 +36,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
@@ -116,7 +115,6 @@ class _ProbeState extends State<_Probe> {
       await local.writeAsBytes(await _fetch(book), flush: true);
     }
     final publication = Publication.admit(await local.readAsBytes());
-    final prefix = 'bookfin-${publication.identity.substring(0, 12)}';
     final spine = publication.spine;
     var prepareMs = 0.0;
     var layoutMs = 0.0;
@@ -136,7 +134,6 @@ class _ProbeState extends State<_Probe> {
             index: index,
             path: path,
             xhtml: utf8.decode(xhtml),
-            fontPrefix: prefix,
             styleSheets: styles,
             imageSizes: sizes,
             language: language,
@@ -144,9 +141,6 @@ class _ProbeState extends State<_Probe> {
         ], settings).single,
       );
       prepareMs += _ms(watch);
-      if (prepared.fonts.isNotEmpty) {
-        await BookFonts.load(prepared.fonts, publication.bytesOf, prefix);
-      }
       watch = Stopwatch()..start();
       final run = LayoutRun(prepared);
       while (!run.done) {

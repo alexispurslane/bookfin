@@ -5,6 +5,7 @@
 // the true page shows.
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/reader/book_map.dart';
@@ -23,7 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles;
-import 'epub/corpus/book.dart' show showcaseBooks;
+import 'epub/corpus/book.dart' show madeUpEpub, showcaseBooks;
 import 'epub/helpers.dart' show loadReaderFont, prose, readerPage, section;
 import 'epub/layout_run_test.dart' show runToEnd;
 import 'session_native_test.dart'
@@ -42,9 +43,13 @@ void main() {
 
   /// The loads that sessions started since the last [setUp].
   var loads = 0;
-  final bytes = showcaseBooks()['showcase-frost']!;
+  final showcase = showcaseBooks()['showcase-frost']!;
+
+  /// The downloaded book's file.
+  late Uint8List bytes;
 
   setUp(() async {
+    bytes = showcase;
     folder = await Directory.systemTemp.createTemp('bookfin-kept-session-');
     download = await File('${folder.path}/complete').writeAsBytes(bytes);
     downloads = LocalFiles()..files[epubFile.key] = download.uri;
@@ -151,6 +156,28 @@ void main() {
 
   test('the shown page is kept with each saved place', () async {
     final reader = await readTo(3);
+
+    final kept = await keptPages.read(verified(), reader.position!);
+    addTearDown(() => kept?.dispose());
+
+    expect(kept, isNotNull);
+    expect(kept!.depicts(reader.pager!.shown.value!.page), isTrue);
+  });
+
+  test('a book that styles its text with its own font keeps its shown page '
+      'too', () async {
+    bytes = madeUpEpub(
+      [for (var index = 0; index < 3; index++) '<p>${prose(40)}</p>'],
+      css:
+          '@font-face{font-family:Outfit;src:url(fonts/outfit.woff)}'
+          'p{font-family:Outfit,serif}',
+      fonts: {
+        'fonts/outfit.woff': File('test/reader/epub/fixtures/outfit-ascii.woff')
+            .readAsBytesSync(),
+      },
+    );
+    await download.writeAsBytes(bytes);
+    final reader = await readTo(2);
 
     final kept = await keptPages.read(verified(), reader.position!);
     addTearDown(() => kept?.dispose());

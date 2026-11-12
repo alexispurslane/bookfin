@@ -22,7 +22,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:bookfin/downloads/downloads.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/mobi.dart';
@@ -118,13 +117,6 @@ void main() {
           final section = prepareSections([
             opened.source(index),
           ], settings).single;
-          if (section.fonts.isNotEmpty) {
-            await BookFonts.load(
-              section.fonts,
-              opened.resource,
-              opened.fontPrefix,
-            );
-          }
           // Each unit of work timed in three runs, at its fastest. Each run
           // lays out the section prepared again, because a run keeps what it
           // found for the other runs of its prepared section, such as a

@@ -154,7 +154,8 @@ void main() {
     expect(RunStyle.fromJson(jsonDecode(jsonEncode(style.toJson()))), style);
   });
 
-  test('a page that draws with a font of the book is not kept', () {
+  test('a page whose book styles its text with its own font is kept, and '
+      'its kept form draws that page', () {
     final pages = runToEnd(
       prepareSections([
         section(
@@ -171,7 +172,11 @@ void main() {
       }
     });
 
-    expect(KeptPage.encode(pages.first), isNull);
+    final body = KeptPage.encode(pages.first);
+    expect(body, isNotNull);
+    final kept = KeptPage.decode(body!);
+    addTearDown(() => kept?.dispose());
+    expect(kept!.depicts(pages.first), isTrue);
   });
 
   test('a kept page whose bytes are damaged decodes to nothing', () {

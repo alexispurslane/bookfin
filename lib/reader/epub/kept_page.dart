@@ -9,9 +9,10 @@
 // settings. Flutter's text engine breaks the lines of a paragraph built
 // again from the same calls at the same width in the same places, with the
 // same fonts, so drawPage draws the same pixels. The key of a kept file
-// (kept_pages.dart) names the text engine and the fonts' install, and
-// KeptPage.encode refuses a page that draws with a font of the book, which
-// a new process has not registered when the book has not loaded yet.
+// (kept_pages.dart) names the text engine and the fonts' install. Every run
+// draws in a font that the app bundles or the platform has, never in a font
+// of the book (boo-iv7q), so a new process can draw a kept page before its
+// book loads.
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -40,14 +41,9 @@ final class KeptPage implements PageDrawing {
   /// pages decode to nothing.
   static const format = 1;
 
-  /// The families that a kept page can draw with: the fonts that the app
-  /// bundles or the platform has, which every process has before a book
-  /// loads.
-  static const _families = {readerFontFamily, 'monospace'};
-
   /// The kept form of [page], text of a few kilobytes that [decode] reads,
-  /// or null when [page] draws with a font of its book, or shows a
-  /// paragraph that no layout run built ([recipeOf]).
+  /// or null when [page] shows a paragraph that no layout run built
+  /// ([recipeOf]).
   ///
   /// It runs on the UI isolate, where the page's paragraphs live. It
   /// walks the pieces of one page and encodes a few kilobytes of JSON,
@@ -154,7 +150,6 @@ final class KeptPage implements PageDrawing {
       ],
     };
     // The run styles are known once every paragraph named its own.
-    if (table.any((style) => !_families.contains(style.family))) return null;
     return jsonEncode({
       ...body,
       'styles': [for (final style in table) style.toJson()],
@@ -177,9 +172,6 @@ final class KeptPage implements PageDrawing {
       final styles = [
         for (final style in json['styles'] as List) RunStyle.fromJson(style),
       ];
-      if (styles.any((style) => !_families.contains(style.family))) {
-        return null;
-      }
       final textStyles = [
         for (final style in styles) runTextStyle(style, settings.ink),
       ];

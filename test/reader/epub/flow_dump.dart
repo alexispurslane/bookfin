@@ -13,10 +13,6 @@ Object? dumpPrepared(PreparedSection section) => {
   'visible': section.dom.visibleLength,
   'flow': [for (final item in section.flow) dumpItem(item)],
   'styles': [for (final style in section.styles) _dumpStyle(style)],
-  'fonts': [
-    for (final face in section.fonts)
-      [face.family, face.path, face.weight, face.italic],
-  ],
 };
 
 /// [item] in plain JSON values. With [styles], each run style index is

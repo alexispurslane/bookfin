@@ -18,8 +18,7 @@ import '../../../../tool/showcase_media.dart' as media;
 
 class CorpusBook {
   CorpusBook(this.publication)
-    : fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}',
-      _spine = spineSteps(
+    : _spine = spineSteps(
         utf8.decode(publication.textFiles[publication.packagePath]!),
       );
 
@@ -28,10 +27,6 @@ class CorpusBook {
       CorpusBook(Publication.admit(bytes));
 
   final Publication publication;
-
-  /// The prefix of the book's embedded font families, as the page source
-  /// names them.
-  final String fontPrefix;
 
   /// The spine step of each section's CFIs.
   final List<String> _spine;
@@ -47,7 +42,6 @@ class CorpusBook {
       index: index,
       path: path,
       xhtml: utf8.decode(publication.textFiles[path]!),
-      fontPrefix: fontPrefix,
       styleSheets: publication.bookStyles,
       imageSizes: publication.imageSizes,
       language: publication.language,
@@ -77,11 +71,13 @@ Map<String, Uint8List> showcaseBooks() => {
 };
 
 /// A made-up EPUB with one section for each of [bodies], all styled by one
-/// style sheet, [css], with the PNG images of [images] by path.
+/// style sheet, [css], with the PNG images of [images] and the WOFF fonts of
+/// [fonts] by path.
 Uint8List madeUpEpub(
   List<String> bodies, {
   String css = '',
   Map<String, Uint8List> images = const {},
+  Map<String, Uint8List> fonts = const {},
 }) {
   final sections = [for (var index = 0; index < bodies.length; index++) index];
   final items = sections
@@ -95,6 +91,8 @@ Uint8List madeUpEpub(
   final pictures = [
     for (final (index, path) in images.keys.indexed)
       '<item id="i$index" href="$path" media-type="image/png"/>',
+    for (final (index, path) in fonts.keys.indexed)
+      '<item id="f$index" href="$path" media-type="font/woff"/>',
   ].join();
   final archive = Archive()
     ..add(
@@ -120,7 +118,10 @@ Uint8List madeUpEpub(
       ),
     )
     ..add(ArchiveFile.string('book.css', css));
-  for (final MapEntry(key: path, value: bytes) in images.entries) {
+  for (final MapEntry(key: path, value: bytes) in {
+    ...images,
+    ...fonts,
+  }.entries) {
     archive.add(ArchiveFile.noCompress(path, bytes.length, bytes));
   }
   for (final (index, body) in bodies.indexed) {

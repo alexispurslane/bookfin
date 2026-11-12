@@ -1,5 +1,5 @@
 // The pages of one open book: its prepared sections, layout runs, page
-// starts, laid pages, decoded images and embedded fonts.
+// starts, laid pages and decoded images.
 //
 // Preparing a section runs in a worker isolate, one worker call for each
 // section. Layout runs on the UI isolate, in steps that a scheduler runs
@@ -23,7 +23,6 @@ import 'package:flutter/scheduler.dart';
 
 import '../book_pages.dart';
 import 'dom.dart';
-import 'fonts.dart';
 import 'layout.dart';
 import 'page_maps.dart';
 import 'paint.dart';
@@ -154,8 +153,7 @@ class PageSource {
   }) : _publication = publication,
        _schedule = schedule ?? scheduleBetweenFrames,
        _worker = work ?? Isolate.run,
-       _stepBudget = budget,
-       _fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}';
+       _stepBudget = budget;
 
   // The limits of the design's cache table. E20 (tc-ptuo), which was to
   // tune them on the phone, was dropped; they stay at the values that the
@@ -233,7 +231,6 @@ class PageSource {
   final StepScheduler _schedule;
   final WorkerCall _worker;
   final Duration _stepBudget;
-  final String _fontPrefix;
 
   PageSettings? _settings;
   PageSettings? _previous;
@@ -342,7 +339,6 @@ class PageSource {
       _publication.bookStyles,
       _publication.imageSizes,
       _publication.language,
-      _fontPrefix,
       _publication.mainTextSize,
       layout.settings,
       find,
@@ -351,13 +347,12 @@ class PageSource {
         !_disposed && identical(_layouts[(index, layout.settings)], layout);
     if (prepared == null || !current()) return place;
     if (prepared.whole) {
-      await _keep(layout, prepared);
+      _keep(layout, prepared);
       return place;
     }
     // The page of the place goes first, then its section. The section's own
     // requests wait for this prepare.
     (layout.preparing ??= _prepare(layout)).ignore();
-    await _loadFonts(prepared);
     if (current() && layout.prepared == null) {
       _dropPart(layout);
       layout.part = _Part(prepared);
@@ -1506,9 +1501,8 @@ class PageSource {
     if (cached != null) _pages[key] = cached;
   }
 
-  /// Prepares the section of [layout] in a worker call of its own,
-  /// registers its fonts, and caches it. No section waits for another
-  /// section's prepare.
+  /// Prepares the section of [layout] in a worker call of its own, and
+  /// caches it. No section waits for another section's prepare.
   Future<PreparedSection> _prepare(_SectionLayout layout) async {
     try {
       final path = _publication.spine[layout.index];
@@ -1520,22 +1514,20 @@ class PageSource {
         _publication.bookStyles,
         _publication.imageSizes,
         _publication.language,
-        _fontPrefix,
         _publication.mainTextSize,
         layout.settings,
       );
-      await _keep(layout, prepared);
+      _keep(layout, prepared);
       return prepared;
     } finally {
       layout.preparing = null;
     }
   }
 
-  /// Registers the fonts of [prepared], the whole section of [layout], and
-  /// caches it, unless the section was prepared meanwhile or its settings
-  /// were dropped. It replaces the section's part.
-  Future<void> _keep(_SectionLayout layout, PreparedSection prepared) async {
-    await _loadFonts(prepared);
+  /// Caches [prepared], the whole section of [layout], unless the section
+  /// was prepared meanwhile or its settings were dropped. It replaces the
+  /// section's part.
+  void _keep(_SectionLayout layout, PreparedSection prepared) {
     if (!_disposed &&
         identical(_layouts[(layout.index, layout.settings)], layout) &&
         layout.prepared == null) {
@@ -1549,12 +1541,6 @@ class PageSource {
       _trim();
       _plan();
     }
-  }
-
-  /// Registers the embedded fonts that [prepared] draws with.
-  Future<void> _loadFonts(PreparedSection prepared) async {
-    if (prepared.fonts.isEmpty) return;
-    await BookFonts.load(prepared.fonts, _publication.bytesOf, _fontPrefix);
   }
 
   /// The size in pixels of the book's main text as pages of [settings]
@@ -1572,7 +1558,6 @@ class PageSource {
       [for (final index in samples) spine[index]],
       [for (final index in samples) _publication.textFiles[spine[index]]!],
       _publication.bookStyles,
-      _fontPrefix,
       settings,
     );
   }
@@ -1587,7 +1572,6 @@ class PageSource {
     List<String> paths,
     List<Uint8List> xhtml,
     Map<String, String> styleSheets,
-    String fontPrefix,
     PageSettings settings,
   ) => work(
     () => shownMainTextSize([
@@ -1596,7 +1580,6 @@ class PageSource {
           index: indices[at],
           path: paths[at],
           xhtml: utf8.decode(xhtml[at], allowMalformed: true),
-          fontPrefix: fontPrefix,
           styleSheets: styleSheets,
         ),
     ], settings),
@@ -1613,7 +1596,6 @@ class PageSource {
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
     String? language,
-    String fontPrefix,
     double mainTextSize,
     PageSettings settings,
   ) => work(
@@ -1622,7 +1604,6 @@ class PageSource {
         index: index,
         path: path,
         xhtml: utf8.decode(xhtml),
-        fontPrefix: fontPrefix,
         styleSheets: styleSheets,
         imageSizes: imageSizes,
         language: language,
@@ -1644,7 +1625,6 @@ class PageSource {
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
     String? language,
-    String fontPrefix,
     double mainTextSize,
     PageSettings settings,
     EpubPlace? Function(DomSection dom) find,
@@ -1654,7 +1634,6 @@ class PageSource {
         index: index,
         path: path,
         xhtml: utf8.decode(xhtml),
-        fontPrefix: fontPrefix,
         styleSheets: styleSheets,
         imageSizes: imageSizes,
         language: language,

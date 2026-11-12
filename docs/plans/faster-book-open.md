@@ -54,7 +54,7 @@ sequenceDiagram
   UI->>W2: Isolate.run(prepare shown section)
   W2->>W2: hyphenation patterns, parse, style, flow items
   W2-->>UI: PreparedSection (exit, no copy)
-  UI->>UI: embedded fonts, anchored layout, draft picture
+  UI->>UI: anchored layout, draft picture
   UI->>UI: decode page images (engine threads)
   UI->>R: frame with the page
   R->>R: raster, rasterFinish
@@ -70,7 +70,6 @@ sequenceDiagram
 | Settings | UI | The next frame lays out `EpubViewport`, which calls `present` | same | not needed |
 | Page map | UI | Read and decoded on the UI isolate, beside the prepare | same | none |
 | Prepare | worker 2 | The shown section, or the part around the place for a section of 256 KiB or more | same | With a kept survey, the page waits up to 300 ms for its crop |
-| Fonts | worker, then UI | Embedded fonts of the section, converted in a worker and registered | same | none |
 | Layout | UI | The anchored page, in urgent steps between frames | same | none |
 | Picture | UI | The page's picture without images, then with images | same | PDFium renders the page at the screen width on its worker. The UI isolate copies the pixels and makes an image |
 | Images | engine threads | `instantiateImageCodec` at the screen's pixel ratio | same | none |
@@ -296,7 +295,7 @@ As built in boo-sy2d:
 - The session keeps the shown page when the app goes to the background, when the reader closes and when another book opens, not with each saved place. A page turn costs nothing more. It keeps the page only when an open at the saved place shows that page (`EpubPager.opensAtShown`): a main run cut the page, and the page holds the place that the pager reported last.
 - The key of a kept page holds the codec's format, the text engine's fingerprint, the file digest and the saved place. The page settings (size, text size, theme) are in the page itself, and the viewport draws the page only when they equal its own.
 - A kept page depicts the true page when both have the same text, styles and settings, and places within a thousandth of a pixel. A run from the page's start and a run from the section's start cut the same page with sums that differ in their last bits.
-- A debug build keeps no pages, because it has no text engine fingerprint. A page that draws with a font of the book is not kept, because a new process registers the book's fonts only when the book loads.
+- A debug build keeps no pages, because it has no text engine fingerprint. boo-sy2d kept no page that drew with a font of the book, because a new process registered the book's fonts only when the book loaded. Since boo-iv7q, the reader never draws a font of the book, so every EPUB and MOBI keeps its page.
 
 Build size:
 

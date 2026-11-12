@@ -85,18 +85,13 @@ SectionSource sized(String body, String css, {double mainTextSize = 16}) =>
       xhtml:
           '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T</title>'
           '<style>$css</style></head><body>$body</body></html>',
-      fontPrefix: testFontPrefix,
       mainTextSize: mainTextSize,
     );
 
 /// The computed style of each element with an id in [source], on a page of
 /// [settings].
 Map<String, Style> stylesOf(SectionSource source, PageSettings settings) {
-  final (:styles, faces: _) = styleSection(
-    source,
-    DomSection.parse(source.xhtml),
-    settings,
-  );
+  final styles = styleSection(source, DomSection.parse(source.xhtml), settings);
   return {
     for (final MapEntry(key: element, value: style) in styles.entries)
       ?element.id: style,
@@ -390,7 +385,6 @@ void main() {
             index: 0,
             path: 'text/broken.xhtml',
             xhtml: '<html><body><p>Never closed',
-            fontPrefix: testFontPrefix,
           ),
           sized('<p>${prose(2)}</p>', 'p{font-size:15px}'),
         ]),

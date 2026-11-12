@@ -7,11 +7,11 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:bookfin/reader/epub/dom.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/places.dart';
@@ -212,6 +212,40 @@ List<Object?> content(LaidPage page) => [
   page.endPlace,
   page.lineStarts,
 ];
+
+/// [inner], which records the path of each file that the reader asks it
+/// for. It gives only what the page source reads.
+class WatchedPublication implements Publication {
+  WatchedPublication(this.inner);
+  final Publication inner;
+
+  /// The path of each file that [bytesOf] gave, in order.
+  final asked = <String>[];
+
+  @override
+  Future<Uint8List?> bytesOf(String path) {
+    asked.add(path);
+    return inner.bytesOf(path);
+  }
+
+  @override
+  String get identity => inner.identity;
+  @override
+  List<String> get spine => inner.spine;
+  @override
+  Map<String, Uint8List> get textFiles => inner.textFiles;
+  @override
+  Map<String, String> get bookStyles => inner.bookStyles;
+  @override
+  Map<String, (int, int)> get imageSizes => inner.imageSizes;
+  @override
+  String? get language => inner.language;
+  @override
+  double get mainTextSize => inner.mainTextSize;
+
+  @override
+  Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   setUpAll(loadReaderFont);
@@ -612,46 +646,60 @@ void main() {
     source.checkInvariants();
   });
 
-  test('embedded fonts are registered before the first paragraph that uses '
-      'them lays out', () async {
-    final woff = File('test/reader/epub/fixtures/outfit-ascii.woff')
-        .readAsBytesSync();
-    // Outfit draws these letters about 9% narrower than the reader font,
-    // so its lines break elsewhere.
-    final body = '<p>${'mim mu ' * 600}</p>';
-    final publication = book(
-      [body],
-      css:
-          '@font-face{font-family:Outfit;src:url(../fonts/outfit.woff)}'
-          'p{font-family:Outfit,serif}',
-      files: {'fonts/outfit.woff': woff},
-    );
-    open(publication);
+  /// A book of one section whose paragraph of [words] names Outfit, a
+  /// font of the book, as its family. With [faces], the book embeds Outfit
+  /// with an `@font-face` rule and its font file. Outfit draws these
+  /// letters about 9% narrower than the reader font, so its lines break
+  /// elsewhere.
+  Publication outfitBook(String words, {bool faces = true}) => book(
+    ['<p>${'$words ' * 600}</p>'],
+    css:
+        '${faces ? '@font-face{font-family:Outfit;src:url(../fonts/outfit.woff)}' : ''}'
+        'p{font-family:Outfit,serif}',
+    files: {
+      'fonts/outfit.woff': File('test/reader/epub/fixtures/outfit-ascii.woff')
+          .readAsBytesSync(),
+    },
+  );
+
+  test('a book that embeds its own font lays out in the reader font', () async {
+    open(outfitBook('mim mu'));
     final section = await scheduler.until(source.section(0));
-    expect(section.fonts, isNotEmpty);
 
     final page = await scheduler.until(
       source.pageAt(placeIn(section, 0), anchored: true, urgent: true),
     );
 
-    final prefix = 'bookfin-${publication.identity.substring(0, 12)}';
-    await BookFonts.load(section.fonts, publication.bytesOf, prefix);
-    final reference = layoutSection(section);
-    final fallback = layoutSection(
+    expect({for (final style in page.styles) style.family}, {readerFontFamily});
+    final plain = outfitBook('mim mu', faces: false);
+    final reader = layoutSection(
       prepareSections([
         SectionSource(
           index: 0,
-          path: publication.spine.single,
-          xhtml: utf8.decode(publication.textFiles[publication.spine.single]!),
-          fontPrefix: 'bookfin-ffffffffffff',
-          styleSheets: publication.bookStyles,
+          path: plain.spine.single,
+          xhtml: utf8.decode(plain.textFiles[plain.spine.single]!),
+          styleSheets: plain.bookStyles,
         ),
       ], readerPage).single,
     );
-    expect(page.lineStarts, reference.pages.first.lineStarts);
-    expect(page.lineStarts, isNot(fallback.pages.first.lineStarts));
-    reference.dispose();
-    fallback.dispose();
+    addTearDown(reader.dispose);
+    expect(page.lineStarts, reader.pages.first.lineStarts);
+  });
+
+  test("the reader never reads a book's font files", () async {
+    // Words of their own, so that no other test opened this book.
+    final publication = WatchedPublication(outfitBook('mum im'));
+    open(publication);
+    final section = await scheduler.until(source.section(0));
+
+    source.show(
+      await scheduler.until(
+        source.pageAt(placeIn(section, 0), anchored: true, urgent: true),
+      ),
+    );
+    await scheduler.settle();
+
+    expect(publication.asked, isNot(contains(endsWith('.woff'))));
   });
 
   test('a draft draws outlines for images not decoded yet, and the picture '

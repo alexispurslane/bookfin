@@ -315,7 +315,7 @@ class Publication {
   /// An image or a font of a reopened book comes from the book's kept
   /// record, so the reopen did not read it. It is null when the record
   /// changed since the reopen or cannot be read: the page then draws the
-  /// image's alt text, or the text in the reader font.
+  /// image's alt text. The reader never asks for a font (boo-iv7q).
   Future<Uint8List?> bytesOf(String path) async {
     if (textFiles[path] case final bytes?) return bytes;
     return switch (_files) {
@@ -1033,8 +1033,6 @@ class _Admission {
             index: index,
             path: spine[index],
             xhtml: utf8.decode(output[spine[index]]!, allowMalformed: true),
-            // The measurement reads no font family.
-            fontPrefix: '',
             styleSheets: styleSheets,
           ),
       ]);

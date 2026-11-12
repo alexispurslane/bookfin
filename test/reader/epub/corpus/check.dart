@@ -7,7 +7,6 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:bookfin/reader/epub/dom.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:bookfin/reader/epub/paint.dart';
@@ -41,7 +40,7 @@ class CaughtException {
     this.settings,
   });
 
-  /// admit, support, prepare, fonts, layout, places, page starts or draw.
+  /// admit, support, prepare, layout, places, page starts or draw.
   final String check;
   final Object error;
   final StackTrace stack;
@@ -270,13 +269,6 @@ Future<BookReport> checkBook(
         continue;
       }
       found.visibleCharacters += section.dom.visibleLength;
-      if (section.fonts.isNotEmpty) {
-        try {
-          await BookFonts.load(section.fonts, book.resource, book.fontPrefix);
-        } catch (error, stack) {
-          caught('fonts', error, stack);
-        }
-      }
       final ChapterLayout chapter;
       try {
         chapter = _layOut(section, found, slow, now);

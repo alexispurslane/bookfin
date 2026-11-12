@@ -15,7 +15,6 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:bookfin/reader/epub/dom.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
@@ -214,9 +213,6 @@ int _largestSection(CorpusBook book) {
 /// source keeps it once the section's main run ended.
 Future<KeptSection> _keptSection(CorpusBook book, int index) async {
   final section = prepareSections([book.source(index)], readerPage).single;
-  if (section.fonts.isNotEmpty) {
-    await BookFonts.load(section.fonts, book.resource, book.fontPrefix);
-  }
   final chapter = layoutSection(section);
   try {
     final visible = <int>[];

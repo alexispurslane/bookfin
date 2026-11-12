@@ -19,7 +19,6 @@ import 'dart:typed_data';
 
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/epub/dom.dart';
-import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/mobi.dart';
@@ -170,9 +169,6 @@ Future<_Found> _survey(CorpusBook book) async {
       final prepared = prepareSections([source], settings).single;
       section['prepareMs'] = _now() - begin;
       section['characters'] = prepared.dom.visibleLength;
-      if (prepared.fonts.isNotEmpty) {
-        await BookFonts.load(prepared.fonts, book.resource, book.fontPrefix);
-      }
 
       // The main run, timed to each page that it publishes.
       final main = LayoutRun(prepared);
