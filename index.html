@@ -453,15 +453,16 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
             <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
           </thead>
           <tbody>
-            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">370.3</td><td data-engine="webview">359.7</td><td data-engine="koreader">117.9</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">46.9</td><td data-engine="webview">284.9</td><td data-engine="koreader">17.1</td></tr>
-            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">7.8</td><td data-engine="webview">51.9</td><td data-engine="koreader">2.3</td></tr>
-            <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">4.5</td><td data-engine="webview">47.1</td><td data-engine="koreader">3.0</td></tr>
-            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">40.6</td><td data-engine="webview">64.7</td><td data-engine="koreader">68.9</td></tr>
+            <tr data-operation="fresh_open"><th scope="row">First open after download</th><td data-engine="bookfin">65.4</td><td data-engine="webview">355.3</td><td data-engine="koreader">127.9</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">31.2</td><td data-engine="webview">289.0</td><td data-engine="koreader">17.4</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">8.2</td><td data-engine="webview">52.5</td><td data-engine="koreader">2.6</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">4.2</td><td data-engine="webview">47.8</td><td data-engine="koreader">3.1</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">35.6</td><td data-engine="webview">64.8</td><td data-engine="koreader">70.0</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="epub-evidence">Each time runs from the request until the engine has drawn the page: on the GPU for Bookfin and WebView, and on the CPU for KOReader, which always draws that way. The idle wait for the screen’s next refresh is left out, because KOReader has no such wait. These are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#rerun-timed-through-each-engines-drawing">Books, method, and remaining differences</a>.</p>
+      <p class="epub-evidence">Each time runs from the request until the engine has drawn the page: on the GPU for Bookfin and WebView, and on the CPU for KOReader, which always draws that way. The idle wait for the screen’s next refresh is left out, because KOReader has no such wait. These are emulator results, not phone timings.</p>
+      <p class="epub-evidence">Bookfin prepares each ebook in the background when its download finishes, so the first open uses that work. An open with no preparation takes 195.5 ms. A cached reopen shows the last page as a saved picture after 9.6 ms, and the table gives the time to the real page. <a href="docs/marketing/epub-renderer/README.md#rerun-on-current-main-november-12-2026">Books, method, and remaining differences</a>.</p>
     </div>
   </section>
 
