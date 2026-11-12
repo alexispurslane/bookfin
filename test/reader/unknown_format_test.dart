@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/reader/admitted_books.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -39,6 +40,9 @@ void main() {
             .readAsBytes();
         final file = await File('${directory.path}/complete')
             .writeAsBytes(original);
+        // The admitted record is written after the book comes back. In the
+        // app, Downloads holds the download until then (te-24cn).
+        addTearDown(() => AdmittedBooks.written(file));
         expect(source.container, isEmpty);
         expect(source.isItemOriginal, isTrue);
         final document = await loadReadingDocument(verified(file), source);
