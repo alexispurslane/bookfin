@@ -3,7 +3,12 @@
 //
 // It causes one effect of its own: from its layout, it presents the page
 // settings to the pager, which is a request for pages, like an Image that
-// resolves its image. Every other action goes up through a callback: a tap,
+// resolves its image.
+//
+// Before the book loads, it can draw a kept page (boo-sy2d): the page that
+// the book showed last, which the true page then replaces. Input on the
+// kept page waits for the true page, and applies to it only when the kept
+// page depicts it. Every other action goes up through a callback: a tap,
 // a link, a page turn and a copy. PageSwipes, which every reader view
 // shares, reports the swipes. A render object subscribes to the shown
 // page, so a new page repaints the viewport, updates its semantics and
@@ -17,12 +22,15 @@
 // EpubNoteView draws a note that the pager laid out for the note sheet. It
 // shares the page's semantics nodes, selection and Copy, and has no
 // gestures of its own.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../page_swipes.dart';
 import '../selection.dart';
+import 'kept_page.dart';
 import 'layout.dart';
 import 'pager.dart';
 import 'prepare.dart';
@@ -35,10 +43,18 @@ import 'semantics.dart';
 /// presents that size, [fontSize], [sizesMainText] and [night] to [pager]
 /// whenever one of them changes, and keeps the last page painted until the
 /// pager shows the page for the new settings.
+///
+/// Until [pager] shows a page, as while the book loads and [pager] is
+/// null, it draws [kept] when [kept] was laid out for the settings that it
+/// would present, and else the paper. Taps and page turns on [kept] wait
+/// for the first page that [pager] shows. They then apply to that page in
+/// their order when [kept] depicts it ([KeptPage.depicts]), and are dropped
+/// otherwise, so input never applies to a page that the person did not see.
 class EpubViewport extends StatefulWidget {
   const EpubViewport({
     super.key,
     required this.pager,
+    this.kept,
     required this.fontSize,
     this.sizesMainText = false,
     required this.night,
@@ -47,7 +63,12 @@ class EpubViewport extends StatefulWidget {
     required this.onLink,
     required this.onCopy,
   });
-  final EpubPager pager;
+
+  /// The pager of the open book, or null while the book loads.
+  final EpubPager? pager;
+
+  /// The kept page of the open book, or null.
+  final KeptPage? kept;
 
   /// The text size in pixels, after the system text scale.
   final double fontSize;
@@ -92,6 +113,59 @@ class _EpubViewportState extends State<EpubViewport> {
   /// Whether text was selected when the tap in progress went down.
   bool _selectedAtDown = false;
 
+  /// The input that came while [EpubViewport.kept] showed, in order, and
+  /// the kept page that it came on.
+  final _held = <VoidCallback>[];
+  KeptPage? _heldOn;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.pager?.shown.addListener(_shown);
+  }
+
+  @override
+  void didUpdateWidget(EpubViewport old) {
+    super.didUpdateWidget(old);
+    if (identical(old.pager, widget.pager)) return;
+    old.pager?.shown.removeListener(_shown);
+    widget.pager?.shown.addListener(_shown);
+    // A pager can show its first page before the viewport has it.
+    _shown();
+  }
+
+  /// Runs [input], or holds it while the kept page shows.
+  void _input(VoidCallback input) {
+    final kept = widget.kept;
+    if (kept != null && widget.pager?.shown.value == null) {
+      if (!identical(_heldOn, kept)) _held.clear();
+      _heldOn = kept;
+      _held.add(input);
+    } else if (widget.pager != null) {
+      input();
+    }
+  }
+
+  /// Applies the held input once the pager shows its first page, after the
+  /// change that showed it, when the kept page depicts that page.
+  void _shown() {
+    final page = widget.pager?.shown.value?.page;
+    final kept = _heldOn;
+    if (page == null || kept == null) return;
+    final held = [..._held];
+    _held.clear();
+    _heldOn = null;
+    if (!kept.depicts(page)) return;
+    scheduleMicrotask(() {
+      if (!mounted) return;
+      for (final input in held) {
+        input();
+      }
+    });
+  }
+
+  void _turn(bool forward) => _input(() => widget.onTurn(forward));
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -105,6 +179,7 @@ class _EpubViewportState extends State<EpubViewport> {
 
   @override
   void dispose() {
+    widget.pager?.shown.removeListener(_shown);
     _focus.dispose();
     super.dispose();
   }
@@ -115,7 +190,7 @@ class _EpubViewportState extends State<EpubViewport> {
   /// onTap.
   void _tapAt(Offset point, {bool selected = false}) {
     _focus.requestFocus();
-    final link = widget.pager.linkAt(point);
+    final link = widget.pager?.linkAt(point);
     if (link != null) {
       widget.onLink(link);
     } else if (selected) {
@@ -140,7 +215,7 @@ class _EpubViewportState extends State<EpubViewport> {
       _ => null,
     };
     if (forward == null) return KeyEventResult.ignored;
-    widget.onTurn(forward);
+    _turn(forward);
     return KeyEventResult.handled;
   }
 
@@ -152,18 +227,22 @@ class _EpubViewportState extends State<EpubViewport> {
     // The selection region claims horizontal drags, so the swipe watches the
     // pointers. A drag with text selected adjusts the selection.
     child: PageSwipes(
-      onTurn: widget.onTurn,
+      onTurn: _turn,
       swipes: () => !(_selection?.selecting ?? false),
       child: ReaderTapArea(
         onTapDown: () => _selectedAtDown = _selection?.selecting ?? false,
-        onTap: (point) => _tapAt(point, selected: _selectedAtDown),
+        onTap: (point) {
+          final selected = _selectedAtDown;
+          _input(() => _tapAt(point, selected: selected));
+        },
         child: _Page(
           key: _page,
           pager: widget.pager,
+          kept: widget.kept,
           fontSize: widget.fontSize,
           sizesMainText: widget.sizesMainText,
           night: widget.night,
-          onTurn: widget.onTurn,
+          onTurn: _turn,
           onTapAt: _tapAt,
         ),
       ),
@@ -177,13 +256,15 @@ class _Page extends LeafRenderObjectWidget {
   const _Page({
     super.key,
     required this.pager,
+    required this.kept,
     required this.fontSize,
     required this.sizesMainText,
     required this.night,
     required this.onTurn,
     required this.onTapAt,
   });
-  final EpubPager pager;
+  final EpubPager? pager;
+  final KeptPage? kept;
   final double fontSize;
   final bool sizesMainText;
   final bool night;
@@ -197,12 +278,14 @@ class _Page extends LeafRenderObjectWidget {
   @override
   _RenderPage createRenderObject(BuildContext context) =>
       _RenderPage(pager, fontSize, sizesMainText, night, onTurn, onTapAt)
+        ..kept = kept
         ..registrar = SelectionContainer.maybeOf(context)
         ..selectionColor = _selectionColor(context);
 
   @override
   void updateRenderObject(BuildContext context, _RenderPage page) => page
     ..pager = pager
+    ..kept = kept
     ..fontSize = fontSize
     ..sizesMainText = sizesMainText
     ..night = night
@@ -217,7 +300,8 @@ class _Page extends LeafRenderObjectWidget {
 }
 
 /// Paints the pager's shown picture at logical size, over the paper of the
-/// current theme. Before the first page, it paints the paper only.
+/// current theme. Before the first page, it paints the kept page when that
+/// page was laid out for the current settings, and else the paper only.
 ///
 /// It listens to the shown page while it is attached, so that a new page
 /// repaints it and updates its semantics alone. Its layout presents the
@@ -241,7 +325,7 @@ class _RenderPage extends RenderBox {
     this.onTurn,
     this.onTapAt,
   ) {
-    selection.page = _pager.shown.value?.page;
+    selection.page = _pager?.shown.value?.page;
   }
 
   late final selection = PageSelection(this);
@@ -255,15 +339,22 @@ class _RenderPage extends RenderBox {
     markNeedsPaint();
   }
 
-  EpubPager _pager;
-  set pager(EpubPager value) {
+  EpubPager? _pager;
+  set pager(EpubPager? value) {
     if (identical(value, _pager)) return;
-    if (attached) _pager.shown.removeListener(_shownChanged);
+    if (attached) _pager?.shown.removeListener(_shownChanged);
     _pager = value;
-    if (attached) _pager.shown.addListener(_shownChanged);
+    if (attached) _pager?.shown.addListener(_shownChanged);
     _presented = null;
     markNeedsLayout();
     _shownChanged();
+  }
+
+  KeptPage? _kept;
+  set kept(KeptPage? value) {
+    if (identical(value, _kept)) return;
+    _kept = value;
+    if (_pager?.shown.value == null) markNeedsPaint();
   }
 
   ValueChanged<bool> onTurn;
@@ -314,6 +405,8 @@ class _RenderPage extends RenderBox {
 
   @override
   void performLayout() {
+    final pager = _pager;
+    if (pager == null) return;
     final settings = _settings;
     // The pager takes only a page area and a text size. A zero size, such as
     // a collapsed parent's, waits for a real one.
@@ -327,7 +420,7 @@ class _RenderPage extends RenderBox {
     _presented = settings;
     // The pager notifies later, never during the call, so nothing changes
     // during layout.
-    _pager.present(settings);
+    pager.present(settings);
   }
 
   @override
@@ -336,12 +429,12 @@ class _RenderPage extends RenderBox {
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _pager.shown.addListener(_shownChanged);
+    _pager?.shown.addListener(_shownChanged);
   }
 
   @override
   void detach() {
-    _pager.shown.removeListener(_shownChanged);
+    _pager?.shown.removeListener(_shownChanged);
     super.detach();
   }
 
@@ -354,7 +447,7 @@ class _RenderPage extends RenderBox {
   void _shownChanged() {
     // The same page shows again once its images are decoded, and keeps its
     // selection.
-    selection.page = _pager.shown.value?.page;
+    selection.page = _pager?.shown.value?.page;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
   }
@@ -381,7 +474,7 @@ class _RenderPage extends RenderBox {
     SemanticsConfiguration config,
     Iterable<SemanticsNode> children,
   ) {
-    final page = _pager.shown.value?.page;
+    final page = _pager?.shown.value?.page;
     if (!identical(page, _read)) {
       _read = page;
       _blocks = page == null
@@ -403,15 +496,21 @@ class _RenderPage extends RenderBox {
     final canvas = context.canvas;
     final area = offset & size;
     canvas.drawRect(area, Paint()..color = _settings.paper);
-    final shown = _pager.shown.value;
-    if (shown == null) return;
+    final shown = _pager?.shown.value;
+    final picture =
+        shown?.picture ??
+        switch (_kept) {
+          final kept? when kept.settings == _settings => kept.picture,
+          _ => null,
+        };
+    if (picture == null) return;
     canvas
       ..save()
       ..clipRect(area)
       ..translate(offset.dx, offset.dy)
-      ..drawPicture(shown.picture)
+      ..drawPicture(picture)
       ..restore();
-    selection.paint(context, offset, _selectionColor);
+    if (shown != null) selection.paint(context, offset, _selectionColor);
   }
 }
 

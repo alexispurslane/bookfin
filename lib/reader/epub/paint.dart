@@ -20,7 +20,7 @@ typedef PageImages = Map<String, ui.Image?>;
 /// does not move to the page's top, because its single-precision
 /// transform could round a glyph to another pixel row far down the strip,
 /// and a page laid out again from its start must draw the same pixels.
-ui.Picture drawPage(LaidPage page, PageImages images, {bool paper = true}) {
+ui.Picture drawPage(PageDrawing page, PageImages images, {bool paper = true}) {
   final settings = page.settings;
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);

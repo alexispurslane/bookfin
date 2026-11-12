@@ -12,8 +12,10 @@ import '../playback/playback.dart';
 import 'book_map.dart';
 import 'contents.dart';
 import 'document.dart';
+import 'epub/kept_page.dart';
 import 'epub/pager.dart';
 import 'epub/publication.dart';
+import 'kept_pages.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
 import 'place_words.dart';
@@ -157,6 +159,8 @@ class ReadingChanges {
 /// - A pager exists only while an EPUB or MOBI document is open, and every
 ///   such document that finished opening has one. The pager's own
 ///   invariants hold.
+/// - A kept page exists only while a book opens or its pager shows no page
+///   yet.
 /// - The visible address and the saved position are both set or both
 ///   absent. The position fits the open document, and its saved form
 ///   restores the visible address.
@@ -195,6 +199,7 @@ class ReaderSession extends ChangeNotifier {
     this.speed,
     this.pageSettings,
     this.surveyStore,
+    this.keptPages,
   }) {
     _signals = [
       _placeChanges = _Signal(() => (_visibleAddress, _position)),
@@ -222,6 +227,7 @@ class ReaderSession extends ChangeNotifier {
       _trimMarginsChanges = _Signal(() => trimMargins),
       _bookMapChanges = _Signal(() => _bookMap),
       _timeLeftChanges = _Signal(() => timeLeft),
+      _keptPageChanges = _Signal(() => (_keptPage, _readingKeptPage)),
     ];
     speed?.charactersPerMinute.addListener(_emit);
   }
@@ -233,6 +239,36 @@ class ReaderSession extends ChangeNotifier {
   /// Makes the kept survey of an opened PDF (see [SurveyFiles]), or null
   /// when PDFs are not surveyed, as in tests of other things.
   final SurveyStoreOf? surveyStore;
+
+  /// The kept page of each EPUB or MOBI download, or null when the session
+  /// keeps none, as in tests of other things.
+  ///
+  /// An open at the saved place reads the page that was kept there, while
+  /// the book loads, so the reader can draw it first ([keptPage]). The
+  /// session keeps the shown page with its saved place at each [flush] and
+  /// when the book closes.
+  final KeptPages? keptPages;
+
+  /// The kept page of the book that opens, from the read that its open
+  /// started, until its pager shows a page. Null without one.
+  KeptPage? get keptPage => _keptPage;
+  KeptPage? _keptPage;
+
+  /// Whether the open reads the kept page of the book. The reader shows the
+  /// paper then, rather than a sign that the book loads.
+  bool get readingKeptPage => _readingKeptPage;
+  bool _readingKeptPage = false;
+
+  /// Notifies when [keptPage] or [readingKeptPage] changes.
+  Listenable get keptPageChanges => _keptPageChanges;
+
+  /// The saved place and the encoded page ([KeptPage.encode]) that are kept
+  /// for the open book, as far as this session knows.
+  (TextPosition, String)? _kept;
+
+  /// The end of the last write of a kept page. Writes run one after another,
+  /// so the newest page is kept last.
+  Future<void> _keeping = Future.value();
 
   /// Whether the app is in the background, so that background work waits.
   var _suspended = false;
@@ -445,6 +481,7 @@ class ReaderSession extends ChangeNotifier {
   late final _Signal _saveStatusChanges;
   late final _Signal _bookMapChanges;
   late final _Signal _timeLeftChanges;
+  late final _Signal _keptPageChanges;
   late final List<_Signal> _signals;
 
   BookMap? _bookMap;
@@ -614,6 +651,10 @@ class ReaderSession extends ChangeNotifier {
   bool _liveAccount(int generation) =>
       !_disposed && generation == _accountGeneration;
   void _clear() {
+    _keepShown();
+    _dropKeptPage();
+    _kept = null;
+    _readingKeptPage = false;
     ++_token;
     ++_search;
     previews.close();
@@ -684,6 +725,15 @@ class ReaderSession extends ChangeNotifier {
     _emit();
     await _binding;
     if (!_live(generation) || !_current(selected)) return;
+    // The book opens at its saved place, unless [at] names another, so the
+    // page kept there can show while the book loads.
+    final keptAt = at != null || selected.files.length != 1
+        ? null
+        : _resumes.where((value) => value.editionId == selected.id).lastOrNull;
+    if (keptPages != null && keptAt != null) {
+      _readingKeptPage = true;
+      _emit();
+    }
     // The query runs while the book loads. A failed query knows nothing.
     final origin = at != null || selected.files.length != 1
         ? null
@@ -712,6 +762,9 @@ class ReaderSession extends ChangeNotifier {
             throw const FormatException(
               'The reader requires a verified local download.',
             );
+          }
+          if (_readingKeptPage && keptAt != null) {
+            unawaited(_readKeptPage(generation, file, keptAt));
           }
           return loadDocument == null
               ? EpubDocument(await load(file))
@@ -808,6 +861,7 @@ class ReaderSession extends ChangeNotifier {
           onWarning: (message) => warn(generation, message),
           onShow: (read) {
             if (!_live(generation)) return;
+            if (_dropKeptPage()) _emit();
             speed?.pageShown(read: read);
             if (_pager?.shown.value?.page.settings case final settings?) {
               pageSettings?.keep(settings);
@@ -830,10 +884,89 @@ class ReaderSession extends ChangeNotifier {
     } finally {
       if (_live(generation)) {
         _loading = false;
+        // A book that did not open, or a PDF, shows no kept page.
+        if (_pager == null) {
+          _readingKeptPage = false;
+          _dropKeptPage();
+        }
         _emit();
       }
     }
   }
+
+  /// Reads the page kept at the saved place [at] of [original], the download
+  /// of the book that the open [generation] opens, for [keptPage]. A page
+  /// that comes after the open ended, or after its pager showed a page, is
+  /// let go.
+  Future<void> _readKeptPage(
+    int generation,
+    VerifiedFile original,
+    TextPosition at,
+  ) async {
+    KeptPage? kept;
+    try {
+      kept = await keptPages!.read(original, at);
+    } on Exception {
+      // A kept page is derived: without one, the reader waits for the book.
+    }
+    if (!_live(generation) ||
+        !_readingKeptPage ||
+        _pager?.shown.value != null) {
+      kept?.dispose();
+      return;
+    }
+    _readingKeptPage = false;
+    _keptPage = kept;
+    if (kept != null) _kept = (at, kept.encoded);
+    _emit();
+  }
+
+  /// Lets go of [keptPage]. Gives whether there was one.
+  bool _dropKeptPage() {
+    final kept = _keptPage;
+    _keptPage = null;
+    kept?.dispose();
+    return kept != null;
+  }
+
+  /// Keeps the page that the open EPUB or MOBI book shows as the kept page
+  /// of its saved place ([keptPages]), unless that page is kept there
+  /// already.
+  ///
+  /// It encodes the page on the UI isolate, where its paragraphs live, and
+  /// writes it under a hold of the download.
+  void _keepShown() {
+    final (pages, selected, place) = (keptPages, _edition, _position);
+    final page = _pager?.shown.value?.page;
+    if (pages == null || selected == null || place == null || page == null) {
+      return;
+    }
+    final body = KeptPage.encode(page);
+    if (body == null) return;
+    if (_kept case (final kept, final keptBody)
+        when keptBody == body && _sameKey(kept, place)) {
+      return;
+    }
+    _kept = (place, body);
+    _keeping = _keeping
+        .then((_) async {
+          final started = await _lend<({Future<void> held})?>(
+            selected,
+            null,
+            (original, _) async => (held: pages.write(original, place, body)),
+          );
+          await started?.held;
+        })
+        .onError<Object>((_, _) {});
+  }
+
+  /// Whether a page kept at [a] is kept at [b] too ([KeptPages]).
+  static bool _sameKey(TextPosition a, TextPosition b) =>
+      a.editionId == b.editionId &&
+      a.sourceKey == b.sourceKey &&
+      a.revision == b.revision &&
+      a.anchor == b.anchor &&
+      a.sourcePage == b.sourcePage;
 
   ReaderAddress? _compatible(TextPosition saved) {
     final admitted = document;
@@ -1607,8 +1740,10 @@ class ReaderSession extends ChangeNotifier {
   }
 
   Future<void> flush() async {
+    _keepShown();
     await _binding;
     await _retryPending();
+    await _keeping;
   }
 
   Future<void> refreshPersonalRecords() async {
@@ -1677,6 +1812,8 @@ class ReaderSession extends ChangeNotifier {
         (_bookMap != null && document == null) ||
         (_navigator != null && document == null) ||
         (_pager != null && document is! EpubDocument) ||
+        (_keptPage != null &&
+            (_pager?.shown.value != null || !_loading && _pager == null)) ||
         (document is EpubDocument && !_loading && _pager == null) ||
         (position != null && _compatible(position!) == null) ||
         ((_visibleAddress == null) != (position == null)) ||

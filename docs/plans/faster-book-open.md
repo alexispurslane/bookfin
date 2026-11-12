@@ -290,6 +290,13 @@ Risks:
 
 A MOBI converts at the end of its download too, so its 253 ms conversion also leaves the open.
 
+As built in boo-sy2d:
+
+- Downloads prepares each saved EPUB or MOBI when its download completes, and again at each launch. A preparation whose record is current reads only the record's key line. So the background admission after an update is the next launch's preparation.
+- The session keeps the shown page when the app goes to the background, when the reader closes and when another book opens, not with each saved place. A page turn costs nothing more.
+- The key of a kept page holds the codec's format, the text engine's fingerprint, the file digest and the saved place. The page settings (size, text size, theme) are in the page itself, and the viewport draws the page only when they equal its own.
+- A debug build keeps no pages, because it has no text engine fingerprint.
+
 Build size:
 
 - the kept page codec and store, with tests: about 600 lines.

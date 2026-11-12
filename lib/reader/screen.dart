@@ -352,6 +352,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
           reader.saveStatusChanges,
           reader.pdfViewChanges,
           reader.trimMarginsChanges,
+          reader.keptPageChanges,
         ]),
         builder: (context, _) => _viewport(context, night),
       ),
@@ -494,7 +495,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final book = reader.book;
       return book == null ? viewport : PageBook(book: book, child: viewport);
     }
-    if (reader.loading ||
+    final kept = reader.keptPage;
+    // The kept page of the book takes a few milliseconds to read. The paper
+    // shows meanwhile, and the kept page then shows in the viewport until
+    // the true page replaces it.
+    if (pager == null && kept == null && reader.readingKeptPage) {
+      return const SizedBox.expand();
+    }
+    if ((pager == null && kept == null && reader.loading) ||
         (reader.edition == null && pager == null && reader.message == null)) {
       return Center(
         child: Semantics(
@@ -503,7 +511,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ),
       );
     }
-    if (pager == null) {
+    if (pager == null && kept == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -527,16 +535,21 @@ class _ReaderScreenState extends State<ReaderScreen> {
       );
     }
     // The pager opens the book at the session's saved place, so the page
-    // is ready as soon as the viewport presents its size.
+    // is ready as soon as the viewport presents its size. One viewport shows
+    // the kept page and then the true page, so the change draws nothing
+    // else between them.
     return EpubViewport(
       key: ValueKey(token),
       pager: pager,
+      kept: kept,
       fontSize: fontSize,
       sizesMainText: reader.sizesMainText,
       night: night,
       onTap: _toggleFullScreen,
       onTurn: (forward) => unawaited(reader.move(forward)),
-      onLink: (link) => unawaited(_followLink(pager, link)),
+      onLink: (link) {
+        if (pager != null) unawaited(_followLink(pager, link));
+      },
       onCopy: (text) => unawaited(Clipboard.setData(ClipboardData(text: text))),
     );
   }

@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
+import 'package:bookfin/reader/epub/kept_page.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
@@ -495,6 +496,196 @@ void main() {
     expect(tester.state(find.byType(EpubViewport)), same(state));
     await settle(tester);
     expect(pager().shown.value, same(before));
+  });
+
+  group('the kept page (boo-sy2d)', () {
+    /// The kept form of the page that a new pager of [publication] shows
+    /// first in a viewport of [size], made from a pager of its own.
+    Future<KeptPage> keptOf(
+      WidgetTester tester,
+      Publication publication, {
+      Size size = const Size(412, 671),
+    }) async {
+      open(publication);
+      await show(tester, size: size);
+      await settle(tester, () => pager().shown.value != null);
+      final kept = KeptPage.decode(KeptPage.encode(shown().page)!)!;
+      addTearDown(kept.dispose);
+      opened!.dispose();
+      opened = null;
+      await tester.pumpWidget(const SizedBox());
+      return kept;
+    }
+
+    /// Shows the viewport of the book that is loading: no pager yet, and
+    /// [kept].
+    Future<void> showLoading(WidgetTester tester, KeptPage kept) =>
+        tester.pumpWidget(
+          onScreen(
+            RepaintBoundary(
+              key: boundary,
+              child: EpubViewport(
+                key: const ValueKey('open'),
+                pager: null,
+                kept: kept,
+                fontSize: 20,
+                night: false,
+                onTap: () => taps++,
+                onTurn: turns.add,
+                onLink: links.add,
+                onCopy: (_) {},
+              ),
+            ),
+          ),
+        );
+
+    /// Gives the loading viewport the pager of [publication], as the
+    /// session does once the book loads, with [kept] still kept.
+    Future<void> attach(
+      WidgetTester tester,
+      Publication publication,
+      KeptPage? kept,
+    ) async {
+      open(publication);
+      await tester.pumpWidget(
+        onScreen(
+          RepaintBoundary(
+            key: boundary,
+            child: EpubViewport(
+              key: const ValueKey('open'),
+              pager: pager(),
+              kept: kept,
+              fontSize: 20,
+              night: false,
+              onTap: () => taps++,
+              onTurn: turns.add,
+              onLink: links.add,
+              onCopy: (_) {},
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('while the book loads, the viewport draws the kept page', (
+      tester,
+    ) async {
+      final kept = await keptOf(tester, showcaseBook('salt'));
+
+      await showLoading(tester, kept);
+
+      expect(
+        await painted(tester),
+        await drawn(tester, kept.picture!, const Size(412, 671)),
+      );
+    });
+
+    testWidgets('a kept page of another page size or theme draws nothing but '
+        'the paper', (tester) async {
+      final kept = await keptOf(
+        tester,
+        showcaseBook('salt'),
+        size: const Size(400, 671),
+      );
+
+      tester.view.physicalSize = const Size(412, 671);
+      await showLoading(tester, kept);
+
+      final paper = const PageSettings(
+        width: 1,
+        height: 1,
+        fontSize: 20,
+        night: false,
+      ).paper;
+      final bytes = await painted(tester);
+      for (var index = 0; index < bytes.length; index += 4 * 97) {
+        expect(
+          Color.fromARGB(
+            bytes[index + 3],
+            bytes[index],
+            bytes[index + 1],
+            bytes[index + 2],
+          ),
+          paper,
+        );
+      }
+    });
+
+    testWidgets('the true page replaces the kept page without a change of '
+        'one pixel', (tester) async {
+      final kept = await keptOf(tester, showcaseBook('salt'));
+      await showLoading(tester, kept);
+      final before = await painted(tester);
+
+      await attach(tester, showcaseBook('salt'), kept);
+      expect(await painted(tester), before);
+      await settle(tester, () => pager().shown.value != null);
+
+      expect(await painted(tester), before);
+    });
+
+    testWidgets('a tap on a link of the kept page waits for the true page, '
+        'and then follows that link once', (tester) async {
+      open(linkedBook());
+      await show(tester);
+      await settle(tester, () => pager().shown.value != null);
+      final dom = source.sectionOf(shown().page).dom;
+      final link = pointOf(
+        dom.texts.firstWhere((text) => text.text == 'Follow the lantern'),
+        4,
+      );
+      final kept = KeptPage.decode(KeptPage.encode(shown().page)!)!;
+      addTearDown(kept.dispose);
+      opened!.dispose();
+      opened = null;
+      await tester.pumpWidget(const SizedBox());
+      await showLoading(tester, kept);
+
+      await tester.tapAt(link);
+      expect(links, isEmpty);
+      expect(taps, 0);
+
+      await attach(tester, linkedBook(), kept);
+      await settle(tester, () => pager().shown.value != null);
+      await tester.pump();
+
+      expect(links, [(href: 'text/s1.xhtml#target', noteref: false)]);
+      expect(taps, 0);
+    });
+
+    testWidgets('a tap and a swipe on the kept page wait for the true page, '
+        'and then apply to it in their order', (tester) async {
+      final kept = await keptOf(tester, linkedBook());
+      await showLoading(tester, kept);
+      const middle = Offset(206, 600);
+
+      await tester.tapAt(middle);
+      await tester.dragFrom(const Offset(206, 335), const Offset(-100, 0));
+      expect(taps, 0);
+      expect(turns, isEmpty);
+
+      await attach(tester, linkedBook(), kept);
+      await settle(tester, () => pager().shown.value != null);
+      await tester.pump();
+
+      expect(taps, 1);
+      expect(turns, [true]);
+    });
+
+    testWidgets('input on a kept page that the true page does not match is '
+        'dropped', (tester) async {
+      final kept = await keptOf(tester, showcaseBook('salt'));
+      await showLoading(tester, kept);
+      await tester.tapAt(const Offset(206, 600));
+      await tester.dragFrom(const Offset(206, 335), const Offset(-100, 0));
+
+      await attach(tester, showcaseBook('frost'), kept);
+      await settle(tester, () => pager().shown.value != null);
+      await tester.pump();
+
+      expect(taps, 0);
+      expect(turns, isEmpty);
+    });
   });
 
   group('the note view', () {

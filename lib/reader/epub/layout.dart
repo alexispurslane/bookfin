@@ -146,6 +146,21 @@ class Piece {
 
   Piece._of(this._paragraphs, this.x, this.y, this.map);
 
+  /// A piece of a kept page ([PageDrawing]): [paragraph] at ([x], [y]),
+  /// with the [tops], [shifts], [shown] height and [inlines] of the piece
+  /// that the page kept. It has no text map, and its holder disposes
+  /// [paragraph] and the paragraphs in [inlines].
+  Piece.kept(
+    ui.Paragraph paragraph,
+    this.x,
+    this.y, {
+    required List<double> tops,
+    required List<double> shifts,
+    required this.shown,
+    required List<(ui.Rect, Object)> inlines,
+  }) : map = TextMap(-1),
+       _paragraphs = _Paragraphs.kept(paragraph, tops, shifts, inlines);
+
   /// [piece] moved down by [dy], holding its paragraphs once more.
   Piece._moved(Piece piece, double dy, this.shown)
     : x = piece.x,
@@ -219,6 +234,18 @@ class _Paragraphs {
     tops.add(top);
   }
 
+  /// The paragraphs of a kept piece ([Piece.kept]).
+  _Paragraphs.kept(
+    this.paragraph,
+    List<double> tops,
+    List<double> shifts,
+    List<(ui.Rect, Object)> inlines,
+  ) {
+    this.tops.addAll(tops);
+    this.shifts.addAll(shifts);
+    this.inlines.addAll(inlines);
+  }
+
   final ui.Paragraph paragraph;
   final List<(ui.Rect, Object)> inlines = [];
   final tops = <double>[];
@@ -252,11 +279,29 @@ class MarkerDecoration extends Decoration {
   ui.Offset get offset => ui.Offset(piece.x, piece.y);
 }
 
+/// What [drawPage] draws of a page: its settings, its place on its strip,
+/// its pieces and its decorations. A [LaidPage] is one, and so is a kept
+/// page, which a reopen of the book draws before the book loads.
+abstract interface class PageDrawing {
+  PageSettings get settings;
+
+  /// Where the page begins on its strip, and how high it is.
+  double get top;
+  double get height;
+
+  /// The paragraphs of the page's lines and table rows.
+  Iterable<Piece> get pieces;
+
+  /// The rules, images and markers that the page draws, at their place on
+  /// the strip.
+  List<Decoration> get decorations;
+}
+
 /// One cut page. It never changes once a run publishes it.
 ///
 /// It holds the paragraphs that it shows, until [dispose]. Its geometry is
 /// in the strip coordinates of the run that cut it.
-class LaidPage {
+class LaidPage implements PageDrawing {
   LaidPage._(
     this._section,
     this.start,
@@ -276,22 +321,28 @@ class LaidPage {
 
   /// The section's spine index.
   int get section => _section.index;
+  @override
   PageSettings get settings => _section.settings;
+
+  /// The run styles of the page's section, which the recipes of its
+  /// paragraphs name by index ([recipeOf]).
+  List<RunStyle> get styles => _section.styles;
 
   /// The DOM of the page's section, where its places point.
   DomSection get dom => _section.dom;
   final PageStart start;
 
   /// Where the page begins and ends on its run's strip.
+  @override
   final double top;
   final double bottom;
+  @override
   double get height => bottom - top;
 
   /// The strip slices on the page, in order.
   final List<Slice> slices;
 
-  /// The rules, images and markers that the page draws, at their place on
-  /// the strip.
+  @override
   final List<Decoration> decorations;
 
   /// Whether this is the section's last page.
@@ -361,6 +412,7 @@ class LaidPage {
 
   /// The paragraphs of the page's lines and table rows. Throws a
   /// [StateError] once the page is disposed.
+  @override
   Iterable<Piece> get pieces {
     if (_disposed) throw StateError('The page is disposed.');
     return _lines;
@@ -1132,9 +1184,8 @@ class LayoutRun {
   }
 
   void _marker(String text, int style, double contentLeft) {
-    final builder = ui.ParagraphBuilder(ui.ParagraphStyle())
-      ..pushStyle(_textStyles[style])
-      ..addText(text);
+    final builder = _Recorder(_textStyles, ui.ParagraphStyle())
+      ..addRun(style, text);
     final paragraph = builder.build()
       ..layout(const ui.ParagraphConstraints(width: double.infinity));
     // The marker sits left of the first line, on its baseline: the first
@@ -1487,81 +1538,18 @@ class LayoutRun {
 
   // Paragraphs.
 
-  /// The family that draws [family]: the reader font for an embedded face
-  /// that did not load, as for a face that prepare cannot read, and else
-  /// [family].
-  static String _drawn(String family) =>
-      BookFonts.missing(family) ? readerFontFamily : family;
+  static ui.TextStyle _textStyle(RunStyle style, ui.Color ink) =>
+      runTextStyle(style, ink);
 
-  static ui.TextStyle _textStyle(RunStyle style, ui.Color ink) {
-    final family = _drawn(style.family);
-    return ui.TextStyle(
-      color: ink,
-      fontFamily: family,
-      // A character that a face lacks draws in the reader font, not in the
-      // platform's default font, and an arrow that both lack draws in the
-      // arrow font, not in the platform's emoji font.
-      fontFamilyFallback: const [readerFontFamily, arrowFontFamily],
-      fontSize: style.size,
-      fontWeight: _weight(style.weight),
-      fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,
-      letterSpacing: style.letterSpacing == 0 ? null : style.letterSpacing,
-      wordSpacing: style.wordSpacing == 0 ? null : style.wordSpacing,
-      height: style.lineHeight == null ? null : style.lineHeight! / style.size,
-      leadingDistribution: ui.TextLeadingDistribution.even,
-      decoration: ui.TextDecoration.combine([
-        if (style.underline) ui.TextDecoration.underline,
-        if (style.lineThrough) ui.TextDecoration.lineThrough,
-      ]),
-      fontFeatures: [
-        if (style.smallCaps) const ui.FontFeature.enable('smcp'),
-        if (style.oldstyleFigures) const ui.FontFeature.oldstyleFigures(),
-      ],
-      fontVariations: [
-        // Chromium sets a variable font's optical size to the text size.
-        ui.FontVariation('opsz', style.size.clamp(8, 60).toDouble()),
-        // Chromium sets a variable font's weight axis to the CSS weight. But
-        // the reader's @font-face rule names no weights, so Chromium draws
-        // bold reader text as a thickened regular face with regular widths.
-        // Flutter would pick the font's true bold, which is wider.
-        ui.FontVariation(
-          'wght',
-          family == readerFontFamily ? 400 : style.weight.toDouble(),
-        ),
-      ],
-    );
-  }
+  ui.ParagraphStyle _paragraphStyle(StyledText text) =>
+      blockParagraphStyle(_section.styles[text.style], text.align);
 
-  static ui.FontWeight _weight(int weight) =>
-      ui.FontWeight.values[((weight / 100).round() - 1).clamp(0, 8)];
-
-  ui.ParagraphStyle _paragraphStyle(StyledText text) {
-    final container = _section.styles[text.style];
-    final height = container.lineHeight;
-    return ui.ParagraphStyle(
-      textAlign: switch (text.align) {
-        Align.left => ui.TextAlign.left,
-        Align.right => ui.TextAlign.right,
-        Align.center => ui.TextAlign.center,
-        Align.justify => ui.TextAlign.justify,
-        Align.end => ui.TextAlign.end,
-        Align.start => ui.TextAlign.start,
-      },
-      textDirection: ui.TextDirection.ltr,
-      // The block's own font and line height form a strut, as CSS's root
-      // inline box does.
-      strutStyle: ui.StrutStyle(
-        fontFamily: _drawn(container.family),
-        fontSize: container.size,
-        height: height == null ? null : height / container.size,
-        leadingDistribution: ui.TextLeadingDistribution.even,
-        fontWeight: _weight(container.weight),
-      ),
-      textHeightBehavior: const ui.TextHeightBehavior(
-        leadingDistribution: ui.TextLeadingDistribution.even,
-      ),
-    );
-  }
+  /// A builder of the paragraph of [text], which records its calls.
+  _Recorder _builder(StyledText text) => _Recorder(
+    _textStyles,
+    _paragraphStyle(text),
+    block: (text.style, text.align),
+  );
 
   /// Builds the paragraph of [text], [width] pixels wide, or only that
   /// paragraph's code units [start, end). Returns the paragraph, its map,
@@ -1580,7 +1568,7 @@ class LayoutRun {
     int? end,
     Map<int, int> marks = const {},
   }) {
-    final builder = ui.ParagraphBuilder(_paragraphStyle(text));
+    final builder = _builder(text);
     final map = TextMap(_section.index);
     final inlines = <Object?>[];
     final softHyphens = <int>[];
@@ -1590,13 +1578,7 @@ class LayoutRun {
     var whole = 0;
     if (indent > 0) {
       if (start == 0) {
-        builder.addPlaceholder(
-          indent,
-          0,
-          ui.PlaceholderAlignment.baseline,
-          baseline: ui.TextBaseline.alphabetic,
-          baselineOffset: 0,
-        );
+        builder.addPlaceholder(indent, 0, 0);
         map.addPlaceholder(-1);
         inlines.add(null);
       }
@@ -1633,10 +1615,7 @@ class LayoutRun {
                 ])
               : added;
           texts.add((start: local, text: drawn, style: style));
-          builder
-            ..pushStyle(_textStyles[style])
-            ..addText(drawn)
-            ..pop();
+          builder.addRun(style, drawn);
           map.addText(node, Int32List.sublistView(run.offsets, low, high));
         case BreakRun(:final node):
           if (!shown(whole++)) continue;
@@ -1645,13 +1624,7 @@ class LayoutRun {
         case ImageRun(:final node, :final image, :final sizing):
           if (!shown(whole++)) continue;
           final (imageWidth, imageHeight) = sizing.sizeIn(width);
-          builder.addPlaceholder(
-            imageWidth,
-            imageHeight,
-            ui.PlaceholderAlignment.baseline,
-            baseline: ui.TextBaseline.alphabetic,
-            baselineOffset: imageHeight,
-          );
+          builder.addPlaceholder(imageWidth, imageHeight, imageHeight);
           map.addPlaceholder(node);
           inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
@@ -1663,9 +1636,7 @@ class LayoutRun {
           builder.addPlaceholder(
             raised.maxIntrinsicWidth,
             raised.height,
-            ui.PlaceholderAlignment.baseline,
-            baseline: ui.TextBaseline.alphabetic,
-            baselineOffset: baseline + shift,
+            baseline + shift,
           );
           map.addPlaceholder(node);
           inlines.add(raised);
@@ -3539,6 +3510,155 @@ class _Built {
     for (final held in inlines) {
       if (held is ui.Paragraph) held.dispose();
     }
+  }
+}
+
+/// The family that draws [family]: the reader font for an embedded face that
+/// did not load, as for a face that prepare cannot read, and else [family].
+String _drawn(String family) =>
+    BookFonts.missing(family) ? readerFontFamily : family;
+
+ui.FontWeight _weight(int weight) =>
+    ui.FontWeight.values[((weight / 100).round() - 1).clamp(0, 8)];
+
+/// The text style that draws a run in [style] with [ink].
+ui.TextStyle runTextStyle(RunStyle style, ui.Color ink) {
+  final family = _drawn(style.family);
+  return ui.TextStyle(
+    color: ink,
+    fontFamily: family,
+    // A character that a face lacks draws in the reader font, not in the
+    // platform's default font, and an arrow that both lack draws in the
+    // arrow font, not in the platform's emoji font.
+    fontFamilyFallback: const [readerFontFamily, arrowFontFamily],
+    fontSize: style.size,
+    fontWeight: _weight(style.weight),
+    fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,
+    letterSpacing: style.letterSpacing == 0 ? null : style.letterSpacing,
+    wordSpacing: style.wordSpacing == 0 ? null : style.wordSpacing,
+    height: style.lineHeight == null ? null : style.lineHeight! / style.size,
+    leadingDistribution: ui.TextLeadingDistribution.even,
+    decoration: ui.TextDecoration.combine([
+      if (style.underline) ui.TextDecoration.underline,
+      if (style.lineThrough) ui.TextDecoration.lineThrough,
+    ]),
+    fontFeatures: [
+      if (style.smallCaps) const ui.FontFeature.enable('smcp'),
+      if (style.oldstyleFigures) const ui.FontFeature.oldstyleFigures(),
+    ],
+    fontVariations: [
+      // Chromium sets a variable font's optical size to the text size.
+      ui.FontVariation('opsz', style.size.clamp(8, 60).toDouble()),
+      // Chromium sets a variable font's weight axis to the CSS weight. But
+      // the reader's @font-face rule names no weights, so Chromium draws
+      // bold reader text as a thickened regular face with regular widths.
+      // Flutter would pick the font's true bold, which is wider.
+      ui.FontVariation(
+        'wght',
+        family == readerFontFamily ? 400 : style.weight.toDouble(),
+      ),
+    ],
+  );
+}
+
+/// The paragraph style of a block in the run style [container], aligned by
+/// [align]. The block's font and line height form its strut.
+ui.ParagraphStyle blockParagraphStyle(RunStyle container, Align align) {
+  final height = container.lineHeight;
+  return ui.ParagraphStyle(
+    textAlign: switch (align) {
+      Align.left => ui.TextAlign.left,
+      Align.right => ui.TextAlign.right,
+      Align.center => ui.TextAlign.center,
+      Align.justify => ui.TextAlign.justify,
+      Align.end => ui.TextAlign.end,
+      Align.start => ui.TextAlign.start,
+    },
+    textDirection: ui.TextDirection.ltr,
+    // The block's own font and line height form a strut, as CSS's root
+    // inline box does.
+    strutStyle: ui.StrutStyle(
+      fontFamily: _drawn(container.family),
+      fontSize: container.size,
+      height: height == null ? null : height / container.size,
+      leadingDistribution: ui.TextLeadingDistribution.even,
+      fontWeight: _weight(container.weight),
+    ),
+    textHeightBehavior: const ui.TextHeightBehavior(
+      leadingDistribution: ui.TextLeadingDistribution.even,
+    ),
+  );
+}
+
+/// The calls that built a paragraph that a page can show: what a kept page
+/// ([PageDrawing]) needs to build the paragraph again.
+final class ParagraphRecipe {
+  ParagraphRecipe._(this.block);
+
+  /// The run style and the alignment of the paragraph's block, whose
+  /// [blockParagraphStyle] built it, or null for the default paragraph
+  /// style.
+  final (int, Align)? block;
+
+  /// The builder calls in order: an [int] pushes that run style of the
+  /// section ([runTextStyle]), a [String] adds that text, null pops a style,
+  /// and a record adds a placeholder on the alphabetic baseline.
+  final calls = <Object?>[];
+}
+
+/// The recipe of [paragraph], when a layout run built it to show it on a
+/// page, or null.
+ParagraphRecipe? recipeOf(ui.Paragraph paragraph) => _recipes[paragraph];
+
+final _recipes = Expando<ParagraphRecipe>('paragraph recipes');
+
+/// A builder of a paragraph that a page can show. It records its calls in
+/// the paragraph's recipe ([recipeOf]).
+final class _Recorder {
+  _Recorder(this._styles, ui.ParagraphStyle style, {(int, Align)? block})
+    : _builder = ui.ParagraphBuilder(style),
+      _recipe = ParagraphRecipe._(block);
+
+  final List<ui.TextStyle> _styles;
+  final ui.ParagraphBuilder _builder;
+  final ParagraphRecipe _recipe;
+
+  /// Adds [text] in run style [style].
+  void addRun(int style, String text) {
+    _builder
+      ..pushStyle(_styles[style])
+      ..addText(text)
+      ..pop();
+    _recipe.calls.addAll([style, text, null]);
+  }
+
+  /// Adds [text] in the paragraph's style.
+  void addText(String text) {
+    _builder.addText(text);
+    _recipe.calls.add(text);
+  }
+
+  /// Adds a placeholder [width] by [height] pixels whose bottom sits
+  /// [baselineOffset] pixels below the top of the line's baseline.
+  void addPlaceholder(double width, double height, double baselineOffset) {
+    _builder.addPlaceholder(
+      width,
+      height,
+      ui.PlaceholderAlignment.baseline,
+      baseline: ui.TextBaseline.alphabetic,
+      baselineOffset: baselineOffset,
+    );
+    _recipe.calls.add((
+      width: width,
+      height: height,
+      baselineOffset: baselineOffset,
+    ));
+  }
+
+  ui.Paragraph build() {
+    final paragraph = _builder.build();
+    _recipes[paragraph] = _recipe;
+    return paragraph;
   }
 }
 

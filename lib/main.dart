@@ -27,6 +27,7 @@ import 'playback/native.dart';
 import 'playback/playback.dart';
 import 'playback/store.dart';
 import 'playback/database.dart';
+import 'reader/kept_pages.dart';
 import 'reader/last_page_settings.dart';
 import 'reader/reading_speed.dart';
 import 'reader/session.dart';
@@ -98,6 +99,9 @@ Future<void> runBookfin({bool gallery = false}) async {
           speed: speed,
           pageSettings: pageSettings,
           surveyStore: SurveyFiles.new,
+          // A debug build has no text-engine fingerprint, so it keeps no
+          // pages: hot reload changes how pages draw.
+          keptPages: KeptPages(engine: textEngineFingerprint),
         );
   // Crossings measures an ebook's outline only when the History first asks
   // for a landing in it, so no launch step waits for it.
