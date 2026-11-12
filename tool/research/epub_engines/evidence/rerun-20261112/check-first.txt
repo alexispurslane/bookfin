@@ -1,0 +1,14 @@
+check1-prose-bookfin: load 15.46, 20.89, 19.26
+check1-prose-bookfin: OK (1 test) 
+check1-prose-bookfin-prepared_at_download: load 12.41, 19.63, 18.86
+check1-prose-bookfin-prepared_at_download: OK (1 test) 
+check1-prose-webview: load 12.41, 19.63, 18.86
+check1-prose-webview: OK (1 test) 
+check1-prose-koreader: load 12.43, 19.40, 18.79
+check1-prose-koreader: OK (1 test) 
+check1-long-bookfin: load 11.19, 18.47, 18.48
+check1-long-bookfin: OK (1 test) 
+check1-illustrated-bookfin: load 9.97, 17.46, 18.11
+check1-illustrated-bookfin: OK (1 test) 
+check1-illustrated-bookfin-prepared_at_download: load 9.16, 16.67, 17.80
+check1-illustrated-bookfin-prepared_at_download: OK (1 test) 

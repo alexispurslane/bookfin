@@ -248,6 +248,170 @@ SwiftShader run had no load record for each job, and its host load reached
 [SwiftShader tables](../../../tool/research/epub_engines/evidence/symmetric-20261111/results-swiftshader/tables.md)
 and [host-GPU tables](../../../tool/research/epub_engines/evidence/symmetric-20261111/results-drawn4-gpu/tables.md).
 
+## Rerun on current main: November 12, 2026
+
+This run repeats `sym-drawn4` with Bookfin's shell built from main at
+`255da777`. Since `sym-drawn4`, main gained four changes to the open:
+
+- the open quick wins (`boo-yjq6`),
+- admission and MOBI conversion when a download completes, and a kept
+  last page that a reopen draws in its first frame (`boo-sy2d`),
+- the reader font for all text (`boo-iv7q`),
+- a book's own font only for characters that the reader font lacks
+  (`boo-3huo`).
+
+The run id is `rerun1`. Ticket `t1-m4cp` records the work. The books,
+the actions, the endpoints, the rule for the frame wait, the load guard
+and the equal-book-weight means are those of `sym-drawn4`. The WebView
+and KOReader rows keep their definitions. Their release and test
+packages are the same files, byte for byte, as in `sym-drawn4`.
+
+### Summary
+
+Each cell is the equal-book-weight mean in milliseconds. "n/a" marks a
+row that the engine does not have.
+
+| Action | Bookfin | WebView | KOReader |
+| --- | ---: | ---: | ---: |
+| Fresh open, no preparation | 195.5 | 355.3 | 127.9 |
+| Fresh open, prepared at download | 65.4 | n/a | n/a |
+| Preparation at download (background) | 150.0 | n/a | n/a |
+| Cached reopen, kept page | 9.6 | n/a | n/a |
+| Cached reopen, true page | 31.2 | 289.0 | 17.4 |
+| Page turn | 8.2 | 52.5 | 2.6 |
+| Chapter turn (visited) | 4.2 | 47.8 | 3.1 |
+| Size change | 35.6 | 64.8 | 70.0 |
+
+The rows of Bookfin mean this:
+
+- Fresh open, no preparation: the cold path of `sym-drawn4`. Nothing
+  about the book is kept, so the open admits the whole book.
+- Fresh open, prepared at download: the first open after a download, as
+  the app now does it. The admitted book is kept, but no page map and no
+  kept page exist yet.
+- Preparation at download: the time from the call of
+  `prepareDownloadedBook` to its return. The app runs it in a worker when
+  a download completes. It is not on the path of any open.
+- Cached reopen, kept page: the time to the first frame that draws the
+  kept page. This is the page that the person sees first.
+- Cached reopen, true page: the time to the first frame that draws the
+  laid-out page, as in `sym-drawn4`. In every reopen of this run, the
+  kept page and the true page were the same page (`KeptPage.depicts`).
+
+Compared with `sym-drawn4`:
+
+| Action | Bookfin before | Bookfin now | WebView before | WebView now | KOReader before | KOReader now |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Fresh open, no preparation | 370.3 | 195.5 | 359.7 | 355.3 | 117.9 | 127.9 |
+| Fresh open, prepared at download | n/a | 65.4 | n/a | n/a | n/a | n/a |
+| Cached reopen, first drawn page | 46.9 | 9.6 (kept page) | 284.9 | 289.0 | 17.1 | 17.4 |
+| Cached reopen, true page | 46.9 | 31.2 | 284.9 | 289.0 | 17.1 | 17.4 |
+| Page turn | 7.8 | 8.2 | 51.9 | 52.5 | 2.3 | 2.6 |
+| Chapter turn (visited) | 4.5 | 4.2 | 47.1 | 47.8 | 3.0 | 3.1 |
+| Size change | 40.6 | 35.6 | 64.7 | 64.8 | 68.9 | 70.0 |
+
+WebView and KOReader did not change. Their differences show the noise
+between two runs on a shared host: 0.1 to 10.0 ms.
+
+### Per book
+
+Each cell shows median / p90 (sample count) in milliseconds. The p90 is
+the sample at rank ⌈0.9 n⌉ in ascending order.
+
+| Engine | Action | prose | long | illustrated |
+| --- | --- | ---: | ---: | ---: |
+| Bookfin | Fresh open, no preparation | 153.4 / 192.5 (12) | 202.9 / 241.7 (12) | 198.2 / 257.6 (12) |
+| Bookfin | Fresh open, prepared at download | 64.2 / 80.9 (12) | 62.3 / 82.9 (12) | 52.3 / 83.8 (12) |
+| Bookfin | Preparation at download (background) | 107.3 / 171.5 (12) | 152.0 / 161.6 (12) | 156.9 / 184.6 (12) |
+| Bookfin | Cached reopen, kept page | 9.2 / 11.5 (36) | 9.7 / 12.5 (36) | 7.9 / 10.3 (36) |
+| Bookfin | Cached reopen, true page | 26.6 / 32.8 (36) | 34.2 / 40.8 (36) | 26.5 / 31.4 (36) |
+| Bookfin | Page turn | 6.0 / 8.8 (36) | 6.8 / 8.6 (36) | 8.5 / 20.5 (36) |
+| Bookfin | Chapter turn (visited) | 4.1 / 6.0 (36) | 4.0 / 5.2 (36) | 4.0 / 5.8 (36) |
+| Bookfin | Size change | 24.6 / 45.5 (36) | 43.2 / 54.3 (36) | 24.4 / 42.4 (36) |
+| WebView | Fresh open | 183.2 / 229.9 (12) | 256.6 / 266.3 (12) | 621.5 / 648.1 (12) |
+| WebView | Cached reopen | 120.9 / 153.5 (36) | 183.6 / 217.0 (36) | 545.6 / 599.7 (36) |
+| WebView | Page turn | 52.9 / 67.1 (36) | 49.0 / 54.6 (36) | 52.0 / 67.0 (36) |
+| WebView | Chapter turn (visited) | 43.7 / 54.0 (36) | 43.9 / 66.5 (36) | 49.1 / 62.6 (36) |
+| WebView | Size change | 66.8 / 71.7 (36) | 63.7 / 69.1 (36) | 66.2 / 69.8 (36) |
+| KOReader | Fresh open | 110.0 / 152.5 (12) | 178.0 / 199.4 (12) | 71.4 / 77.6 (12) |
+| KOReader | Cached reopen | 12.9 / 14.5 (36) | 15.5 / 17.4 (36) | 21.1 / 27.6 (36) |
+| KOReader | Page turn | 2.0 / 2.3 (36) | 1.9 / 2.7 (36) | 2.5 / 4.5 (36) |
+| KOReader | Chapter turn (visited) | 1.8 / 2.1 (36) | 1.7 / 2.0 (36) | 5.2 / 6.0 (36) |
+| KOReader | Size change | 67.5 / 69.9 (36) | 116.5 / 120.8 (36) | 24.8 / 27.7 (36) |
+
+Every cell has the sample count of `sym-drawn4`: 12 fresh opens and 36
+of each other action per book and engine. The run has 144 accepted jobs
+and 1,440 accepted samples. No measured sample was excluded. Data:
+[summary JSON](../../../tool/research/epub_engines/evidence/rerun-20261112/results-rerun1/summary.json),
+[accepted samples](../../../tool/research/epub_engines/evidence/rerun-20261112/results-rerun1/samples.jsonl),
+[facts](../../../tool/research/epub_engines/evidence/rerun-20261112/results-rerun1/facts.json)
+and [tables](../../../tool/research/epub_engines/evidence/rerun-20261112/results-rerun1/tables.md).
+
+### What changed in the method
+
+1. The Bookfin shell opens a book as the reading session on main does.
+   The pager starts with this phone's last page settings (`expected`), as
+   the app's pager does after the phone showed one page. In all 180 opens,
+   these settings equaled the settings that the viewport presented.
+2. A cached reopen first closes the open book, so the viewport shows the
+   paper. It then reads the page kept at the saved place beside the load.
+   The viewport draws the kept page until the pager shows its first page.
+   The kept page is written in the unmeasured step after the fresh open,
+   when an open at the saved place shows that page (`opensAtShown`). All
+   36 processes per book kept their page, and all 108 reopens drew it.
+3. Each round and book has a fourth process: Bookfin with its book
+   prepared at download. It calls `prepareDownloadedBook`, rests 500 ms,
+   and runs only the fresh open. That process takes each of the four
+   places in a book's group three times. The three standard processes
+   keep the ids and order of `sym-drawn4`. This adds 36 jobs, for 144.
+4. The kept page has the same rule for the frame wait as the drawn page.
+   Its interval runs from engine entry to Flutter's `rasterFinish` of the
+   first frame that drew the kept page. It leaves out the time from the
+   hand-over of the kept page to the viewport until that frame's vsync.
+5. The emulator is a new private AVD, `bookfin-bench-rerun`, on
+   `emulator-5562`. Its `config.ini` copies `bookfin-bench-gpu`, with the
+   same system image, WebView 133.0.6943.137, host GPU renderer string and
+   Pixel 7 cutout overlay. Bookfin's pages matched the `sym-drawn4`
+   references pixel for pixel, so no new calibration ran.
+
+The host tests in `test_rerun.py` and `test_protocol.py` cover the new
+rows. Collection of the `sym-drawn4` samples with the changed code gives
+every one of its cells and means again.
+
+### Host load
+
+Each job used the load guard of `sym-drawn4`. The run went from 14:13 to
+15:31 UTC. Before each accepted job, the one-minute load was 5.0 to 7.99
+on the Mac's 10 cores. The highest reading during an accepted job was
+7.99. Eighteen jobs were set aside, after 22 attempts with a reading of 8
+or more, and measured again at the same place
+([load record](../../../tool/research/epub_engines/evidence/rerun-20261112/measured-rerun1/host-load.jsonl)).
+One job, round 7 of the illustrated book in Bookfin, was busy in three
+attempts, so the runner stopped. The run went on from that job with
+`--start 88`.
+
+### Asymmetries that changed
+
+1. Only Bookfin has a kept page and a preparation at download. A WebView
+   or KOReader reopen draws its true page first. KOReader keeps its
+   parsed book and its layout in a cache file, which its reopen uses.
+2. The prepared open follows the preparation in the same process, after
+   500 ms. Its file cache is warm, and its worker code already ran. In
+   the app, the open can come in a later process.
+3. The preparation at download ran on a quiet emulator. In the app, it
+   runs beside the download and other work.
+4. Bookfin's cached reopen, true page, is the app's new path: it reads and
+   draws the kept page inside the interval. In `sym-drawn4`, the old page
+   stayed on screen until the new pager existed. The endpoint is the
+   same.
+5. WebView's answer after a later vsync: 385 of 468 samples, against 373
+   in `sym-drawn4`. Its preparation ended inside a running frame in 285
+   samples, against 284. Bookfin's median number of frames inside
+   preparation is now 2 for a fresh open, against 3, and is unchanged
+   for the other actions.
+
+The other asymmetries of `sym-drawn4` remain as listed there.
+
 ## Homepage organization and checks
 
 The Reader chapter now contains the EPUB implementation, shared controls, and

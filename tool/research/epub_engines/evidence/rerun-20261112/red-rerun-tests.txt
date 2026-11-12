@@ -1,0 +1,179 @@
+.F....F...F.FEEEFEEEEFF.F
+======================================================================
+ERROR: test_a_preparation_that_overlaps_the_open_is_excluded (test_rerun.FreshOpenPreparedAtDownloadTest.test_a_preparation_that_overlaps_the_open_is_excluded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 64, in test_a_preparation_that_overlaps_the_open_is_excluded
+    self.assertEqual(result["cells"], [])
+                     ~~~~~~^^^^^^^^^
+KeyError: 'cells'
+
+======================================================================
+ERROR: test_a_prepared_open_claims_the_cache_state_of_a_prepared_book (test_rerun.FreshOpenPreparedAtDownloadTest.test_a_prepared_open_claims_the_cache_state_of_a_prepared_book)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 68, in test_a_prepared_open_claims_the_cache_state_of_a_prepared_book
+    self.assertEqual(cells([prepared_open(cache="fresh_document")], "drawn_page"), [])
+                            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 35, in prepared_open
+    row = prepared(number, operation="fresh_open", preparation_operation="fresh_open",
+                   cache="prepared_at_download", variant="prepared_at_download", **changes)
+TypeError: test_preparation.prepared() got multiple values for keyword argument 'cache'
+
+======================================================================
+ERROR: test_only_processes_prepared_at_download_have_a_preparation_sample (test_rerun.FreshOpenPreparedAtDownloadTest.test_only_processes_prepared_at_download_have_a_preparation_sample)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 60, in test_only_processes_prepared_at_download_have_a_preparation_sample
+    self.assertEqual(result["cells"], [])
+                     ~~~~~~^^^^^^^^^
+KeyError: 'cells'
+
+======================================================================
+ERROR: test_a_kept_frame_that_began_before_the_page_was_ready_subtracts_nothing (test_rerun.KeptPageOfACachedReopenTest.test_a_kept_frame_that_began_before_the_page_was_ready_subtracts_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 89, in test_a_kept_frame_that_began_before_the_page_was_ready_subtracts_nothing
+    self.assertAlmostEqual(cells([row], "kept_page")[0]["mean_ms"], .9)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+ERROR: test_a_kept_page_drawn_after_the_true_page_is_excluded (test_rerun.KeptPageOfACachedReopenTest.test_a_kept_page_drawn_after_the_true_page_is_excluded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 102, in test_a_kept_page_drawn_after_the_true_page_is_excluded
+    self.assertEqual(result["cells"], [])
+                     ~~~~~~^^^^^^^^^
+KeyError: 'cells'
+
+======================================================================
+ERROR: test_a_kept_page_that_does_not_depict_the_true_page_is_excluded (test_rerun.KeptPageOfACachedReopenTest.test_a_kept_page_that_does_not_depict_the_true_page_is_excluded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 98, in test_a_kept_page_that_does_not_depict_the_true_page_is_excluded
+    self.assertEqual(result["cells"], [])
+                     ~~~~~~^^^^^^^^^
+KeyError: 'cells'
+
+======================================================================
+ERROR: test_a_reopen_that_showed_no_kept_page_is_excluded_from_the_kept_page_with_its_reason (test_rerun.KeptPageOfACachedReopenTest.test_a_reopen_that_showed_no_kept_page_is_excluded_from_the_kept_page_with_its_reason)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 93, in test_a_reopen_that_showed_no_kept_page_is_excluded_from_the_kept_page_with_its_reason
+    self.assertEqual(result["cells"], [])
+                     ~~~~~~^^^^^^^^^
+KeyError: 'cells'
+
+======================================================================
+FAIL: test_each_book_gets_twelve_bookfin_processes_whose_book_was_prepared_at_download (test_protocol.ScheduleTest.test_each_book_gets_twelve_bookfin_processes_whose_book_was_prepared_at_download)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_protocol.py", line 27, in test_each_book_gets_twelve_bookfin_processes_whose_book_was_prepared_at_download
+    self.assertEqual(counts, {(book, "bookfin"): 12 for book in BOOKS})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Counter() != {('prose', 'bookfin'): 12, ('long', 'book[37 chars]: 12}
+
+======================================================================
+FAIL: test_every_run_has_a_unique_reproducible_id (test_protocol.ScheduleTest.test_every_run_has_a_unique_reproducible_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_protocol.py", line 56, in test_every_run_has_a_unique_reproducible_id
+    self.assertEqual(len(jobs), 144)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 108 != 144
+
+======================================================================
+FAIL: test_the_prepared_process_takes_each_place_among_a_books_four_processes_three_times (test_protocol.ScheduleTest.test_the_prepared_process_takes_each_place_among_a_books_four_processes_three_times)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_protocol.py", line 39, in test_the_prepared_process_takes_each_place_among_a_books_four_processes_three_times
+    self.assertEqual(len(group), 4)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 3 != 4
+
+======================================================================
+FAIL: test_a_book_prepared_at_download_opens_in_a_cell_apart_from_the_cold_open (test_rerun.FreshOpenPreparedAtDownloadTest.test_a_book_prepared_at_download_opens_in_a_cell_apart_from_the_cold_open)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 51, in test_a_book_prepared_at_download_opens_in_a_cell_apart_from_the_cold_open
+    self.assertEqual(sorted(cell["operation"] for cell in found), ["fresh_open", "fresh_open_prepared"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['fresh_open'] != ['fresh_open', 'fresh_open_prepared']
+
+Second list contains 1 additional elements.
+First extra element 1:
+'fresh_open_prepared'
+
+- ['fresh_open']
++ ['fresh_open', 'fresh_open_prepared']
+
+======================================================================
+FAIL: test_the_preparation_at_download_is_timed_from_its_call_to_its_return (test_rerun.FreshOpenPreparedAtDownloadTest.test_the_preparation_at_download_is_timed_from_its_call_to_its_return)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 55, in test_the_preparation_at_download_is_timed_from_its_call_to_its_return
+    self.assertEqual(len(found), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_only_bookfin_cached_reopens_have_a_kept_page (test_rerun.KeptPageOfACachedReopenTest.test_only_bookfin_cached_reopens_have_a_kept_page)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 107, in test_only_bookfin_cached_reopens_have_a_kept_page
+    self.assertEqual([(cell["engine"], cell["operation"]) for cell in cells(rows, "kept_page")],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     [("bookfin", "cached_reopen")])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [('bookfin', 'cached_reopen')]
+
+Second list contains 1 additional elements.
+First extra element 0:
+('bookfin', 'cached_reopen')
+
+- []
++ [('bookfin', 'cached_reopen')]
+
+======================================================================
+FAIL: test_the_kept_page_is_timed_to_its_raster_finish_without_the_wait_for_its_frame (test_rerun.KeptPageOfACachedReopenTest.test_the_kept_page_is_timed_to_its_raster_finish_without_the_wait_for_its_frame)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 80, in test_the_kept_page_is_timed_to_its_raster_finish_without_the_wait_for_its_frame
+    self.assertEqual(len(found), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_the_rerun_table_names_every_bookfin_row_and_leaves_other_engines_out_of_them (test_rerun.RerunTableTest.test_the_rerun_table_names_every_bookfin_row_and_leaves_other_engines_out_of_them)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-182f85dc/tool/research/epub_engines/test_rerun.py", line 122, in test_the_rerun_table_names_every_bookfin_row_and_leaves_other_engines_out_of_them
+    self.assertEqual(labels, ["Fresh open, no preparation", "Fresh open, prepared at download",
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              "Preparation at download (background)", "Cached reopen, kept page",
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              "Cached reopen, true page", "Page turn", "Chapter turn (visited)",
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              "Size change"])
+                              ^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['Fresh open, no preparation', 'Fresh open[169 chars]nge']
+
+Second list contains 8 additional elements.
+First extra element 0:
+'Fresh open, no preparation'
+
+- []
++ ['Fresh open, no preparation',
++  'Fresh open, prepared at download',
++  'Preparation at download (background)',
++  'Cached reopen, kept page',
++  'Cached reopen, true page',
++  'Page turn',
++  'Chapter turn (visited)',
++  'Size change']
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.013s
+
+FAILED (failures=8, errors=7)
