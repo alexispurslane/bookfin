@@ -101,8 +101,9 @@ final class NoLanding extends Settled {
   final Refusal reason;
 }
 
-/// Speech is still finding the landing. [estimate] is the landing of
-/// matched chapters, or null when they give none.
+/// Speech is still finding the landing. [estimate] is the landing between
+/// two found windows, else the landing of matched chapters, or null when
+/// neither gives one.
 final class Refining extends Crossing {
   const Refining(this.estimate);
   final Landing? estimate;
@@ -216,7 +217,7 @@ class Crossings {
   /// starts the alignment in the background, and [changes] notifies when
   /// it arrives. With speech, the first answer for a place starts its
   /// speech work, and until that ends, the answer is [Refining] with the
-  /// landing of matched chapters.
+  /// landing between two found windows, else of matched chapters.
   Crossing? landingNow(
     Place place, {
     required Edition from,
@@ -233,9 +234,26 @@ class Crossings {
     unawaited(_bySpeech(place, from, into));
     return switch (chapters) {
       null => null,
-      final Landing landing => Refining(landing),
-      NoLanding() => const Refining(null),
+      final Landing landing => Refining(
+        _betweenWindows(place, from, into) ?? landing,
+      ),
+      NoLanding() => Refining(_betweenWindows(place, from, into)),
     };
+  }
+
+  /// The landing of the reading place [place] of [from] in [into] between
+  /// two found windows that the anchor map holds now, or null. A listening
+  /// place between two found windows lands without hearing, so it has no
+  /// estimate.
+  AudioLanding? _betweenWindows(Place place, Edition from, Edition into) {
+    if (place is! TextPosition || !place.fits(from)) return null;
+    final characters = _outlines[_outlineKey(from)]?.charactersOf(place);
+    if (characters == null) return null;
+    final at = _speech!.estimateMs(_pairKey(from, into), characters);
+    final landed = at == null ? null : audioPlaceAt(into, at);
+    return landed == null
+        ? null
+        : AudioLanding(place, landed, matchedBy: MatchedBy.speech);
   }
 
   /// Starts the alignment of [from] and [into], two editions of the two
@@ -268,9 +286,15 @@ class Crossings {
       try {
         landing = await _hear(speech, place, from, into);
       } on Exception {
-        // Speech could not read a file or a store. It refuses this time.
+        // Speech could not read a file or a store, or its worker stopped.
+        // It refuses this time.
         if (identical(_heard[key], work)) _heard.remove(key);
         return null;
+      } catch (_) {
+        // A failure is a bug. It is not kept, so a later request tries
+        // again.
+        if (identical(_heard[key], work)) _heard.remove(key);
+        rethrow;
       }
       if (!_disposed && identical(_heard[key], work)) {
         _heardDone[key] = landing;

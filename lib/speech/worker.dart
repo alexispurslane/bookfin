@@ -10,6 +10,10 @@ import 'dart:isolate';
 /// A job is a closure that the worker runs. It travels to the worker, so it
 /// must capture only data that isolates can send: no data source, no
 /// widget, no native handle. Its result travels back the same way.
+///
+/// A worker can stop by itself: it exits, it fails outside a job, or it
+/// cannot make its state. Its jobs then fail with [WorkerStopped], and the
+/// next job starts a new worker.
 class KeptWorker<S> {
   /// [start] makes the state in the worker, at each start. [end] lets the
   /// state go before the worker stops, such as native memory, which the end
@@ -40,14 +44,14 @@ class KeptWorker<S> {
   bool get running => _running != null;
 
   /// What [job] gives for the worker's state. It throws what [job] throws,
-  /// as a [RemoteError] when the error cannot travel back.
+  /// as a [RemoteError] when the error cannot travel back, and
+  /// [WorkerStopped] when the worker stops first or is closed.
   Future<R> run<R>(FutureOr<R> Function(S state) job) async {
-    if (_closed) throw StateError('The worker is closed.');
+    if (_closed) throw WorkerStopped(name);
     _stop?.cancel();
     _busy++;
     try {
-      final running = await (_running ??= _spawn());
-      return await running.run(job);
+      return await (await _started()).run(job);
     } finally {
       if (--_busy == 0 && !_closed) {
         _stop = Timer(idle, _end);
@@ -55,17 +59,37 @@ class KeptWorker<S> {
     }
   }
 
+  /// The worker that runs now, else a new one. A worker that stopped, or
+  /// that could not start, is forgotten, so that this job starts a new one.
+  Future<_Running> _started() async {
+    if (_running case final started?) {
+      try {
+        final running = await started;
+        if (!running.stopped) return running;
+      } on WorkerStopped {
+        // It could not start.
+      }
+      if (identical(_running, started)) _running = null;
+    }
+    return _running ??= _spawn();
+  }
+
   Future<_Running> _spawn() async {
     final replies = ReceivePort();
     final start = _start;
-    final isolate = await Isolate.spawn<(SendPort, FutureOr<S> Function())>(
-      _serve<S>,
-      (replies.sendPort, start),
-      debugName: name,
-      onError: replies.sendPort,
-      onExit: replies.sendPort,
-    );
-    return _Running(isolate, replies);
+    try {
+      final isolate = await Isolate.spawn<(SendPort, FutureOr<S> Function())>(
+        _serve<S>,
+        (replies.sendPort, start),
+        debugName: name,
+        onError: replies.sendPort,
+        onExit: replies.sendPort,
+      );
+      return _Running(isolate, replies, name);
+    } catch (_) {
+      replies.close();
+      throw WorkerStopped(name);
+    }
   }
 
   void _end() {
@@ -103,19 +127,38 @@ class KeptWorker<S> {
   }
 }
 
+/// The worker isolate stopped before a job ended: it exited, it failed
+/// outside a job, or it could not start or make its state. The next job
+/// starts a new worker.
+class WorkerStopped implements Exception {
+  const WorkerStopped(this.name);
+
+  /// The name of the worker.
+  final String name;
+
+  @override
+  String toString() => 'WorkerStopped: the worker $name stopped.';
+}
+
 /// A started worker: its isolate, and the replies of its jobs.
 class _Running {
-  _Running(this._isolate, this._replies) {
+  _Running(this._isolate, this._replies, this._name) {
     _replies.listen(_reply);
   }
 
   final Isolate _isolate;
   final ReceivePort _replies;
+  final String _name;
   final _waiting = <int, Completer<Object?>>{};
   final _jobs = Completer<SendPort>();
   var _next = 0;
+  var _stopped = false;
+
+  /// Whether the isolate stopped, so that no job runs on it again.
+  bool get stopped => _stopped;
 
   Future<R> run<R>(Function job) async {
+    if (_stopped) throw WorkerStopped(_name);
     final id = _next++;
     final done = _waiting[id] = Completer<Object?>();
     try {
@@ -137,11 +180,14 @@ class _Running {
         _waiting.remove(id)?.completeError(error, StackTrace.fromString(stack));
       case null || [_, _]:
         // The isolate exited, or failed outside a job.
-        _fail(StateError('The worker stopped.'));
+        _fail();
     }
   }
 
-  void _fail(Object error) {
+  void _fail() {
+    if (_stopped) return;
+    _stopped = true;
+    final error = WorkerStopped(_name);
     if (!_jobs.isCompleted) _jobs.completeError(error);
     for (final waiting in _waiting.values) {
       waiting.completeError(error);
@@ -152,7 +198,7 @@ class _Running {
 
   void stop() {
     _isolate.kill(priority: Isolate.immediate);
-    _fail(StateError('The worker stopped.'));
+    _fail();
   }
 }
 

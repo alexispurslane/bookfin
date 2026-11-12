@@ -17,7 +17,9 @@ import 'words.dart';
 /// window: the words are searched around book word [around] in growing
 /// [radii] of pages, and the heard word nearest [atMs] lands on its book
 /// word. Null when no confident match exists, because a guess is worse
-/// than no landing.
+/// than no landing. A heard word before the book's body or after it, such
+/// as a spoken heading or the recording's closing words, lands on the
+/// body's first or last word.
 int? landHeard(
   BookWords book,
   Heard heard, {
@@ -33,7 +35,7 @@ int? landHeard(
       nearest = index;
     }
   }
-  return match.bookWordOf(nearest);
+  return match.bookWordOf(nearest).clamp(0, book.bodyEnd - 1);
 }
 
 /// The range of narration rates, in milliseconds per word: 1.85 to 3.7

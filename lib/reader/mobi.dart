@@ -64,19 +64,28 @@ Future<T> readMobi<T>(
 }
 
 /// The admitted publication of the MOBI at [path], whose SHA-256 is
-/// [digest], read in the calling isolate, which must not be the UI
-/// isolate: the conversion that Bookfin kept, else a new one, which is then
-/// kept.
-Future<Publication> admittedMobi(String path, String digest) async {
-  final (publication, record) = await AdmittedBooks.read(
+/// [digest], from what Bookfin kept beside it: the admitted book, else the
+/// kept conversion. It writes nothing, so it can run outside Downloads'
+/// read of the download (t4-3o9f). It reads in the calling isolate, which
+/// must not be the UI isolate. It throws a [FormatException] when Bookfin
+/// kept neither, because the reader did not convert the MOBI yet.
+Future<Publication> keptMobi(String path, String digest) async {
+  final (publication, _) = await AdmittedBooks.read(
     File(path),
     digest,
     EpubDocument.mobiPolicy,
-    () => _convert(path, digest),
+    () async =>
+        await _cached(_conversionOf(File(path), digest), digest) ??
+        (throw const FormatException('This MOBI is not converted yet.')),
   );
-  if (record != null) await AdmittedBooks.keep(record);
   return publication;
 }
+
+/// The folder of the conversion of the MOBI [original], whose SHA-256 is
+/// [digest].
+Directory _conversionOf(File original, String digest) => Directory(
+  '${DerivedBookFiles.mobiDirectory(original).path}/$digest-libmobi-0.12-v1',
+);
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from
 /// the conversion that Bookfin kept, else from a new conversion.
@@ -99,7 +108,7 @@ Future<Publication> _convert(String path, String digest) async {
     );
   }
   await cacheRoot.create();
-  final destination = Directory('${cacheRoot.path}/$digest-libmobi-0.12-v1');
+  final destination = _conversionOf(original, digest);
   final cached = await _cached(destination, digest);
   if (cached != null) return cached;
   final work = await cacheRoot.createTemp('conversion-');

@@ -125,6 +125,22 @@ void main() {
     expect(hearing.calls, isEmpty);
   });
 
+  test('a file that this phone streams hears nothing at once, without '
+      'waiting for the window heard now', () async {
+    hearing.gated = true;
+    final heard = windows();
+    heard.hearSoon(book, at(two, 100000));
+    await pumpEventQueue();
+    downloaded = {'two'};
+    expect(
+      await heard
+          .hear(book, at(one, 60000))
+          .timeout(const Duration(seconds: 1), onTimeout: () => fail('waited')),
+      isNull,
+    );
+    hearing.gates.single.complete();
+  });
+
   test('a window that hears no words is not kept', () async {
     hearing.answer = (_, _) => null;
     final heard = windows();

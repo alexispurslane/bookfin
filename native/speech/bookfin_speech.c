@@ -166,7 +166,14 @@ done:
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaExtractor.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
+
+static int64_t monotonic_ms(void) {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  return (int64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
 
 // Android's own decoders, through the NDK: the extractor reads the file's
 // packets from the sync point before the window, and the codec gives PCM,
@@ -207,15 +214,22 @@ static int decode(const char *path, int start_ms, int length_ms, float *out, int
     goto done;
   const int64_t start_us = (int64_t)start_ms * 1000, end_us = (int64_t)(start_ms + length_ms) * 1000;
   AMediaExtractor_seekTo(extractor, start_us, AMEDIAEXTRACTOR_SEEK_PREVIOUS_SYNC);
-  int input_done = 0, output_done = 0, idle = 0;
-  while (!output_done && idle < 400) {
+  // [answered] is when the codec last took a packet or gave samples. A
+  // codec that does not answer for 2 s, whether or not the input ended,
+  // ends the window instead of holding the worker.
+  int input_done = 0, output_done = 0;
+  int64_t answered = monotonic_ms();
+  while (!output_done && monotonic_ms() - answered < 2000) {
     if (!input_done) {
       // Short waits: the decoder answers within microseconds, and a long
       // wait for each of a window's frames adds up.
       ssize_t index = AMediaCodec_dequeueInputBuffer(codec, 500);
+      if (index < 0 && index != AMEDIACODEC_INFO_TRY_AGAIN_LATER) goto done;
       if (index >= 0) {
+        answered = monotonic_ms();
         size_t size = 0;
         uint8_t *buffer = AMediaCodec_getInputBuffer(codec, (size_t)index, &size);
+        if (buffer == NULL) goto done;
         ssize_t read = AMediaExtractor_readSampleData(extractor, buffer, size);
         int64_t time = AMediaExtractor_getSampleTime(extractor);
         if (read < 0 || time > end_us) {
@@ -237,7 +251,7 @@ static int decode(const char *path, int start_ms, int length_ms, float *out, int
       AMediaFormat_getInt32(changed, "pcm-encoding", &encoding);
       AMediaFormat_delete(changed);
     } else if (index >= 0) {
-      idle = 0;
+      answered = monotonic_ms();
       size_t size = 0;
       uint8_t *buffer = AMediaCodec_getOutputBuffer(codec, (size_t)index, &size);
       if (buffer != NULL && channels > 0 && rate > 0) {
@@ -258,8 +272,10 @@ static int decode(const char *path, int start_ms, int length_ms, float *out, int
       }
       AMediaCodec_releaseOutputBuffer(codec, (size_t)index, false);
       if (info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) output_done = 1;
-    } else if (input_done) {
-      idle++;
+    } else if (index != AMEDIACODEC_INFO_TRY_AGAIN_LATER &&
+               index != AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED) {
+      // The codec failed.
+      goto done;
     }
   }
   result = resample(&mono, rate, out, capacity);
@@ -276,8 +292,8 @@ done:
 }
 
 #else
-// NOTE: The Linux dev shell has no decoder yet. Speech search there falls
-// back to matched chapters, and the decoder tests fail.
+// NOTE: The Linux dev shell has no decoder yet (t2-vhnz). Speech search
+// there falls back to matched chapters, and the decoder tests skip.
 static int decode(const char *path, int start_ms, int length_ms, float *out, int capacity) {
   (void)path;
   (void)start_ms;

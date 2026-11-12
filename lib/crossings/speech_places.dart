@@ -139,6 +139,12 @@ class SpeechPlaces {
     return null;
   }
 
+  /// The time of the recording when the narrator speaks the word after
+  /// [characters] of the ebook, between two anchors that the anchor map of
+  /// the pair [key] holds now, or null. It neither hears nor searches.
+  int? estimateMs(String key, double characters) =>
+      millisecondsBetween(_maps[key]?.anchors ?? const [], characters);
+
   /// The anchors of [pair], in the order of the recording, after the
   /// windows that arrived since the last growth are searched. One growth
   /// runs at a time for each pair.

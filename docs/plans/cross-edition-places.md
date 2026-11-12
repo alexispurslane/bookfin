@@ -878,8 +878,11 @@ In S2, a new data source owns the heard windows of each audio edition: their tim
    with a short progress state and Cancel.
 5. The speech model ships inside the app: tiny.en at 5 bits (q5_1, 32 MB)
    as an uncompressed APK asset, with no download. The package check
-   (`tool/reader/ocr_package.py verify`) confirms that the release APK holds
-   the model with its pinned SHA-256. Decided before the build of boo-vh77.
+   (`tool/reader/speech_package.py verify <apk>`) confirms that an APK holds
+   the model with its pinned SHA-256, stored uncompressed.
+   `tool/bookfin build-android` runs it on the debug APK. The repository
+   has no release build command yet (t5-vbno), so run the check by hand on
+   a release APK. Decided before the build of boo-vh77.
 
 ## Build design of S2 (boo-vh77)
 
@@ -891,19 +894,22 @@ Written 2026-11-11 at the start of the build. It applies the decision above to t
 | --- | --- | --- |
 | The whisper model, the decoder and the worker that runs them | `Speech`, the speech runtime: one long-lived worker isolate over the native library `bookfin_speech` | `HeardWindows` |
 | The heard windows of each audio edition, and the queue of windows to hear | `HeardWindows`, a new app-wide data source | `Crossings` |
-| When a window is heard: every 5 minutes of listening, at moves and bookmarks, the fill | `HeardWindows`, from the position and the records that `Playback` publishes | None |
-| The words of an ebook edition, and the searches in them | `BookWords`, a worker isolate that `Crossings` owns | `Crossings` |
+| When a window is heard: every 5 minutes of listening, at moves and bookmarks, the fill | `HearingPolicy`, from the position and the records that `Playback` publishes, and the power state that Android reports | `HeardWindows`, which takes its requests |
+| The words of an ebook edition, and the searches in them | `BookSearch`, a worker isolate that `SpeechPlaces`, the speech stage of `Crossings`, owns | `Crossings` |
+| The anchor map of each pair of an audio and an ebook edition | `SpeechPlaces` | `Crossings` |
 | The landing of a place, by chapters or by speech | `Crossings`, as in design A | Timeline controller |
 | Whether Go to waits, and Cancel | `openHistory`, the timeline controller | `HistoryTimeline` |
 
 ```mermaid
 flowchart LR
-  P[Playback: position, moves, bookmarks] -- reports --> H[HeardWindows: windows per audio edition, queue]
+  P[Playback: position, moves, bookmarks] -- reports --> R[HearingPolicy: when to hear]
+  B[Android: charging, battery saver] -- reports --> R
+  R -- requests --> H[HeardWindows: windows per audio edition, queue]
   D[(Downloads: audio files)] --> H
   H -- hear a window --> S[Speech: worker isolate, whisper.cpp, decoder]
   H --> F[(bookfin-heard: one file per edition, derived)]
   H -- windows --> X[Crossings: landings]
-  E[(Downloads: ebook files)] --> W[BookWords: words of an ebook, searches]
+  E[(Downloads: ebook files)] --> W[BookSearch: words of an ebook, searches]
   W --> X
   X -- landing or Refining --> C[openHistory: tiles, Go to, wait and Cancel]
 ```

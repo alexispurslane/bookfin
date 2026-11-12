@@ -516,6 +516,32 @@ void main() {
       stopSpeech();
     });
 
+    testWidgets('another Go to ends the wait, and only its own place moves', (
+      tester,
+    ) async {
+      await showPlayerHistory(tester);
+      await open(tester, 'From search');
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('AFTER'))));
+      await tester.pump();
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('BEFORE'))));
+      await tester.pump();
+      expect(inTimeline(find.text('Finding the sentence…')), findsOneWidget);
+
+      await release(tester);
+      await settle(tester, playerMoved);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryTimeline), findsNothing);
+      expect(playback.editionMilliseconds, 30000);
+      expect(
+        playback.history.where(
+          (event) => event.kind == HistoryAction.historyRestore,
+        ),
+        hasLength(1),
+      );
+      stopSpeech();
+    });
+
     testWidgets('Cancel ends the wait and makes no move', (tester) async {
       await showPlayerHistory(tester);
       await open(tester, 'From search');

@@ -1,3 +1,7 @@
+// The Linux dev shell has no audio decoder yet (t2-vhnz).
+@TestOn('!linux')
+library;
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 

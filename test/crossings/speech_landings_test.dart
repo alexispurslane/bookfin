@@ -62,12 +62,14 @@ void main() {
   late HeardWindows heard;
   late bool downloaded;
   late BookWords? readable;
+  late bool broken;
   final made = <Crossings>[];
 
   setUp(() {
     hearing = FakeHearing()..answer = narrated;
     downloaded = true;
     readable = words;
+    broken = false;
     heard = HeardWindows(
       hear: hearing.call,
       store: MemoryStore(),
@@ -90,9 +92,12 @@ void main() {
       hop: inline,
       speech: (
         heard: heard,
-        words: (text) async => switch (readable) {
-          final words? => readsOf(words),
-          null => null,
+        words: (text) async {
+          if (broken) throw StateError('A bug in speech.');
+          return switch (readable) {
+            final words? => readsOf(words),
+            null => null,
+          };
         },
       ),
     );
@@ -193,6 +198,23 @@ void main() {
       expect(hearing.calls, isEmpty);
     });
 
+    test('fails with a bug in speech, and the next landing tries speech '
+        'again', () async {
+      broken = true;
+      final crossings_ = crossings();
+      await expectLater(
+        crossings_.landing(place, from: audio, into: ebookEdition()),
+        throwsStateError,
+      );
+      broken = false;
+      final found = await crossings_.landing(
+        place,
+        from: audio,
+        into: ebookEdition(),
+      );
+      expect((found as TextLanding).matchedBy, MatchedBy.speech);
+    });
+
     test('in an ebook whose words speech cannot read keeps the landing of '
         'matched chapters', () async {
       readable = null;
@@ -223,6 +245,32 @@ void main() {
       expect(landing.place.sourceKey, two.key);
       expect(landing.place.milliseconds, closeTo(128750, 500));
       expect(landing.from, place);
+    });
+
+    test('shows the estimate of the found windows around it while speech '
+        'works', () async {
+      // Windows at 230 s and 290 s into the recording. A landing between
+      // them, without hearing, searches them for the anchor map.
+      await heard.hear(audio, listening(two, 100000));
+      await heard.hear(audio, listening(two, 160000));
+      final crossings_ = crossings();
+      await crossings_.landing(
+        listening(two, 130000),
+        from: audio,
+        into: ebookEdition(),
+      );
+
+      hearing.gated = true;
+      crossings_.landingNow(place, from: ebookEdition(), into: audio);
+      final refining = crossings_.landingNow(
+        place,
+        from: ebookEdition(),
+        into: audio,
+      );
+      final estimate = (refining as Refining).estimate! as AudioLanding;
+      expect(estimate.place.sourceKey, two.key);
+      expect(estimate.place.milliseconds, closeTo(128750, 500));
+      hearing.gates.firstOrNull?.complete();
     });
 
     test(

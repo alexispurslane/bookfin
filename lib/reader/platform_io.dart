@@ -118,25 +118,27 @@ Future<T> _readAdmitted<T>(
 }
 
 /// The admitted publication of the EPUB at [path], whose SHA-256 is
-/// [digest], read in the calling isolate, which must not be the UI
-/// isolate: the admitted book that Bookfin kept, else a new admission,
-/// which is then kept.
-Future<Publication> _admittedEpub(String path, String digest) async {
-  final (publication, record) = await AdmittedBooks.read(
+/// [digest]: the admitted book that Bookfin kept, else a new admission. It
+/// keeps nothing, so it can run outside Downloads' read of the download
+/// (t4-3o9f). It reads in the calling isolate, which must not be the UI
+/// isolate.
+Future<Publication> _keptOrAdmittedEpub(String path, String digest) async {
+  final (publication, _) = await AdmittedBooks.read(
     File(path),
     digest,
     Publication.policy,
     () async => Publication.admit(await File(path).readAsBytes(), digest),
   );
-  if (record != null) await AdmittedBooks.keep(record);
   return publication;
 }
 
 /// A reader of the words of the downloaded ebook [original] of [source],
-/// for the worker of the book's words (see [BookSearch]). It reads the
-/// admitted book that Bookfin kept, or admits or converts the file and
-/// keeps it, as the reader does. Null for a PDF, whose words speech does
-/// not read yet (t2-9csd).
+/// for the worker of the book's words (see [BookSearch]). The worker reads
+/// later, outside Downloads' read of the download, so the reader writes
+/// nothing beside it: it reads the admitted book that Bookfin kept, else
+/// admits an EPUB again, and reads a MOBI only after the reader or the
+/// outline measurement converted it. Null for a PDF, whose words speech
+/// does not read yet (t2-9csd).
 Future<ReadBook?> bookWordsReader(
   VerifiedFile original,
   SourceFile source,
@@ -144,8 +146,8 @@ Future<ReadBook?> bookWordsReader(
   final file = await _verifiedFile(original.uri);
   return switch (await _containerOf(file, source)) {
     'pdf' => null,
-    'mobi' || 'azw3' => _wordsOf(file.path, original.digest, admittedMobi),
-    _ => _wordsOf(file.path, original.digest, _admittedEpub),
+    'mobi' || 'azw3' => _wordsOf(file.path, original.digest, keptMobi),
+    _ => _wordsOf(file.path, original.digest, _keptOrAdmittedEpub),
   };
 }
 

@@ -246,6 +246,9 @@ class HeardWindows {
     for (final window in windows) {
       if (window.covers(place)) return window;
     }
+    // A file that this phone streams is refused at once, not after the
+    // windows in the queue. Its job asks again, as the download can go.
+    if (await _localPath(file) == null) return null;
     final queued = [?_running, ..._queue]
         .where((job) => job.edition.id == edition.id && job.covers(place))
         .firstOrNull;
@@ -257,6 +260,7 @@ class HeardWindows {
     if (length <= 0) return null;
     final job = _Job(edition, file, start, length, priority);
     _queue.add(job);
+    assert(_queueUnique(), 'No two queued windows have one file and start.');
     _pump();
     return job.done.future;
   }
@@ -280,6 +284,10 @@ class HeardWindows {
     for (final job in _queue) {
       if (job.priority.index < next.priority.index) next = job;
     }
+    assert(
+      _queue.every((job) => job.priority.index >= next.priority.index),
+      'The next window has the most pressing priority.',
+    );
     _queue.remove(next);
     final job = _running = next;
     unawaited(
@@ -321,6 +329,7 @@ class HeardWindows {
   /// Keeps [window] among the windows of [edition], in edition order, and
   /// writes them.
   void _add(Edition edition, HeardWindow window) {
+    assert(window.heard.words.isNotEmpty, 'A kept window holds words.');
     final order = {
       for (final (index, file) in edition.files.indexed) file.key: index,
     };
@@ -339,6 +348,10 @@ class HeardWindows {
       window,
     ]..sort(compare);
     _windows[edition.id] = List.unmodifiable(windows);
+    assert(
+      _keptInOrder(edition, _windows[edition.id]!),
+      'The windows of an edition hold words, in its order.',
+    );
     _changes.notify();
     _write(edition.id);
   }
@@ -385,32 +398,41 @@ class HeardWindows {
   void checkInvariants() {
     for (final MapEntry(key: id, value: windows) in _windows.entries) {
       final edition = _editions[id];
-      if (edition == null) continue;
-      final order = {
-        for (final (index, file) in edition.files.indexed)
-          (file.key, file.revision): index,
-      };
-      for (final (index, window) in windows.indexed) {
-        if (window.heard.words.isEmpty) {
-          throw StateError('Every kept window holds words.');
-        }
-        if (index == 0) continue;
-        final previous = windows[index - 1];
-        final (a, b) = (order[previous.key], order[window.key]);
-        if (a != null &&
-            b != null &&
-            (a > b || a == b && previous.startMs >= window.startMs)) {
-          throw StateError('The windows of an edition are in its order.');
-        }
+      if (edition != null && !_keptInOrder(edition, windows)) {
+        throw StateError('The windows of an edition hold words, in its order.');
       }
     }
-    final queued = {
-      for (final job in _queue) (job.edition.id, job.file.key, job.start),
-    };
-    if (queued.length != _queue.length) {
+    if (!_queueUnique()) {
       throw StateError('No two queued windows have one file and start.');
     }
   }
+
+  /// Whether each of [windows] holds words, and they lie in the order of
+  /// [edition], each with a start of its own.
+  static bool _keptInOrder(Edition edition, List<HeardWindow> windows) {
+    final order = {
+      for (final (index, file) in edition.files.indexed)
+        (file.key, file.revision): index,
+    };
+    for (final (index, window) in windows.indexed) {
+      if (window.heard.words.isEmpty) return false;
+      if (index == 0) continue;
+      final previous = windows[index - 1];
+      final (a, b) = (order[previous.key], order[window.key]);
+      if (a != null &&
+          b != null &&
+          (a > b || a == b && previous.startMs >= window.startMs)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Whether no two queued windows have the same file and start.
+  bool _queueUnique() =>
+      {for (final job in _queue) (job.edition.id, job.file.key, job.start)}
+          .length ==
+      _queue.length;
 }
 
 extension on HeardWindow {

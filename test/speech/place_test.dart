@@ -114,6 +114,27 @@ void main() {
       expect(word, 5006);
     });
 
+    test('lands a place in the closing words after the book on its last '
+        'word', () {
+      // The narrator reads the book's last 14 words, then says 6 words of
+      // the recording's own, such as "End of the book. Read by...".
+      final narrator = Narrator(book);
+      final last = narrator.hear(narrator.timeOf(29986), 5600);
+      final closing = normalizeWords('end quantum zebra xylophone by nebula');
+      final heard = Heard(
+        [...last.words, ...closing],
+        [...last.ms, for (var word = 0; word < 6; word++) 5600 + word * 400],
+      );
+      final word = landHeard(
+        book,
+        heard,
+        atMs: 7600,
+        around: 29990,
+        radii: nearRadii,
+      );
+      expect(word, book.bodyEnd - 1);
+    });
+
     test('refuses heard words that the book does not hold', () {
       final heard = Heard(
         normalizeWords('quantum zebra xylophone apparatus nebula vortex'),
