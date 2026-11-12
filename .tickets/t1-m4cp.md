@@ -1,6 +1,6 @@
 ---
 id: t1-m4cp
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T14:00:51Z
@@ -23,3 +23,7 @@ Harness at 40d9c9c5: Bookfin shell rebuilt from main 255da777; WebView and KORea
 **2026-11-12T15:33:35Z**
 
 rerun1 complete: 144 jobs accepted (18 set aside after 22 busy attempts, one stop at job 89, resumed with --start 88), 1,440 accepted samples, none excluded, load before accepted jobs 5.0 to 7.99, highest reading 7.99. Equal-book means Bookfin: fresh open no preparation 195.5 (was 370.3), prepared at download 65.4, preparation at download 150.0 (background), cached reopen kept page 9.6 and true page 31.2 (was 46.9), page turn 8.2, chapter turn 4.2, size change 35.6. WebView 355.3/289.0/52.5/47.8/64.8; KOReader 127.9/17.4/2.6/3.1/70.0. Kept page shown and depicted the true page in 108 of 108 reopens. README section 'Rerun on current main: November 12, 2026'. index.html unchanged for the orchestrator. Emulator bookfin-bench-rerun stopped.
+
+**2026-11-12T15:34:35Z**
+
+Merged to main at 5a0e919f. Orchestrator: 102 harness tests pass. Homepage table not changed yet; waits for the user.
