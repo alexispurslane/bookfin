@@ -25,8 +25,10 @@ import 'heard_windows.dart';
 ///   saver off. The fill starts again when [mayFill] turns on. A place that
 ///   heard nothing is not tried again in this run.
 ///
-/// It hears nothing before [start], which the app calls after the first
-/// useful frame.
+/// It hears only an audiobook whose book also has an ebook ([_hasEbook]):
+/// a heard window serves only a landing in an ebook, so hearing any other
+/// audiobook would spend battery for nothing. It hears nothing before
+/// [start], which the app calls after the first useful frame.
 class HearingPolicy {
   HearingPolicy({
     required this._playback,
@@ -102,6 +104,7 @@ class HearingPolicy {
     _listened = 0;
     final edition = _playback.edition;
     if (edition == null || edition.id != position.editionId) return;
+    if (!_hasEbook(edition)) return;
     // The window ends at the place, so it holds the 8 s heard last.
     _heard.hearSoon(edition, _shifted(position, -HeardWindows.windowMs ~/ 2));
   }
@@ -125,8 +128,10 @@ class HearingPolicy {
       }
       if (fresh(bookmark.createdAt)) places.add(bookmark.position);
     }
-    for (final place in places) {
-      if (place.fits(edition!)) _heard.hearSoon(edition, place);
+    if (edition != null && _hasEbook(edition)) {
+      for (final place in places) {
+        if (place.fits(edition)) _heard.hearSoon(edition, place);
+      }
     }
     recheck();
   }
@@ -163,6 +168,7 @@ class HearingPolicy {
         if (_tried.contains(_key(place))) continue;
         final edition = _playback.editionOf(place.editionId);
         if (edition == null || !place.fits(edition)) continue;
+        if (!_hasEbook(edition)) continue;
         final windows = await _heard.windowsOf(edition);
         if (windows.any((window) => window.covers(place))) continue;
         return (edition, place);
@@ -170,6 +176,14 @@ class HearingPolicy {
     }
     return null;
   }
+
+  /// Whether the book of the audiobook [edition] also has an ebook.
+  bool _hasEbook(Edition edition) =>
+      _playback
+          .bookOf(edition.id)
+          ?.editions
+          .any((other) => other.kind == EditionKind.text) ??
+      false;
 
   static String _key(AudioPosition place) =>
       '${place.editionId}\n${place.sourceKey}\n${place.revision}\n'

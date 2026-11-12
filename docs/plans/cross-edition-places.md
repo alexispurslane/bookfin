@@ -923,7 +923,7 @@ A heard window is one transcribed stretch of a downloaded audio file: its editio
 - The fill: a place that the listening timeline names and no window covers, such as an old entry or one that another device synced. It waits until the phone charges with battery saver off and the queue is otherwise empty, newest first.
 - The tap: a place that History needs now. It goes first in the queue.
 
-Only downloaded audio editions get windows. The worker runs whisper on a native thread at a low priority (nice 10), with 2 threads, or 4 for a tap. No window starts before the first useful frame.
+Only downloaded audio editions get windows, and only when their book also has an ebook. A window serves only a landing in an ebook, so listening to any other audiobook would use battery for nothing (user decision, 2026-11-12). The worker runs whisper on a native thread at a low priority (nice 10), with 2 threads, or 4 for a tap. No window starts before the first useful frame.
 
 ### How Crossings lands a place by speech
 

@@ -2,7 +2,8 @@
 // (docs/plans/cross-edition-places.md, "When a window is heard"): after
 // each 5 minutes of listening, at each new move, pause or bookmark of this
 // phone, and in a fill of older places, newest first, only while the phone
-// charges with battery saver off.
+// charges with battery saver off. It hears only audiobooks whose book also
+// has an ebook, because a heard window serves only a landing in an ebook.
 import 'package:bookfin/catalog/model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -31,7 +32,27 @@ const long = Edition(
   files: [hour],
   memberIds: ['hour:m'],
 );
-const book = Book(id: 'b', title: 'Long', author: 'A', editions: [long]);
+const ebook = Edition(
+  id: 'ebook',
+  kind: EditionKind.text,
+  label: 'EPUB',
+  files: [
+    SourceFile(
+      itemId: 'text',
+      displayName: 'Long',
+      mediaSourceId: 't',
+      revision: 'r1',
+      durationMs: null,
+      container: 'epub',
+      sizeBytes: 42,
+    ),
+  ],
+  memberIds: ['text:t'],
+);
+const book = Book(id: 'b', title: 'Long', author: 'A', editions: [long, ebook]);
+
+/// The same recording in a book that has no ebook.
+const alone = Book(id: 'b', title: 'Long', author: 'A', editions: [long]);
 
 void main() {
   late LocalFiles downloads;
@@ -199,6 +220,38 @@ void main() {
       policy.recheck();
       await settle();
       expect(starts(), [296000, 196000, 96000]);
+    });
+  });
+
+  group('an audiobook whose book has no ebook', () {
+    setUp(() async {
+      await playback.bind(account(), [alone]);
+      await playback.open(alone, long, autoplay: false);
+    });
+
+    test('is not heard after five minutes of listening', () async {
+      await playback.play();
+      policy.start();
+      listen(0, 600);
+      await settle();
+      expect(starts(), isEmpty);
+    });
+
+    test('is not heard at a new bookmark', () async {
+      policy.start();
+      engine.emit(0, 200000);
+      await playback.addBookmark();
+      await settle();
+      expect(starts(), isEmpty);
+    });
+
+    test('is not heard by the fill', () async {
+      engine.emit(0, 100000);
+      await playback.addBookmark();
+      mayFill.value = true;
+      policy.start();
+      await settle();
+      expect(starts(), isEmpty);
     });
   });
 }
