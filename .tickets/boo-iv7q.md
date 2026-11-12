@@ -1,6 +1,6 @@
 ---
 id: boo-iv7q
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T03:24:46Z
@@ -26,3 +26,7 @@ Build:
 **2026-11-12T12:17:36Z**
 
 Built on t3/0d731f4f: the prepare worker passes over a family that the book embeds like any family that the reader lacks; BookFonts, the font wait, PreparedSection.fonts, SectionSource.fontPrefix, @font-face parsing and the kept-page family check are gone. No fingerprint code change: the Android fingerprint holds lastUpdateTime, so the update that ships this gives new page map and kept page keys (test/reader/update_forgets_layout_test.dart). Follow-up: t0-sx00 (font files still in the admitted record).
+
+**2026-11-12T12:27:53Z**
+
+Merged to main at 5152fb0c. Orchestrator check on main: format clean, analyze clean, full run had 1 failure (boo-tapn timing test, load 40), which passed 3 of 3 alone. Option A (no exceptions) kept as built; the user decides on option B only if a real book shows missing glyphs.
