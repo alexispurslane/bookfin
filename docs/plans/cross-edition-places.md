@@ -938,3 +938,31 @@ The estimate of matched chapters, or of found windows, shows with "about" while 
 
 - PDF editions: t2-9csd.
 - The macOS desktop app: t2-0kl0. The host library serves tests only.
+
+### Measurements on the emulator (t2-4ci0)
+
+Measured 2026-11-11 on bookfin-vh77, an Android 36 arm64 emulator with 4 cores and 4 GB, in a profile build. The app read the showcase fixture: `dart run tool/showcase_fixture.dart 8197 --narrated=<folder> --narrated-ebook=<epub>` serves First Frost as the LibriVox recording of The Time Machine (3 h 39 min, one 64 kbps MP3 of 12 parts) and the Standard Ebooks EPUB. No real server or account took part. Temporary prints, which are not committed, gave the times. Other sessions loaded the Mac's 10 cores at 27 to 56 during the run, so the emulator's times are upper bounds. The emulator plugged in to AC power with battery saver off, so the fill ran.
+
+| Quantity | Result |
+| --- | --- |
+| One 8 s window in the background, decode included: 2 threads at nice 10 | 3.1 s wall at the median, 2.1 to 18.2 s over 15 windows. 4.0 s of the app's CPU at the median. |
+| One 8 s window for a tap: 3 threads, the emulator's 4 cores less one | 10.3 s wall at the median, 7.4 to 16.5 s over 6 windows, all at a host load near 54. |
+| The same windows on the Mac's host library, 2 threads | 365 ms at the median and 415 ms at the 90th percentile, over 30 windows. |
+| Playback while 21 windows ran, 6 of them for taps | 0 underruns in 11.8 min of mixer output: the app's track and both mixer counters. |
+| History, from the tap to its first frame | 77 ms in the reader. 71 to 523 ms in the player over 4 opens, 268 ms at the median. |
+| Both ends of a listening move, landed from kept windows | 72 and 76 ms from the open of the entry. |
+| Go to on a listening place with a kept window | No wait. |
+| Go to on a reading bookmark in the middle of chapter VIII | 8.7 s of wait: one window for a tap. |
+| Go to on a reading place at the start of chapter VIII | 36.9 s of wait: four windows for taps, through LibriVox's spoken preamble (t2-p5or). |
+| APK size | 35.1 MB more: the model, 32,166,155 bytes, and the library, 2,972,136 bytes, both stored. The arm64 profile APK is 97.3 MB. |
+
+Checks of the landings against the Mac's own hearing of the same seconds:
+
+- A listening place at 3:20 landed on page 6 of the ebook, on the paragraph that ends with the sentence that the narrator says there.
+- A reading bookmark whose page starts with "deadened our footsteps" landed at 2:34:02. The narrator says "deadened" 208.95 s into chapter 8, which starts at 2:30:33.
+
+What the measurements changed or found:
+
+- Whisper's fallback is off. When a window fails whisper's checks, the fallback decodes it again at up to five higher temperatures. On 30 windows of chapter 8 it fired once, took 2,170 ms against 482 ms without it, and gave the same repeated phrase. The other 29 windows heard the same words either way. The 18.2 s background window above is such a case.
+- A window for a tap was slower than a background window on the emulator. The taps fell in the time of the highest host load, and their CPU time ran at only 1.7 times their wall time with 3 threads, so the emulator's cores waited for the Mac's. The Pixel 8 acceptance (t2-02vi) measures the phone's own times.
+- In some windows, whisper gives every word after about 4 s the window's last time, 7,990 ms. A window centered on its place keeps the place's word in the first half, where the times hold.

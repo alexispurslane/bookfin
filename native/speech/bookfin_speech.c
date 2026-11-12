@@ -339,6 +339,12 @@ static int transcribe(Hearing *hearing, const float *samples, int count) {
   // A cut context can make whisper repeat one phrase. Narration holds about
   // three words a second, so a window never needs more tokens than this.
   params.max_tokens = count / 16000 * 6 + 8;
+  // One decode a window. Whisper's fallback decodes a window that fails its
+  // checks again at up to five higher temperatures. On 30 windows of a
+  // LibriVox chapter it fired once, cost 4.5 times the window's time, and
+  // gave the same repeated phrase (t2-4ci0). A window that speech cannot
+  // place is refused or stepped past anyway.
+  params.temperature_inc = 0.0f;
   params.print_progress = false;
   params.print_realtime = false;
   params.print_timestamps = false;
