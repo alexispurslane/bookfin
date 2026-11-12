@@ -1,8 +1,8 @@
-// The text outlines that Crossings measured stay on the phone between
-// launches, one file for each outline, written atomically.
+// The derived values of a data source, such as Crossings' text outlines,
+// stay on the phone between launches, one file each, written atomically.
 import 'dart:io';
 
-import 'package:bookfin/crossings/outlines_io.dart';
+import 'package:bookfin/foundation/derived_store_io.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -11,13 +11,16 @@ void main() {
   tearDown(() => root.delete(recursive: true));
 
   test('a kept outline reads back at a later launch', () async {
-    await DiskOutlines(root).write('["ebook","r1"]', '{"outline":1}');
+    await DiskDerivedStore(root).write('["ebook","r1"]', '{"outline":1}');
 
-    expect(await DiskOutlines(root).read('["ebook","r1"]'), '{"outline":1}');
+    expect(
+      await DiskDerivedStore(root).read('["ebook","r1"]'),
+      '{"outline":1}',
+    );
   });
 
   test('a later write replaces the kept outline of the same key', () async {
-    final store = DiskOutlines(root);
+    final store = DiskDerivedStore(root);
     await store.write('key', 'old');
 
     await store.write('key', 'new');
@@ -26,15 +29,15 @@ void main() {
   });
 
   test('another key keeps nothing', () async {
-    await DiskOutlines(root).write('key', 'value');
+    await DiskDerivedStore(root).write('key', 'value');
 
-    expect(await DiskOutlines(root).read('other'), isNull);
+    expect(await DiskDerivedStore(root).read('other'), isNull);
   });
 
   test(
     'a write that stopped before its rename leaves the old outline',
     () async {
-      final store = DiskOutlines(root);
+      final store = DiskDerivedStore(root);
       await store.write('key', 'old');
       // A kill between the write of the new bytes and the rename leaves the
       // partial file beside the kept one.
@@ -42,7 +45,7 @@ void main() {
         File('${file.path}.partial').writeAsStringSync('ne');
       }
 
-      expect(await DiskOutlines(root).read('key'), 'old');
+      expect(await DiskDerivedStore(root).read('key'), 'old');
     },
   );
 }

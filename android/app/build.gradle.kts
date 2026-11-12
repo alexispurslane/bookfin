@@ -22,6 +22,14 @@ val verifyBundledOcr by tasks.registering {
     }
 }
 tasks.named("preBuild") { dependsOn(verifyBundledOcr) }
+// The speech model that the APK bundles (tool/reader/speech_package.py).
+val verifyBundledSpeech by tasks.registering {
+    doLast {
+        verifyOcrFile(file("../../.cache/speech/bundle/bookfin-speech/tiny.en-q5_1.ggml"),
+            "c77c5766f1cef09b6b7d47f21b546cbddd4157886b3b5d6d4f709e91e66c7c2b")
+    }
+}
+tasks.named("preBuild") { dependsOn(verifyBundledSpeech) }
 
 android {
     namespace = "dev.bookfin.bookfin"
@@ -55,7 +63,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                targets += listOf("bookfin_mobi", "bookfin_ocr")
+                targets += listOf("bookfin_mobi", "bookfin_ocr", "bookfin_speech")
             }
         }
     }
@@ -68,7 +76,10 @@ android {
     }
 
     sourceSets["main"].assets.srcDir("../../.cache/ocr/bundle")
-    androidResources { noCompress += "traineddata" }
+    sourceSets["main"].assets.srcDir("../../.cache/speech/bundle")
+    // The speech library reads its model in place from the APK, so the
+    // model stays uncompressed.
+    androidResources { noCompress += listOf("traineddata", "ggml") }
     packaging.jniLibs.keepDebugSymbols += setOf("**/libtesseract.so", "**/libleptonica.so", "**/libpngx.so", "**/libjpeg.so")
 
 }

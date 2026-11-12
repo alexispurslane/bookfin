@@ -4,14 +4,13 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 
-import 'crossings.dart';
+import 'derived_store.dart';
 
-/// Keeps each text outline of [Crossings] in its own file under [root],
-/// named by the SHA-256 of its key. A write goes to a partial file first and
-/// then renames it over the kept file, so a crash leaves the old outline or
-/// the new one.
-class DiskOutlines implements OutlineStore {
-  DiskOutlines(this.root);
+/// Keeps each value in its own file under [root], named by the SHA-256 of
+/// its key. A write goes to a partial file first and then renames it over
+/// the kept file, so a crash leaves the old value or the new one.
+class DiskDerivedStore implements DerivedStore {
+  DiskDerivedStore(this.root);
   final Directory root;
 
   File _file(String key) {
@@ -40,17 +39,15 @@ class DiskOutlines implements OutlineStore {
   }
 }
 
-/// The outline store beside the app's media storage, as the covers keep
-/// theirs, or null when the platform names no storage.
-Future<OutlineStore?> findOutlineStore() async {
+/// The store of the folder [name] beside the app's media storage, or null
+/// when the platform names no storage.
+Future<DerivedStore?> findDerivedStore(String name) async {
   try {
     final info = await const MethodChannel('bookfin/media')
         .invokeMapMethod<String, dynamic>('storage');
     final media = info?['path'];
     if (media is! String) return null;
-    return DiskOutlines(
-      Directory('${File(media).parent.path}/bookfin-outlines'),
-    );
+    return DiskDerivedStore(Directory('${File(media).parent.path}/$name'));
   } catch (_) {
     return null;
   }

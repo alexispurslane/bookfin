@@ -8,6 +8,7 @@ import subprocess
 import tarfile
 from zipfile import ZipFile
 import ocr_package
+import speech_package
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -19,6 +20,7 @@ def digest(path):
 
 def prepare():
     ocr_package.prepare()
+    speech_package.prepare()
     source = Path(os.environ['BOOKFIN_PDFIUM_ANDROID']) / 'lib/libpdfium.so'
     destination = ROOT / '.dart_tool/hooks_runner/shared/pdfium_dart/build/chromium_8125/android-arm64/libpdfium.so'
     destination.parent.mkdir(parents=True, exist_ok=True)

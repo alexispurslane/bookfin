@@ -16,6 +16,12 @@
 // Add --long-ebook=<path> to serve the EPUB file at <path>, such as a
 // public-domain book of .cache/epub-trial/books, as Salt and Lantern's
 // ebook, so that the reader has a long book of many sections to lay out.
+// Add --narrated=<dir> to serve the MP3 files of <dir>, in name order, as
+// First Frost's recording: one MP3 file with a chapter at the start of each
+// part, such as the LibriVox chapters of a public-domain book. Add
+// --narrated-ebook=<path> to serve the EPUB file at <path>, the same book,
+// as First Frost's ebook, so that speech search has a narration of the
+// ebook to hear.
 // Add --pdf=<path> to serve the PDF file at <path>, such as
 // test/reader/fixtures/reflow/margins-book.pdf, as Windfall's ebook.
 // Add --ebooks-library to serve the ebooks in a second book library,
@@ -309,10 +315,127 @@ const _frostFootnotes = [
   'The postman, Tom Ash, has walked the same round since 1989.',
 ];
 
+/// A recording made of several MP3 parts, joined into one file: its bytes,
+/// the start of each part, and its length, in milliseconds.
+typedef _Narration = ({Uint8List bytes, List<int> starts, int length});
+
+/// The MP3 files of [directory], in name order, joined into one file.
+Future<_Narration> _narration(Directory directory) async {
+  final files =
+      (await directory.list().toList())
+          .whereType<File>()
+          .where((file) => file.path.toLowerCase().endsWith('.mp3'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+  final joined = BytesBuilder(copy: false);
+  final starts = <int>[];
+  var length = 0;
+  for (final file in files) {
+    final (:frames, :ms) = _mp3Frames(await file.readAsBytes());
+    starts.add(length);
+    length += ms;
+    frames.forEach(joined.add);
+  }
+  return (bytes: joined.takeBytes(), starts: starts, length: length);
+}
+
+const _mpeg1Kbps = [
+  0,
+  32,
+  40,
+  48,
+  56,
+  64,
+  80,
+  96,
+  112,
+  128,
+  160,
+  192,
+  224,
+  256,
+  320,
+];
+const _mpeg2Kbps = [
+  0,
+  8,
+  16,
+  24,
+  32,
+  40,
+  48,
+  56,
+  64,
+  80,
+  96,
+  112,
+  128,
+  144,
+  160,
+];
+
+/// The Layer III frames of the MP3 file [bytes], and their length in
+/// milliseconds. ID3 tags are left out, and so is a first frame that holds
+/// a Xing, Info or VBRI header, because it would give the joined file the
+/// length of its first part.
+({List<Uint8List> frames, int ms}) _mp3Frames(Uint8List bytes) {
+  var at = 0;
+  // An ID3v2 tag: "ID3", version, flags, and a 28-bit size, 7 bits a byte.
+  if (bytes.length > 10 && String.fromCharCodes(bytes, 0, 3) == 'ID3') {
+    at =
+        10 +
+        ((bytes[6] & 0x7f) << 21 |
+            (bytes[7] & 0x7f) << 14 |
+            (bytes[8] & 0x7f) << 7 |
+            (bytes[9] & 0x7f));
+  }
+  final frames = <Uint8List>[];
+  var seconds = 0.0;
+  var first = true;
+  while (at + 4 <= bytes.length) {
+    final version = (bytes[at + 1] >> 3) & 3; // 3: MPEG-1, 2: 2, 0: 2.5
+    final layer = (bytes[at + 1] >> 1) & 3; // 1: Layer III
+    final bitrate = bytes[at + 2] >> 4;
+    final rate = (bytes[at + 2] >> 2) & 3;
+    if (bytes[at] != 0xff ||
+        bytes[at + 1] & 0xe0 != 0xe0 ||
+        version == 1 ||
+        layer != 1 ||
+        bitrate == 0 ||
+        bitrate == 15 ||
+        rate == 3) {
+      at++;
+      continue;
+    }
+    final mpeg1 = version == 3;
+    final hertz = [44100, 48000, 32000][rate] >> (mpeg1 ? 0 : 3 - version);
+    final bits = (mpeg1 ? _mpeg1Kbps : _mpeg2Kbps)[bitrate] * 1000;
+    final length =
+        (mpeg1 ? 144 : 72) * bits ~/ hertz + ((bytes[at + 2] >> 1) & 1);
+    if (at + length > bytes.length) break;
+    final frame = Uint8List.sublistView(bytes, at, at + length);
+    final header =
+        first &&
+        [
+          'Xing',
+          'Info',
+          'VBRI',
+        ].any(String.fromCharCodes(frame, 0, min(64, frame.length)).contains);
+    first = false;
+    if (!header) {
+      frames.add(frame);
+      seconds += (mpeg1 ? 1152 : 576) / hertz;
+    }
+    at += length;
+  }
+  return (frames: frames, ms: (seconds * 1000).round());
+}
+
 Map<String, Object?> _item(
   _Book book, {
   required bool text,
   required int size,
+  _Narration? narration,
 }) => {
   'Id': text ? '${book.id}-text' : book.id,
   'Name': book.title,
@@ -332,27 +455,42 @@ Map<String, Object?> _item(
   'ProductionYear': ?book.year,
   if (book.cover != null) 'ImageTags': {'Primary': 'v2'},
   'DateModified': '2026-11-07T00:00:00Z',
-  'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
+  'RunTimeTicks': text ? null : _ticks(book, narration),
   'ProviderIds': <String, String>{},
   'Chapters': text
       ? []
       : [
-          for (var chapter = 0; chapter < 12; chapter++)
+          for (final (chapter, start)
+              in (narration?.starts ??
+                      [
+                        for (var chapter = 0; chapter < 12; chapter++)
+                          chapter * book.minutes * 5000,
+                      ])
+                  .indexed)
             {
               'Name': 'Chapter ${chapter + 1}',
-              'StartPositionTicks': chapter * book.minutes * 5 * 10000000,
+              'StartPositionTicks': start * 10000,
             },
         ],
   'MediaSources': [
     {
       'Id': text ? '${book.id}-text' : book.id,
-      'Container': text ? book.ebook : 'm4b',
+      'Container': text ? book.ebook : (narration == null ? 'm4b' : 'mp3'),
       'Size': size,
-      'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
-      'ETag': 'showcase-${book.id}-${text ? 'text' : 'audio'}',
+      'RunTimeTicks': text ? null : _ticks(book, narration),
+      'ETag':
+          'showcase-${book.id}-${text
+              ? 'text'
+              : narration == null
+              ? 'audio'
+              : 'narrated'}',
     },
   ],
 };
+
+/// The length of [book]'s recording in Jellyfin's ticks of 100 ns.
+int _ticks(_Book book, _Narration? narration) =>
+    (narration?.length ?? book.minutes * 60000) * 10000;
 
 /// The Bookfin Storage plugin's object store for one user, in memory: each
 /// object has an identity, a sequence that grows with every write, and a
@@ -461,6 +599,17 @@ Future<void> main(List<String> arguments) async {
       if (argument.startsWith('--long-ebook='))
         await File(argument.substring('--long-ebook='.length)).readAsBytes(),
   ].firstOrNull;
+  final narration = [
+    for (final argument in arguments)
+      if (argument.startsWith('--narrated='))
+        await _narration(Directory(argument.substring('--narrated='.length))),
+  ].firstOrNull;
+  final narratedEbook = [
+    for (final argument in arguments)
+      if (argument.startsWith('--narrated-ebook='))
+        await File(argument.substring('--narrated-ebook='.length))
+            .readAsBytes(),
+  ].firstOrNull;
   final pdf = [
     for (final argument in arguments)
       if (argument.startsWith('--pdf='))
@@ -485,13 +634,22 @@ Future<void> main(List<String> arguments) async {
       if (book.ebook != null)
         '${book.id}-text': switch (book.id) {
           'salt' when longEbook != null => longEbook,
+          'frost' when narratedEbook != null => narratedEbook,
           'windfall' when pdf != null => pdf,
           _ => _ebook(book, footnotes: footnotes),
         },
   };
   final items = [
     for (final book in _books) ...[
-      if (book.audio) _item(book, text: false, size: silence.length),
+      if (book.audio)
+        book.id == 'frost' && narration != null
+            ? _item(
+                book,
+                text: false,
+                size: narration.bytes.length,
+                narration: narration,
+              )
+            : _item(book, text: false, size: silence.length),
       if (book.ebook != null)
         _item(book, text: true, size: ebooks['${book.id}-text']!.length),
     ],
@@ -566,9 +724,10 @@ Future<void> main(List<String> arguments) async {
       };
     } else if (parts.isNotEmpty && parts.last == 'Download') {
       response.headers.contentType = ContentType.binary;
-      final bytes = parts.length >= 2
-          ? ebooks[parts[parts.length - 2]] ?? silence
-          : silence;
+      final id = parts.length >= 2 ? parts[parts.length - 2] : null;
+      final bytes = id == 'frost' && narration != null
+          ? narration.bytes
+          : ebooks[id] ?? silence;
       response.contentLength = bytes.length;
       response.add(bytes);
       await response.close();

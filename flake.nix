@@ -127,6 +127,12 @@
               BOOKFIN_OCR_ANDROID_SOURCE = ocr.source;
               BOOKFIN_OCR_ANDROID_NATIVE = ocr.androidNative;
               BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
+              # Speech search (boo-vh77): the pinned whisper.cpp source that
+              # the Android build compiles, the model that the APK bundles,
+              # and the host build of the speech library for tests.
+              BOOKFIN_WHISPER_SOURCE = whisper.source;
+              BOOKFIN_SPEECH_MODEL = whisper.bundledModel;
+              BOOKFIN_SPEECH_LIBRARY = "${whisper.hostLibrary}/lib/libbookfin_speech${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}";
               BOOKFIN_NIX_SHELL = "1";
               shellHook = ''
                 # Every checkout, agent worktrees included, shares one
@@ -138,12 +144,11 @@
             }
             // linuxOnly
           );
-          # nix develop .#speech: the default shell with whisper.cpp and its
-          # models, for the speech prototype of boo-snng
+          # nix develop .#speech: the default shell with whisper-cli and every
+          # model of the speech prototype of boo-snng
           # (tool/research/cross_edition/speech_probe). A shell of its own,
           # so the default shell does not fetch 600 MB of models.
           speech = default.overrideAttrs {
-            BOOKFIN_WHISPER_SOURCE = whisper.source;
             BOOKFIN_WHISPER_HOST = whisper.host;
             BOOKFIN_WHISPER_MODELS = whisper.models;
           };

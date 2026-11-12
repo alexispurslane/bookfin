@@ -49,6 +49,7 @@ flutter:
   assets:
     - assets/licenses/reader/
     - assets/licenses/ocr/
+    - assets/licenses/speech/
     - assets/cities/cities.tsv
     - assets/cities/CC-BY-4.0.txt
     - assets/cities/NOTICE.txt

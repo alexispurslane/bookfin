@@ -93,23 +93,34 @@ void openHistory(
   /// Where Go to on [place] goes, in words: its landing in the open
   /// edition, or the place itself with the reason why it has none. Until
   /// the landing is known, the place itself, and the words fill in when
-  /// Crossings notifies.
+  /// Crossings notifies. While speech finds the landing, its estimate with
+  /// "about", or the place itself.
   LandingWords landingOf(Place place) {
     final own = (words: describe(place), note: null);
     final pair = crossingOf(place);
     if (pair == null) return own;
-    return switch (crossings!.landingNow(
+    final crossing = crossings!.landingNow(
       place,
       from: pair.from,
       into: pair.into,
-    )) {
+    );
+    final Settled? shown = switch (crossing) {
+      Refining(:final estimate) => estimate,
+      final Settled settled => settled,
+      null => null,
+    };
+    PlaceWords about(PlaceWords words, Landing landing) =>
+        crossing is Refining || landing.matchedBy == MatchedBy.chapters
+        ? _about(words)
+        : words;
+    return switch (shown) {
       null => own,
       final AudioLanding landing => (
-        words: _about(playback!.describe(landing.place), landing),
+        words: about(playback!.describe(landing.place), landing),
         note: null,
       ),
       final TextLanding landing => switch (reader!.describeLanding(landing)) {
-        final words? => (words: _about(words, landing), note: null),
+        final words? => (words: about(words, landing), note: null),
         null => own,
       },
       NoLanding(:final reason) => (
@@ -122,6 +133,11 @@ void openHistory(
       ),
     };
   }
+
+  // The tile whose Go to waits for its landing, if any. Cancel, another Go
+  // to, and the close of the sheet end the wait, and then nothing moves.
+  final going = ValueNotifier<GoingTo?>(null);
+  var closed = false;
 
   unawaited(
     showGlassSheet<void>(
@@ -157,21 +173,50 @@ void openHistory(
           // A choice that goes to a place closes the timeline, so the screen
           // that shows the place offers Undo. A place of the other medium
           // goes to its landing in the open edition, as a move of [kind].
-          // Without a landing, it shows the place in its own edition.
+          // Without a landing, it shows the place in its own edition. While
+          // the landing is not known yet, as while speech finds it, the
+          // sheet stays, [tile] shows a progress state with Cancel, and the
+          // sheet closes when the landing arrives.
           void go(
             Place place,
             HistoryAction kind,
             Future<void> Function() restore,
+            GoingTo tile,
           ) {
-            Navigator.pop(sheet);
             final pair = crossingOf(place);
-            if (pair == null) return goAsBefore(place, restore);
+            if (pair == null) {
+              Navigator.pop(sheet);
+              return goAsBefore(place, restore);
+            }
+            final waits = crossings!.landingNow(
+              place,
+              from: pair.from,
+              into: pair.into,
+            ) is! Settled;
+            if (waits) {
+              going.value = tile;
+            } else {
+              Navigator.pop(sheet);
+            }
             unawaited(() async {
-              final went = switch (await crossings!.landing(
-                place,
-                from: pair.from,
-                into: pair.into,
-              )) {
+              final Settled landing;
+              try {
+                landing = await crossings.landing(
+                  place,
+                  from: pair.from,
+                  into: pair.into,
+                );
+              } catch (_) {
+                // A bug: the wait ends, and nothing moves.
+                if (going.value == tile) going.value = null;
+                rethrow;
+              }
+              if (waits) {
+                if (closed || going.value != tile) return;
+                going.value = null;
+                if (sheet.mounted) Navigator.pop(sheet);
+              }
+              final went = switch (landing) {
                 final AudioLanding landing => await playback!.goToLanding(
                   landing,
                   kind,
@@ -212,6 +257,8 @@ void openHistory(
             describe: describe,
             landingOf: landingOf,
             landingChanges: crossings?.changes,
+            going: going,
+            onCancel: () => going.value = null,
             showBooks: book == null,
             header: RecordSaveStatus(playback: playback, reader: reader),
             scroll: scroll,
@@ -222,6 +269,7 @@ void openHistory(
                 AudioPosition() => playback!.restoreHistory(event.id),
                 TextPosition() => reader!.restoreHistory(event.id),
               },
+              (entryId: event.id, before: true),
             ),
             onGoTo: (entry) => switch (entry) {
               ActionEntry(:final event) => go(
@@ -237,6 +285,7 @@ void openHistory(
                     previous: false,
                   ),
                 },
+                (entryId: event.id, before: false),
               ),
               BookmarkEntry(:final bookmark) => go(
                 bookmark.position,
@@ -245,6 +294,7 @@ void openHistory(
                   AudioPosition() => playback!.restoreBookmark(bookmark.id),
                   TextPosition() => reader!.restoreBookmark(bookmark.id),
                 },
+                (entryId: bookmark.id, before: false),
               ),
             },
             onRename: (bookmark) => unawaited(switch (bookmark) {
@@ -277,21 +327,19 @@ void openHistory(
           );
         },
       ),
-    ),
+      // The sheet still draws while it slides away, so [going] stays usable.
+      // It holds nothing once the sheet's widgets stop listening.
+    ).whenComplete(() => closed = true),
   );
 }
 
-/// [words] of the landing [landing]: an estimate from matched chapters
-/// reads "about", such as "about p. 134".
-PlaceWords _about(PlaceWords words, Landing landing) =>
-    switch (landing.matchedBy) {
-      MatchedBy.chapters => (
-        short: 'about ${words.short}',
-        chapter: words.chapter,
-        quote: words.quote,
-        along: words.along,
-      ),
-    };
+/// [words] of an estimate, such as "about p. 134".
+PlaceWords _about(PlaceWords words) => (
+  short: 'about ${words.short}',
+  chapter: words.chapter,
+  quote: words.quote,
+  along: words.along,
+);
 
 /// Why a place has no landing in the open edition, for [reason].
 String _why(Refusal reason) => switch (reason) {
@@ -356,6 +404,10 @@ Future<void> _confirmDelete(
 /// on another screen.
 typedef LandingWords = ({PlaceWords words, String? note});
 
+/// The tile whose Go to waits: the Before end of the entry [entryId] when
+/// [before], else its After end or its one place.
+typedef GoingTo = ({String entryId, bool before});
+
 /// A dense, vertical timeline of listening and reading, grouped by day.
 /// Each move is a route with two ends: its row names the place where it
 /// went, after an arrow, and a tap opens the route as two tiles of one
@@ -377,6 +429,8 @@ class HistoryTimeline extends StatefulWidget {
     required this.describe,
     this.landingOf,
     this.landingChanges,
+    this.going,
+    this.onCancel,
     this.showBooks = false,
     this.header,
     this.scroll,
@@ -404,6 +458,11 @@ class HistoryTimeline extends StatefulWidget {
   /// Notifies when [landingOf] can name a place in new words, such as when
   /// a landing arrives. Only the tiles of an open entry follow it.
   final Listenable? landingChanges;
+
+  /// The tile whose Go to waits for its landing, if any. Its entry shows a
+  /// progress state with Cancel, which reports [onCancel].
+  final ValueListenable<GoingTo?>? going;
+  final VoidCallback? onCancel;
 
   /// Whether each entry names its book, for a timeline of every book.
   final bool showBooks;
@@ -713,13 +772,25 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         if (open)
           Padding(
             padding: const EdgeInsets.only(top: 2, bottom: 8),
-            child: switch (widget.landingChanges) {
-              null => _route(entry),
-              final changes => ListenableBuilder(
-                listenable: changes,
-                builder: (context, _) => _route(entry),
-              ),
-            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                switch (widget.landingChanges) {
+                  null => _route(entry),
+                  final changes => ListenableBuilder(
+                    listenable: changes,
+                    builder: (context, _) => _route(entry),
+                  ),
+                },
+                if (widget.going case final going?)
+                  ValueListenableBuilder(
+                    valueListenable: going,
+                    builder: (context, to, _) => to?.entryId == entry.id
+                        ? _Waiting(onCancel: widget.onCancel)
+                        : const SizedBox.shrink(),
+                  ),
+              ],
+            ),
           ),
       ],
     );
@@ -1075,6 +1146,46 @@ class _PlaceTile extends StatelessWidget {
               Semantics(hint: note, child: const SizedBox.shrink()),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The progress state of a Go to that waits for its landing, such as while
+/// speech finds the sentence, with Cancel, which reports [onCancel].
+class _Waiting extends StatelessWidget {
+  const _Waiting({required this.onCancel});
+  final VoidCallback? onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 10, top: 4),
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: glowAccent(theme),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                'Finding the sentence…',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          TextButton(onPressed: onCancel, child: const Text('Cancel')),
+        ],
       ),
     );
   }

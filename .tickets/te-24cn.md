@@ -19,3 +19,7 @@ Found on 2026-11-11 in a full flutter test run under a load of 12 on 10 cores. t
 **2026-11-12T01:04:10Z**
 
 Fixed in boo-sy2d's branch: the write was the admitted record that the load writes after it returns (AdmittedBooks._keepLater). In the app, Downloads holds the download for it (VerifiedFile.hold), but a test's VerifiedFile is not lent, so nothing waits. The test now waits for AdmittedBooks.written(file) before it deletes its folder, as test/reader/text_outline_test.dart does. 6 of 6 tests of the file pass.
+
+**2026-11-12T01:42:29Z**
+
+2026-11-12: the variant 'ordinary Book without Container opens mobi6-palmdoc.mobi from an extensionless download' failed once in a full run (flutter test --concurrency=4, load about 22 on 10 cores) on branch t3/speech-search-heard-windows, and passed in the full run before it and in 4 runs of the file alone.

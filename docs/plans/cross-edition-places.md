@@ -876,3 +876,99 @@ In S2, a new data source owns the heard windows of each audio edition: their tim
    matched chapters, or switch screens and say why.
 4. When speech is still working at the tap, Go to waits for the sentence,
    with a short progress state and Cancel.
+5. The speech model ships inside the app: tiny.en at 5 bits (q5_1, 32 MB)
+   as an uncompressed APK asset, with no download. The package check
+   (`tool/reader/speech_package.py verify <apk>`) confirms that an APK holds
+   the model with its pinned SHA-256, stored uncompressed.
+   `tool/bookfin build-android` runs it on the debug APK. The repository
+   has no release build command yet (t5-vbno), so run the check by hand on
+   a release APK. Decided before the build of boo-vh77.
+
+## Build design of S2 (boo-vh77)
+
+Written 2026-11-11 at the start of the build. It applies the decision above to the code of design A.
+
+### Owners
+
+| Fact or decision | Owner | Readers |
+| --- | --- | --- |
+| The whisper model, the decoder and the worker that runs them | `Speech`, the speech runtime: one long-lived worker isolate over the native library `bookfin_speech` | `HeardWindows` |
+| The heard windows of each audio edition, and the queue of windows to hear | `HeardWindows`, a new app-wide data source | `Crossings` |
+| When a window is heard: every 5 minutes of listening, at moves and bookmarks, the fill | `HearingPolicy`, from the position and the records that `Playback` publishes, and the power state that Android reports | `HeardWindows`, which takes its requests |
+| The words of an ebook edition, and the searches in them | `BookSearch`, a worker isolate that `SpeechPlaces`, the speech stage of `Crossings`, owns | `Crossings` |
+| The anchor map of each pair of an audio and an ebook edition | `SpeechPlaces` | `Crossings` |
+| The landing of a place, by chapters or by speech | `Crossings`, as in design A | Timeline controller |
+| Whether Go to waits, and Cancel | `openHistory`, the timeline controller | `HistoryTimeline` |
+
+```mermaid
+flowchart LR
+  P[Playback: position, moves, bookmarks] -- reports --> R[HearingPolicy: when to hear]
+  B[Android: charging, battery saver] -- reports --> R
+  R -- requests --> H[HeardWindows: windows per audio edition, queue]
+  D[(Downloads: audio files)] --> H
+  H -- hear a window --> S[Speech: worker isolate, whisper.cpp, decoder]
+  H --> F[(bookfin-heard: one file per edition, derived)]
+  H -- windows --> X[Crossings: landings]
+  E[(Downloads: ebook files)] --> W[BookSearch: words of an ebook, searches]
+  W --> X
+  X -- landing or Refining --> C[openHistory: tiles, Go to, wait and Cancel]
+```
+
+A heard window is one transcribed stretch of a downloaded audio file: its edition, file, file revision, start and length in milliseconds, and its heard words, each with its time from the window's start. It names no ebook place, so a new ebook revision or another ebook edition reuses it.
+
+### When a window is heard
+
+- Listening: after each 5 minutes of listening on this phone, the 8 s heard last.
+- Moves and bookmarks: a new listening move, pause or bookmark of this phone gets one 8 s window centered on each place that it names. A window centered on a place puts the place's word in the middle of the window, where whisper's word times are surest.
+- The fill: a place that the listening timeline names and no window covers, such as an old entry or one that another device synced. It waits until the phone charges with battery saver off and the queue is otherwise empty, newest first.
+- The tap: a place that History needs now. It goes first in the queue.
+
+Only downloaded audio editions get windows. The worker runs whisper on a native thread at a low priority (nice 10), with 2 threads, or 4 for a tap. No window starts before the first useful frame.
+
+### How Crossings lands a place by speech
+
+A listening place into the ebook:
+
+1. A kept window covers the place: search its words near the estimate, and land on the book word of the heard word nearest the place's time.
+2. Two found windows lie on both sides of the place, at most 10 minutes apart, and read at a narration rate: interpolate between them. The 99th percentile error at 10 minutes is under a page ("The anchor map"), so the landing names its page without "about".
+3. Otherwise, hear a window at the place, as at a tap, then step 1.
+
+A reading place into the audiobook:
+
+1. Estimate the time: between the two nearest found windows, else by matched chapters, else by the whole-book share.
+2. Run the reading-place loop of the prototype (version 4) from the estimate. A kept window that already holds the target word ends it at once.
+
+The estimate of matched chapters, or of found windows, shows with "about" while speech works. Crossings then reports `Refining`. Go to waits for the end of the work, with a progress state and Cancel on the History tile. If speech refuses, the landing of matched chapters stays, or Go to switches screens and says why, as in design A. Speech starts when an entry of the other medium opens, so most taps do not wait.
+
+### Not in the build
+
+- PDF editions: t2-9csd.
+- The macOS desktop app: t2-0kl0. The host library serves tests only.
+
+### Measurements on the emulator (t2-4ci0)
+
+Measured 2026-11-11 on bookfin-vh77, an Android 36 arm64 emulator with 4 cores and 4 GB, in a profile build. The app read the showcase fixture: `dart run tool/showcase_fixture.dart 8197 --narrated=<folder> --narrated-ebook=<epub>` serves First Frost as the LibriVox recording of The Time Machine (3 h 39 min, one 64 kbps MP3 of 12 parts) and the Standard Ebooks EPUB. No real server or account took part. Temporary prints, which are not committed, gave the times. Other sessions loaded the Mac's 10 cores at 27 to 56 during the run, so the emulator's times are upper bounds. The emulator plugged in to AC power with battery saver off, so the fill ran.
+
+| Quantity | Result |
+| --- | --- |
+| One 8 s window in the background, decode included: 2 threads at nice 10 | 3.1 s wall at the median, 2.1 to 18.2 s over 15 windows. 4.0 s of the app's CPU at the median. |
+| One 8 s window for a tap: 3 threads, the emulator's 4 cores less one | 10.3 s wall at the median, 7.4 to 16.5 s over 6 windows, all at a host load near 54. |
+| The same windows on the Mac's host library, 2 threads | 365 ms at the median and 415 ms at the 90th percentile, over 30 windows. |
+| Playback while 21 windows ran, 6 of them for taps | 0 underruns in 11.8 min of mixer output: the app's track and both mixer counters. |
+| History, from the tap to its first frame | 77 ms in the reader. 71 to 523 ms in the player over 4 opens, 268 ms at the median. |
+| Both ends of a listening move, landed from kept windows | 72 and 76 ms from the open of the entry. |
+| Go to on a listening place with a kept window | No wait. |
+| Go to on a reading bookmark in the middle of chapter VIII | 8.7 s of wait: one window for a tap. |
+| Go to on a reading place at the start of chapter VIII | 36.9 s of wait: four windows for taps, through LibriVox's spoken preamble (t2-p5or). |
+| APK size | 35.1 MB more: the model, 32,166,155 bytes, and the library, 2,972,136 bytes, both stored. The arm64 profile APK is 97.3 MB. |
+
+Checks of the landings against the Mac's own hearing of the same seconds:
+
+- A listening place at 3:20 landed on page 6 of the ebook, on the paragraph that ends with the sentence that the narrator says there.
+- A reading bookmark whose page starts with "deadened our footsteps" landed at 2:34:02. The narrator says "deadened" 208.95 s into chapter 8, which starts at 2:30:33.
+
+What the measurements changed or found:
+
+- Whisper's fallback is off. When a window fails whisper's checks, the fallback decodes it again at up to five higher temperatures. On 30 windows of chapter 8 it fired once, took 2,170 ms against 482 ms without it, and gave the same repeated phrase. The other 29 windows heard the same words either way. The 18.2 s background window above is such a case.
+- A window for a tap was slower than a background window on the emulator. The taps fell in the time of the highest host load, and their CPU time ran at only 1.7 times their wall time with 3 threads, so the emulator's cores waited for the Mac's. The Pixel 8 acceptance (t2-02vi) measures the phone's own times.
+- In some windows, whisper gives every word after about 4 s the window's last time, 7,990 ms. A window centered on its place keeps the place's word in the first half, where the times hold.

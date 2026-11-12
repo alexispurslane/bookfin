@@ -4,7 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 Stream<LicenseEntry> readerLicenses() async* {
-  for (final directory in ['assets/licenses/reader', 'assets/licenses/ocr']) {
+  for (final directory in [
+    'assets/licenses/reader',
+    'assets/licenses/ocr',
+    'assets/licenses/speech',
+  ]) {
     final manifest = jsonDecode(
       await rootBundle.loadString('$directory/manifest.json'),
     ) as Map<String, dynamic>;

@@ -1,5 +1,6 @@
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
+import '../speech/book_search.dart';
 import 'document.dart';
 import 'epub/publication.dart';
 import 'text_outline.dart';
@@ -21,6 +22,12 @@ Future<void> prepareDownloadedBook(
   VerifiedFile original,
   SourceFile source,
 ) async {}
+
+/// No ebook downloads on this platform, so no words for speech.
+Future<ReadBook?> bookWordsReader(
+  VerifiedFile original,
+  SourceFile source,
+) async => null;
 
 /// No ebook downloads on this platform, so no text outlines.
 Future<TextOutline> measureDownloadedOutline(

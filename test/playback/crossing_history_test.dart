@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/crossings/crossings.dart';
@@ -12,10 +13,17 @@ import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/scope.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/reader/text_outline.dart';
+import 'package:bookfin/speech/book_words.dart';
+import 'package:bookfin/speech/heard_windows.dart';
+import 'package:bookfin/speech/words.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../crossings/crossings_test.dart' show MemoryOutlines;
+import '../crossings/speech_landings_test.dart' show readsOf;
+import '../speech/heard_windows_test.dart'
+    show FakeHearing, MemoryStore, inline;
+import '../speech/place_test.dart' show zipfBook;
 import '../reader/publication_test.dart' show epub;
 import '../reader/session_test.dart' show edition, source;
 import 'mapped_moves_test.dart' show MediumSpy;
@@ -397,5 +405,166 @@ void main() {
 
     expect(find.text('Reader screen'), findsOneWidget);
     expect(playback.editionMilliseconds, 5000);
+  });
+
+  group('with speech', () {
+    late FakeHearing hearing;
+
+    // Speech hears words that the ebook does not hold, so it refuses, and
+    // the landing of matched chapters stays. Each window waits until the
+    // test releases it.
+    setUp(() {
+      hearing = FakeHearing()
+        ..gated = true
+        ..answer = (_, _) => Heard(
+          normalizeWords('quantum zebra xylophone apparatus nebula vortex'),
+          const [0, 1000, 2000, 3000, 4000, 5000],
+        );
+      crossings.dispose();
+      crossings = Crossings(
+        store: MemoryOutlines(),
+        measure: (_) async => outline,
+        hop: <M, R>(work, input) async => work(input),
+        speech: (
+          heard: HeardWindows(
+            hear: hearing.call,
+            store: MemoryStore(),
+            localPath: (file) async => '/media/${file.itemId}.mp3',
+            hop: inline,
+          ),
+          words: (_) async => readsOf(
+            BookWords(
+              zipfBook(length: 300).words,
+              Int32List.fromList([
+                for (var word = 0; word < 300; word++) word * 5,
+              ]),
+              bodyEnd: 300,
+            ),
+          ),
+        ),
+      );
+    });
+
+    /// Stops the worker of the ebook's words, whose idle timer would still
+    /// wait when the test ends. The tear-down disposes a Crossings without
+    /// speech.
+    void stopSpeech() {
+      crossings.dispose();
+      crossings = Crossings(
+        store: MemoryOutlines(),
+        measure: (_) async => outline,
+      );
+    }
+
+    /// Lets every window that waits, and every later one, be heard.
+    Future<void> release(WidgetTester tester) async {
+      hearing.gated = false;
+      for (final gate in hearing.gates) {
+        if (!gate.isCompleted) gate.complete();
+      }
+    }
+
+    testWidgets('Go to waits in the sheet with a progress state while speech '
+        'finds the place, then plays from the landing', (tester) async {
+      await showPlayerHistory(tester);
+      await open(tester, 'From search');
+
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('AFTER'))));
+      await tester.pump();
+
+      expect(find.byType(HistoryTimeline), findsOneWidget);
+      expect(inTimeline(find.text('Finding the sentence…')), findsOneWidget);
+      expect(inTimeline(find.text('Cancel')), findsOneWidget);
+      expect(playerMoved(), isFalse);
+
+      await release(tester);
+      await settle(tester, playerMoved);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryTimeline), findsNothing);
+      expect(playback.editionMilliseconds, 90000);
+      expect(playback.history.first.kind, HistoryAction.historyRestore);
+      stopSpeech();
+    });
+
+    testWidgets('closing the sheet ends the wait and makes no move', (
+      tester,
+    ) async {
+      await showPlayerHistory(tester);
+      await open(tester, 'From search');
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('AFTER'))));
+      await tester.pump();
+
+      // The system's Back closes the sheet.
+      await tester.binding.handlePopRoute();
+      for (var frame = 0; frame < 10; frame++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(HistoryTimeline), findsNothing);
+
+      await release(tester);
+      await settle(
+        tester,
+        () =>
+            crossings.landingNow(searched.after, from: edition, into: recording)
+                is Settled,
+      );
+      await tester.pumpAndSettle();
+
+      expect(playerMoved(), isFalse);
+      expect(playback.editionMilliseconds, 5000);
+      stopSpeech();
+    });
+
+    testWidgets('another Go to ends the wait, and only its own place moves', (
+      tester,
+    ) async {
+      await showPlayerHistory(tester);
+      await open(tester, 'From search');
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('AFTER'))));
+      await tester.pump();
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('BEFORE'))));
+      await tester.pump();
+      expect(inTimeline(find.text('Finding the sentence…')), findsOneWidget);
+
+      await release(tester);
+      await settle(tester, playerMoved);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryTimeline), findsNothing);
+      expect(playback.editionMilliseconds, 30000);
+      expect(
+        playback.history.where(
+          (event) => event.kind == HistoryAction.historyRestore,
+        ),
+        hasLength(1),
+      );
+      stopSpeech();
+    });
+
+    testWidgets('Cancel ends the wait and makes no move', (tester) async {
+      await showPlayerHistory(tester);
+      await open(tester, 'From search');
+      await tester.runAsync(() => tester.tap(inTimeline(find.text('AFTER'))));
+      await tester.pump();
+
+      await tester.tap(inTimeline(find.text('Cancel')));
+      await tester.pump();
+      expect(inTimeline(find.text('Finding the sentence…')), findsNothing);
+
+      await release(tester);
+      await settle(
+        tester,
+        () =>
+            crossings.landingNow(searched.after, from: edition, into: recording)
+                is Settled,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HistoryTimeline), findsOneWidget);
+      expect(playerMoved(), isFalse);
+      expect(playback.editionMilliseconds, 5000);
+      stopSpeech();
+    });
   });
 }

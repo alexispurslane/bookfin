@@ -1,0 +1,10 @@
+{
+  "whisper.cpp.txt": {
+    "package": "whisper.cpp 1.9.5 and ggml (MIT)",
+    "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+  },
+  "Bookfin-speech-NOTICE.txt": {
+    "package": "Bookfin speech acknowledgements",
+    "sha256": "30ff077c3e9027580b1540332cff2a193adfa7097d6408ff0e3331ec7eff13e6"
+  }
+}

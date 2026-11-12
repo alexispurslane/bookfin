@@ -4,7 +4,10 @@ import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
@@ -12,9 +15,47 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.StatFs
 import android.provider.Settings
 import java.io.File
+
+// Whether the phone is on power and whether battery saver is on, for the
+// fill of heard windows (lib/speech/platform_io.dart). Dart listens once,
+// for the life of the Flutter engine, which outlives an Activity under
+// audio_service, so the receiver belongs to the application, not to an
+// Activity. The battery's sticky broadcast holds the power source, so
+// reading it needs no permission.
+private object PowerEvents {
+    private var receiver: BroadcastReceiver? = null
+
+    private fun power(context: Context): Map<String, Boolean> {
+        val battery = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val plugged = battery?.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+        val saver = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).isPowerSaveMode
+        return mapOf("charging" to (plugged != 0), "saver" to saver)
+    }
+
+    fun listen(context: Context, events: EventChannel.EventSink) {
+        val application = context.applicationContext
+        cancel(application)
+        val made = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) = events.success(power(application))
+        }
+        receiver = made
+        application.registerReceiver(made, IntentFilter().apply {
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+            addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+        })
+        events.success(power(application))
+    }
+
+    fun cancel(context: Context) {
+        receiver?.let { context.applicationContext.unregisterReceiver(it) }
+        receiver = null
+    }
+}
 
 class MainActivity : AudioServiceActivity() {
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -84,6 +125,26 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+        // Where the speech model lies: the APK stores it uncompressed
+        // (tool/reader/speech_package.py), so the speech library reads its
+        // bytes in place, at their offset in the APK.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/speech")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "model" -> try {
+                        assets.openFd("bookfin-speech/tiny.en-q5_1.ggml").use { model ->
+                            result.success(mapOf(
+                                "path" to applicationInfo.sourceDir,
+                                "offset" to model.startOffset,
+                                "length" to model.length,
+                            ))
+                        }
+                    } catch (_: java.io.IOException) {
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/device")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -92,6 +153,12 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/power")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink) =
+                    PowerEvents.listen(this@MainActivity, events)
+                override fun onCancel(arguments: Any?) = PowerEvents.cancel(this@MainActivity)
+            })
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/media-network")
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
