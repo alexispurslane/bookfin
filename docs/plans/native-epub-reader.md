@@ -398,18 +398,19 @@ The trial showed that every epub.js place lands on the page that shows it (661 o
 - `<style>` elements and `style` attributes come from the admitted DOM, because the DOM is part of the identity. Standard Ebooks books use linked sheets only.
 - The native CSS parser is the safety boundary. It resolves `url()` and `@import` only to files in the publication and loads nothing else. It limits rules per sheet, selector length and nesting depth. It runs in a worker, so a slow sheet cannot stall a frame.
 - The trial parser already skips `@namespace` and matches `epub|type` attributes. So Standard Ebooks books get their small caps, verse indents and title blocks.
-- E5 adds `@import`, and sets `prefers-color-scheme` from the theme. The parser skips `@font-face` rules (see Book fonts).
+- E5 adds `@import`, and sets `prefers-color-scheme` from the theme. The parser reads `@font-face` rules (see Book fonts).
 
-### Book fonts (E5, then boo-iv7q)
+### Book fonts (E5, boo-iv7q, then boo-3huo)
 
-EPUB and MOBI text always draws in the reader font. The user decided this on 2026-11-12 (boo-iv7q). E5 drew a book's own `@font-face` fonts, and boo-iv7q removed that code.
+EPUB and MOBI text draws in the reader font. A book's own font draws only the characters that the reader font lacks. The user decided the first rule on 2026-11-12 (boo-iv7q) and the exception on the same day (boo-3huo). E5 drew a book's own `@font-face` fonts for all their text. docs/plans/faster-book-open.md, "Book fonts for missing characters", records the model.
 
-- The CSS parser skips `@font-face` rules. The reader never reads a book's font files and never registers a font.
+- Admission decides which sections need which book faces (`Publication.sectionFaces`), and keeps only those font files. Most books need none. Then the reader never reads a font file and never registers a font.
+- A section that needs faces registers them (`BookFonts`) while its worker prepares it. Each needed face registers under a family of its own, and a run that the face styles names it as `RunStyle.face`.
 - The prepare worker resolves each run's family list to one family. It takes the first family that the reader has: the reader font for `serif` and the reader font's names, and `monospace` for `monospace`. It passes over every other family, also a family that the book embeds. When no family matches, the run draws in the reader font.
 - So `font-family: BookFont, monospace` draws in monospace, and `font-family: BookFont, serif` draws in the reader font.
 - Layout sets the `opsz` axis of every font to the text size, as Chromium does. It sets the `wght` axis of monospace to the CSS weight, as Chromium does. The reader font keeps `wght` 400, because its `@font-face` rule names no weights.
-- A character that the reader font lacks draws in a fallback font of the system. A book that uses its own font for symbols or for another script can show different glyphs than its author meant.
-- Every run draws in a font that the app bundles or that the system has. So a new process can draw a kept page (boo-sy2d) of any EPUB or MOBI before its book loads.
+- A run's fallback list starts with its needed face, so a character that the reader font lacks draws in the book's face. Without a needed face, it draws in a fallback font of the system. Admission checks only the reader font, so an ornament font that draws shapes for ordinary letters still draws as letters.
+- A page that names no needed face draws only in fonts that the app bundles or that the system has. So a new process can draw a kept page (boo-sy2d) of it before its book loads. A page that names a needed face is not kept.
 
 ### Hyphenation (E16)
 
@@ -483,7 +484,7 @@ The libmobi conversion stays. A MOBI or AZW3 book converts to an EPUB, admission
 
 ### What stays unsupported
 
-Vertical writing and right-to-left page order lay out as left-to-right pages. Flutter still shapes right-to-left words within a line. MathML is removed by admission. Inline SVG shows its label. `::first-letter`, generated content and multiple columns render as plain text in one column. `text-wrap: pretty` breaks lines greedily. A book's own fonts draw in the reader font. A `rowspan` counts as 1.
+Vertical writing and right-to-left page order lay out as left-to-right pages. Flutter still shapes right-to-left words within a line. MathML is removed by admission. Inline SVG shows its label. `::first-letter`, generated content and multiple columns render as plain text in one column. `text-wrap: pretty` breaks lines greedily. A book's own fonts draw only the characters that the reader font lacks. A `rowspan` counts as 1.
 
 ## Testing
 
@@ -508,7 +509,7 @@ Each ticket writes its tests first, in the language of the domain. These are the
 - TalkBack reads the text of the shown page in order, and its scroll actions turn pages.
 - A long press selects text, and Copy reports the selected text.
 - The scrub deck draws the true page of a place, with neighbors that exactly one page holds each.
-- Standard Ebooks books get their own styles. Text that names a font of the book draws in the reader font.
+- Standard Ebooks books get their own styles. Text that names a font of the book draws in the reader font, except for characters that the reader font lacks.
 - A simple table lays out as a grid, and a page breaks between rows.
 - Hyphenated words break where the patterns allow and show a hyphen.
 

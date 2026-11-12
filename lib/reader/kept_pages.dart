@@ -12,6 +12,7 @@ import '../downloads/derived_files.dart';
 import '../downloads/downloads.dart';
 import '../playback/records.dart' show encodeTextPosition;
 import 'epub/kept_page.dart';
+import 'epub/publication.dart';
 
 /// Keeps one page of each download: the file `last-page` in the download's
 /// layout directory ([DerivedBookFiles.layoutDirectory]), which a removal
@@ -20,8 +21,10 @@ import 'epub/kept_page.dart';
 /// The file holds three lines: its key, the CRC-32 of its body, and the
 /// body, a text that [KeptPage.encode] wrote. The key names everything that
 /// changes the page outside its body: the format of the body, the text
-/// engine and its fonts ([engine]), the downloaded file's digest, and the
-/// saved place that the page shows. The body holds the page settings. A
+/// engine and its fonts ([engine]), the admission revision
+/// ([Publication.revision], which decides the characters that draw in a
+/// book's own fonts), the downloaded file's digest, and the saved place
+/// that the page shows. The body holds the page settings. A
 /// read with another key, or of a body that does not match its CRC-32,
 /// gives nothing, so a reopen never draws a page that is not the true one.
 /// Each write replaces the file whole, unless the file keeps that page
@@ -111,7 +114,13 @@ class KeptPages {
   /// JSON keeps the line breaks of [engine] out of the line.
   static Uint8List _key(String engine, String digest, TextPosition at) =>
       utf8.encode(
-        jsonEncode([KeptPage.format, engine, digest, encodeTextPosition(at)]),
+        jsonEncode([
+          KeptPage.format,
+          engine,
+          Publication.revision,
+          digest,
+          encodeTextPosition(at),
+        ]),
       );
 
   static bool _same(Uint8List bytes, Uint8List key) {

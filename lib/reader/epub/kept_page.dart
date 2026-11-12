@@ -9,10 +9,10 @@
 // settings. Flutter's text engine breaks the lines of a paragraph built
 // again from the same calls at the same width in the same places, with the
 // same fonts, so drawPage draws the same pixels. The key of a kept file
-// (kept_pages.dart) names the text engine and the fonts' install. Every run
-// draws in a font that the app bundles or the platform has, never in a font
-// of the book (boo-iv7q), so a new process can draw a kept page before its
-// book loads.
+// (kept_pages.dart) names the text engine, the fonts' install and the
+// admission revision. A kept page draws only in fonts that the app bundles
+// or the platform has, so a new process can draw it before its book loads.
+// A page that names one of the book's own faces (boo-3huo) is not kept.
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -43,7 +43,8 @@ final class KeptPage implements PageDrawing {
 
   /// The kept form of [page], text of a few kilobytes that [decode] reads,
   /// or null when [page] shows a paragraph that no layout run built
-  /// ([recipeOf]).
+  /// ([recipeOf]), or names a book face ([RunStyle.face]), which a new
+  /// process has not registered.
   ///
   /// It runs on the UI isolate, where the page's paragraphs live. It
   /// walks the pieces of one page and encodes a few kilobytes of JSON,
@@ -149,7 +150,10 @@ final class KeptPage implements PageDrawing {
           },
       ],
     };
-    // The run styles are known once every paragraph named its own.
+    // The run styles are known once every paragraph named its own. A new
+    // process has not registered a book face before its book loads, so a
+    // page that names one is not kept (boo-3huo).
+    if (table.any((style) => style.face != null)) return null;
     return jsonEncode({
       ...body,
       'styles': [for (final style in table) style.toJson()],

@@ -24,6 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as raster;
 
 import '../playback/playback_test.dart' show account;
+import 'epub/book_fonts_test.dart' show face, fontBook, star, starFont;
 import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/helpers.dart';
 import 'epub/page_source_test.dart' show TestScheduler;
@@ -98,6 +99,7 @@ Map<String, Object?> _facts(Publication publication) => {
   },
   'mediaTypes': publication.mediaTypes,
   'mainTextSize': publication.mainTextSize,
+  'sectionFaces': publication.sectionFaces,
   'resources': {
     for (final MapEntry(key: path, value: bytes)
         in publication.textFiles.entries)
@@ -412,6 +414,39 @@ void main() {
       expect(admissions, 2);
       expect(reopened.mainTextSize, 12);
     });
+  });
+
+  test('a record of revision 4, kept before admission chose the fonts that '
+      "a book's sections need, admits again and keeps those fonts", () async {
+    final bytes = fontBook(
+      ['<p>A star $star here.</p>'],
+      css: '${face('Star', 'star.woff')}p{font-family:Star,serif}',
+      fonts: {'star.woff': starFont},
+    );
+    final digest = _digest(bytes);
+    final file = await _download(bytes);
+    var admissions = 0;
+    Future<Publication> admit() async {
+      admissions++;
+      return Publication.admit(bytes, digest);
+    }
+
+    await _openHere(file, digest, 'policy-1', admit);
+    final record = _record(file);
+    final kept = await record.readAsBytes();
+    final end = kept.indexOf(0x0a);
+    await record.writeAsBytes([
+      ...utf8.encode(jsonEncode([4, 'policy-1', digest])),
+      ...kept.sublist(end),
+    ]);
+
+    final reopened = await _openHere(file, digest, 'policy-1', admit);
+
+    expect(admissions, 2);
+    expect(reopened.sectionFaces, {
+      'OPS/text/s0.xhtml': ['OPS/fonts/star.woff'],
+    });
+    expect(await reopened.bytesOf('OPS/fonts/star.woff'), starFont);
   });
 
   group('the record of admitted books', () {

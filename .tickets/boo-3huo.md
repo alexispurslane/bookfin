@@ -1,6 +1,6 @@
 ---
 id: boo-3huo
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-12T12:41:26Z
@@ -21,3 +21,9 @@ Known limits, accepted: ornament fonts that map shapes onto ordinary letters are
 
 Costs: a new Publication.revision, so every downloaded book is admitted again once and its page maps are rebuilt. t0-sx00 (drop unused font files from the record) is folded in here.
 
+
+## Notes
+
+**2026-11-12T13:11:22Z**
+
+Built on t3/793df8bd. Admission (prepare.dart neededFaces, publication.dart _sectionFaces) compares each font file's cmap with a generated table of the reader font's coverage (lib/reader/epub/reader_coverage.dart, 918 code points in 150 ranges, written by tool/reader/reader_coverage.dart; a test fails when it is stale). Control characters and default ignorable code points never need a face. Publication.sectionFaces names the needed faces per section; the record keeps only their font files; Publication.revision 4 -> 5. PageSource registers a section's faces (BookFonts, conversion in a worker) while its worker prepares it. A run that a needed face styles keeps the reader font as its family and puts the face first in its fallback list. KeptPage.encode refuses a page that names a face; the kept page key now names Publication.revision. Fixture outfit-star.woff from tool/reader/book_font_fixture.py. Measured admission cost (host, JIT, load ~18-24): books without fonts unchanged; 30-section book with an unneeded own font +1-2 ms; same book with one needed character +4-5 ms.

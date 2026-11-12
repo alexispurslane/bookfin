@@ -144,45 +144,53 @@ void main() {
     publication.checkInvariants();
   });
 
-  test('local styles, PNG, fonts, headings, and encoded destination fragments survive', () async {
-    final font = File('docs/mockups/fonts/source-serif-4-latin.woff2')
-        .readAsBytesSync();
-    final opf = utf8
-        .decode(ZipDecoder().decodeBytes(epub()).find('OPS/book.opf')!.content)
-        .replaceFirst(
-          '</manifest>',
-          '<item id="font" href="Fonts/font.woff2" media-type="font/woff2"/></manifest>',
-        );
-    final publication = Publication.admit(
-      epub(
-        chapter: '<html lang="fr"><head><link rel="stylesheet" href="book.css"/></head><body><h1 id="café">Title</h1><a href="#caf%C3%A9">Go</a><img src="dot.png" alt="Sepia square"/></body></html>',
-        extra: {
-          'OPS/book.opf': utf8.encode(opf),
-          'OPS/Fonts/font.woff2': font,
-          'OPS/book.css': utf8.encode(
-            '@font-face{font-family:Book;src:url("Fonts/font.woff2")}body{font-family:Book}',
-          ),
-        },
-      ),
-    );
-    final document = XmlDocument.parse(
-      utf8.decode(publication.textFiles['OPS/one.xhtml']!),
-    );
-    expect(
-      document.findAllElements('a').single.getAttribute('href'),
-      'one.xhtml#caf%C3%A9',
-    );
-    expect(
-      document.findAllElements('img').single.getAttribute('alt'),
-      'Sepia square',
-    );
-    expect(document.findAllElements('h1').single.getAttribute('id'), 'café');
-    expect(await publication.bytesOf('OPS/Fonts/font.woff2'), font);
-    expect(
-      utf8.decode(publication.textFiles['OPS/book.css']!),
-      contains('font-family:Book'),
-    );
-  });
+  test(
+    'local styles, PNG, headings, and encoded destination fragments survive, '
+    'and a font that no section needs is left out',
+    () async {
+      final font = File('docs/mockups/fonts/source-serif-4-latin.woff2')
+          .readAsBytesSync();
+      final opf = utf8
+          .decode(
+            ZipDecoder().decodeBytes(epub()).find('OPS/book.opf')!.content,
+          )
+          .replaceFirst(
+            '</manifest>',
+            '<item id="font" href="Fonts/font.woff2" media-type="font/woff2"/></manifest>',
+          );
+      final publication = Publication.admit(
+        epub(
+          chapter: '<html lang="fr"><head><link rel="stylesheet" href="book.css"/></head><body><h1 id="café">Title</h1><a href="#caf%C3%A9">Go</a><img src="dot.png" alt="Sepia square"/></body></html>',
+          extra: {
+            'OPS/book.opf': utf8.encode(opf),
+            'OPS/Fonts/font.woff2': font,
+            'OPS/book.css': utf8.encode(
+              '@font-face{font-family:Book;src:url("Fonts/font.woff2")}body{font-family:Book}',
+            ),
+          },
+        ),
+      );
+      final document = XmlDocument.parse(
+        utf8.decode(publication.textFiles['OPS/one.xhtml']!),
+      );
+      expect(
+        document.findAllElements('a').single.getAttribute('href'),
+        'one.xhtml#caf%C3%A9',
+      );
+      expect(
+        document.findAllElements('img').single.getAttribute('alt'),
+        'Sepia square',
+      );
+      expect(document.findAllElements('h1').single.getAttribute('id'), 'café');
+      // The reader cannot read a WOFF 2 font, so no section needs it.
+      expect(await publication.bytesOf('OPS/Fonts/font.woff2'), isNull);
+      expect(publication.mediaTypes, isNot(contains('OPS/Fonts/font.woff2')));
+      expect(
+        utf8.decode(publication.textFiles['OPS/book.css']!),
+        contains('font-family:Book'),
+      );
+    },
+  );
 
   test('only the exact local single-JPEG SVG wrapper uses a raster fallback', () async {
     final jpeg = raster.encodeJpg(

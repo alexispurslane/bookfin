@@ -23,6 +23,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../book_pages.dart';
 import 'dom.dart';
+import 'fonts.dart';
 import 'layout.dart';
 import 'page_maps.dart';
 import 'paint.dart';
@@ -153,7 +154,8 @@ class PageSource {
   }) : _publication = publication,
        _schedule = schedule ?? scheduleBetweenFrames,
        _worker = work ?? Isolate.run,
-       _stepBudget = budget;
+       _stepBudget = budget,
+       _fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}';
 
   // The limits of the design's cache table. E20 (tc-ptuo), which was to
   // tune them on the phone, was dropped; they stay at the values that the
@@ -231,6 +233,12 @@ class PageSource {
   final StepScheduler _schedule;
   final WorkerCall _worker;
   final Duration _stepBudget;
+
+  /// The start of the family that each of the book's faces registers
+  /// under: `bookfin-` and the first 12 hex digits of the publication
+  /// identity. Flutter registers fonts for the whole process, so the prefix
+  /// keeps one book's faces apart from another book's faces.
+  final String _fontPrefix;
 
   PageSettings? _settings;
   PageSettings? _previous;
@@ -331,6 +339,8 @@ class PageSource {
     if (layout.prepared != null || xhtml.length < _partBytes) {
       return find((await section(index)).dom);
     }
+    final faces = _facesOf(index);
+    final fonts = BookFonts.load(faces, _publication.bytesOf);
     final (:place, section: prepared) = await _partInWorker(
       _worker,
       index,
@@ -340,9 +350,11 @@ class PageSource {
       _publication.imageSizes,
       _publication.language,
       _publication.mainTextSize,
+      faces,
       layout.settings,
       find,
     );
+    await fonts;
     bool current() =>
         !_disposed && identical(_layouts[(index, layout.settings)], layout);
     if (prepared == null || !current()) return place;
@@ -1501,11 +1513,14 @@ class PageSource {
     if (cached != null) _pages[key] = cached;
   }
 
-  /// Prepares the section of [layout] in a worker call of its own, and
-  /// caches it. No section waits for another section's prepare.
+  /// Prepares the section of [layout] in a worker call of its own, while
+  /// the book faces that it needs register, and caches it once both are
+  /// done. No section waits for another section's prepare or faces.
   Future<PreparedSection> _prepare(_SectionLayout layout) async {
     try {
       final path = _publication.spine[layout.index];
+      final faces = _facesOf(layout.index);
+      final fonts = BookFonts.load(faces, _publication.bytesOf);
       final prepared = await _prepareInWorker(
         _worker,
         layout.index,
@@ -1515,8 +1530,10 @@ class PageSource {
         _publication.imageSizes,
         _publication.language,
         _publication.mainTextSize,
+        faces,
         layout.settings,
       );
+      await fonts;
       _keep(layout, prepared);
       return prepared;
     } finally {
@@ -1542,6 +1559,16 @@ class PageSource {
       _plan();
     }
   }
+
+  /// The book faces that section [index] needs
+  /// ([Publication.sectionFaces]): the path of each one's font file, with
+  /// the family that it registers under.
+  Map<String, String> _facesOf(int index) => {
+    for (final path
+        in _publication.sectionFaces[_publication.spine[index]] ??
+            const <String>[])
+      path: '$_fontPrefix-$path',
+  };
 
   /// The size in pixels of the book's main text as pages of [settings]
   /// show it (see [shownMainTextSize]), measured in a worker on the
@@ -1597,6 +1624,7 @@ class PageSource {
     Map<String, (int, int)> imageSizes,
     String? language,
     double mainTextSize,
+    Map<String, String> faces,
     PageSettings settings,
   ) => work(
     () => prepareSections([
@@ -1608,6 +1636,7 @@ class PageSource {
         imageSizes: imageSizes,
         language: language,
         mainTextSize: mainTextSize,
+        faces: faces,
       ),
     ], settings).single,
   );
@@ -1626,6 +1655,7 @@ class PageSource {
     Map<String, (int, int)> imageSizes,
     String? language,
     double mainTextSize,
+    Map<String, String> faces,
     PageSettings settings,
     EpubPlace? Function(DomSection dom) find,
   ) => work(
@@ -1638,6 +1668,7 @@ class PageSource {
         imageSizes: imageSizes,
         language: language,
         mainTextSize: mainTextSize,
+        faces: faces,
       ),
       settings,
       find,

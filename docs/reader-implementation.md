@@ -37,7 +37,7 @@ The 16 MiB resource limit and the 128 MiB total limit also apply to processed by
 | Fonts | Local TTF, OTF, WOFF and WOFF2 files are admitted. The renderer registers TTF, OTF and WOFF 1 faces. A WOFF 2 face, or a face that does not load, draws in the reader font. |
 | Unsupported editions | Fixed-layout metadata, encrypted or obfuscated resources, and files that are not EPUB report an error. A MOBI or AZW3 book converts to an EPUB with libmobi first. |
 
-The renderer lays out real XHTML and CSS: block layout, tables, images and hyphenation. It draws all text in the reader font or in monospace, never in a font of the book. It provides contents, internal links, page turns, text sizes, and cream and night themes. It also provides search, bookmarks with titles and notes, resume, screen reader semantics and text selection. "What stays unsupported" in the design document lists what it approximates.
+The renderer lays out real XHTML and CSS: block layout, tables, images and hyphenation. It draws text in the reader font or in monospace. A book's own font draws only the characters that the reader font lacks. It provides contents, internal links, page turns, text sizes, and cream and night themes. It also provides search, bookmarks with titles and notes, resume, screen reader semantics and text selection. "What stays unsupported" in the design document lists what it approximates.
 
 ## Locations and search
 

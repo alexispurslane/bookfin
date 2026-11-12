@@ -12,7 +12,9 @@ import 'dart:typed_data';
 
 import 'css.dart';
 import 'dom.dart';
+import 'font_files.dart';
 import 'hyphenate.dart';
+import 'reader_coverage.dart';
 import 'table.dart';
 
 // Section sources name publication paths, so their callers resolve
@@ -122,6 +124,7 @@ class SectionSource {
     this.imageSizes = const {},
     this.language,
     this.mainTextSize = defaultMainTextSize,
+    this.faces = const {},
   });
 
   /// The section's spine index.
@@ -146,6 +149,12 @@ class SectionSource {
   /// The book's main text size in pixels, as [measureMainTextSize] gives
   /// it. Only styling for [PageSettings.sizesMainText] reads it.
   final double mainTextSize;
+
+  /// The book faces that this section needs ([neededFaces]): the path of
+  /// each one's font file, with the family that the face is registered
+  /// under. A run that one of them styles names that family as its
+  /// [RunStyle.face].
+  final Map<String, String> faces;
 }
 
 /// The main text size of a book that sets no type size of its own: the
@@ -565,7 +574,15 @@ _prepare(
   );
   final builder = _BoxBuilder(styles, until: until);
   final body = builder.block(parsed.body);
-  final flattener = _Flattener(source, settings, styles, skipBefore: from);
+  final flattener = _Flattener(
+    source,
+    settings,
+    styles,
+    source.faces.isEmpty
+        ? const {}
+        : _facesByFamily(source, parsed, _mediaOf(settings)),
+    skipBefore: from,
+  );
   flattener.block(body, settings.width);
   return (
     section: PreparedSection._(
@@ -827,6 +844,7 @@ final class RaisedRun extends InlineRun {
 class RunStyle {
   const RunStyle({
     required this.family,
+    this.face,
     required this.size,
     required this.weight,
     required this.italic,
@@ -841,6 +859,11 @@ class RunStyle {
 
   /// The font family to draw with.
   final String family;
+
+  /// The registered family of the book face that styles the run, which
+  /// draws the characters that [family] lacks, or null. Only a face that
+  /// the section needs is named (boo-3huo).
+  final String? face;
   final double size;
 
   /// The CSS font weight, from 100 to 900.
@@ -907,6 +930,7 @@ class RunStyle {
   bool operator ==(Object other) =>
       other is RunStyle &&
       other.family == family &&
+      other.face == face &&
       other.size == size &&
       other.weight == weight &&
       other.italic == italic &&
@@ -921,6 +945,7 @@ class RunStyle {
   @override
   int get hashCode => Object.hash(
     family,
+    face,
     size,
     weight,
     italic,
@@ -1114,11 +1139,7 @@ Map<DomElement, Style> _styleSection(
   int? until,
   Map<DomElement, Style> styled = const {},
 }) {
-  final media = MediaContext(
-    width: settings.width,
-    height: settings.height,
-    night: settings.night,
-  );
+  final media = _mediaOf(settings);
   final sheets = sectionSheets(source, dom, media);
   final rules = <StyleRule>[
     for (final sheet in sheets) ...sheet.rules,
@@ -1159,6 +1180,13 @@ Map<DomElement, Style> _styleSection(
   visit(dom.root, rootStyle);
   return styles;
 }
+
+/// What `@media` conditions see on pages of [settings].
+MediaContext _mediaOf(PageSettings settings) => MediaContext(
+  width: settings.width,
+  height: settings.height,
+  night: settings.night,
+);
 
 /// The book's style sheets that section [dom] uses, linked or in style
 /// elements, in document order, each with the sheets that it imports.
@@ -1600,10 +1628,20 @@ String? _marker(String type, int number) {
 /// Turns a tree of boxes into flow items, with every length that the width
 /// of its containing block decides in pixels.
 class _Flattener {
-  _Flattener(this.source, this.settings, this.styles, {this.skipBefore});
+  _Flattener(
+    this.source,
+    this.settings,
+    this.styles,
+    this.faces, {
+    this.skipBefore,
+  });
   final SectionSource source;
   final PageSettings settings;
   final Map<DomElement, Style> styles;
+
+  /// The book faces of the section's style sheets by family, or empty when
+  /// the section needs no face.
+  final Map<String, List<FontFaceRule>> faces;
 
   /// The first node of a part of the section: a paragraph, an image or a
   /// table whose nodes all come before it is a [SkippedItem]. Null when
@@ -2091,9 +2129,16 @@ class _Flattener {
     return TextRun(text.toString(), run.style, run.node, offsets);
   }
 
+  /// The registered family of the needed book face that styles [style], or
+  /// null.
+  String? _faceOf(Style style) => switch (_styledFace(style, faces)) {
+    final face? => source.faces[face.path],
+    null => null,
+  };
+
   /// The index of the run style of [style].
   int _styleOf(Style style) => _byStyle[style] ??= () {
-    final run = _runStyle(style, _familyOf(style));
+    final run = _runStyle(style, _familyOf(style), _faceOf(style));
     return _byValue.putIfAbsent(run, () {
       runStyles.add(run);
       return runStyles.length - 1;
@@ -2119,8 +2164,9 @@ int _lastNode(DomNode node) {
   return last.order;
 }
 
-RunStyle _runStyle(Style style, String family) => RunStyle(
+RunStyle _runStyle(Style style, String family, String? face) => RunStyle(
   family: family,
+  face: face,
   size: style.fontSize,
   weight: style.fontWeight,
   italic: style.italic,
@@ -2149,6 +2195,145 @@ String _familyOf(Style style) {
   }
   return readerFontFamily;
 }
+
+/// The book face that styles [style], of [faces], the book faces of a
+/// section by family: the face of the first of its families that the book
+/// embeds, when no family that the renderer has comes before it. Of the
+/// faces of that family, it is the one that CSS font matching picks, in a
+/// simple form: the same slant if one has it, then the nearest weight.
+FontFaceRule? _styledFace(Style style, Map<String, List<FontFaceRule>> faces) {
+  for (final name in style.fontFamily) {
+    final family = name.toLowerCase();
+    if (faces[family] case final named?) {
+      final slant = named.where((face) => face.italic == style.italic);
+      return (slant.isEmpty ? named : slant).reduce(
+        (best, face) =>
+            (face.weight - style.fontWeight).abs() <
+                (best.weight - style.fontWeight).abs()
+            ? face
+            : best,
+      );
+    }
+    if (_rendererFamilies.contains(family)) return null;
+  }
+  return null;
+}
+
+/// The families that the renderer has, in lower case.
+const _rendererFamilies = {
+  'bookfinserif',
+  'source serif 4',
+  'serif',
+  'monospace',
+};
+
+/// The book faces of the style sheets that section [dom] of [source] uses,
+/// by family, for [media].
+Map<String, List<FontFaceRule>> _facesByFamily(
+  SectionSource source,
+  DomSection dom,
+  MediaContext media,
+) {
+  final faces = <String, List<FontFaceRule>>{};
+  for (final sheet in sectionSheets(source, dom, media)) {
+    for (final face in sheet.fontFaces) {
+      (faces[face.family] ??= []).add(face);
+    }
+  }
+  return faces;
+}
+
+/// The book faces that each of [sections] needs, by section path, from the
+/// book's font files [fonts], by path (boo-3huo). Each list holds font file
+/// paths in ascending order. A section that needs no face has no entry.
+///
+/// A section needs a face when a run of its text that the face styles holds
+/// a character that the face covers and the reader font lacks
+/// ([readerCoverage]). When no font file covers such a character, nothing
+/// else runs. Otherwise only the sections whose text holds such a
+/// character are parsed and styled. A section that does not parse needs no
+/// face: preparing it reports it.
+///
+/// The section styles for the reader's usual phone page, as
+/// [measureMainTextSize] does. A WOFF 2 file is not read, so it covers
+/// nothing.
+Map<String, List<String>> neededFaces(
+  List<SectionSource> sections,
+  Map<String, Uint8List> fonts,
+) {
+  final missing = <String, Coverage>{
+    for (final MapEntry(key: path, value: bytes) in fonts.entries)
+      if (Coverage.of(bytes)?.without(readerCoverage).without(_drawsNothing)
+          case final extra? when extra.ranges.isNotEmpty)
+        path: extra,
+  };
+  if (missing.isEmpty) return const {};
+  final extras = missing.values.toList();
+  final needed = <String, List<String>>{};
+  for (final source in sections) {
+    if (!_holdsAny(source.xhtml, extras)) continue;
+    final DomSection dom;
+    try {
+      dom = DomSection.parse(source.xhtml);
+    } on Exception {
+      continue;
+    }
+    final faces = _facesByFamily(source, dom, _mediaOf(_mainTextPage));
+    if (faces.isEmpty) continue;
+    final styles = _styleSection(source, dom, _mainTextPage, 1);
+    final used = <String>{};
+    for (final text in dom.texts) {
+      final face = _styledFace(styles[text.parent!]!, faces);
+      if (missing[face?.path] case final extra?
+          when _holdsAny(text.text, [extra])) {
+        used.add(face!.path);
+      }
+    }
+    if (used.isNotEmpty) needed[source.path] = used.toList()..sort();
+  }
+  return needed;
+}
+
+/// Whether [text] holds a character of one of [coverages].
+bool _holdsAny(String text, List<Coverage> coverages) {
+  // Most text is ASCII, which the reader font covers, so no coverage of a
+  // missing character starts that low. Code units below the lowest covered
+  // code point are passed over without a search.
+  final lowest = coverages
+      .map((coverage) => coverage.ranges.first)
+      .reduce(math.min);
+  for (final rune in text.runes) {
+    if (rune < lowest) continue;
+    if (coverages.any((coverage) => coverage.has(rune))) return true;
+  }
+  return false;
+}
+
+/// The characters that draw nothing, so that no text needs a font for them:
+/// the control characters and Unicode's default ignorable code points,
+/// such as the zero width joiner. Many fonts map some of them, and the
+/// reader font lacks most of them.
+const _drawsNothing = Coverage([
+  0x0000, 0x001F, //
+  0x007F, 0x009F, //
+  0x00AD, 0x00AD, //
+  0x034F, 0x034F, //
+  0x061C, 0x061C, //
+  0x115F, 0x1160, //
+  0x17B4, 0x17B5, //
+  0x180B, 0x180F, //
+  0x200B, 0x200F, //
+  0x2028, 0x202E, //
+  0x2060, 0x206F, //
+  0x3164, 0x3164, //
+  0xFE00, 0xFE0F, //
+  0xFEFF, 0xFEFF, //
+  0xFFA0, 0xFFA0, //
+  0xFFF0, 0xFFF8, //
+  0x1BCA0, 0x1BCA3, //
+  0x1D173, 0x1D17A, //
+  0xE0000, 0xE0FFF, //
+]);
 
 String _sameLength(String original, String changed) =>
     changed.length == original.length ? changed : original;

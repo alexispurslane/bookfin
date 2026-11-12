@@ -154,8 +154,8 @@ void main() {
     expect(RunStyle.fromJson(jsonDecode(jsonEncode(style.toJson()))), style);
   });
 
-  test('a page whose book styles its text with its own font is kept, and '
-      'its kept form draws that page', () {
+  test('a page that uses no book font is still kept, though its book styles '
+      'its text with its own font', () {
     final pages = runToEnd(
       prepareSections([
         section(
@@ -177,6 +177,30 @@ void main() {
     final kept = KeptPage.decode(body!);
     addTearDown(() => kept?.dispose());
     expect(kept!.depicts(pages.first), isTrue);
+  });
+
+  test('a page that draws with a font of the book is not kept, and a later '
+      'page of the same section without it is kept', () {
+    final pages = runToEnd(
+      prepareSections([
+        section(
+          '<p class="star">A star \u2605 here.</p><p>${prose(60)}</p>',
+          css:
+              '@font-face{font-family:Star;src:url(../fonts/star.woff)}'
+              '.star{font-family:Star,serif}',
+          faces: {'fonts/star.woff': 'kept-page-star'},
+        ),
+      ], readerPage).single,
+    );
+    addTearDown(() {
+      for (final page in pages) {
+        page.dispose();
+      }
+    });
+    expect(pages, hasLength(greaterThan(1)));
+
+    expect(KeptPage.encode(pages.first), isNull);
+    expect(KeptPage.encode(pages.last), isNotNull);
   });
 
   test('a kept page whose bytes are damaged decodes to nothing', () {

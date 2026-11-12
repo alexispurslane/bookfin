@@ -214,19 +214,25 @@ List<Object?> content(LaidPage page) => [
 ];
 
 /// [inner], which records the path of each file that the reader asks it
-/// for. It gives only what the page source reads.
+/// for. It gives only what the page source reads. With [fonts], it gives
+/// each font file only after [fonts] completes.
 class WatchedPublication implements Publication {
-  WatchedPublication(this.inner);
+  WatchedPublication(this.inner, {this.fonts});
   final Publication inner;
+  final Future<void>? fonts;
 
   /// The path of each file that [bytesOf] gave, in order.
   final asked = <String>[];
 
   @override
-  Future<Uint8List?> bytesOf(String path) {
+  Future<Uint8List?> bytesOf(String path) async {
     asked.add(path);
+    if (path.endsWith('.woff')) await fonts;
     return inner.bytesOf(path);
   }
+
+  @override
+  Map<String, List<String>> get sectionFaces => inner.sectionFaces;
 
   @override
   String get identity => inner.identity;
@@ -686,7 +692,8 @@ void main() {
     expect(page.lineStarts, reader.pages.first.lineStarts);
   });
 
-  test("the reader never reads a book's font files", () async {
+  test('a book whose own font only repeats letters that the reader font has '
+      'reads no font file', () async {
     // Words of their own, so that no other test opened this book.
     final publication = WatchedPublication(outfitBook('mum im'));
     open(publication);
@@ -700,6 +707,44 @@ void main() {
     await scheduler.settle();
 
     expect(publication.asked, isNot(contains(endsWith('.woff'))));
+  });
+
+  test('only the section that needs a book font waits for it, and its runs '
+      'name that font', () async {
+    final fonts = Completer<void>();
+    final publication = WatchedPublication(
+      book(
+        ['<p>${prose(8)}</p>', '<p>A star \u2605 here. ${prose(8)}</p>'],
+        css:
+            '@font-face{font-family:Star;src:url(../fonts/star.woff)}'
+            'p{font-family:Star,serif}',
+        files: {
+          'fonts/star.woff': File('test/reader/epub/fixtures/outfit-star.woff')
+              .readAsBytesSync(),
+        },
+      ),
+      fonts: fonts.future,
+    );
+    open(publication);
+
+    final plain = await scheduler.until(source.section(0));
+    await scheduler.until(
+      source.pageAt(placeIn(plain, 0), anchored: true, urgent: true),
+    );
+    expect(publication.asked, isNot(contains(endsWith('.woff'))));
+    expect([for (final style in plain.styles) style.face], everyElement(null));
+
+    PreparedSection? starred;
+    unawaited(source.section(1).then((section) => starred = section));
+    await scheduler.settle(quiet: const Duration(milliseconds: 50));
+    expect(publication.asked, contains(endsWith('star.woff')));
+    expect(starred, isNull);
+
+    fonts.complete();
+    final section = await scheduler.until(source.section(1));
+    expect({
+      for (final style in section.styles) style.face,
+    }, contains(startsWith('bookfin-')));
   });
 
   test('a draft draws outlines for images not decoded yet, and the picture '

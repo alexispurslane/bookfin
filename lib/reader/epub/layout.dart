@@ -3520,10 +3520,11 @@ ui.TextStyle runTextStyle(RunStyle style, ui.Color ink) {
   return ui.TextStyle(
     color: ink,
     fontFamily: style.family,
-    // A character that a face lacks draws in the reader font, not in the
-    // platform's default font, and an arrow that both lack draws in the
-    // arrow font, not in the platform's emoji font.
-    fontFamilyFallback: const [readerFontFamily, arrowFontFamily],
+    // A character that the family lacks draws in the needed book face that
+    // styles the run (boo-3huo), else in the reader font, not in the
+    // platform's default font, and an arrow that all of them lack draws in
+    // the arrow font, not in the platform's emoji font.
+    fontFamilyFallback: [?style.face, readerFontFamily, arrowFontFamily],
     fontSize: style.size,
     fontWeight: _weight(style.weight),
     fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,

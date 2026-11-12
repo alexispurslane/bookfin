@@ -183,13 +183,16 @@ const identities = {
     'd1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a',
     '4d294c0ac46e1f893f06d1d95a2507953065e9aac64b6d11d8bf569a0eed821b',
   ),
+  // Revision 5 (boo-3huo) leaves out the WOFF 2 font of the two synthetic
+  // books, which no section needs, and its manifest item. Their chapters
+  // and spine steps stay the same.
   'tool/evidence/reader/android-remaining/initial-synthetic.epub': (
     '23c5416e3db33bdfe48b363a52f8ae9ab9de93bccc45ecb1156486284402251f',
-    '2c4b0cfef46f0ecb0a6bb4d043bf624b70c73d9bc64391a36e5a39e41612e57e',
+    '1c0044e88da21e459d368cd966e8ac28e893aa7112653cd53f60161ef729e3cd',
   ),
   'tool/evidence/reader/android-remaining/synthetic.epub': (
     'bcf88777f524e966d9f2445f5a253b83659644a704def64510674876082c7207',
-    '66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0',
+    '31bbf7a4a092ce1715865b628b9b71ffb630f9b2d9253bfc19f44359ab733321',
   ),
   // Public-domain books of the boo-ju83 trial, which are not committed (see
   // docs/research/native-epub.md). Their tests run where the files exist.

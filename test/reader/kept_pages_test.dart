@@ -2,10 +2,12 @@
 // the drawn form of the last page that the reader showed of it, keyed by
 // everything that changes that page (boo-sy2d). A read with any other key
 // gives nothing, so a reopen never draws a page that is not the true one.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/playback/records.dart' show encodeTextPosition;
 import 'package:bookfin/reader/epub/kept_page.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
@@ -117,6 +119,24 @@ void main() {
     final kept = await stores.read(original, _place);
     addTearDown(() => kept?.dispose());
     expect(kept!.depicts(pages[1]), isTrue);
+  });
+
+  test('a page kept under an older admission of the book is not drawn, '
+      'because admission decides which characters draw in its fonts', () async {
+    await stores.write(original, _place, KeptPage.encode(pages[1])!);
+    final lines = (await keptFile().readAsString()).split('\n');
+    // The key as a kept page held it before admission revision 5 (boo-3huo):
+    // its format, the engine, the digest and the place, without the
+    // revision.
+    lines[0] = jsonEncode([
+      KeptPage.format,
+      'engine-one',
+      original.digest,
+      encodeTextPosition(_place),
+    ]);
+    await keptFile().writeAsString(lines.join('\n'));
+
+    expect(await stores.read(original, _place), isNull);
   });
 
   test(

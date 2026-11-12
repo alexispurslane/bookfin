@@ -27,6 +27,7 @@ class Publication {
     this.language,
     this.spineSteps,
     this.mainTextSize,
+    this.sectionFaces,
   );
 
   static const policy = 'bookfin-passive-epub-1';
@@ -98,6 +99,12 @@ class Publication {
   /// the size buttons (`PageSettings.sizesMainText`).
   final double mainTextSize;
 
+  /// The book faces that each section needs ([neededFaces]), by the
+  /// section's spine path: the paths of their font files, in ascending
+  /// order. A section that needs none has no entry, and most books have
+  /// none. The record keeps only these font files (boo-3huo).
+  final Map<String, List<String>> sectionFaces;
+
   Uri get base => Uri(scheme: 'https', host: host, path: '/$identity/');
 
   /// The revision of admission's output and of [encode]'s format. A kept
@@ -111,8 +118,10 @@ class Publication {
   /// book. Revision 2 added [mainTextSize]. Revision 3 named [identity] by
   /// the policy, the revision and the digest (boo-yjq6). Revision 4 put the
   /// images and fonts after the other files, so that a reopen reads them
-  /// only when a page draws them (boo-yjq6).
-  static const revision = 4;
+  /// only when a page draws them (boo-yjq6). Revision 5 added
+  /// [sectionFaces] and keeps only the font files that they name
+  /// (boo-3huo).
+  static const revision = 5;
 
   /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
   /// digest that Downloads verified, so admission does not hash the bytes
@@ -171,6 +180,7 @@ class Publication {
         'warnings': warnings,
         'language': language,
         'mainTextSize': mainTextSize,
+        'sectionFaces': sectionFaces,
         'contents': [
           for (final entry in contents) [entry.title, entry.href, entry.depth],
         ],
@@ -299,6 +309,11 @@ class Publication {
         header['language'] as String?,
         spineSteps,
         mainTextSize,
+        Map.unmodifiable({
+          for (final MapEntry(key: path as String, value: faces as List)
+              in (header['sectionFaces'] as Map).entries)
+            path: List<String>.unmodifiable(faces.cast<String>()),
+        }),
       );
     } on FormatException {
       rethrow;
@@ -315,7 +330,8 @@ class Publication {
   /// An image or a font of a reopened book comes from the book's kept
   /// record, so the reopen did not read it. It is null when the record
   /// changed since the reopen or cannot be read: the page then draws the
-  /// image's alt text. The reader never asks for a font (boo-iv7q).
+  /// image's alt text. The reader asks only for the font files that
+  /// [sectionFaces] names, and a face that it cannot read draws nothing.
   Future<Uint8List?> bytesOf(String path) async {
     if (textFiles[path] case final bytes?) return bytes;
     return switch (_files) {
@@ -353,6 +369,8 @@ class Publication {
   ///   [maxContentsDepth];
   /// - [spineSteps] has one step for each spine item;
   /// - [mainTextSize] is finite and above 0;
+  /// - [sectionFaces] names spine sections, each with font files in
+  ///   ascending order, and every admitted font file is one of them;
   /// - [identity] names [policy], [revision] and [originalDigest].
   void checkInvariants() {
     bool typed(Iterable<String> paths, Set<String> types) {
@@ -404,6 +422,22 @@ class Publication {
     }
     if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
       throw StateError('Publication main text size is not a type size.');
+    }
+    final fonts = {
+      for (final MapEntry(key: path, value: type) in mediaTypes.entries)
+        if (type.startsWith('font/')) path,
+    };
+    final named = {for (final faces in sectionFaces.values) ...faces};
+    if (sectionFaces.keys.any((path) => !spine.contains(path)) ||
+        sectionFaces.values.any(
+          (faces) =>
+              faces.isEmpty ||
+              [for (var at = 1; at < faces.length; at++) at]
+                  .any((at) => faces[at - 1].compareTo(faces[at]) >= 0),
+        ) ||
+        fonts.length != named.length ||
+        !fonts.containsAll(named)) {
+      throw StateError('Publication section faces disagree with its fonts.');
     }
     if (identity != _identityOf(originalDigest)) {
       throw StateError('Publication identity does not name its file.');
@@ -948,6 +982,7 @@ class _Admission {
         utf8.encode(document.rootElement.toXmlString()),
       );
     }
+    final sectionFaces = _sectionFaces(spine.cast<String>());
     for (final item in items) {
       final path = ids[item.getAttribute('id')];
       if (!output.containsKey(path)) item.parent?.children.remove(item);
@@ -1016,7 +1051,58 @@ class _Admission {
           .firstOrNull,
       List.unmodifiable(steps),
       _mainTextSize(reading, styleSheets),
+      sectionFaces,
     );
+  }
+
+  /// The book faces that each section of [spine] needs ([neededFaces]).
+  /// It removes every admitted font file that no section needs, so the
+  /// record keeps only the needed ones (boo-3huo).
+  Map<String, List<String>> _sectionFaces(List<String> spine) {
+    final fonts = {
+      for (final MapEntry(key: path, value: type) in types.entries)
+        if (type.startsWith('font/') && output.containsKey(path))
+          path: output[path]!,
+    };
+    if (fonts.isEmpty) return const {};
+    final styleSheets = {
+      for (final MapEntry(key: path, value: type) in types.entries)
+        if (type == 'text/css' && styles.containsKey(path)) path: styles[path]!,
+    };
+    final Map<String, List<String>> needed;
+    try {
+      needed = neededFaces([
+        for (final (index, path) in spine.indexed)
+          SectionSource(
+            index: index,
+            path: path,
+            xhtml: utf8.decode(output[path]!, allowMalformed: true),
+            styleSheets: styleSheets,
+          ),
+      ], fonts);
+    } on Exception {
+      // NOTE: A book is not refused for its fonts. It draws in the reader
+      // font.
+      return _dropFonts(const {});
+    }
+    return _dropFonts(needed);
+  }
+
+  /// [needed], after it removes every admitted font file that [needed] does
+  /// not name.
+  Map<String, List<String>> _dropFonts(Map<String, List<String>> needed) {
+    final named = {for (final faces in needed.values) ...faces};
+    for (final path in [
+      for (final MapEntry(key: path, value: type) in types.entries)
+        if (type.startsWith('font/') && !named.contains(path)) path,
+    ]) {
+      _processedBytes -= output.remove(path)?.length ?? 0;
+      types.remove(path);
+    }
+    return Map.unmodifiable({
+      for (final MapEntry(key: path, value: faces) in needed.entries)
+        path: List<String>.unmodifiable(faces),
+    });
   }
 
   /// The main text size of the admitted book whose spine is [spine] and

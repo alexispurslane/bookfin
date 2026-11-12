@@ -85,6 +85,7 @@ SectionSource section(
   String body, {
   String css = '',
   Map<String, Uint8List> files = const {},
+  Map<String, String> faces = const {},
 }) => SectionSource(
   index: 0,
   path: 'text/one.xhtml',
@@ -92,6 +93,7 @@ SectionSource section(
       '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Test</title>'
       '<style>$css</style></head><body>$body</body></html>',
   imageSizes: imageSizes(files),
+  faces: faces,
 );
 
 /// [body] prepared for [settings].

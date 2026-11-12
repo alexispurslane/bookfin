@@ -295,7 +295,7 @@ As built in boo-sy2d:
 - The session keeps the shown page when the app goes to the background, when the reader closes and when another book opens, not with each saved place. A page turn costs nothing more. It keeps the page only when an open at the saved place shows that page (`EpubPager.opensAtShown`): a main run cut the page, and the page holds the place that the pager reported last.
 - The key of a kept page holds the codec's format, the text engine's fingerprint, the file digest and the saved place. The page settings (size, text size, theme) are in the page itself, and the viewport draws the page only when they equal its own.
 - A kept page depicts the true page when both have the same text, styles and settings, and places within a thousandth of a pixel. A run from the page's start and a run from the section's start cut the same page with sums that differ in their last bits.
-- A debug build keeps no pages, because it has no text engine fingerprint. boo-sy2d kept no page that drew with a font of the book, because a new process registered the book's fonts only when the book loaded. Since boo-iv7q, the reader never draws a font of the book, so every EPUB and MOBI keeps its page.
+- A debug build keeps no pages, because it has no text engine fingerprint. boo-sy2d kept no page that drew with a font of the book, because a new process registered the book's fonts only when the book loaded. Since boo-iv7q, the reader draws a font of the book only for characters that the reader font lacks (boo-3huo), so every page that needs no such font is kept.
 
 Build size:
 
@@ -407,3 +407,54 @@ To measure again on a device that no one else uses:
    other chapters do not move. A book whose container or package document
    is missing or damaged is still refused, because it has no reading order
    to keep.
+
+## Book fonts for missing characters (boo-3huo, 2026-11-12)
+
+Since boo-iv7q, EPUB and MOBI text draws in the reader font. The user then
+asked for one exception: a book's own font draws a character only when the
+reader font lacks that character. This section records the model.
+
+Terms:
+
+| Term | Meaning |
+| --- | --- |
+| Book face | One `@font-face` rule of the book: a family name, a weight, a slant and one font file. |
+| Coverage | The set of characters that a font has a glyph for, read from the font's character map (its `cmap` table). |
+| Reader coverage | The coverage of the bundled reader font, Source Serif 4. A repo tool reads it from `assets/fonts/SourceSerif4.ttf` and writes it into a Dart table. |
+| Missing character | A character that a book face covers and the reader coverage lacks. |
+| Needed face | A book face that one section needs: a run that the face styles holds a missing character of that face. |
+
+What causes what:
+
+1. Admission runs at download completion, in a worker. It reads the
+   coverage of each font file of the book. When no font file covers a
+   character outside the reader coverage, the book needs no face, and
+   admission stops this work there. Most books stop there.
+2. Otherwise admission looks only at the sections whose text holds a
+   missing character. For each such section, it computes the styles,
+   finds the runs that a book face styles, and marks the face as needed
+   when the run holds a missing character of that face.
+3. The record keeps only the font files of needed faces, and the needed
+   faces of each section. Admission owns this decision, and the record
+   stores it. The other font files are left out of the record.
+4. At open, a section without needed faces runs nothing new. A section
+   with needed faces registers them with Flutter while its worker
+   prepares it, and lays out only after both finish. The conversion of a
+   font file runs in a worker, and the registration runs on the UI
+   isolate, because Flutter registers fonts there.
+5. A run that a needed face styles still draws in the reader font. The
+   face comes first in the run's fallback list, so Flutter draws only the
+   characters that the reader font lacks in the face.
+6. A kept page shows in the first frame of a reopen, unless a run on it
+   names a needed face. A new process has not registered the face before
+   the book loads, so such a page is not kept.
+
+The admitted record changes, so `Publication.revision` goes from 4 to 5.
+Every downloaded book is admitted again once, and its page maps are laid
+out again, because the revision is part of the identity that keys them.
+The key of a kept page names the revision too, so a page that was kept
+before this change is never drawn after it.
+
+Accepted limits: an ornament font that draws shapes for ordinary letters is
+not found, and only the reader coverage is checked, not Android's system
+fonts. A WOFF 2 font file is not read, as before boo-iv7q.
