@@ -13,6 +13,7 @@
 // KeptPage.encode refuses a page that draws with a font of the book, which
 // a new process has not registered when the book has not loaded yet.
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'css.dart';
@@ -103,6 +104,8 @@ final class KeptPage implements PageDrawing {
     // page that another run cut at another place on its strip keeps the
     // same form.
     final up = ui.Offset(0, -page.top);
+    // drawPage shows the rows of the page from its top to this height.
+    final visible = page.height.clamp(0, page.settings.height).toDouble();
     final body = {
       'format': format,
       'settings': page.settings.toJson(),
@@ -131,18 +134,21 @@ final class KeptPage implements PageDrawing {
       ],
       'decorations': [
         for (final decoration in page.decorations)
-          switch (decoration) {
-            RuleDecoration(:final rect) => ['rule', ...box(rect.shift(up))],
+          ...switch (decoration) {
+            RuleDecoration(:final rect) => [
+              if (_shownRule(rect.shift(up), visible) case final shown?)
+                ['rule', ...box(shown)],
+            ],
             ImageDecoration(:final rect, image: final drawn) => [
-              'image',
-              ...box(rect.shift(up)),
-              image(drawn),
+              ['image', ...box(rect.shift(up)), image(drawn)],
             ],
             MarkerDecoration(:final piece) => [
-              'marker',
-              piece.x,
-              piece.y - page.top,
-              paragraph(piece.paragraph),
+              [
+                'marker',
+                piece.x,
+                piece.y - page.top,
+                paragraph(piece.paragraph),
+              ],
             ],
           },
       ],
@@ -151,7 +157,7 @@ final class KeptPage implements PageDrawing {
     if (table.any((style) => !_families.contains(style.family))) return null;
     return jsonEncode({
       ...body,
-      'styles': [for (final style in table) _style(style)],
+      'styles': [for (final style in table) style.toJson()],
     });
   }
 
@@ -169,7 +175,7 @@ final class KeptPage implements PageDrawing {
       if (json is! Map || json['format'] != format) return null;
       final settings = PageSettings.fromJson(json['settings']);
       final styles = [
-        for (final style in json['styles'] as List) _runStyle(style as List),
+        for (final style in json['styles'] as List) RunStyle.fromJson(style),
       ];
       if (styles.any((style) => !_families.contains(style.family))) {
         return null;
@@ -337,9 +343,41 @@ final class KeptPage implements PageDrawing {
       _disposed ? null : _picture ??= drawPage(this, const {});
 
   /// Whether [page] is the page that this one keeps: the same settings, and
-  /// the same paragraphs at the same places. It compares the kept text, so
-  /// it works after [dispose] too.
-  bool depicts(LaidPage page) => encode(page) == encoded;
+  /// the same paragraphs at the same places ([alike]). It compares the kept
+  /// text, so it works after [dispose] too.
+  bool depicts(LaidPage page) => switch (encode(page)) {
+    final other? => alike(other, encoded),
+    null => false,
+  };
+
+  /// Whether [a] and [b], texts that [encode] wrote, keep the same page:
+  /// the same text, styles and settings, and places that differ by at most
+  /// a thousandth of a pixel. A run that starts at a page cuts the same page
+  /// as the run from its section's start, as a reopen does, but its sums of
+  /// heights round apart in their last bits. They draw the same pixels.
+  static bool alike(String a, String b) =>
+      a == b || _alike(jsonDecode(a), jsonDecode(b));
+
+  static bool _alike(Object? a, Object? b) {
+    switch ((a, b)) {
+      case (final num a, final num b):
+        return (a - b).abs() <= 1e-3;
+      case (final List<Object?> a, final List<Object?> b):
+        if (a.length != b.length) return false;
+        for (var index = 0; index < a.length; index++) {
+          if (!_alike(a[index], b[index])) return false;
+        }
+        return true;
+      case (final Map<String, Object?> a, final Map<String, Object?> b):
+        if (a.length != b.length) return false;
+        for (final MapEntry(:key, :value) in a.entries) {
+          if (!b.containsKey(key) || !_alike(value, b[key])) return false;
+        }
+        return true;
+      default:
+        return a == b;
+    }
+  }
 
   /// Lets go of the paragraphs and the picture. A second call does nothing.
   void dispose() {
@@ -351,49 +389,21 @@ final class KeptPage implements PageDrawing {
     }
   }
 
-  static List<Object?> _style(RunStyle style) => [
-    style.family,
-    style.size,
-    style.weight,
-    style.italic,
-    style.letterSpacing,
-    style.wordSpacing,
-    style.lineHeight,
-    style.underline,
-    style.lineThrough,
-    style.smallCaps,
-    style.oldstyleFigures,
-  ];
-
-  static RunStyle _runStyle(List<Object?> json) => switch (json) {
-    [
-      final String family,
-      final num size,
-      final int weight,
-      final bool italic,
-      final num letterSpacing,
-      final num wordSpacing,
-      final num? lineHeight,
-      final bool underline,
-      final bool lineThrough,
-      final bool smallCaps,
-      final bool oldstyleFigures,
-    ] =>
-      RunStyle(
-        family: family,
-        size: size.toDouble(),
-        weight: weight,
-        italic: italic,
-        letterSpacing: letterSpacing.toDouble(),
-        wordSpacing: wordSpacing.toDouble(),
-        lineHeight: lineHeight?.toDouble(),
-        underline: underline,
-        lineThrough: lineThrough,
-        smallCaps: smallCaps,
-        oldstyleFigures: oldstyleFigures,
-      ),
-    _ => throw const FormatException('Not a kept run style.'),
-  };
+  /// [rule], a rule's rect from the page's top, cut to the rows from -1 to
+  /// one pixel past [visible], or null when the page shows none of it.
+  /// drawPage clips the page to the rows from 0 to [visible], so the cut
+  /// rule draws the same pixels. The rule of a box that began on an earlier
+  /// page then keeps one form, whether a run from the section's start or
+  /// from the page cut the page.
+  static ui.Rect? _shownRule(ui.Rect rule, double visible) {
+    if (rule.bottom <= 0 || rule.top >= visible) return null;
+    return ui.Rect.fromLTRB(
+      rule.left,
+      math.max(rule.top, -1),
+      rule.right,
+      math.min(rule.bottom, visible + 1),
+    );
+  }
 }
 
 /// A page that [KeptPage.encode] cannot keep.

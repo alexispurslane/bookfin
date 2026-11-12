@@ -94,6 +94,66 @@ void main() {
     expect(kept.depicts(pages[2]), isFalse);
   });
 
+  test('a kept page depicts its page when a run from that page cut it, as '
+      'a reopen does, at settings whose sums do not round evenly', () {
+    const odd = PageSettings(
+      width: 411.42857142857144,
+      height: 843.43,
+      fontSize: 19.8,
+      night: false,
+      sizesMainText: true,
+    );
+    for (final section in [
+      ...sampleSections(),
+      ...prepareSections([
+        section(
+          [
+            for (var i = 0; i < 60; i++)
+              '<p>${prose(2, 'Part $i')}</p>'
+                  '${i % 7 == 0 ? '<h2>Heading $i</h2>' : ''}',
+          ].join(),
+          css: 'p{margin:.37em 0 .61em} h2{margin:1.13em 0 .7em}',
+        ),
+      ], odd),
+    ]) {
+      final main = runToEnd(section);
+      for (var at = 1; at < main.length; at++) {
+        final resumed = runToEnd(section, from: main[at].start);
+        final kept = KeptPage.decode(KeptPage.encode(main[at])!)!;
+        expect(
+          kept.depicts(resumed.first),
+          isTrue,
+          reason: 'page $at of section ${section.index} at ${section.settings}',
+        );
+        kept.dispose();
+        for (final page in resumed) {
+          page.dispose();
+        }
+      }
+      for (final page in main) {
+        page.dispose();
+      }
+    }
+  });
+
+  test('a run style keeps each of its fields through its JSON', () {
+    const style = RunStyle(
+      family: 'monospace',
+      size: 17.5,
+      weight: 700,
+      italic: true,
+      letterSpacing: .25,
+      wordSpacing: 1.5,
+      lineHeight: 26.25,
+      underline: true,
+      lineThrough: true,
+      smallCaps: true,
+      oldstyleFigures: true,
+    );
+
+    expect(RunStyle.fromJson(jsonDecode(jsonEncode(style.toJson()))), style);
+  });
+
   test('a page that draws with a font of the book is not kept', () {
     final pages = runToEnd(
       prepareSections([

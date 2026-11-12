@@ -262,10 +262,6 @@ class ReaderSession extends ChangeNotifier {
   /// Notifies when [keptPage] or [readingKeptPage] changes.
   Listenable get keptPageChanges => _keptPageChanges;
 
-  /// The saved place and the encoded page ([KeptPage.encode]) that are kept
-  /// for the open book, as far as this session knows.
-  (TextPosition, String)? _kept;
-
   /// The end of the last write of a kept page. Writes run one after another,
   /// so the newest page is kept last.
   Future<void> _keeping = Future.value();
@@ -653,7 +649,6 @@ class ReaderSession extends ChangeNotifier {
   void _clear() {
     _keepShown();
     _dropKeptPage();
-    _kept = null;
     _readingKeptPage = false;
     ++_token;
     ++_search;
@@ -726,8 +721,11 @@ class ReaderSession extends ChangeNotifier {
     await _binding;
     if (!_live(generation) || !_current(selected)) return;
     // The book opens at its saved place, unless [at] names another, so the
-    // page kept there can show while the book loads.
-    final keptAt = at != null || selected.files.length != 1
+    // page kept there can show while the book loads. A PDF keeps no page.
+    final keptAt =
+        at != null ||
+            selected.files.length != 1 ||
+            selected.files.single.container.toLowerCase() == 'pdf'
         ? null
         : _resumes.where((value) => value.editionId == selected.id).lastOrNull;
     if (keptPages != null && keptAt != null) {
@@ -917,7 +915,6 @@ class ReaderSession extends ChangeNotifier {
     }
     _readingKeptPage = false;
     _keptPage = kept;
-    if (kept != null) _kept = (at, kept.encoded);
     _emit();
   }
 
@@ -930,43 +927,44 @@ class ReaderSession extends ChangeNotifier {
   }
 
   /// Keeps the page that the open EPUB or MOBI book shows as the kept page
-  /// of its saved place ([keptPages]), unless that page is kept there
-  /// already.
+  /// of its saved place ([keptPages]), when an open at that place shows
+  /// that page ([EpubPager.opensAtShown]).
   ///
   /// It encodes the page on the UI isolate, where its paragraphs live, and
-  /// writes it under a hold of the download.
+  /// writes it under a hold of the download. A kept page is derived data,
+  /// so no failure of it stops the close or the save that calls it.
   void _keepShown() {
-    final (pages, selected, place) = (keptPages, _edition, _position);
-    final page = _pager?.shown.value?.page;
-    if (pages == null || selected == null || place == null || page == null) {
-      return;
+    try {
+      final (pages, selected, place, pager) = (
+        keptPages,
+        _edition,
+        _position,
+        _pager,
+      );
+      final page = pager?.shown.value?.page;
+      if (pages == null ||
+          selected == null ||
+          place == null ||
+          page == null ||
+          !pager!.opensAtShown) {
+        return;
+      }
+      final body = KeptPage.encode(page);
+      if (body == null) return;
+      _keeping = _keeping
+          .then((_) async {
+            final started = await _lend<({Future<void> held})?>(
+              selected,
+              null,
+              (original, _) async => (held: pages.write(original, place, body)),
+            );
+            await started?.held;
+          })
+          .onError<Object>((_, _) {});
+    } on Object {
+      // The next close keeps a page again.
     }
-    final body = KeptPage.encode(page);
-    if (body == null) return;
-    if (_kept case (final kept, final keptBody)
-        when keptBody == body && _sameKey(kept, place)) {
-      return;
-    }
-    _kept = (place, body);
-    _keeping = _keeping
-        .then((_) async {
-          final started = await _lend<({Future<void> held})?>(
-            selected,
-            null,
-            (original, _) async => (held: pages.write(original, place, body)),
-          );
-          await started?.held;
-        })
-        .onError<Object>((_, _) {});
   }
-
-  /// Whether a page kept at [a] is kept at [b] too ([KeptPages]).
-  static bool _sameKey(TextPosition a, TextPosition b) =>
-      a.editionId == b.editionId &&
-      a.sourceKey == b.sourceKey &&
-      a.revision == b.revision &&
-      a.anchor == b.anchor &&
-      a.sourcePage == b.sourcePage;
 
   ReaderAddress? _compatible(TextPosition saved) {
     final admitted = document;
@@ -1740,9 +1738,10 @@ class ReaderSession extends ChangeNotifier {
   }
 
   Future<void> flush() async {
-    _keepShown();
     await _binding;
     await _retryPending();
+    // The place is saved first. The kept page is derived from it.
+    _keepShown();
     await _keeping;
   }
 

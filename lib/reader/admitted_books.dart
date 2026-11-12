@@ -89,12 +89,13 @@ abstract final class AdmittedBooks {
   /// writes its record, as [load] and [keep] do, and the publication stays
   /// in the worker. A [load] of [original] that starts meanwhile waits for
   /// the write ([written]), and reads the record. Throws what [admit]
-  /// throws, and then writes no record.
+  /// throws, and then writes no record, but keeps the key of the failure
+  /// beside it: the next preparation with that key does nothing, as for a
+  /// damaged book or another format, and a [load] still admits the book.
   ///
   /// It writes beside the download, so it runs under a hold of the download
-  /// ([VerifiedFile.hold]), as Downloads' preparations do. [admit] runs in
-  /// the worker, so it must capture only values that can be sent to another
-  /// isolate.
+  /// ([VerifiedFile.hold]). [admit] runs in the worker, so it must capture
+  /// only values that can be sent to another isolate.
   static Future<void> prepare(
     VerifiedFile original,
     String policy,
@@ -102,18 +103,30 @@ abstract final class AdmittedBooks {
   ) {
     final file = File.fromUri(original.uri);
     final record = _recordOf(file);
+    final failed = File('${record.parent.path}/failed');
     final key = _keyOf(policy, original.digest);
     final path = file.path;
     final digest = original.digest;
     // The preparation is one write of the record from its first step, so a
     // load that starts during the key check waits for it too.
-    return _track(record.path, () async {
-      if (await _keyed(record, key)) return;
-      await Isolate.run(() async {
-        final (_, admitted) = await read(File(path), digest, policy, admit);
-        if (admitted != null) await keep(admitted);
-      });
-    });
+    return original.hold(
+      () => _track(record.path, () async {
+        if (await _keyed(record, key) || await _keyed(failed, key)) return;
+        try {
+          await Isolate.run(() async {
+            final (_, admitted) = await read(File(path), digest, policy, admit);
+            if (admitted != null) await keep(admitted);
+          });
+        } catch (_) {
+          try {
+            await DerivedBookFiles.write(failed, [...key, 0x0a]);
+          } on FileSystemException {
+            // The next preparation tries the book again.
+          }
+          rethrow;
+        }
+      }),
+    );
   }
 
   /// The publication of the downloaded file [original], whose bytes have the

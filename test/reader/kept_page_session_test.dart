@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/epub/kept_page.dart';
 import 'package:bookfin/reader/epub/layout.dart';
@@ -38,6 +39,9 @@ void main() {
   late SpyStore store;
   final sessions = <ReaderSession>[];
   final keptPages = KeptPages(engine: () async => 'engine-one');
+
+  /// The loads that sessions started since the last [setUp].
+  var loads = 0;
   final bytes = showcaseBooks()['showcase-frost']!;
 
   setUp(() async {
@@ -63,6 +67,7 @@ void main() {
       store: store,
       load: (_) => throw UnimplementedError(),
       loadDocument: (file, source) async {
+        loads++;
         await loading;
         return loadReadingDocument(file, source);
       },
@@ -98,6 +103,11 @@ void main() {
     await reader.flush();
     return pager.shown.value!.page;
   }
+
+  /// Waits until the open of [reader] that runs read the kept page: a load
+  /// after the [before] loads started, which follows the start of the read.
+  Future<void> read(ReaderSession reader, int before) =>
+      until(() => loads > before && !reader.readingKeptPage);
 
   /// Opens the book in a new session, shows its first page and turns
   /// [turns] pages, and gives that session.
@@ -161,8 +171,9 @@ void main() {
 
     final second = sessionOf(loading: loading.future);
     await second.bind(account(), [bookOf(epubEdition)]);
+    final started = loads;
     unawaited(second.open(bookOf(epubEdition), epubEdition, at: chosen));
-    await until(() => !second.readingKeptPage);
+    await read(second, started);
 
     expect(second.keptPage, isNull);
   });
@@ -182,10 +193,54 @@ void main() {
 
     final second = sessionOf(loading: loading.future);
     await second.bind(account(), [bookOf(epubEdition)]);
+    final started = loads;
     unawaited(second.open(bookOf(epubEdition), epubEdition));
-    await until(() => !second.readingKeptPage);
+    await read(second, started);
 
     expect(second.keptPage, isNull);
+  });
+
+  test('a page kept after a jump into the middle of a page and a new text '
+      'size is the page that the reopen shows, or no page of that size is '
+      'kept', () async {
+    const larger = PageSettings(
+      width: 412,
+      height: 671,
+      fontSize: 27,
+      night: false,
+    );
+    final first = await readTo(1);
+    // Once the main run of the section ended, the jump shows the true page
+    // that holds its target, which starts before the target.
+    await until(() => first.pager!.pageNumber.value?.count != null);
+    final before = first.pager!.shown.value!.page;
+    await first.goTo(
+      BookTarget(fraction: .5, part: before.section, progress: .53),
+    );
+    await until(() => !identical(first.pager!.shown.value!.page, before));
+    await first.flush();
+    await present(first, larger);
+    first.dispose();
+    sessions.remove(first);
+    final loading = Completer<void>();
+
+    final second = sessionOf(loading: loading.future);
+    await second.bind(account(), [bookOf(epubEdition)]);
+    final started = loads;
+    unawaited(second.open(bookOf(epubEdition), epubEdition));
+    await read(second, started);
+    // The viewport draws only a kept page of its own settings.
+    final kept = switch (second.keptPage) {
+      final kept? when kept.settings == larger => kept.encoded,
+      _ => null,
+    };
+    loading.complete();
+    await until(() => second.pager != null);
+    final shown = await present(second, larger);
+
+    if (kept != null) {
+      expect(KeptPage.alike(kept, KeptPage.encode(shown)!), isTrue);
+    }
   });
 
   test('a reopen that shows its kept page writes no new kept page', () async {

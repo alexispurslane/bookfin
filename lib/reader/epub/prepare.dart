@@ -883,6 +883,53 @@ class RunStyle {
   final bool smallCaps;
   final bool oldstyleFigures;
 
+  /// This style as a JSON list, which [RunStyle.fromJson] reads.
+  List<Object?> toJson() => [
+    family,
+    size,
+    weight,
+    italic,
+    letterSpacing,
+    wordSpacing,
+    lineHeight,
+    underline,
+    lineThrough,
+    smallCaps,
+    oldstyleFigures,
+  ];
+
+  /// The style of [json], a list that [toJson] wrote. Throws a
+  /// [FormatException] for any other value.
+  factory RunStyle.fromJson(Object? json) => switch (json) {
+    [
+      final String family,
+      final num size,
+      final int weight,
+      final bool italic,
+      final num letterSpacing,
+      final num wordSpacing,
+      final num? lineHeight,
+      final bool underline,
+      final bool lineThrough,
+      final bool smallCaps,
+      final bool oldstyleFigures,
+    ] =>
+      RunStyle(
+        family: family,
+        size: size.toDouble(),
+        weight: weight,
+        italic: italic,
+        letterSpacing: letterSpacing.toDouble(),
+        wordSpacing: wordSpacing.toDouble(),
+        lineHeight: lineHeight?.toDouble(),
+        underline: underline,
+        lineThrough: lineThrough,
+        smallCaps: smallCaps,
+        oldstyleFigures: oldstyleFigures,
+      ),
+    _ => throw const FormatException('Not a run style.'),
+  };
+
   @override
   bool operator ==(Object other) =>
       other is RunStyle &&

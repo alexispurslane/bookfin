@@ -61,7 +61,8 @@ class LocalDownloads extends Downloads {
   final Map<String, Object> _reading = {};
 
   /// The work that reads hold ([VerifiedFile.hold]) and that still runs, by
-  /// source id. A removal of the source's files waits for it.
+  /// source id. A removal of the source's files waits for it. Invariant
+  /// ([checkInvariants]): a source id without held work has no entry.
   final Map<String, Set<Future<void>>> _held = {};
 
   /// How many removals of each source id began. A read's holds run only
@@ -313,8 +314,9 @@ class LocalDownloads extends Downloads {
     _ready = true;
     _emit();
     _schedule();
-    for (final record in _records.values) {
-      if (record.complete) _prepareLater(record.source);
+    final texts = _textSources();
+    for (final MapEntry(key: id, value: record) in _records.entries) {
+      if (record.complete && texts.contains(id)) _prepareLater(record.source);
     }
   }
 
@@ -999,11 +1001,11 @@ class LocalDownloads extends Downloads {
     return held;
   }
 
-  /// Prepares the saved file of [source] after the preparations before it,
-  /// when it is a file of a text edition (see [prepare]).
+  /// Prepares the saved file of [source], a file of a text edition, after
+  /// the preparations before it (see [prepare]).
   void _prepareLater(SourceFile source) {
     final prepare = this.prepare;
-    if (prepare == null || !_ofText(_id(source))) return;
+    if (prepare == null) return;
     _preparing = _preparing.then((_) async {
       if (_disposed) return;
       try {
@@ -1022,11 +1024,11 @@ class LocalDownloads extends Downloads {
   }
 
   /// Whether a bound text edition holds source [id].
-  bool _ofText(String id) => _editions.values.any(
-    (edition) =>
-        edition.kind == EditionKind.text &&
-        (_editionSources[edition.id]?.contains(id) ?? false),
-  );
+  /// The source ids of the bound text editions.
+  Set<String> _textSources() => {
+    for (final edition in _editions.values)
+      if (edition.kind == EditionKind.text) ...?_editionSources[edition.id],
+  };
 
   /// Finds the verified saved file of [source] in the catalog that is current
   /// when the lookup ends. A bind during the lookup that keeps the source
@@ -1164,7 +1166,9 @@ class LocalDownloads extends Downloads {
         record.error = null;
         record.complete = true;
         await _persist(record);
-        if (record.complete) _prepareLater(record.source);
+        if (record.complete && _textSources().contains(id)) {
+          _prepareLater(record.source);
+        }
       } catch (error) {
         if (!_disposed &&
             generation == _generation &&
@@ -1613,6 +1617,9 @@ class LocalDownloads extends Downloads {
           (ids) => ids.every(_sources.containsKey),
         )) {
       throw StateError('Cached edition sources must match the bound catalog.');
+    }
+    if (_held.values.any((held) => held.isEmpty)) {
+      throw StateError('A source without held work must have no entry.');
     }
     for (final record in _records.values) {
       if (record.savedLength != _savedLength(record)) {

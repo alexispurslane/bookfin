@@ -10,6 +10,7 @@ import 'package:archive/archive.dart' show getCrc32;
 import '../catalog/model.dart';
 import '../downloads/derived_files.dart';
 import '../downloads/downloads.dart';
+import '../playback/records.dart' show encodeTextPosition;
 import 'epub/kept_page.dart';
 
 /// Keeps one page of each download: the file `last-page` in the download's
@@ -23,7 +24,8 @@ import 'epub/kept_page.dart';
 /// saved place that the page shows. The body holds the page settings. A
 /// read with another key, or of a body that does not match its CRC-32,
 /// gives nothing, so a reopen never draws a page that is not the true one.
-/// Each write replaces the file whole.
+/// Each write replaces the file whole, unless the file keeps that page
+/// already.
 class KeptPages {
   KeptPages({required this.engine});
 
@@ -37,13 +39,19 @@ class KeptPages {
   Future<KeptPage?> read(VerifiedFile original, TextPosition at) async {
     final engine = await this.engine();
     if (engine == null) return null;
+    final body = await _body(original, _key(engine, original.digest, at));
+    return body == null ? null : KeptPage.decode(body);
+  }
+
+  /// The body of the kept file of [original] when its key is [key] and the
+  /// body matches its CRC-32, or null.
+  static Future<String?> _body(VerifiedFile original, Uint8List key) async {
     final Uint8List bytes;
     try {
       bytes = await _fileOf(original).readAsBytes();
     } on FileSystemException {
       return null;
     }
-    final key = _key(engine, original.digest, at);
     final keyEnd = bytes.indexOf(_newline);
     if (keyEnd != key.length || !_same(bytes, key)) return null;
     final crcEnd = bytes.indexOf(_newline, keyEnd + 1);
@@ -55,13 +63,11 @@ class KeptPages {
       latin1.decode(Uint8List.sublistView(bytes, keyEnd + 1, crcEnd)),
     );
     if (crc != getCrc32(body)) return null;
-    final String text;
     try {
-      text = utf8.decode(body);
+      return utf8.decode(body);
     } on FormatException {
       return null;
     }
-    return KeptPage.decode(text);
   }
 
   /// Keeps [body], a text that [KeptPage.encode] wrote, as the page of the
@@ -69,15 +75,21 @@ class KeptPages {
   /// kept before. It writes under a hold of the download
   /// ([VerifiedFile.hold]), which it takes at once, so the read that lent
   /// [original] can end before the write does, and a removal of the
-  /// download waits for the write. A page that cannot be written is not
-  /// kept, so the write does not fail.
+  /// download waits for the write. When the file keeps that page at [at]
+  /// already ([KeptPage.alike]), nothing is written. A page that cannot be
+  /// written is not kept, so the write does not fail.
   Future<void> write(VerifiedFile original, TextPosition at, String body) =>
       original.hold(() async {
         final engine = await this.engine();
         if (engine == null) return;
+        final key = _key(engine, original.digest, at);
+        if (await _body(original, key) case final kept?
+            when KeptPage.alike(kept, body)) {
+          return;
+        }
         final encoded = utf8.encode(body);
         final bytes = BytesBuilder(copy: false)
-          ..add(_key(engine, original.digest, at))
+          ..add(key)
           ..addByte(_newline)
           ..add(latin1.encode('${getCrc32(encoded)}'))
           ..addByte(_newline)
@@ -94,21 +106,12 @@ class KeptPages {
     '/last-page',
   );
 
-  /// The key line of a page of the place [at] in the download whose bytes
-  /// have the SHA-256 [digest], drawn by the text engine [engine]. JSON
-  /// keeps the line breaks of [engine] out of the line.
+  /// The key line of a page of the saved place [at] in the download whose
+  /// bytes have the SHA-256 [digest], drawn by the text engine [engine].
+  /// JSON keeps the line breaks of [engine] out of the line.
   static Uint8List _key(String engine, String digest, TextPosition at) =>
       utf8.encode(
-        jsonEncode([
-          KeptPage.format,
-          engine,
-          digest,
-          at.editionId,
-          at.sourceKey,
-          at.revision,
-          at.anchor,
-          at.sourcePage,
-        ]),
+        jsonEncode([KeptPage.format, engine, digest, encodeTextPosition(at)]),
       );
 
   static bool _same(Uint8List bytes, Uint8List key) {

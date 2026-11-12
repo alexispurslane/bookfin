@@ -292,10 +292,11 @@ A MOBI converts at the end of its download too, so its 253 ms conversion also le
 
 As built in boo-sy2d:
 
-- Downloads prepares each saved EPUB or MOBI when its download completes, and again at each launch. A preparation whose record is current reads only the record's key line. So the background admission after an update is the next launch's preparation.
-- The session keeps the shown page when the app goes to the background, when the reader closes and when another book opens, not with each saved place. A page turn costs nothing more.
+- Downloads prepares each saved EPUB or MOBI when its download completes, and again after each restoration of its saved files: at launch, and when the bound library changes. A preparation whose record is current reads only the record's key line. So the background admission after an update is the next restoration's preparation. A preparation that fails keeps its key beside the download, and the next preparation with that key does nothing. The open still admits the book.
+- The session keeps the shown page when the app goes to the background, when the reader closes and when another book opens, not with each saved place. A page turn costs nothing more. It keeps the page only when an open at the saved place shows that page (`EpubPager.opensAtShown`): a main run cut the page, and the page holds the place that the pager reported last.
 - The key of a kept page holds the codec's format, the text engine's fingerprint, the file digest and the saved place. The page settings (size, text size, theme) are in the page itself, and the viewport draws the page only when they equal its own.
-- A debug build keeps no pages, because it has no text engine fingerprint.
+- A kept page depicts the true page when both have the same text, styles and settings, and places within a thousandth of a pixel. A run from the page's start and a run from the section's start cut the same page with sums that differ in their last bits.
+- A debug build keeps no pages, because it has no text engine fingerprint. A page that draws with a font of the book is not kept, because a new process registers the book's fonts only when the book loads.
 
 Build size:
 

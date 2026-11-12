@@ -186,6 +186,27 @@ class EpubPager implements DocumentNavigator {
   /// last place, or null before the first page and for a page that shows
   /// no place. The shown page owns its end, and the address that the pager
   /// reports at a saved place has none, so the chapter arrows read it here.
+  /// Whether an open of the book at the place that the pager reported last
+  /// ([onPlace]) shows the shown page: a main run cut the page
+  /// ([PageSource.isTrue]), and it holds that place. A page that the pager
+  /// showed again for new settings at another place, or an anchored page
+  /// that starts inside a true page, is not that page.
+  bool get opensAtShown {
+    final page = _shown.value?.page;
+    final place = _reported;
+    if (page == null ||
+        place == null ||
+        page.section != place.section ||
+        !_source.isTrue(page)) {
+      return false;
+    }
+    final at = _source.sectionOf(page).dom.visibleBefore(place);
+    return page.startVisible <= at && at < page.endVisible;
+  }
+
+  /// The place of the address that the pager reported last, or null.
+  EpubPlace? _reported;
+
   BookPlace? get shownEnd {
     final page = _shown.value?.page;
     final section = _section;
@@ -648,6 +669,7 @@ class EpubPager implements DocumentNavigator {
         final page = await _source.pageAt(place, anchored: true, urgent: true);
         _show(page, place, steps);
         _initial = null;
+        _reported = place;
         _onPlace(initial);
         return;
       }
@@ -732,6 +754,7 @@ class EpubPager implements DocumentNavigator {
     _onShow?.call(read == null ? null : read.endVisible - read.startVisible);
     final start = page.startPlace;
     if (!report || start == null) return;
+    _reported = start;
     final dom = section.dom;
     final path = _publication.spine[page.section];
     final end = page.endPlace ?? start;

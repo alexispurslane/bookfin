@@ -680,6 +680,33 @@ void main() {
       expect(opened.originalDigest, _digest(bytes));
     });
 
+    for (final (container, bytes) in [
+      ('epub', showcaseBooks()['showcase-frost']!),
+      ('mobi', _books['pg11-kf8.mobi']!.$1),
+    ]) {
+      test('a $container that Downloads lent is prepared under its hold, and '
+          'the hold stays out of the worker', () async {
+        final file = await _download(bytes);
+        // A list of futures cannot go to another isolate, so a worker that
+        // captured the lent file would fail to start.
+        final held = <Future<void>>[];
+        final lent = VerifiedFile.lent(
+          file.uri,
+          _digest(bytes),
+          hold: (work) {
+            final done = work();
+            held.add(done);
+            return done;
+          },
+        );
+
+        await prepareDownloadedBook(lent, _source(container));
+
+        expect(held, isNotEmpty);
+        expect(await _record(file).exists(), isTrue);
+      });
+    }
+
     test('a PDF needs no preparation', () async {
       final file = await _download(utf8.encode('%PDF-1.4 not parsed'));
 
@@ -751,6 +778,39 @@ void main() {
       expect(identity, Publication.admit(bytes, _digest(bytes)).identity);
       expect(await log.readAsString(), 'admitted\n');
     });
+
+    test(
+      'a book whose preparation failed is not admitted again by the next '
+      'preparation until its key changes, and its open still admits it',
+      () async {
+        final bytes = utf8.encode('not a zip archive');
+        final file = await _download(bytes);
+        final log = File('${file.parent.path}/admissions');
+        final original = VerifiedFile(file.uri, _digest(bytes));
+
+        await expectLater(
+          AdmittedBooks.prepare(original, 'policy-1', _logged(log, bytes)),
+          throwsA(anything),
+        );
+        await AdmittedBooks.prepare(original, 'policy-1', _logged(log, bytes));
+        expect(await log.readAsString(), 'admitted\n');
+
+        await expectLater(
+          AdmittedBooks.prepare(original, 'policy-2', _logged(log, bytes)),
+          throwsA(anything),
+        );
+        await expectLater(
+          AdmittedBooks.load(
+            original,
+            'policy-2',
+            _logged(log, bytes),
+            (publication) => publication.identity,
+          ),
+          throwsA(anything),
+        );
+        expect(await log.readAsString(), 'admitted\nadmitted\nadmitted\n');
+      },
+    );
 
     test('a book that cannot be admitted fails its preparation and keeps no '
         'record', () async {
