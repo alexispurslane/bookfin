@@ -104,7 +104,7 @@ void main() {
     test('a start that cannot play stops starting', () async {
       downloads.files.remove(second.key);
       await playback.open(title, recording);
-      expect(playback.message, isNotNull);
+      expect(playback.statusNotifier.value.actionNotice?.message, isNotNull);
       expect(playback.starting, isNull);
     });
 

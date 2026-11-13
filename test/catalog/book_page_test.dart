@@ -243,17 +243,18 @@ void main() {
     testWidgets('a playback problem reads as an error on the book page', (
       tester,
     ) async {
-      // Without local files, playing reports what to download first.
-      await tester.runAsync(() async {
-        files.files.clear();
-        await playback.play();
-      });
-      final problem = playback.message!;
       await finish(
         tester,
         catalog.connect('https://books.example', 'alice', 'password'),
       );
       await finish(tester, catalog.refresh());
+      await tester.runAsync(() async {
+        files.files.clear();
+        await playback.bind(catalog.session, catalog.books);
+        final book = catalog.books.single;
+        await playback.open(book, book.editions.single);
+      });
+      final problem = playback.statusNotifier.value.actionNotice!.message;
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),

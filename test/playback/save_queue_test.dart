@@ -283,7 +283,8 @@ void main() {
         await playback.pause();
         expect(playback.playing, isFalse);
         expect(playback.statusNotifier.value, (
-          message: null,
+          actionNotice: null,
+          recoveryMessage: null,
           saveFailed: false,
         ));
       });

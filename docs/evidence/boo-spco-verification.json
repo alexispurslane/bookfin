@@ -1,0 +1,642 @@
+{
+  "ticket": "boo-spco",
+  "originalBase": "c603591b313afbd8e167e83fd5e14e2e13978fad",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+  "branch": "t3/369cacef",
+  "baseline": {
+    "clean": true,
+    "head": "c603591b313afbd8e167e83fd5e14e2e13978fad",
+    "originalBaseDiff": "empty",
+    "parentBaseline1bf2d597IsAncestor": true
+  },
+  "implementation": "Playback owns edition/action notices and binding recovery notices. Save failure derives from pending account writes. One status query selects messages for account, book, or edition. No unscoped message getter or UI text comparisons remain.",
+  "lifetime": "A successful open or Play clears the action notice. A recovery warning remains for its account binding. A save warning remains until the pending account writes succeed. Account replacement clears binding notices. Command failures retain their attempted source and reject obsolete account/source results.",
+  "sourceFiles": [
+    {
+      "path": "lib/catalog/book_page.dart",
+      "sha256": "4e9cbf9c05dba4aa006bca5ac63dda5f26c6a41ecba0f10ece14f74b5bce6434"
+    },
+    {
+      "path": "lib/catalog/screen.dart",
+      "sha256": "d85dba7d26da496bc9f79cf94c0f2ff225ae544cd22b33081963eba59aed501d"
+    },
+    {
+      "path": "lib/development/gallery.dart",
+      "sha256": "9ef9733f4c15fd2c5ad8a4dc14cc754783178b4617bd0d0000bf51897ed429b9"
+    },
+    {
+      "path": "lib/playback/playback.dart",
+      "sha256": "751c7ea7c42e3649c0408d1fb341883cc211ac952c4caff873be62f5cc0af479"
+    },
+    {
+      "path": "lib/playback/records_screen.dart",
+      "sha256": "778b08725ce9570d075a7fa16f8834c25878e65d6bb500f61251316b33d1c789"
+    },
+    {
+      "path": "lib/playback/screen.dart",
+      "sha256": "f2634a32e6171a22d964a05db8e3bd8237b906f0143a77472d0d478206f595ab"
+    },
+    {
+      "path": "test/catalog/book_page_test.dart",
+      "sha256": "a678768aa492b220c50d60f825bdb8a2d2231e9248345a0bc01bfb44a0d5eb22"
+    },
+    {
+      "path": "test/development/gallery_test.dart",
+      "sha256": "42c4fe926666e1667ce06e7571f891815a61e5a2181810cc5fb84d35736a1530"
+    },
+    {
+      "path": "test/playback/command_queue_test.dart",
+      "sha256": "41d384be17914e8dae31820aae4d7bf75f03609d8e14c0fb107a04db2860d226"
+    },
+    {
+      "path": "test/playback/history_test.dart",
+      "sha256": "37c67a2dcc64dbb68d9760e7a1432f5cad6de32494cfc1d8b861fd7cf769ab0f"
+    },
+    {
+      "path": "test/playback/incremental_save_test.dart",
+      "sha256": "9f8dbf360df23c0520ed9e8a278f0ced9e4548470ccd6ca1e52b348ab8155a67"
+    },
+    {
+      "path": "test/playback/play_start_test.dart",
+      "sha256": "a042350f598d28921148c62fe1ea1d33bfac1c4c0cc97d9495c401b801e77f1a"
+    },
+    {
+      "path": "test/playback/playback_test.dart",
+      "sha256": "e779f5de5fd8bad69ce12995135818200c32f5443e81718cd4210d1205b7be20"
+    },
+    {
+      "path": "test/playback/player_controls_test.dart",
+      "sha256": "3c9a086518999bb8ae41889082eb3b82dcd87d5b7de313ebbe4317b7a2937fd7"
+    },
+    {
+      "path": "test/playback/replacement_test.dart",
+      "sha256": "59facd4c63d7c7a1e27b71d7d4970299dc9da53279afd47463d44b573d786bf6"
+    },
+    {
+      "path": "test/playback/save_queue_test.dart",
+      "sha256": "6680b144f307ee6541241f411c2ecc5aec2252df90b5f78cc48381a244375474"
+    },
+    {
+      "path": "test/playback/signals_test.dart",
+      "sha256": "b10f8e0b1ea5eefcb44a8572f105aa9e19dc672dfd6723f90202b22165ad7118"
+    },
+    {
+      "path": "test/reader/records_test.dart",
+      "sha256": "f8d2f90cf5f45e53e3643879e52501958e780cbaa5222558bd7708fa95085503"
+    },
+    {
+      "path": "test/sync/playback_refresh_test.dart",
+      "sha256": "91df5b84ac28bc613ba79f82b7242a3debf50f9500ae32fb5c0310b815900ab7"
+    },
+    {
+      "path": "test/sync/refresh_after_sync_test.dart",
+      "sha256": "d9ec71e465f10ea2563172f8d4c02e3c1553f2ce0796872878556a44e5e32090"
+    },
+    {
+      "path": "test/playback/notices_test.dart",
+      "sha256": "e84651a2d886de9140472005abe1377b99359b44cdd3983775548f5abbe6b032"
+    },
+    {
+      "path": "test/playback/notices_widget_test.dart",
+      "sha256": "9d15a6124016965145a0b429d5d07a804cee32234c3a03e05525475a8ff9d98f"
+    }
+  ],
+  "checks": [
+    {
+      "name": "red-01",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "exitCode": 1,
+      "result": "Fixture compilation failure: otherFile omitted container and sizeBytes. Not behavioral red.",
+      "log": "/tmp/bookfin-boo-spco-evidence/red-01.log",
+      "sha256": "59e0eb45d97db0032ec55a557fab0ce0fa0b627a9c4faf59b208c14ca51b4214",
+      "archive": "docs/evidence/boo-spco/archive/red-01.log.gz",
+      "summary": "00:00 +0 -2: Some tests failed.",
+      "skips": []
+    },
+    {
+      "name": "red-02",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "exitCode": 0,
+      "result": "Interrupted stalled widget fixture after seven meaningful failures. Sent SIGINT only to owned Flutter PID 4374. Exit 0 from interrupted process is NOT a pass; teardown reported sink errors. Widget tap must run in tester.runAsync.",
+      "log": "/tmp/bookfin-boo-spco-evidence/red-02.log",
+      "sha256": "cac07b31eae31caa5d67d0f47600a355c09b762634254dc4e373174a172e8888",
+      "archive": "docs/evidence/boo-spco/archive/red-02.log.gz",
+      "skips": []
+    },
+    {
+      "name": "red-03",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "exitCode": 1,
+      "result": "Valid original-code behavioral red: 1 passed, 8 failed. Stale Play notice, lost recovery, late old-account read, unrelated tab/book/player/History notices, and player horizontal padding.",
+      "log": "/tmp/bookfin-boo-spco-evidence/red-03.log",
+      "sha256": "0dc1601502107a7090b2b8bb72f10ce809b2bbf105179b78d4f448c5b5df3863",
+      "archive": "docs/evidence/boo-spco/archive/red-03.log.gz",
+      "summary": "00:01 +1 -8: Some tests failed.",
+      "skips": []
+    },
+    {
+      "name": "green-01",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "exitCode": 0,
+      "result": "9 passed, 0 skipped.",
+      "log": "/tmp/bookfin-boo-spco-evidence/green-01.log",
+      "sha256": "561ce384bd2e2156f9f340210b9bc8beda5dbb61b129727d0c9e410c8d031a1e",
+      "archive": "docs/evidence/boo-spco/archive/green-01.log.gz",
+      "summary": "00:01 +9: All tests passed!",
+      "skips": []
+    },
+    {
+      "name": "red-auto-reopen",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart",
+      "exitCode": 1,
+      "result": "7 passed, 1 failed: automatic reopen decoder failure incorrectly became account-wide record recovery.",
+      "log": "/tmp/bookfin-boo-spco-evidence/red-auto-reopen.log",
+      "sha256": "a4703cfed8a430a9f401d8b4b40d0b9abc10954357ddaacdf49bdd0907f6e752",
+      "archive": "docs/evidence/boo-spco/archive/red-auto-reopen.log.gz",
+      "summary": "00:00 +7 -1: Some tests failed.",
+      "skips": []
+    },
+    {
+      "name": "red-replacement-source",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart",
+      "exitCode": 1,
+      "result": "8 passed, 1 failed: a delayed failed load attached to replacement audio with the same edition id.",
+      "log": "/tmp/bookfin-boo-spco-evidence/red-replacement-source.log",
+      "sha256": "8f95190a119af06d610e25562787281850648b91c9c3935c0a6abb9ffe7366e3",
+      "archive": "docs/evidence/boo-spco/archive/red-replacement-source.log.gz",
+      "summary": "00:00 +8 -1: Some tests failed.",
+      "skips": []
+    },
+    {
+      "name": "focused-01",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart test/playback/command_queue_test.dart test/playback/replacement_test.dart test/playback/signals_test.dart test/playback/player_controls_test.dart test/catalog/book_page_test.dart",
+      "exitCode": 0,
+      "result": "101 passed, 0 skipped.",
+      "log": "/tmp/bookfin-boo-spco-evidence/focused-01.log",
+      "sha256": "2aef9e73d230aeb5fdb213733c00a2ee6d713d3f53c48584d543a5057696e2cc",
+      "archive": "docs/evidence/boo-spco/archive/focused-01.log.gz",
+      "summary": "00:06 +101: All tests passed!",
+      "skips": []
+    },
+    {
+      "name": "focused-02",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "exitCode": 0,
+      "result": "21 passed, 0 skipped.",
+      "log": "/tmp/bookfin-boo-spco-evidence/focused-02.log",
+      "sha256": "020cbf3b3f5b0fc61570fbe3f313b5db8cf2dd28e7435348fd2d34555cdac84b",
+      "archive": "docs/evidence/boo-spco/archive/focused-02.log.gz",
+      "summary": "00:01 +21: All tests passed!",
+      "skips": []
+    },
+    {
+      "name": "format-apply",
+      "command": "nix develop --command dart format lib/playback/playback.dart lib/playback/records_screen.dart lib/playback/screen.dart lib/catalog/book_page.dart lib/catalog/screen.dart lib/development/gallery.dart test/catalog/book_page_test.dart test/playback/command_queue_test.dart test/playback/history_test.dart test/playback/incremental_save_test.dart test/playback/play_start_test.dart test/playback/playback_test.dart test/playback/player_controls_test.dart test/playback/replacement_test.dart test/playback/save_queue_test.dart test/playback/signals_test.dart test/playback/notices_test.dart test/playback/notices_widget_test.dart test/reader/records_test.dart",
+      "exitCode": 0,
+      "result": "19 formatted; 12 changed.",
+      "log": "/tmp/bookfin-boo-spco-evidence/format-apply.log",
+      "sha256": "f31a68b1832b038da87962eb4e579617ea95bb0943f78844b0eb44548a4d1af4",
+      "archive": "docs/evidence/boo-spco/archive/format-apply.log.gz",
+      "skips": []
+    },
+    {
+      "name": "affected-01",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback test/catalog test/app test/sync test/reader/records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:20:24.723520+00:00",
+      "ended": "2026-11-13T21:22:11.820451+00:00",
+      "exitCode": 1,
+      "log": "/tmp/bookfin-boo-spco-evidence/affected-01.log",
+      "sha256": "2b19622ced7f50170eb5b8e4b098995f878309ba58acc7f819548f48bffb5b29",
+      "archive": "docs/evidence/boo-spco/archive/affected-01.log.gz",
+      "summary": "01:38 +1418 ~3 -2: Some tests failed.",
+      "skips": [
+        {
+          "reportedContext": "01:06 +1039: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "reason": "Run tool/plugin/prove.py in the pinned shells."
+        },
+        {
+          "reportedContext": "01:13 +1139 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+        },
+        {
+          "reportedContext": "01:22 +1210 ~2 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+          "reason": "Run tool/sync_fixture.py in the pinned shells."
+        }
+      ],
+      "note": "Two compilation failures from un-migrated Playback.message assertions in sync tests. These are not behavioral red proof. Corrected in affected-02."
+    },
+    {
+      "name": "format-apply-02",
+      "command": "nix develop --command dart format test/playback/command_queue_test.dart test/playback/history_test.dart test/playback/notices_test.dart test/reader/records_test.dart test/sync/playback_refresh_test.dart test/sync/refresh_after_sync_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:23:01.682289+00:00",
+      "ended": "2026-11-13T21:23:04.524699+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/format-apply-02.log",
+      "sha256": "d9dc6c8c70314a6ad3746ad65757b6312f50780bb9516c1a84478d35cc1c7a48",
+      "archive": "docs/evidence/boo-spco/archive/format-apply-02.log.gz",
+      "skips": []
+    },
+    {
+      "name": "analysis-01",
+      "command": "nix develop --command dart analyze lib/playback lib/catalog lib/development lib/app lib/sync test/playback test/catalog test/app test/sync test/reader/records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:23:23.404495+00:00",
+      "ended": "2026-11-13T21:23:37.601104+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/analysis-01.log",
+      "sha256": "237cccb5b0736933a394db3bc41356379b98b6f7876236810525bdffd34c9a6a",
+      "archive": "docs/evidence/boo-spco/archive/analysis-01.log.gz",
+      "skips": []
+    },
+    {
+      "name": "affected-02",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback test/catalog test/app test/sync test/reader/records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:24:04.500666+00:00",
+      "ended": "2026-11-13T21:26:11.379791+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/affected-02.log",
+      "sha256": "6ff9898f20d92a3b363af6766f2f32dcba62925074d4eb1d0554ed9d291848aa",
+      "archive": "docs/evidence/boo-spco/archive/affected-02.log.gz",
+      "summary": "01:53 +1484 ~3: All tests passed!",
+      "skips": [
+        {
+          "reportedContext": "01:19 +1052: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "reason": "Run tool/plugin/prove.py in the pinned shells."
+        },
+        {
+          "reportedContext": "01:26 +1145 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+        },
+        {
+          "reportedContext": "01:34 +1228 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+          "reason": "Run tool/sync_fixture.py in the pinned shells."
+        }
+      ]
+    },
+    {
+      "name": "full-01",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:26:25.184293+00:00",
+      "ended": "2026-11-13T21:32:04.974080+00:00",
+      "exitCode": 1,
+      "log": "/tmp/bookfin-boo-spco-evidence/full-01.log",
+      "sha256": "f48b61c347b8293d75f3060ade8a1df603249bf8c3d2bef361b1f5a639f4d754",
+      "archive": "docs/evidence/boo-spco/archive/full-01.log.gz",
+      "summary": "05:29 +3712 ~27 -2: Some tests failed.",
+      "skips": [
+        {
+          "reportedContext": "02:17 +1067: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+          "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        },
+        {
+          "reportedContext": "02:18 +1068 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+          "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        },
+        {
+          "reportedContext": "02:19 +1086 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+          "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "reportedContext": "02:25 +1130 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+          "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "reportedContext": "02:37 +1181 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+          "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+          "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+          "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+          "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+          "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        },
+        {
+          "reportedContext": "02:37 +1181 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+          "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        },
+        {
+          "reportedContext": "02:47 +1230 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/step_budget_test.dart: the step budget",
+          "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+        },
+        {
+          "reportedContext": "02:52 +1281 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+          "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        },
+        {
+          "reportedContext": "02:54 +1294 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+          "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        },
+        {
+          "reportedContext": "02:58 +1410 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "reportedContext": "02:59 +1418 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1"
+        },
+        {
+          "reportedContext": "03:00 +1448 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_test.dart: the corpus run",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+        },
+        {
+          "reportedContext": "03:04 +1494 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "reportedContext": "03:11 +1604 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+          "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        },
+        {
+          "reportedContext": "03:16 +1652 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+          "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+        },
+        {
+          "reportedContext": "03:18 +1655 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/research/epub_layout_cache_test.dart: the layout cache survey",
+          "reason": "set BOOKFIN_LAYOUT_CACHE=1"
+        },
+        {
+          "reportedContext": "04:48 +3077 ~24 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "reason": "Run tool/plugin/prove.py in the pinned shells."
+        },
+        {
+          "reportedContext": "04:53 +3158 ~25 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+        },
+        {
+          "reportedContext": "04:58 +3224 ~26 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+          "reason": "Run tool/sync_fixture.py in the pinned shells."
+        }
+      ],
+      "note": "Two gallery tests assumed lazy controls were already built. Added existing reveal helper before actions; all behavior assertions remain. Corrected in focused-final and full-02."
+    },
+    {
+      "name": "format-apply-03",
+      "command": "nix develop --command dart format test/playback/notices_test.dart test/development/gallery_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:32:30.786993+00:00",
+      "ended": "2026-11-13T21:32:33.633884+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/format-apply-03.log",
+      "sha256": "16a3b8d26d34de9d6712a014bcb5772a5de9f8fe22de99ea9a4f1fdedbfc3397",
+      "archive": "docs/evidence/boo-spco/archive/format-apply-03.log.gz",
+      "skips": []
+    },
+    {
+      "name": "focused-final",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback/notices_test.dart test/playback/notices_widget_test.dart test/development/gallery_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:32:49.292272+00:00",
+      "ended": "2026-11-13T21:33:02.376612+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/focused-final.log",
+      "sha256": "a7af27fe053eb8670eeed4f30208d96792fbd23d7c1e162d70b01774fc16bfbd",
+      "archive": "docs/evidence/boo-spco/archive/focused-final.log.gz",
+      "summary": "00:04 +43: All tests passed!",
+      "skips": []
+    },
+    {
+      "name": "analysis-final",
+      "command": "nix develop --command dart analyze lib test",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:33:37.043549+00:00",
+      "ended": "2026-11-13T21:33:46.446571+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/analysis-final.log",
+      "sha256": "95a28819c918db92d8f3f7dfadfc18f1248f79ab8313759391ad318fe94cf093",
+      "archive": "docs/evidence/boo-spco/archive/analysis-final.log.gz",
+      "skips": []
+    },
+    {
+      "name": "format-final",
+      "command": "nix develop --command dart format --output=none --set-exit-if-changed lib/catalog/book_page.dart lib/catalog/screen.dart lib/development/gallery.dart lib/playback/playback.dart lib/playback/records_screen.dart lib/playback/screen.dart test/catalog/book_page_test.dart test/development/gallery_test.dart test/playback/command_queue_test.dart test/playback/history_test.dart test/playback/incremental_save_test.dart test/playback/play_start_test.dart test/playback/playback_test.dart test/playback/player_controls_test.dart test/playback/replacement_test.dart test/playback/save_queue_test.dart test/playback/signals_test.dart test/reader/records_test.dart test/sync/playback_refresh_test.dart test/sync/refresh_after_sync_test.dart test/playback/notices_test.dart test/playback/notices_widget_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:34:18.619656+00:00",
+      "ended": "2026-11-13T21:34:22.141072+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/format-final.log",
+      "sha256": "bba47f4747a04bedbbf4d8f098df1a099c3689bb89ea7aede38e4138d27ede9d",
+      "archive": "docs/evidence/boo-spco/archive/format-final.log.gz",
+      "skips": []
+    },
+    {
+      "name": "layout-scan",
+      "command": "nix develop --command /Users/alexispurslane/.agents/skills/impeccable/scripts/impeccable detect --json --scope layout lib/playback/screen.dart lib/playback/records_screen.dart lib/catalog/book_page.dart lib/catalog/screen.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:34:26.894376+00:00",
+      "ended": "2026-11-13T21:34:29.493631+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/layout-scan.log",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "archive": "docs/evidence/boo-spco/archive/layout-scan.log.gz",
+      "skips": [],
+      "note": "Empty findings. A source scan is not Android visual acceptance; rendered widget geometry and the committed player screenshot supply the bounded layout evidence."
+    },
+    {
+      "name": "full-02",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:34:34.387847+00:00",
+      "ended": "2026-11-13T21:39:41.452396+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/full-02.log",
+      "sha256": "fc4739d60b2e0d9b61deae293af8978411524a1e6000eb7289d8828ab42404a1",
+      "archive": "docs/evidence/boo-spco/archive/full-02.log.gz",
+      "summary": "04:57 +3714 ~27: All tests passed!",
+      "skips": [
+        {
+          "reportedContext": "02:03 +1066: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+          "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        },
+        {
+          "reportedContext": "02:03 +1067 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+          "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        },
+        {
+          "reportedContext": "02:04 +1083 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+          "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "reportedContext": "02:09 +1130 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+          "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "reportedContext": "02:20 +1183 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+          "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+          "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+          "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+          "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+          "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        },
+        {
+          "reportedContext": "02:20 +1183 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+          "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        },
+        {
+          "reportedContext": "02:30 +1230 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/step_budget_test.dart: the step budget",
+          "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+        },
+        {
+          "reportedContext": "02:34 +1280 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+          "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        },
+        {
+          "reportedContext": "02:35 +1294 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+          "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        },
+        {
+          "reportedContext": "02:38 +1408 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "reportedContext": "02:39 +1416 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1"
+        },
+        {
+          "reportedContext": "02:40 +1445 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/corpus_test.dart: the corpus run",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+        },
+        {
+          "reportedContext": "02:43 +1490 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "reportedContext": "02:51 +1612 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+          "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        },
+        {
+          "reportedContext": "02:55 +1651 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+          "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+        },
+        {
+          "reportedContext": "02:56 +1653 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/research/epub_layout_cache_test.dart: the layout cache survey",
+          "reason": "set BOOKFIN_LAYOUT_CACHE=1"
+        },
+        {
+          "reportedContext": "04:21 +3079 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "reason": "Run tool/plugin/prove.py in the pinned shells."
+        },
+        {
+          "reportedContext": "04:25 +3160 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+        },
+        {
+          "reportedContext": "04:30 +3247 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+          "reason": "Run tool/sync_fixture.py in the pinned shells."
+        }
+      ]
+    },
+    {
+      "name": "whitespace-precommit",
+      "command": "git diff --check c603591b313afbd8e167e83fd5e14e2e13978fad",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:40:25.723757+00:00",
+      "ended": "2026-11-13T21:40:25.766802+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/whitespace-precommit.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "docs/evidence/boo-spco/archive/whitespace-precommit.log.gz"
+    }
+  ],
+  "originalFailureProof": {
+    "log": "docs/evidence/boo-spco/archive/red-03.log.gz",
+    "passed": 1,
+    "behavioralFailures": 8,
+    "cases": [
+      "already-open Play leaves failed other-book notice",
+      "successful open erases unresolved recovery",
+      "old-account read failure appears after sign-out",
+      "unrelated tab shows action error",
+      "unrelated book page shows action error",
+      "current player shows another edition error",
+      "History shows unrelated action error",
+      "player message begins at x=0 while position control begins at x=24 logical pixels"
+    ]
+  },
+  "additionalRedProof": [
+    "red-auto-reopen",
+    "red-replacement-source"
+  ],
+  "testCorrections": [
+    "Initial new SourceFile fixture lacked required fields; red-01 is compilation evidence only.",
+    "red-02 stalled after a tap started asynchronous work in fake time; SIGINT targeted only owned PID 4374. Subsequent taps run in tester.runAsync. The interrupted exit code is not a pass.",
+    "Old book-page error-color test used a different book from the failed playback action. It now binds and opens the page book before checking error color.",
+    "Two sync test files migrated old getter assertions to the scoped status.",
+    "Two gallery tests scroll using the existing reveal helper before using lazy controls. No behavioral expectation or timing limit changed.",
+    "New held-read test waits for explicit read entry instead of an event-queue drain."
+  ],
+  "selfReview": "Reviewed all production changes, changed callers, existing assertion migrations, new owner/widget tests and gallery correction after green focused checks.",
+  "visualEvidence": {
+    "reference": "docs/screenshots/player.png",
+    "source": "PlayerView stage and existing 24-logical-pixel horizontal content inset",
+    "test": "a current player error is inset like the position control",
+    "deviceAcceptance": false
+  },
+  "preservedPrerequisites": [
+    "test/reader/unread_records_test.dart unchanged from original base (t5-rplx)",
+    "test/reader/epub/page_source_frames_test.dart unchanged from original base (tf-il7u)"
+  ],
+  "forks": [],
+  "limits": [
+    "No Android/device or browser inspection; t1-dth0 remains the parent-owned blocker.",
+    "Optional skips are not integration passes; complete skip reasons are retained in each test log.",
+    "Flutter host runs warn that iphoneos and iphonesimulator SDKs are absent. These host tests do not claim iOS acceptance.",
+    "No credentials, coverage, general mutations, timing-threshold changes, push, PR, deployment, integration or closure."
+  ],
+  "integrationConsiderations": [
+    "boo-56h7 overlaps Playback, especially _play and _audioCommand. Preserve Ask-at-Play behavior and adapt callers to PlaybackOperation and scoped PlaybackStatus; rerun affected tests after integration."
+  ],
+  "review": {
+    "state": "pending",
+    "required": "one fresh codex/gpt-6-astra high reviewer; correctness, fulfillment and software design carry separate verdicts"
+  },
+  "finalBuildChecks": {
+    "focused": {
+      "passed": 43,
+      "skipped": 0
+    },
+    "affected": {
+      "passed": 1484,
+      "skipped": 3
+    },
+    "full": {
+      "passed": 3714,
+      "skipped": 27
+    },
+    "analysis": "all lib and test: no issues",
+    "format": "22 changed Dart files: 0 changed"
+  }
+}

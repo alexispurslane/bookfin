@@ -221,7 +221,10 @@ void main() {
       expect(playback.editionMilliseconds, 75000);
       expect(playback.history, hasLength(count));
       expect(playback.undoAction?.id, undo?.id);
-      expect(playback.message, contains('Download every file'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('Download every file'),
+      );
       disappearing.lookupsBeforeRemoval = null;
       disappearing.files[first.key] = Uri.file('/one.wav');
       await playback.undoSeek();
@@ -420,7 +423,11 @@ void main() {
     expect(playback.position, isNull);
     expect(playback.bookmarks, isEmpty);
     expect(playback.history, isEmpty);
-    expect(playback.message, isNull);
+    expect(playback.statusNotifier.value, (
+      actionNotice: null,
+      recoveryMessage: null,
+      saveFailed: false,
+    ));
     expect(jsonEncode(store.values), saved);
     await playback.bind(account(), [title]);
     expect(playback.bookmarks.single.id, id);
@@ -451,7 +458,10 @@ void main() {
     await playback.restoreBookmark(bookmark.id);
     expect(playback.editionMilliseconds, 75000);
     expect(playback.history, hasLength(count));
-    expect(playback.message, contains('Cannot play'));
+    expect(
+      playback.statusNotifier.value.actionNotice?.message,
+      contains('Cannot play'),
+    );
   });
 
   test(
@@ -490,7 +500,10 @@ void main() {
       expect(playback.position, isNull);
       expect(playback.bookmarks.single.position.revision, 'r2');
       expect(playback.history, hasLength(count));
-      expect(playback.message, contains('changed'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('changed'),
+      );
     },
   );
 
@@ -508,7 +521,10 @@ void main() {
     await playback.seekEdition(75000);
     await playback.addBookmark(title: 'Keep me');
     expect(playback.unsavedChanges, isTrue);
-    expect(playback.message, contains('could not be saved'));
+    expect(
+      playback.statusNotifier.value.messagesFor(),
+      contains(contains('could not be saved')),
+    );
     await playback.bind(account(user: 'bob'), [title]);
     expect(playback.bookmarks, isEmpty);
     await playback.bind(account(), [title]);
@@ -553,7 +569,10 @@ void main() {
     await playback.open(title, recording);
     expect(playback.position, isNull);
     expect(playback.playing, isFalse);
-    expect(playback.message, contains('Cannot restore'));
+    expect(
+      playback.statusNotifier.value.recoveryMessage,
+      contains('Cannot restore'),
+    );
     await playback.flush();
     expect(jsonEncode(store.values[account().scope.key]), saved);
     store.failRead = false;
@@ -604,7 +623,10 @@ void main() {
       await playback.restoreBookmark(playback.bookmarks.single.id);
       expect(playback.editionMilliseconds, 75000);
       expect(playback.history, hasLength(count));
-      expect(playback.message, contains('Download'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('Download'),
+      );
     },
   );
 
@@ -648,7 +670,11 @@ void main() {
       await Future.wait([seeking, switching]);
       expect(playback.history, isEmpty);
       expect(playback.position, isNull);
-      expect(playback.message, isNull);
+      expect(playback.statusNotifier.value, (
+        actionNotice: null,
+        recoveryMessage: null,
+        saveFailed: false,
+      ));
     },
   );
 
@@ -710,7 +736,10 @@ void main() {
     store.values[account().scope.key] = saved;
     await playback.bind(account(), [title]);
     await playback.flush();
-    expect(playback.message, contains('Cannot restore'));
+    expect(
+      playback.statusNotifier.value.recoveryMessage,
+      contains('Cannot restore'),
+    );
     expect(store.values[account().scope.key], saved);
   });
 
@@ -727,7 +756,10 @@ void main() {
         store: LocalResumeStore(),
       );
       await playback.bind(account(), [title]);
-      expect(playback.message, contains('damaged'));
+      expect(
+        playback.statusNotifier.value.recoveryMessage,
+        contains('damaged'),
+      );
       await playback.open(title, recording, autoplay: false);
       await playback.seekEdition(90000);
       await playback.close();
@@ -739,7 +771,11 @@ void main() {
       );
       await playback.bind(account(), [title]);
       expect(playback.editionMilliseconds, 90000);
-      expect(playback.message, isNull);
+      expect(playback.statusNotifier.value, (
+        actionNotice: null,
+        recoveryMessage: null,
+        saveFailed: false,
+      ));
     },
   );
 

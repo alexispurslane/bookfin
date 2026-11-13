@@ -28,7 +28,11 @@ void main() {
         store: records,
       );
       await playback.bind(account(), [title]);
-      expect(playback.message, isNull);
+      expect(playback.statusNotifier.value, (
+        actionNotice: null,
+        recoveryMessage: null,
+        saveFailed: false,
+      ));
       await playback.open(title, recording);
       await playback.jump(forward: true);
       await playback.close();

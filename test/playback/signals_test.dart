@@ -264,8 +264,8 @@ void main() {
     await full.open(title, recording, autoplay: false);
     await full.addBookmark();
     expect(full.statusNotifier.value, (
-      message:
-          'Personal records could not be saved. Free storage and try again.',
+      actionNotice: null,
+      recoveryMessage: null,
       saveFailed: true,
     ));
   });

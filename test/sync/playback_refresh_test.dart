@@ -268,7 +268,11 @@ void main() {
                 savesAfterPause,
                 reason: 'The stale action writes nothing after the pause.',
               );
-              expect(player.message, isNull);
+              expect(player.statusNotifier.value, (
+                actionNotice: null,
+                recoveryMessage: null,
+                saveFailed: false,
+              ));
               expect(player.unsavedChanges, isFalse);
               final saved = (await reopened().read(getAccount()))!;
               expect(
@@ -351,7 +355,11 @@ void main() {
             expect(player.undoNotifier.value?.action.id, undo);
             expect(engine.milliseconds, 11000);
             expect(records.saves, saves);
-            expect(player.message, isNull);
+            expect(player.statusNotifier.value, (
+              actionNotice: null,
+              recoveryMessage: null,
+              saveFailed: false,
+            ));
             await tester.runAsync(() async {
               expect(
                 (await reopened().read(getAccount()))!['bookmarks'],
@@ -854,7 +862,11 @@ void main() {
                 );
               }
               expect(player.playing, isTrue);
-              expect(player.message, isNull);
+              expect(player.statusNotifier.value, (
+                actionNotice: null,
+                recoveryMessage: null,
+                saveFailed: false,
+              ));
               expect(engine.released.isCompleted, isFalse);
               expect(records.staleNotifier(getAccount()).value, isTrue);
               records.readFailure = null;

@@ -9,6 +9,7 @@ import '../foundation/theme.dart';
 import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
 import '../playback/playback.dart';
+import '../playback/records_screen.dart';
 import '../playback/screen.dart';
 import '../crossings/crossings.dart';
 import '../reader/session.dart';
@@ -506,7 +507,7 @@ class _SlowProgressLineState extends State<_SlowProgressLine> {
       : const SizedBox.shrink();
 }
 
-/// A tab's page: catalog progress and errors, the player's notices when
+/// A tab's page: catalog progress and errors, account-wide record notices when
 /// [playback] is given, then [child].
 class TabPage extends StatelessWidget {
   const TabPage({
@@ -532,15 +533,9 @@ class TabPage extends StatelessWidget {
             children: [
               _CatalogStatus(catalog: catalog),
               if (playback != null) ...[
-                ListenableSelector(
-                  listenable: playback,
-                  select: () => playback.message,
-                  builder: (context, message, _) => message == null
-                      ? const SizedBox.shrink()
-                      : Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                          child: StatusMessage(message),
-                        ),
+                RecordSaveStatus(
+                  playback: playback,
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                 ),
                 ReplacementStartNotice(playback: playback),
               ],

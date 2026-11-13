@@ -105,7 +105,10 @@ void main() {
       await playback.restoreBookmark(originalBookmark);
       await playback.restoreHistory(originalSeek, previous: false);
       expect(playback.editionMilliseconds, 0);
-      expect(playback.message, contains('changed'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('changed'),
+      );
       playback.checkInvariants();
     },
   );
@@ -139,7 +142,10 @@ void main() {
       expect(playback.position, isNull);
       expect(playback.active, isFalse);
       expect(playback.replacementStart, same(request));
-      expect(playback.message, contains('Cannot play'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('Cannot play'),
+      );
       engine.failLoad = false;
       await playback.close();
       engine = ReplacementEngine();

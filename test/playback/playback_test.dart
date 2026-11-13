@@ -175,7 +175,10 @@ void main() {
     () async {
       downloads.files.remove(second.key);
       await playback.open(title, recording);
-      expect(playback.message, contains('Download'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('Download'),
+      );
       expect(engine.files, isEmpty);
       expect(downloads.requested, isEmpty);
     },
@@ -382,7 +385,10 @@ void main() {
         ),
       ]);
       expect(playback.position, isNull);
-      expect(playback.message, contains('changed'));
+      expect(
+        playback.statusNotifier.value.actionNotice?.message,
+        contains('changed'),
+      );
       expect(store.values[account().scope.key]!['resumes'], isNotEmpty);
     },
   );
@@ -446,7 +452,10 @@ void main() {
     expect(playback.active, isFalse);
     expect(playback.position?.sourceKey, second.key);
     expect(playback.position?.milliseconds, 18000);
-    expect(playback.message, contains('Cannot play'));
+    expect(
+      playback.statusNotifier.value.actionNotice?.message,
+      contains('Cannot play'),
+    );
   });
   test('recording completion clears native play intent so later chapter seeks stay paused', () async {
     await playback.open(title, recording);

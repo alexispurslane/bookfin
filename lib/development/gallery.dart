@@ -331,7 +331,8 @@ class _SamplePlayer {
   /// The actions and bookmarks of every sample book, newest first.
   final ValueNotifier<List<TimelineEntry>> timeline;
   final status = ValueNotifier<PlaybackStatus>((
-    message: null,
+    actionNotice: null,
+    recoveryMessage: null,
     saveFailed: true,
   ));
   final replacement = ValueNotifier<AudioReplacement?>(
@@ -420,7 +421,11 @@ class _SamplePlayer {
     move(0);
   }
 
-  void retrySave() => status.value = (message: null, saveFailed: false);
+  void retrySave() => status.value = (
+    actionNotice: null,
+    recoveryMessage: null,
+    saveFailed: false,
+  );
 
   void delete(TimelineEntry entry) => timeline.value = [
     for (final kept in timeline.value)

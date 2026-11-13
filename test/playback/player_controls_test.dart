@@ -190,7 +190,11 @@ void main() {
     await show(
       tester,
       RecordSaveNotice(
-        status: (message: 'Saved records are late.', saveFailed: true),
+        status: (
+          actionNotice: null,
+          recoveryMessage: 'Saved records are late.',
+          saveFailed: true,
+        ),
         onRetrySave: () => retries++,
       ),
     );
@@ -205,7 +209,7 @@ void main() {
     await show(
       tester,
       RecordSaveNotice(
-        status: (message: null, saveFailed: false),
+        status: (actionNotice: null, recoveryMessage: null, saveFailed: false),
         onRetrySave: () {},
       ),
     );

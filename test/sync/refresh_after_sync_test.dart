@@ -440,7 +440,11 @@ void main() {
 
         expect(engine.isPlaying, isTrue);
         expect(playing.playing, isTrue);
-        expect(playing.message, isNull);
+        expect(playing.statusNotifier.value, (
+          actionNotice: null,
+          recoveryMessage: null,
+          saveFailed: false,
+        ));
       });
 
       test('reports nothing after a retry of kept copies', () async {
@@ -455,7 +459,11 @@ void main() {
 
         expect(engine.isPlaying, isTrue);
         expect(playing.playing, isTrue);
-        expect(playing.message, isNull);
+        expect(playing.statusNotifier.value, (
+          actionNotice: null,
+          recoveryMessage: null,
+          saveFailed: false,
+        ));
       });
     },
   );

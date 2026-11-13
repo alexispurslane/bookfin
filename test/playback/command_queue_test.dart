@@ -130,8 +130,11 @@ void main() {
     test('shows no message about the audio', () async {
       await failedRefresh();
 
-      expect(playback.message, isNull);
-      expect(playback.statusNotifier.value.message, isNull);
+      expect(playback.statusNotifier.value, (
+        actionNotice: null,
+        recoveryMessage: null,
+        saveFailed: false,
+      ));
     });
 
     test('tells its caller that the refresh failed', () async {
@@ -158,7 +161,10 @@ void main() {
 
     expect(engine.isPlaying, isFalse);
     expect(playback.active, isFalse);
-    expect(playback.message, contains('Cannot play'));
+    expect(
+      playback.statusNotifier.value.actionNotice?.message,
+      contains('Cannot play'),
+    );
   });
 
   test('a speed change whose engine call fails stops the audio and says that the file cannot play', () async {
@@ -169,7 +175,10 @@ void main() {
     expect(engine.isPlaying, isFalse);
     expect(playback.playing, isFalse);
     expect(playback.active, isFalse);
-    expect(playback.message, contains('Cannot play'));
+    expect(
+      playback.statusNotifier.value.actionNotice?.message,
+      contains('Cannot play'),
+    );
   });
 
   group('a records command that was queued before the account changed', () {

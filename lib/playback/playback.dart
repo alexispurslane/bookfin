@@ -186,9 +186,52 @@ typedef PlaybackSelection = ({
 /// The listening settings: the speed, and the short jump lengths in seconds.
 typedef PlaybackSettings = ({double speed, int backward, int forward});
 
-/// The message to show about listening, if any, and whether the personal
-/// records of the bound account failed to save.
-typedef PlaybackStatus = ({String? message, bool saveFailed});
+/// The operation that a listening notice explains. It does not change history.
+enum PlaybackOperation {
+  open,
+  play,
+  pause,
+  stop,
+  seek,
+  restore,
+  speed,
+  decoder,
+}
+
+/// A failed operation and the edition it tried to use. Edition ids belong to
+/// the bound account; account replacement discards the notice.
+typedef PlaybackActionNotice = ({
+  String editionId,
+  PlaybackOperation operation,
+  String message,
+});
+
+/// Independent notice lifetimes owned by Playback: the latest audio action,
+/// record recovery for this binding, and pending saves for this account.
+/// A successful audio action cannot resolve a record recovery or a failed save.
+typedef PlaybackStatus = ({
+  PlaybackActionNotice? actionNotice,
+  String? recoveryMessage,
+  bool saveFailed,
+});
+
+extension PlaybackStatusMessages on PlaybackStatus {
+  /// Notices for an edition, a book, or account-wide content when neither is
+  /// supplied. An edition narrows a book's scope. History and tabs supply
+  /// neither: audio action errors do not describe their record lists.
+  Iterable<String> messagesFor({Book? book, Edition? edition}) sync* {
+    if (actionNotice case final notice?) {
+      final belongs = edition != null
+          ? notice.editionId == edition.id
+          : book?.editions.any((item) => item.id == notice.editionId) == true;
+      if (belongs) yield notice.message;
+    }
+    if (recoveryMessage case final message?) yield message;
+    if (saveFailed) {
+      yield 'Personal records could not be saved. Free storage and try again.';
+    }
+  }
+}
 
 /// The alternatives for the open recording. Playback owns its lifetime;
 /// screens return this exact request so a stale answer cannot move audio.
@@ -268,7 +311,8 @@ class Playback extends ChangeNotifier {
   bool _restored = false;
   // See [starting].
   Edition? _starting;
-  String? _message;
+  PlaybackActionNotice? _actionNotice;
+  String? _recoveryMessage;
   double _speed = 1;
   int _backward = 10;
   int _forward = 30;
@@ -397,7 +441,7 @@ class Playback extends ChangeNotifier {
   /// The listening speed and the short jump lengths.
   ValueListenable<PlaybackSettings> get settingsNotifier => _settingsSignal;
 
-  /// The message to show, and whether the records failed to save.
+  /// Scoped action notices and account-wide record recovery/save notices.
   ValueListenable<PlaybackStatus> get statusNotifier => _statusSignal;
 
   /// The Undo offer after a position change, or null when there is none. It
@@ -496,12 +540,16 @@ class Playback extends ChangeNotifier {
   AudioReplacement? get replacementStart => _replacementStart;
 
   Future<void> confirmReplacement(AudioReplacement request) =>
-      _audioCommand(() async {
+      _audioCommand(PlaybackOperation.open, () async {
         if (!identical(request, _replacementStart)) return;
         if (request.edition.files.any(
           (file) => file.revision.isEmpty || file.mediaSourceId.isEmpty,
         )) {
-          _message = 'The replacement audio source cannot be identified. Refresh the library before starting it.';
+          _actionFailed(
+            request.edition.id,
+            PlaybackOperation.open,
+            'The replacement audio source cannot be identified. Refresh the library before starting it.',
+          );
           _notify();
           return;
         }
@@ -511,12 +559,15 @@ class Playback extends ChangeNotifier {
           autoplay: true,
           replacement: request,
         );
-      });
+      }, target: () => request.edition.id);
 
   void cancelReplacement(AudioReplacement request) {
     if (!identical(request, _replacementStart)) return;
     _replacementStart = null;
-    _message = null;
+    if (_actionNotice?.editionId == request.edition.id &&
+        _actionNotice?.operation == PlaybackOperation.open) {
+      _actionNotice = null;
+    }
     _notify();
   }
 
@@ -547,7 +598,7 @@ class Playback extends ChangeNotifier {
   Future<void> finishSliderSeek(int milliseconds) {
     final start = _sliderStart;
     _sliderStart = null;
-    return _audioCommand(() async {
+    return _audioCommand(PlaybackOperation.seek, () async {
       if (start != null &&
           start.revision == _sliderRevision &&
           _edition != null &&
@@ -562,27 +613,34 @@ class Playback extends ChangeNotifier {
     _sliderRevision++;
   }
 
-  Future<void> undoSeek() => _audioCommand(() async {
+  Future<void> undoSeek() => _audioCommand(PlaybackOperation.restore, () async {
     final event = _undo;
     if (event == null) return;
     if (await _restorePosition(event.before, HistoryAction.undo)) {
       _undo = null;
     }
     _notify();
-  });
+  }, target: () => _undo?.before.editionId);
 
   /// Restores where the history event [id] began, or where it ended when
   /// [previous] is false. If the event is gone when this command runs,
   /// completes normally without changing anything.
   Future<void> restoreHistory(String id, {bool previous = true}) =>
-      _audioCommand(() async {
-        final event = _history.where((event) => event.id == id).firstOrNull;
-        if (event == null) return;
-        await _restorePosition(
-          previous ? event.before : event.after,
-          HistoryAction.historyRestore,
-        );
-      });
+      _audioCommand(
+        PlaybackOperation.restore,
+        () async {
+          final event = _history.where((event) => event.id == id).firstOrNull;
+          if (event == null) return;
+          await _restorePosition(
+            previous ? event.before : event.after,
+            HistoryAction.historyRestore,
+          );
+        },
+        target: () {
+          final event = _history.where((event) => event.id == id).firstOrNull;
+          return (previous ? event?.before : event?.after)?.editionId;
+        },
+      );
 
   /// Plays from [landing], where a place of an ebook edition lands in the
   /// open edition, as a move of [kind] in the listening track from the place
@@ -592,7 +650,7 @@ class Playback extends ChangeNotifier {
   /// open edition moves nothing.
   Future<bool> goToLanding(AudioLanding landing, HistoryAction kind) {
     var went = false;
-    return _audioCommand(() async {
+    return _audioCommand(PlaybackOperation.restore, () async {
       final edition = _edition;
       if (!_restored || edition == null || !landing.place.fits(edition)) {
         return;
@@ -738,13 +796,21 @@ class Playback extends ChangeNotifier {
 
   /// Restores the bookmark [id]. If it is gone when this command runs,
   /// completes normally without changing anything.
-  Future<void> restoreBookmark(String id) => _audioCommand(() async {
-    final bookmark = _bookmarks
-        .where((bookmark) => bookmark.id == id)
-        .firstOrNull;
-    if (bookmark == null) return;
-    await _restorePosition(bookmark.position, HistoryAction.bookmarkRestore);
-  });
+  Future<void> restoreBookmark(String id) => _audioCommand(
+    PlaybackOperation.restore,
+    () async {
+      final bookmark = _bookmarks
+          .where((bookmark) => bookmark.id == id)
+          .firstOrNull;
+      if (bookmark == null) return;
+      await _restorePosition(bookmark.position, HistoryAction.bookmarkRestore);
+    },
+    target: () => _bookmarks
+        .where((mark) => mark.id == id)
+        .firstOrNull
+        ?.position
+        .editionId,
+  );
 
   String? _optionalText(String? value) =>
       value == null || value.trim().isEmpty ? null : value.trim();
@@ -787,7 +853,11 @@ class Playback extends ChangeNotifier {
     if (!_restored) return false;
     final (book, edition) = _editions[target.editionId] ?? (null, null);
     if (edition == null || !target.fits(edition)) {
-      _message = 'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.';
+      _actionFailed(
+        target.editionId,
+        PlaybackOperation.restore,
+        'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.',
+      );
       _notify();
       return false;
     }
@@ -795,7 +865,11 @@ class Playback extends ChangeNotifier {
     final saved = await _savedFiles(edition);
     if (generation != _generation) return false;
     if (saved == null) {
-      _message = 'Download every file in this audio edition before restoring a position.';
+      _actionFailed(
+        edition.id,
+        PlaybackOperation.restore,
+        'Download every file in this audio edition before restoring a position.',
+      );
       _notify();
       return false;
     }
@@ -864,7 +938,6 @@ class Playback extends ChangeNotifier {
       _edition != null &&
       _resumeFits(_edition!, _resumeRecord(_edition!)) &&
       _resumeRecord(_edition!)?['pendingOffline'] == true;
-  String? get message => _message;
   double get playbackSpeed => _speed;
   int get backwardSeconds => _backward;
   int get forwardSeconds => _forward;
@@ -1017,19 +1090,44 @@ class Playback extends ChangeNotifier {
   /// An [Exception] from [action] is an engine failure. The audio stops,
   /// Playback shows that the file cannot play ([_audioFailed]), and the
   /// returned future completes normally. The failed command of an earlier
-  /// binding shows nothing.
+  /// binding shows nothing. [operation] names the attempted action; [target]
+  /// resolves its edition id when the command starts, before any wait. Without
+  /// [target], the command addresses the open edition.
   ///
   /// An [Error] that is not an [Exception] is a bug. It goes to the caller,
   /// and nothing turns it into a message.
-  Future<void> _audioCommand(Future<void> Function() action) {
+  Future<void> _audioCommand(
+    PlaybackOperation operation,
+    Future<void> Function() action, {
+    String? Function()? target,
+  }) {
     final generation = _generation;
-    return _inCommandOrder(() async {
-      try {
-        await action();
-      } on Exception {
-        if (!_closed && generation == _generation) await _audioFailed();
+    return _inCommandOrder(
+      () => _runAudio(
+        operation,
+        action,
+        editionId: target == null ? _edition?.id : target(),
+        generation: generation,
+      ),
+    );
+  }
+
+  /// Applies the audio-failure rule both to queued commands and to the
+  /// automatic reopen inside binding, which cannot queue behind itself.
+  Future<void> _runAudio(
+    PlaybackOperation operation,
+    Future<void> Function() action, {
+    required String? editionId,
+    required int generation,
+  }) async {
+    final edition = _editions[editionId]?.$2;
+    try {
+      await action();
+    } on Exception {
+      if (!_closed && generation == _generation) {
+        await _audioFailed(edition, operation, generation);
       }
-    });
+    }
   }
 
   /// Queues [action] as a records command: a command that reads or changes
@@ -1057,15 +1155,36 @@ class Playback extends ChangeNotifier {
   /// [_audioFailed] a second time. [_audioFailed] already handles the engine
   /// failure of its own pause. Any other failure of it is a bug, which goes
   /// to the zone.
-  Future<void> _sampleStreamFailed() => _inCommandOrder(_audioFailed);
+  Future<void> _sampleStreamFailed() {
+    final edition = _edition;
+    final generation = _generation;
+    if (edition == null || _loading || !_decoderReady) return Future.value();
+    return _inCommandOrder(() async {
+      if (_edition == null || !_sameEdition(edition, _edition!)) return;
+      await _audioFailed(edition, PlaybackOperation.decoder, generation);
+    });
+  }
 
-  Future<void> _audioFailed() async {
-    _message = 'Cannot play this local audio file. Download it again or choose another edition.';
+  Future<void> _audioFailed(
+    Edition? edition,
+    PlaybackOperation operation,
+    int generation,
+  ) async {
+    var message =
+        'Cannot play this local audio file. Download it again or choose another edition.';
     try {
       await engine.pause();
     } on Exception {
-      _message =
+      message =
           'The audio device failed. Restart Bookfin before listening again.';
+    }
+    if (_closed || generation != _generation) return;
+    // A library refresh can replace a source without changing accounts while
+    // its first open waits. Never attach that old failure to the new source.
+    if (edition != null) {
+      final current = _editions[edition.id]?.$2;
+      if (current == null || !_sameEdition(edition, current)) return;
+      _actionFailed(edition.id, operation, message);
     }
     _playing = false;
     _active = false;
@@ -1108,13 +1227,13 @@ class Playback extends ChangeNotifier {
             _offerReplacement(book, edition, resume);
           } else if (resume != null) {
             unawaited(
-              _audioCommand(() async {
+              _audioCommand(PlaybackOperation.open, () async {
                 if (_edition == null &&
                     _selected == edition.id &&
                     _currentEdition(book, edition)) {
                   await _open(book, edition, autoplay: false);
                 }
-              }),
+              }, target: () => edition.id),
             );
           }
         }
@@ -1149,7 +1268,8 @@ class Playback extends ChangeNotifier {
     _speed = 1;
     _backward = 10;
     _forward = 30;
-    _message = null;
+    _actionNotice = null;
+    _recoveryMessage = null;
     _cancelSleep();
     _notify();
     final previousBinding = _binding;
@@ -1224,23 +1344,25 @@ class Playback extends ChangeNotifier {
         if (pending == null) store.acceptSnapshot(session.scope.key, saved);
         _restored = true;
         if (store.setAside(session.scope.key)) {
-          _message = 'Saved listening records were damaged. Bookfin kept a copy and restored the records that it could read. The next sync restores the rest.';
+          _recoveryMessage = 'Saved listening records were damaged. Bookfin kept a copy and restored the records that it could read. The next sync restores the rest.';
         }
         _choiceToRestore = (saved?['playChoice'] as Map?)
             ?.cast<String, dynamic>();
         await _restoreSelected();
       } on Exception {
+        if (generation != _generation) return;
         if (!_restored) {
           _history = [];
           _bookmarks = [];
         }
-        _message = 'Cannot restore listening position. Saved listening data was not removed.';
+        _recoveryMessage = 'Cannot restore listening position. Saved listening data was not removed.';
       } on TypeError {
+        if (generation != _generation) return;
         if (!_restored) {
           _history = [];
           _bookmarks = [];
         }
-        _message = 'Cannot restore listening position. Saved listening data was not removed.';
+        _recoveryMessage = 'Cannot restore listening position. Saved listening data was not removed.';
       }
       _notify();
     } finally {
@@ -1265,10 +1387,21 @@ class Playback extends ChangeNotifier {
     }
     final resume = _readPosition(edition);
     if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
-      _message = 'The saved audio source changed. Its resume is kept but was not applied.';
+      _actionFailed(
+        edition.id,
+        PlaybackOperation.open,
+        'The saved audio source changed. Its resume is kept but was not applied.',
+      );
       if (resume != null) _offerReplacement(book, edition, resume);
     } else {
-      await _open(book, edition, autoplay: false);
+      await _runAudio(
+        PlaybackOperation.open,
+        () async {
+          await _open(book, edition, autoplay: false);
+        },
+        editionId: edition.id,
+        generation: _generation,
+      );
     }
   }
 
@@ -1340,13 +1473,13 @@ class Playback extends ChangeNotifier {
   Future<void> open(Book book, Edition edition, {bool autoplay = true}) {
     if (autoplay) _start(edition);
     return _settleStart(
-      _audioCommand(() async {
+      _audioCommand(PlaybackOperation.open, () async {
         if (autoplay && _edition != null && _sameEdition(_edition!, edition)) {
           await _play();
         } else {
           await _open(book, edition, autoplay: autoplay);
         }
-      }),
+      }, target: () => edition.id),
     );
   }
 
@@ -1398,7 +1531,7 @@ class Playback extends ChangeNotifier {
     }
     (book, edition) = bound;
     if (!_restored) {
-      _message = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
+      _recoveryMessage = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
       _notify();
       return false;
     }
@@ -1427,7 +1560,11 @@ class Playback extends ChangeNotifier {
     if (bound == null) return false;
     (book, edition) = bound;
     if (files == null) {
-      _message = 'Download every file in this audio edition before listening.';
+      _actionFailed(
+        edition.id,
+        PlaybackOperation.open,
+        'Download every file in this audio edition before listening.',
+      );
       _notify();
       return false;
     }
@@ -1443,7 +1580,11 @@ class Playback extends ChangeNotifier {
             target == null &&
                 !restoringChoice &&
                 !_resumeFits(edition, _resumeRecord(edition)))) {
-      _message = 'The saved audio source changed. Its resume is kept but was not applied.';
+      _actionFailed(
+        edition.id,
+        PlaybackOperation.open,
+        'The saved audio source changed. Its resume is kept but was not applied.',
+      );
       _offerReplacement(book, edition, resume);
       _notify();
       return false;
@@ -1517,7 +1658,7 @@ class Playback extends ChangeNotifier {
         // phone's own place, which Undo can take back.
         _record(HistoryAction.open, own, _position!, device: known!.device);
       }
-      _message = null;
+      _actionNotice = null;
       _cancelSleep();
     } finally {
       _loading = false;
@@ -1586,7 +1727,7 @@ class Playback extends ChangeNotifier {
     if (sample.completed && _active) {
       _active = false;
       _cancelSleep();
-      unawaited(_audioCommand(engine.pause));
+      unawaited(_audioCommand(PlaybackOperation.stop, engine.pause));
     }
     if (wasPlaying == _playing && !sample.completed) {
       _publish();
@@ -1609,13 +1750,13 @@ class Playback extends ChangeNotifier {
 
   Future<void> play() {
     if (!_playing && _edition != null) _start(_edition!);
-    return _settleStart(_audioCommand(_play));
+    return _settleStart(_audioCommand(PlaybackOperation.play, _play));
   }
 
   /// System media controls start locally and leave the question for a screen.
   Future<void> playExternally() {
     if (!_playing && _edition != null) _start(_edition!);
-    return _settleStart(_audioCommand(() => _play(external: true)));
+    return _settleStart(_audioCommand(PlaybackOperation.play, () => _play(external: true)));
   }
 
   Future<void> _play({bool external = false}) async {
@@ -1640,7 +1781,11 @@ class Playback extends ChangeNotifier {
     final saved = await _savedFiles(_edition!);
     if (generation != _generation) return;
     if (saved == null) {
-      _message = 'Download every file in this audio edition before listening.';
+      _actionFailed(
+        _edition!.id,
+        PlaybackOperation.play,
+        'Download every file in this audio edition before listening.',
+      );
       _notify();
       return;
     }
@@ -1663,6 +1808,8 @@ class Playback extends ChangeNotifier {
     }
     _active = true;
     await engine.play();
+    if (generation != _generation) return;
+    _actionNotice = null;
     _notify();
   }
 
@@ -1681,7 +1828,7 @@ class Playback extends ChangeNotifier {
   Future<void> chooseListeningPlace(
     ListeningChoice choice,
     ListeningPlace place,
-  ) => _audioCommand(() async {
+  ) => _audioCommand(PlaybackOperation.play, () async {
     if (!identical(choice, _playChoice)) return;
     final generation = _generation;
     _preserveListeningChoice();
@@ -1832,7 +1979,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> pause() {
     _endStart();
-    return _audioCommand(_pause);
+    return _audioCommand(PlaybackOperation.pause, _pause);
   }
 
   Future<void> _pause() async {
@@ -1854,7 +2001,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> stop() {
     _endStart();
-    return _audioCommand(_stop);
+    return _audioCommand(PlaybackOperation.stop, _stop);
   }
 
   Future<void> _stop() async {
@@ -1878,7 +2025,7 @@ class Playback extends ChangeNotifier {
   }
 
   Future<void> seekEdition(int milliseconds) =>
-      _audioCommand(() => _seekEdition(milliseconds));
+      _audioCommand(PlaybackOperation.seek, () => _seekEdition(milliseconds));
 
   Future<void> _seekEdition(
     int milliseconds, {
@@ -1888,8 +2035,11 @@ class Playback extends ChangeNotifier {
     if (_edition == null) return;
     final duration = durationMilliseconds;
     if (duration == null) {
-      _message =
-          'Choose a chapter or file. The recording length is not available.';
+      _actionFailed(
+        _edition!.id,
+        PlaybackOperation.seek,
+        'Choose a chapter or file. The recording length is not available.',
+      );
       _notify();
       return;
     }
@@ -1904,8 +2054,10 @@ class Playback extends ChangeNotifier {
     }
   }
 
-  Future<void> seekSource(String sourceKey, int milliseconds) =>
-      _audioCommand(() => _seekSource(sourceKey, milliseconds));
+  Future<void> seekSource(String sourceKey, int milliseconds) => _audioCommand(
+    PlaybackOperation.seek,
+    () => _seekSource(sourceKey, milliseconds),
+  );
 
   Future<void> _seekSource(
     String sourceKey,
@@ -1925,19 +2077,20 @@ class Playback extends ChangeNotifier {
     );
   }
 
-  Future<void> jump({required bool forward}) => _audioCommand(() async {
-    final current = editionMilliseconds;
-    final amount = (forward ? _forward : -_backward) * 1000;
-    if (current != null && durationMilliseconds != null) {
-      await _seekEdition(current + amount, kind: HistoryAction.jump);
-    } else if (_position != null) {
-      await _seekSource(
-        _position!.sourceKey,
-        max(0, _position!.milliseconds + amount),
-        kind: HistoryAction.jump,
-      );
-    }
-  });
+  Future<void> jump({required bool forward}) =>
+      _audioCommand(PlaybackOperation.seek, () async {
+        final current = editionMilliseconds;
+        final amount = (forward ? _forward : -_backward) * 1000;
+        if (current != null && durationMilliseconds != null) {
+          await _seekEdition(current + amount, kind: HistoryAction.jump);
+        } else if (_position != null) {
+          await _seekSource(
+            _position!.sourceKey,
+            max(0, _position!.milliseconds + amount),
+            kind: HistoryAction.jump,
+          );
+        }
+      });
 
   void _record(
     HistoryAction kind,
@@ -2044,15 +2197,16 @@ class Playback extends ChangeNotifier {
     return generation == _generation;
   }
 
-  Future<void> setSpeed(double value) => _audioCommand(() async {
-    if (!value.isFinite || value < 0.5 || value > 3) {
-      throw ArgumentError('Playback speed must be between 0.5 and 3.');
-    }
-    await engine.speed(value);
-    _speed = value;
-    _save();
-    _notify();
-  });
+  Future<void> setSpeed(double value) =>
+      _audioCommand(PlaybackOperation.speed, () async {
+        if (!value.isFinite || value < 0.5 || value > 3) {
+          throw ArgumentError('Playback speed must be between 0.5 and 3.');
+        }
+        await engine.speed(value);
+        _speed = value;
+        _save();
+        _notify();
+      });
 
   Future<void> setJumps(int backward, int forward) => _recordsCommand(() async {
     if (backward < 1 || forward < 1 || backward > 300 || forward > 300) {
@@ -2185,10 +2339,6 @@ class Playback extends ChangeNotifier {
         _pendingWrites.remove(accountKey);
         _failedAccounts.remove(accountKey);
         if (!_closed && _session?.scope.key == accountKey) {
-          if (_message ==
-              'Personal records could not be saved. Free storage and try again.') {
-            _message = null;
-          }
           // A save that ends no failure changes only [undoNotifier].
           _status == status ? _publish() : _notify();
         }
@@ -2196,8 +2346,6 @@ class Playback extends ChangeNotifier {
     } on Exception {
       _failedAccounts.add(accountKey);
       if (_session?.scope.key == accountKey) {
-        _message =
-            'Personal records could not be saved. Free storage and try again.';
         _notify();
       }
     }
@@ -2299,7 +2447,23 @@ class Playback extends ChangeNotifier {
   PlaybackSettings get _settings =>
       (speed: _speed, backward: _backward, forward: _forward);
 
-  PlaybackStatus get _status => (message: _message, saveFailed: saveFailed);
+  PlaybackStatus get _status => (
+    actionNotice: _actionNotice,
+    recoveryMessage: _recoveryMessage,
+    saveFailed: saveFailed,
+  );
+
+  void _actionFailed(
+    String editionId,
+    PlaybackOperation operation,
+    String message,
+  ) {
+    _actionNotice = (
+      editionId: editionId,
+      operation: operation,
+      message: message,
+    );
+  }
 
   /// The undo offer. Its action is saved once no unconfirmed write of the
   /// bound account holds it.
@@ -2329,7 +2493,13 @@ class Playback extends ChangeNotifier {
   ///   exposes only requested presentations, never a refresh alone.
   /// - The personal records, the pending writes and the replacement offer
   ///   agree.
+  /// - Action and recovery notices belong to a signed-in binding. Save failure
+  ///   is derived from that account's unconfirmed writes, never from text.
   void checkInvariants() {
+    if (_session == null &&
+        (_actionNotice != null || _recoveryMessage != null)) {
+      throw StateError('Notices require their signed-in binding.');
+    }
     if ((_edition == null) != (_position == null) ||
         (_edition == null) != (_book == null) ||
         _decoderReady && _edition == null ||

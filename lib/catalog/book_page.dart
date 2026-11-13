@@ -9,6 +9,7 @@ import '../downloads/screen.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/screen.dart';
+import '../playback/records_screen.dart';
 import '../playback/timeline.dart';
 import '../sync/alert.dart';
 import 'book_cover.dart';
@@ -275,9 +276,10 @@ class BookPage extends StatelessWidget {
                   () => catalog.statusNotifier.value.message,
                 ),
                 if (playback != null) ...[
-                  _StatusLine(
-                    playback.statusNotifier,
-                    () => playback.statusNotifier.value.message,
+                  RecordSaveStatus(
+                    playback: playback,
+                    book: book,
+                    padding: const EdgeInsets.only(top: 12),
                   ),
                   // The replacement offer has no narrow signal, so this
                   // follows every change of Playback and rebuilds only when

@@ -205,6 +205,8 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
+    // Notices can put the controls beyond the ListView's built children.
+    await reveal(tester, 'player', jump(forward: true));
     final start = slider(tester).position;
     await tapShown(tester, jump(forward: true));
     expect(slider(tester).position, start + 30000);
@@ -241,6 +243,7 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
+    await reveal(tester, 'player', stagePlayButton());
     await tapShown(tester, stagePlayButton());
     expect(tester.widget<PlayPauseButton>(stagePlayButton()).playing, isTrue);
     expect(tester.binding.transientCallbackCount, 0);

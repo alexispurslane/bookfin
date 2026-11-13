@@ -236,7 +236,10 @@ void main() {
         await playback.bind(account(user: 'bob'), [title]);
         failing.failRead = true;
         await playback.bind(account(), [title]);
-        expect(playback.message, contains('Cannot restore'));
+        expect(
+          playback.statusNotifier.value.recoveryMessage,
+          contains('Cannot restore'),
+        );
         expect(playback.unsavedChanges, isTrue);
         failing
           ..fail = false

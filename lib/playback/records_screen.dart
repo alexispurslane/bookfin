@@ -2,20 +2,30 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../catalog/model.dart' show AudioPosition, TextPosition;
+import '../catalog/model.dart' show AudioPosition, TextPosition, Book, Edition;
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../catalog/glass.dart';
 import '../reader/session.dart';
 import 'playback.dart';
 
-/// The listening message, and an offer to retry when the personal records
-/// of [playback] or of [reader] failed to save. A tap on Retry saving asks
-/// both to save again.
+/// Playback notices for [book] or [edition], plus account-wide record notices
+/// and a retry for failed listening or reading saves. Without a book or edition,
+/// shows only record notices. Retry saving asks both owners to save again.
 class RecordSaveStatus extends StatelessWidget {
-  const RecordSaveStatus({super.key, this.playback, this.reader});
+  const RecordSaveStatus({
+    super.key,
+    this.playback,
+    this.reader,
+    this.book,
+    this.edition,
+    this.padding = EdgeInsets.zero,
+  });
   final Playback? playback;
   final ReaderSession? reader;
+  final Book? book;
+  final Edition? edition;
+  final EdgeInsetsGeometry padding;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([
@@ -26,10 +36,14 @@ class RecordSaveStatus extends StatelessWidget {
       final listening = playback?.statusNotifier.value;
       return RecordSaveNotice(
         status: (
-          message: listening?.message,
+          actionNotice: listening?.actionNotice,
+          recoveryMessage: listening?.recoveryMessage,
           saveFailed:
               (listening?.saveFailed ?? false) || (reader?.saveFailed ?? false),
         ),
+        book: book,
+        edition: edition,
+        padding: padding,
         onRetrySave: () {
           if (playback case final playback?) unawaited(playback.flush());
           if (reader case final reader?) unawaited(reader.flush());
@@ -39,31 +53,47 @@ class RecordSaveStatus extends StatelessWidget {
   );
 }
 
-/// Shows the message of [status], and offers a retry while the records
-/// failed to save.
+/// Draws the notices of [status] for the supplied book or edition and reports
+/// a retry while records failed to save. It causes no side effects.
 class RecordSaveNotice extends StatelessWidget {
   const RecordSaveNotice({
     super.key,
     required this.status,
     required this.onRetrySave,
+    this.book,
+    this.edition,
+    this.padding = EdgeInsets.zero,
   });
   final PlaybackStatus status;
+  final Book? book;
+  final Edition? edition;
+  final EdgeInsetsGeometry padding;
 
   /// Reports a tap on Retry saving.
   final VoidCallback onRetrySave;
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (status.message case final message?) StatusMessage(message),
-      if (status.saveFailed) ...[
-        const Text(
-          'Personal records are not saved to this device. Keep Bookfin open and retry.',
-        ),
-        TextButton(onPressed: onRetrySave, child: const Text('Retry saving')),
-      ],
-    ],
-  );
+  Widget build(BuildContext context) {
+    final messages = status.messagesFor(book: book, edition: edition).toList();
+    if (messages.isEmpty && !status.saveFailed) return const SizedBox.shrink();
+    return Padding(
+      padding: padding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final message in messages) StatusMessage(message),
+          if (status.saveFailed) ...[
+            const Text(
+              'Personal records are not saved to this device. Keep Bookfin open and retry.',
+            ),
+            TextButton(
+              onPressed: onRetrySave,
+              child: const Text('Retry saving'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 /// Asks for a title and a note for the audio bookmark [bookmark], or for a

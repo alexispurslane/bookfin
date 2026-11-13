@@ -57,3 +57,70 @@ Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-ta
 The lead builds and fixes in its T3-owned worktree. Parent owns integration,
 device acceptance, hardening and closure. No additional product question is
 open. Concurrent Ask-at-Play work remains separate.
+
+## Implementation evidence — 2026-11-13
+
+The ticket lead started clean at `c603591b313afbd8e167e83fd5e14e2e13978fad`
+in `/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef`, branch
+`t3/369cacef`. The original-base diff was empty. The integrated `tf-il7u`
+and `t5-rplx` test corrections remain unchanged.
+
+Fresh tests reproduced the already-open Play path, unrelated tab/book/player/
+History visibility, recovery loss on open, an old-account read failure after
+sign-out, and player text reaching the left edge. The valid original-code run
+had eight behavioral failures and one pass. A missing test-fixture field and
+an interrupted widget test run are retained separately and are not red proof.
+
+Playback now owns an edition/action notice and a separate record-recovery
+notice. Save failure is derived from the existing failed-account write state.
+The status supplies one scoped message query; the old unscoped message getter
+is removed. The shared notice controller uses the narrow status signal and
+serves tabs, book pages, player and History. Tabs and History show account
+record notices, a book page selects that book's editions, and the player selects
+its open edition. Successful open or Play clears action errors without losing
+recovery or pending-save warnings. Retry saving resolves only the failed-save
+state. Player notices use the stage's existing horizontal inset of 24 logical pixels and
+empty notices consume no padding.
+
+Command failures keep the edition that the command attempted before waiting.
+Late account-read failures and failure-handler pauses cannot write a notice to
+a replacement account. A failed load of an obsolete source cannot describe its
+replacement. Automatic reopening uses the same audio-failure handling instead
+of calling a decoder error a record-recovery error. Replacement offers, stored
+positions, history, Undo, error-vs-exception behavior and narrow signals remain
+covered by the affected suites. New widget tests exercise Listen, Play, History
+and Retry saving through their real controllers.
+
+Checks and full retained logs are indexed in
+`docs/evidence/boo-spco-verification.json`. The first affected run exposed two
+sync test files still using the removed getter; their assertions were migrated
+without changing behavior. The corrected affected run passed 1,484 tests with
+three optional skips. Static analysis passed. Full-suite and review results
+are recorded in the evidence manifest and subsequent notes.
+
+Integration considerations: concurrent `boo-56h7` also changes Playback and its
+Play command. Preserve its Ask-at-Play decision while adapting its command
+wrappers to `PlaybackOperation` and the scoped status representation. No work
+from that ticket was implemented or imported here. Review the combined Play
+success transition and rerun the affected playback/sync/widget suites.
+
+This is host-test evidence, not Android visual acceptance. The existing
+`t1-dth0` device blocker was not retried or bypassed. No browser, device,
+credentials, coverage, general mutation campaign, timing-threshold changes,
+push, PR, merge or ticket closure was performed. Parent owns integration,
+acceptance, hardening and closure.
+
+The first full run passed 3,712 tests with 27 optional skips and failed two
+gallery tests. The migrated fixture now shows the real save-error message,
+putting player controls beyond the list's initially built children. Those two
+tests now use the gallery's existing scroll-to-control helper before acting;
+the Play, jump and Undo assertions are unchanged. No timing limit changed.
+The notice tests also await explicit entry into a held read instead of assuming
+an event-queue drain reached it. The final focused run passed 43 tests across
+notices and gallery, and analysis of all `lib` and `test` passed.
+
+The final full run passed 3,714 tests with 27 optional skips. Changed-Dart
+format verification passed for 22 files. The targeted layout scan reported
+no findings; it does not establish device acceptance. All source and test
+changes are ready for the single fresh read-only review. The ticket remains
+in progress until the parent integrates and closes it.

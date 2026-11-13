@@ -321,7 +321,11 @@ class PlayerView extends StatelessWidget {
                             ),
                           ),
                         ),
-                      RecordSaveStatus(playback: playback),
+                      RecordSaveStatus(
+                        playback: playback,
+                        edition: playback.edition,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                      ),
                       ReplacementStartNotice(playback: playback),
                       const SizedBox(height: 10),
                       // The position ticks while audio plays. Its own layer
