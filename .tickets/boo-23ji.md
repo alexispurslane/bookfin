@@ -1,6 +1,6 @@
 ---
 id: boo-23ji
-status: in_progress
+status: closed
 deps: []
 links: [boo-x1zf]
 created: 2026-11-12T23:41:01Z
@@ -95,3 +95,20 @@ Post-fix checks (logs under /tmp/bookfin-boo-23ji-logs):
 - `git diff 7704c364011c83e52aabc43e6d9d74011db2d162 --check` — exit 0 (r1-diff-check.log).
 
 R1 is resolved by the lead, with red-green evidence and final suite results, not by a second review. Both session disposal callers now use _releaseDocument (session.dart:775 and :895; operation at :797). The three controlled admission regressions start at pdf_close_test.dart:368. Original correctness, fulfillment and design verdicts remain changes_required in the preserved review record, with this resolution attached. No forks remain. Optional-test skips, native-crash limits, the statically checked delayed-save combination, and lack of device/coverage/mutation proof remain as recorded in the review. The parent owns integration, acceptance, hardening and closure; this ticket remains in_progress.
+
+## Handoff recovery and parent integration — 2026-11-13
+
+The first final handoff failed with the provider's Subscription Sharing usage-limit error. Inspection found clean committed work at 4417b7b4345d48547b7c487611818bc23664a191, complete passing verification and the recorded R1 resolution. No test command was interrupted. After the user said Continue, parent resumed the same child with clientRequestId `bookfin-boo-23ji-final-report-recovery-20261113-1`; recovery task `node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Athread-send%3Abookfin-boo-23ji-final-report-recovery-20261113-1`. It returned ready_for_integration, clean, no forks, all commands/reviewer finished. No provider switch, new reviewer, production edit or passing-check rerun was used for handoff recovery.
+
+Parent inspected the full original-base diff, all changed tests, source callers, completed original review and saved final logs. Integrated 3fb3ae14 and 4417b7b4 as d9d5c4c2 and 929ac3fd. Only the ticket conflicted; kept parent launch notes and all child evidence. Original review verdicts remain changes_required with the lead's verified R1 resolution attached. The native-crash and delayed-final-save combination limits remain as documented.
+
+`git diff --exit-code 4417b7b4 HEAD -- lib/reader/pdf.dart lib/reader/book_survey.dart lib/reader/ocr.dart lib/reader/session.dart test/reader/pdf_close_test.dart test/reader/ocr_read_lifetime_test.dart` was empty. Parent formatting through Nix: `dart format --output=none --set-exit-if-changed lib/reader/pdf.dart lib/reader/book_survey.dart lib/reader/ocr.dart lib/reader/session.dart test/reader/pdf_close_test.dart test/reader/ocr_read_lifetime_test.dart`: six files, zero changes; `/tmp/boo-23ji-integrated-format.log`.
+
+Parent combined verification after both integrations, run sequentially through `nix develop --command bash -c` with `set -e` (driver exit 0; `/tmp/boo-23ji-hd47-integrated-driver.log`):
+
+- `flutter analyze --no-pub lib/reader lib/crossings lib/speech test/reader test/crossings test/speech`: no issues; `/tmp/boo-23ji-hd47-integrated-analysis.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded test/reader/pdf_close_test.dart test/reader/pdf_document_test.dart test/reader/book_survey_test.dart test/reader/ocr_read_lifetime_test.dart test/reader/pdf_session_test.dart test/reader/survey_session_test.dart test/foundation/serial_queue_test.dart`: 71 passed, no skips or failures; `/tmp/boo-23ji-integrated-focused.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded`: 3,518 passed, 27 existing optional/external-fixture skips, zero failures, 4:44; `/tmp/boo-23ji-hd47-integrated-full.log`.
+- `git diff --check c4c3959f HEAD`: passed after both integrations.
+
+No production or test edits followed these checks. Only ticket records and next-ticket launch records changed. All parent commands finished. The existing t5-rplx intermittent unread-record failure remains unexplained; this passing run does not close it. No device/browser, Android latency, coverage or mutation claim. Closed after integration and combined host verification; release acceptance and hardening remain separate.

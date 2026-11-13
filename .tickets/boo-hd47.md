@@ -1,6 +1,6 @@
 ---
 id: boo-hd47
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:01Z
@@ -296,3 +296,22 @@ unavailable_checks:
   - Coverage and mutation testing: reserved for parent-coordinated hardening.
   - Root cause of the existing t5-rplx intermittent failure: unresolved.
 ```
+
+## Parent integration and closure — 2026-11-13
+
+Inspected the complete implementation/test/ticket diff, original three passing review assessments, caller ownership and saved logs. Integrated the ticket commits as 42ae6f49 and 15942f1c. Skipped the duplicate parent prerequisite 64d9fede because its original 7cb28177 was already on main. Only the ticket conflicted; preserved parent launch/prerequisite notes and child implementation/review evidence. `git diff --exit-code 02d4adf6 HEAD -- lib/reader/epub test/reader/epub` was empty: integrated code and tests match the reviewed child versions.
+
+Before PDF integration, parent ran sequentially through Nix (driver exit 0, `/tmp/boo-hd47-integrated-driver.log`):
+
+- `dart format --output=none --set-exit-if-changed lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/epub/search.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/places_test.dart test/reader/epub/saved_places_test.dart test/reader/epub/page_source_test.dart`: nine files, zero changes; `/tmp/boo-hd47-integrated-format.log`.
+- `flutter analyze --no-pub lib/reader/epub test/reader/epub`: no issues; `/tmp/boo-hd47-integrated-analysis.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded test/reader test/crossings`: 1,676 passed, 21 existing skips, zero failures; `/tmp/boo-hd47-integrated-affected.log`.
+
+Parent combined verification after both integrations, run sequentially through `nix develop --command bash -c` with `set -e` (driver exit 0; `/tmp/boo-23ji-hd47-integrated-driver.log`):
+
+- `flutter analyze --no-pub lib/reader lib/crossings lib/speech test/reader test/crossings test/speech`: no issues; `/tmp/boo-23ji-hd47-integrated-analysis.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded test/reader/pdf_close_test.dart test/reader/pdf_document_test.dart test/reader/book_survey_test.dart test/reader/ocr_read_lifetime_test.dart test/reader/pdf_session_test.dart test/reader/survey_session_test.dart test/foundation/serial_queue_test.dart`: 71 passed, no skips or failures; `/tmp/boo-23ji-integrated-focused.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded`: 3,518 passed, 27 existing optional/external-fixture skips, zero failures, 4:44; `/tmp/boo-23ji-hd47-integrated-full.log`.
+- `git diff --check c4c3959f HEAD`: passed after both integrations.
+
+No production or test edits followed these checks. Only ticket records and next-ticket launch records changed. All parent commands finished. The existing t5-rplx intermittent unread-record failure remains unexplained; this passing run does not close it. No device/browser, Android latency, coverage or mutation claim. Closed after integration and combined host verification; release acceptance and hardening remain separate.
