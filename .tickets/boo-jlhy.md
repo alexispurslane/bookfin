@@ -1,6 +1,6 @@
 ---
 id: boo-jlhy
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -77,3 +77,11 @@ Nonblocking evidence limits: concurrent migration joining and host-directory loo
 Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A30288610-5d9b-43db-993a-0f3afbafb856%3Adelegate-task%3Aboo-jlhy-review-astra-20261113-1>
 
 The final follow-up commit records only this review. Production code and tests remain exactly as reviewed and verified. The checkout's observed branch at handoff is `t3/atomic-catalog-files`; no checkout creation, reset or switch was performed by this child. No second reviewer, coverage, mutation work, push, PR, deployment, integration or ticket closure was performed. The parent owns combined integration verification, acceptance, hardening and closure.
+
+## Parent integration and closure
+
+Integrated implementation b0a1bc3a as 6e896ca5 and review record adbdf682 as 78656ede. The only cherry-pick conflict was the ticket append; both launch and evidence notes were retained. Production and test files match the reviewed child exactly. The parent inspected the entire original-base diff, completed reviewer report, real-disk failure tests and supplied logs. The reported PDF browser import chain is unchanged by this ticket; t7-3j9c remains open.
+
+Combined-main verification: `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded` passed 3,252 tests, 25 existing skips, zero failures, 4:21. Log: `/tmp/boo-jlhy-integrated-full.log`. Seven-file format check and `flutter analyze --no-pub lib/catalog lib/main.dart test/catalog/file_store_test.dart test/app test/compile/catalog_store.dart` passed through Nix, with zero format changes and no issues. Log: `/tmp/boo-jlhy-integrated-analysis.log`. Working-tree and integrated-diff whitespace checks passed.
+
+Closed after local integration. Device acceptance/performance remain unavailable; no actual kill, full browser success, coverage, mutation, push, publication or live deployment is claimed. Correction-store separation boo-7z9a and corrupt-cache preservation td-6hd7 remain open. All parent-owned verification commands finished.
