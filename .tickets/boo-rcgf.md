@@ -1,6 +1,6 @@
 ---
 id: boo-rcgf
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-12T23:41:01Z
@@ -14,3 +14,11 @@ tags: [survey-1112]
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: confirmed by static trace, not executed. lib/reader/epub/layout.dart:2147-2224. `_found` is a static Expando keyed by the paragraph object, with no width in the key. `pager.note` (lib/reader/epub/pager.dart:310-335) lays out a note excerpt at the sheet width, and `without(item)` (lib/reader/epub/prepare.dart:354-366) shares the later paragraph objects with the page. A note whose second or later paragraph exceeds about 1,024 code units overwrites the segment starts of that paragraph. A later page-width run that starts inside the paragraph then cuts a page at the wrong text (skipped or repeated lines). In a seeded section `agrees()` fails and the kept page map is deleted. No test covers a note with a long paragraph. Reproduce it first with a test. Then make the measures a value that the owner of the run holds, keyed by item and width, and lay a note out through the page source.
 
+
+## Astra implementation scope
+
+Start from the integrated catalog migration and PDF frame fixes on main. The current integrated catalog suite is running; the previous main baseline was 3,231 passes and 25 skips, and the catalog branch reported 3,252 passes and 25 skips. Build and direct fixes use codex/gpt-6-astra, reasoningEffort xhigh. One fresh read-only reviewer uses the same model with reasoningEffort high. No other children. The parent integrates and closes.
+
+Reproduce cross-width contamination through a long note paragraph shared with a page and a later page-width run starting inside that paragraph. Use one explicitly owned measurement model for layout, position search, kept measures, and notes, keyed by the actual paragraph and content width. Preserve resumable work budgets, correct kept-map validation/rejection, and place continuity. Route note layout through its existing page-source ownership. No new product choice or wholesale EPUB engine redesign is intended.
+
+Required checks include meaningful failing regression(s), all EPUB tests and crossing tests, affected analysis/format, and the complete Flutter suite with concurrency at most two. Builds and tests use nix develop, one heavy command at a time. Leave coverage, mutations, device acceptance, integration and ticket closure to the parent.
