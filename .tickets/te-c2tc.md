@@ -2,7 +2,7 @@
 id: te-c2tc
 status: open
 deps: []
-links: []
+links: [t3-5o5r]
 created: 2026-11-09T23:25:19Z
 type: task
 priority: 3
