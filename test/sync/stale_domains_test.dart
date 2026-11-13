@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -75,8 +76,14 @@ void main() {
         }
       }
 
-      Future<StaleDomains> sync() async =>
-          (await records.synchronize(fixture.session, fixture.client)).stale;
+      Future<({bool listening, bool reading})> sync() async {
+        await RecordTransport(records)
+            .synchronize(fixture.session, fixture.client);
+        return (
+          listening: records.staleNotifier(account).value,
+          reading: records.reading.staleNotifier(account).value,
+        );
+      }
 
       test(
         'a sync that brings no new record leaves both writers current',

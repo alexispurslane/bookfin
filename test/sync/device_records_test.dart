@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/shelf.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -105,7 +106,7 @@ void main() {
     final before = DateTime.now();
     await store.save(account, _place(9000));
     final after = DateTime.now();
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     final place = served().single;
     expect(place['device'], 'Pixel 8');
     final savedAt = DateTime.parse(place['savedAt'] as String);
@@ -118,7 +119,7 @@ void main() {
     () async {
       final store = LocalResumeStore(deviceName: () async => null);
       await store.save(account, _place(9000));
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       final place = served().single;
       expect(place.containsKey('device'), isFalse);
       expect(DateTime.tryParse(place['savedAt'] as String), isNotNull);
@@ -136,7 +137,7 @@ void main() {
         'milliseconds': 5000,
       }, device: 'Pixel Tablet');
     fixture.publish(tablet);
-    await phone.synchronize(fixture.session, fixture.client);
+    await RecordTransport(phone).synchronize(fixture.session, fixture.client);
     final versions = (await phone.conflicts(account))[_resume]!;
     final labels = labelConflict(
       _resume,
@@ -176,7 +177,7 @@ void main() {
     };
     final phone = LocalResumeStore(deviceName: () async => 'Pixel 8');
     await phone.save(account, _place(45000));
-    await phone.synchronize(fixture.session, fixture.client);
+    await RecordTransport(phone).synchronize(fixture.session, fixture.client);
 
     final versions = (await phone.conflicts(account))[_resume]!;
     final labels = labelConflict(

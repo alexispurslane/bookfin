@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -123,12 +124,12 @@ void main() {
     await LocalResumeStore().write(session.scope.key, snapshot('one'));
     acknowledge = false;
     await expectLater(
-      LocalResumeStore().synchronize(session, client),
+      RecordTransport(LocalResumeStore()).synchronize(session, client),
       throwsFormatException,
     );
     expect(objects, hasLength(1));
     acknowledge = true;
-    await LocalResumeStore().synchronize(session, client);
+    await RecordTransport(LocalResumeStore()).synchronize(session, client);
     expect(objects, hasLength(1));
     expect(uploads, 2);
     final preferences = await SharedPreferences.getInstance();
@@ -148,7 +149,7 @@ void main() {
       await LocalResumeStore().write(session.scope.key, snapshot('one'));
       wrongAccount = true;
       await expectLater(
-        LocalResumeStore().synchronize(session, client),
+        RecordTransport(LocalResumeStore()).synchronize(session, client),
         throwsA(isA<CatalogFailure>()),
       );
       expect(uploads, 0);
@@ -169,7 +170,7 @@ void main() {
       'Payload': jsonEncode(action),
       'Deleted': false,
     };
-    await store.synchronize(session, client);
+    await RecordTransport(store).synchronize(session, client);
     await store.write(session.scope.key, snapshot('one'));
     expect((await store.read(session.scope.key))!['bookmarks'], hasLength(2));
     expect(await store.conflicts(session.scope.key), isEmpty);
@@ -196,12 +197,12 @@ void main() {
         'Deleted': false,
       };
     }
-    await LocalResumeStore().synchronize(session, client);
+    await RecordTransport(LocalResumeStore()).synchronize(session, client);
     expect(
       (await LocalResumeStore().read(session.scope.key))!['history'],
       hasLength(9),
     );
-    await LocalResumeStore().synchronize(session, client);
+    await RecordTransport(LocalResumeStore()).synchronize(session, client);
     expect(
       (await LocalResumeStore().read(session.scope.key))!['history'],
       hasLength(9),
@@ -221,7 +222,7 @@ void main() {
       'Deleted': false,
     };
     await expectLater(
-      store.synchronize(session, client),
+      RecordTransport(store).synchronize(session, client),
       throwsFormatException,
     );
     final saved = (await store.read(session.scope.key))!;

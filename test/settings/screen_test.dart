@@ -241,7 +241,8 @@ void main() {
               },
             ],
           };
-        final sync = RecordSync(records: records)..bind(catalog.session);
+        final sync = RecordSync(records: records, transport: records.transport)
+          ..bind(catalog.session);
         await sync.synchronize();
         await showTab(tester, sync: sync);
         await tester.tap(find.text('Personal-record sync'));

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -110,7 +111,8 @@ void main() {
         ..upload(_highlight, _highlightValue)
         ..upload(['audio', 'bookmarks', 'mark'], _bookmark('mark'));
 
-      await phone.store.synchronize(server.session, server.client);
+      await RecordTransport(phone.store)
+          .synchronize(server.session, server.client);
 
       expect(_ids(await phone.store.read(account), 'bookmarks'), ['mark']);
       expect(
@@ -129,19 +131,19 @@ void main() {
           server,
           'newer',
         ).upload(['audio', 'bookmarks', 'mark'], _bookmark('mark'));
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
         final listening = await phone.store.read(account);
         final reading = await phone.store.reading.read(account);
         phone.store.acceptSnapshot(account, listening);
         phone.store.reading.acceptSnapshot(account, reading);
         _NewerBuild(server, 'later').upload(_highlight, _highlightValue);
 
-        final report = await phone.store.synchronize(
-          server.session,
-          server.client,
-        );
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
 
-        expect(report.stale, (listening: false, reading: false));
+        expect(phone.store.staleNotifier(account).value, isFalse);
+        expect(phone.store.reading.staleNotifier(account).value, isFalse);
         expect(_ids(listening, 'bookmarks'), ['mark']);
         expect(await phone.store.read(account), listening);
         expect(await phone.store.reading.read(account), reading);
@@ -153,7 +155,8 @@ void main() {
       () async {
         final phone = await Phone.open('unknown-saved');
         _NewerBuild(server, 'newer').upload(_highlight, _highlightValue);
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
 
         final listening = (await phone.store.read(account))!;
         phone.store.acceptSnapshot(account, listening);
@@ -181,7 +184,8 @@ void main() {
           'quote': 'It was a bright morning.',
         });
 
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
 
         expect(await phone.store.conflicts(account), isEmpty);
       },
@@ -196,12 +200,15 @@ void main() {
           ..upload(['audio', 'bookmarks', 'mark'], _bookmark('mark'));
         await phone.killDuring(
           'record_versions',
-          () => phone.store.synchronize(server.session, server.client),
+          () =>
+              RecordTransport(phone.store)
+                  .synchronize(server.session, server.client),
         );
 
         await phone.restart();
         expect(await phone.database.load(account), isNull);
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
         expect(
           await phone.savedRecords(account),
           contains(jsonEncode(_highlight)),
@@ -218,7 +225,8 @@ void main() {
         ..upload(['audio', 'history', 'later'], _event('later', 'rewind'))
         ..upload(['audio', 'history', 'known'], _event('known', 'seek'));
 
-      await phone.store.synchronize(server.session, server.client);
+      await RecordTransport(phone.store)
+          .synchronize(server.session, server.client);
 
       expect(_ids(await phone.store.read(account), 'history'), ['known']);
       expect(
@@ -238,7 +246,8 @@ void main() {
         ], {..._event('broken', 'seek')}..remove('before'));
 
         await expectLater(
-          phone.store.synchronize(server.session, server.client),
+          RecordTransport(phone.store)
+              .synchronize(server.session, server.client),
           throwsFormatException,
         );
         expect(_ids(await phone.store.read(account), 'history'), isEmpty);

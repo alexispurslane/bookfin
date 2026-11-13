@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/reader/session.dart';
@@ -154,14 +155,14 @@ void main() {
     );
 
     await expectLater(
-      phone.store.synchronize(server.session, connection),
+      RecordTransport(phone.store).synchronize(server.session, connection),
       throwsA(isA<SocketException>()),
     );
     await phone.restart();
     expect(_moves(await phone.store.reading.read(account)), ['one']);
     connection.offline = false;
-    await phone.store.synchronize(server.session, connection);
-    await phone.store.synchronize(server.session, connection);
+    await RecordTransport(phone.store).synchronize(server.session, connection);
+    await RecordTransport(phone.store).synchronize(server.session, connection);
 
     final uploaded = [
       for (final object in server.objects.values)
@@ -187,7 +188,8 @@ void main() {
     );
 
     for (final device in [phone, tablet, phone]) {
-      await device.store.synchronize(server.session, server.client);
+      await RecordTransport(device.store)
+          .synchronize(server.session, server.client);
     }
 
     for (final device in [phone, tablet]) {
@@ -203,15 +205,19 @@ void main() {
       account,
       _changes(history: {'one': _move('one'), 'two': _move('two')}),
     );
-    await phone.store.synchronize(server.session, server.client);
-    await tablet.store.synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
+    await RecordTransport(tablet.store)
+        .synchronize(server.session, server.client);
 
     await tablet.store.reading.saveReading(
       account,
       _changes(history: {'one': null}),
     );
-    await tablet.store.synchronize(server.session, server.client);
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(tablet.store)
+        .synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
 
     expect(_moves(await phone.store.reading.read(account)), ['two']);
     expect(await phone.store.conflicts(account), isEmpty);
@@ -281,8 +287,10 @@ void main() {
       account,
       _changes(history: {'one': _move('one')}),
     );
-    await tablet.store.synchronize(server.session, server.client);
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(tablet.store)
+        .synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
 
     await phone.restart();
 
@@ -339,8 +347,10 @@ void main() {
         history: {'late': _move('late', at: '2026-11-09T20:05:00.000Z')},
       ),
     );
-    await tablet.store.synchronize(server.session, server.client);
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(tablet.store)
+        .synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
     var notified = 0;
     reader.historyChanges.addListener(() => notified++);
     await reader.refreshPersonalRecords();

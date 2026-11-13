@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/transport.dart';
 import 'package:bookfin/playback/database.dart';
@@ -220,7 +221,7 @@ void main() {
     addTearDown(client.close);
     final records = LocalResumeStore(openDatabase: () async => database);
     await expectLater(
-      records.synchronize(session, client),
+      RecordTransport(records).synchronize(session, client),
       throwsA(
         isA<FormatException>().having(
           (error) => error.message,
@@ -238,7 +239,7 @@ void main() {
       path: path,
     );
     final restarted = LocalResumeStore(openDatabase: () async => database);
-    await restarted.synchronize(session, client);
+    await RecordTransport(restarted).synchronize(session, client);
     expect(transport.attempts[1], transport.attempts.first);
     final saved = (await database.load(account))!['sync'] as Map;
     expect(saved['pending'], isEmpty);
@@ -261,7 +262,7 @@ void main() {
       if (page['HasMore'] == false) break;
     }
     expect(discovered, payloads);
-    await restarted.synchronize(session, client);
+    await RecordTransport(restarted).synchronize(session, client);
     expect(transport.attempts, hasLength(29));
     await restarted.checkInvariants();
   });

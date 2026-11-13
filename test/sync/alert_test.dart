@@ -33,7 +33,8 @@ void main() {
   late RecordSync sync;
   setUp(() async {
     records = ControlledRecords();
-    sync = RecordSync(records: records)..bind(account());
+    sync = RecordSync(records: records, transport: records.transport)
+      ..bind(account());
     await pumpEventQueue();
   });
   tearDown(() => sync.dispose());

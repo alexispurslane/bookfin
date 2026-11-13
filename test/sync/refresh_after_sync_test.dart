@@ -1,12 +1,20 @@
+import 'dart:convert';
+
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/sync/coordinator.dart';
+import 'package:bookfin/sync/journal.dart';
+import 'package:bookfin/sync/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../playback/incremental_save_test.dart' show bookmark;
 import '../playback/playback_test.dart'
     show LocalFiles, MemoryResume, TestEngine, account, recording, title;
+import 'controlled_transport.dart';
+import 'stale_domains_test.dart' show readingBookmark;
 
 /// Counts the refreshes that record sync asks Playback for. While
 /// [refreshFailure] is set, each refresh fails with it.
@@ -46,21 +54,56 @@ class _Reader extends ReaderSession {
 
 /// Personal records whose next sync reports [stale] and finds [found], and
 /// which save every choice between saved versions.
-class _Records implements LocalResumeStore {
-  StaleDomains stale = (listening: false, reading: false);
+class _Records extends LocalResumeStore {
+  late final transport = ControlledTransport(this, synchronize);
+  late final remote = RecordJournal(account().scope.key, 'remote');
+  Future<void> changed = Future.value();
+  ({bool listening, bool reading}) get stale => (
+    listening: staleNotifier(account().scope.key).value,
+    reading: reading.staleNotifier(account().scope.key).value,
+  );
+  set stale(({bool listening, bool reading}) value) {
+    changed = changed.then((_) async {
+      for (final reading in [false, true]) {
+        final behind = reading ? value.reading : value.listening;
+        if (behind) {
+          final id = 'mark-${remote.uploads.length}';
+          remote.change(
+            jsonEncode([reading ? 'reading' : 'audio', 'bookmarks', id]),
+            reading ? readingBookmark(id) : bookmark(id),
+          );
+        }
+      }
+      await receivePage(
+        account().scope.key,
+        remote.uploads,
+        remote.uploads.length,
+      );
+      if (!value.listening) {
+        acceptSnapshot(account().scope.key, await read(account().scope.key));
+      }
+      if (!value.reading) {
+        reading.acceptSnapshot(
+          account().scope.key,
+          await reading.read(account().scope.key),
+        );
+      }
+    });
+  }
+
   int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
   int syncs = 0;
 
   /// The identity of each version that a choice saved.
   final chosen = <String>[];
-  @override
   Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     syncs++;
-    return (stale: stale, replaced: replaced);
+    await changed;
+    return (replaced: replaced);
   }
 
   @override
@@ -70,7 +113,10 @@ class _Records implements LocalResumeStore {
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) async {
+    await changed;
     chosen.add(identity);
+    stale = (listening: true, reading: stale.reading);
+    await changed;
     return true;
   }
 
@@ -87,10 +133,8 @@ class _Records implements LocalResumeStore {
   @override
   Future<void> recoverKept() async {
     if (recoveryFails) throw Exception('The kept copies cannot be read.');
+    await changed;
   }
-
-  @override
-  StaleDomains staleDomains(String account) => stale;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -105,18 +149,41 @@ void main() {
   late DateTime clock;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     downloads = LocalFiles();
     playback = _Playback(downloads);
     reader = _Reader(downloads);
     records = _Records();
+    records.registerWriter(
+      account: () => account().scope.key,
+      flush: playback.flush,
+      refresh: () async {
+        await playback.refreshPersonalRecords();
+        records.acceptSnapshot(
+          account().scope.key,
+          await records.read(account().scope.key),
+        );
+      },
+    );
+    records.reading.registerWriter(
+      account: () => account().scope.key,
+      flush: reader.flush,
+      refresh: () async {
+        await reader.refreshPersonalRecords();
+        records.reading.acceptSnapshot(
+          account().scope.key,
+          await records.reading.read(account().scope.key),
+        );
+      },
+    );
     clock = DateTime(2026, 11, 7, 16, 29);
     sync = RecordSync(
       records: records,
-      playback: playback,
-      reader: reader,
+      transport: records.transport,
       now: () => clock,
     )..bind(account());
     // Signing in syncs at once. These tests start after that sync.
+    await sync.synchronize();
     await pumpEventQueue();
     playback.refreshes = 0;
     reader.refreshes = 0;
@@ -289,6 +356,7 @@ void main() {
 
   group('a refresh that fails after a choice that was saved', () {
     setUp(() {
+      records.stale = (listening: true, reading: true);
       playback.refreshFailure = Exception('The listening records failed.');
     });
 
@@ -334,7 +402,13 @@ void main() {
         playing = Playback(downloads: downloads, engine: engine, store: store);
         await playing.bind(account(), [title]);
         await playing.open(title, recording);
-        sync = RecordSync(records: records, playback: playing)..bind(account());
+        records.registerWriter(
+          account: () => account().scope.key,
+          flush: playing.flush,
+          refresh: playing.refreshPersonalRecords,
+        );
+        sync = RecordSync(records: records, transport: records.transport)
+          ..bind(account());
         // Signing in syncs at once. These tests start after that sync.
         await pumpEventQueue();
         records.stale = (listening: true, reading: false);

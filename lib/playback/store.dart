@@ -3,27 +3,17 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart'
-    show ValueListenable, ValueNotifier, compute;
+    show ValueListenable, ValueNotifier, VoidCallback, compute;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../foundation/hop.dart';
-import 'playback.dart';
-import '../sync/journal.dart';
-import '../catalog/jellyfin.dart';
-import 'database.dart';
 import '../catalog/model.dart' show Edition, EditionKind;
+import '../foundation/hop.dart';
 import '../reader/session.dart' show ReadingChanges, ReadingStore;
-
-/// Which domains of an account hold records that changed outside their
-/// writer since the writer last took in a snapshot that the store handed
-/// it: [listening] for Playback, [reading] for the reader. Sync and a
-/// choice between saved versions change records outside the writers.
-typedef StaleDomains = ({bool listening, bool reading});
-
-/// What one sync tells its caller: the [stale] domains whose writer must
-/// refresh, and how many of this phone's saved actions differed from the
-/// server's copy of the same action and were [replaced] by it.
-typedef SyncReport = ({StaleDomains stale, int replaced});
+import '../sync/journal.dart';
+import 'database.dart';
+import 'playback.dart';
+import 'record_codec.dart';
+import 'record_writer.dart';
 
 /// What the store knows of the kept copies of damaged records: how many
 /// records the latest retry of them brought back, and whether kept copies
@@ -137,7 +127,7 @@ const _inlineMetadataText = 512;
 /// records after it. No view shows it, no choice between saved versions
 /// offers it, and no writer changes it. A later build that knows its kind
 /// shows it at once, without a new sync. A value of a known kind that does
-/// not decode is still damage. [_readable] decides which records this build
+/// not decode is still damage. [readableRecord] decides which records this build
 /// reads.
 ///
 /// Invariants, checked on demand by [checkInvariants]:
@@ -146,7 +136,8 @@ const _inlineMetadataText = 512;
 /// - The durable rows of each cached account equal its journal and settings,
 ///   unless a rewrite into a new record file is due.
 /// - Each kept view equals the view that its cached account derives.
-class LocalResumeStore implements ResumeStore, ListeningStore {
+class LocalResumeStore
+    implements ResumeStore, ListeningStore, RecordWriterHost {
   LocalResumeStore({this.openDatabase, IsolateHop? hop, this.deviceName})
     : _hop = hop ?? compute;
 
@@ -178,8 +169,74 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   }
 
   /// The writers whose domain holds records that changed outside them since
-  /// the last snapshot that they took in, as [StaleDomains] says.
-  final Set<String> _behind = {};
+  /// the last snapshot that they took in. Each account/domain has one signal.
+  final Map<String, ValueNotifier<bool>> _behind = {};
+  final _writers = <_RegisteredWriter>{};
+
+  ValueNotifier<bool> _stale(String account, {required bool reading}) =>
+      _behind.putIfAbsent(
+        _writer(account, reading: reading),
+        () => ValueNotifier(false),
+      );
+
+  @override
+  ValueListenable<bool> staleNotifier(String account) =>
+      _stale(account, reading: false);
+
+  @override
+  VoidCallback registerWriter({
+    required String? Function() account,
+    required Future<void> Function() flush,
+    required Future<void> Function() refresh,
+  }) => _registerWriter(
+    reading: false,
+    account: account,
+    flush: flush,
+    refresh: refresh,
+  );
+
+  VoidCallback _registerWriter({
+    required bool reading,
+    required String? Function() account,
+    required Future<void> Function() flush,
+    required Future<void> Function() refresh,
+  }) {
+    final writer = _RegisteredWriter(reading, account, flush, refresh);
+    _writers.add(writer);
+    return () => _writers.remove(writer);
+  }
+
+  /// Flushes each live writer before sync or a choice. Writers retain their
+  /// own retry and save-error policies. All flushes finish before a failure
+  /// is handed to the caller; no storage operation holds the queue while
+  /// awaiting a writer that can itself save.
+  Future<void> flushWriters() async {
+    await Future.wait([
+      for (final writer in _writers.toList()) Future<void>.sync(writer.flush),
+    ]);
+  }
+
+  /// Refreshes only stale writers currently bound to [account]. Independent
+  /// refreshes all finish even when one fails with an Exception. A bug still
+  /// reaches the caller. Snapshot acceptance alone clears a stale signal.
+  Future<bool> refreshWriters(String account) async {
+    Future<bool> refresh(_RegisteredWriter writer) async {
+      try {
+        await writer.refresh();
+        return true;
+      } on Exception {
+        return false;
+      }
+    }
+
+    final results = await Future.wait([
+      for (final writer in _writers.toList())
+        if (writer.account() == account &&
+            _stale(account, reading: writer.reading).value)
+          refresh(writer),
+    ]);
+    return !results.contains(false);
+  }
 
   /// The accounts whose damaged data this store kept aside.
   final Set<String> _setAside = {};
@@ -347,12 +404,6 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     return operation;
   });
 
-  /// The domains of [account] whose writer has not taken in records that
-  /// changed outside it.
-  StaleDomains staleDomains(String account) => (
-    listening: _behind.contains(_writer(account, reading: false)),
-    reading: _behind.contains(_writer(account, reading: true)),
-  );
   Future<void> _writes = Future.value();
   final Map<String, Map<String, Map<String, dynamic>>> _observed = {};
   final Map<String, _StoredAccount> _accounts = {};
@@ -388,10 +439,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   void _changedOutsideWriters(String account, Iterable<String> records) {
     for (final record in records) {
       final address = jsonDecode(record) as List;
-      if (!_knownAddress(address)) continue;
+      if (!knownRecordAddress(address)) continue;
       final writer = _writer(account, reading: address[0] == 'reading');
-      _behind.add(writer);
       _handed.remove(writer);
+      _stale(account, reading: address[0] == 'reading').value = true;
     }
   }
 
@@ -426,7 +477,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     return operation;
   }
 
-  Future<T> _access<T>(String account, T Function(_StoredAccount?) query) {
+  Future<T> _access<T>(
+    String account,
+    FutureOr<T> Function(_StoredAccount?) query,
+  ) {
     final operation = _writes.then(
       (_) async => query(await _readAccount(account)),
     );
@@ -434,151 +488,48 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     return operation;
   }
 
-  Future<T> _query<T>(String account, T Function(RecordJournal) query) =>
-      _access(
-        account,
-        (stored) => query(stored?.journal ?? _journal(account, {})),
-      );
+  Future<T> _query<T>(
+    String account,
+    FutureOr<T> Function(RecordJournal) query,
+  ) => _access(
+    account,
+    (stored) => query(stored?.journal ?? _journal(account, {})),
+  );
 
-  /// Uploads the pending actions of the account of [session], then receives
-  /// the actions that other devices uploaded, and saves each page of them
-  /// with its discovery cursor in one write.
-  ///
-  /// Returns the domains whose writer has not taken in records that changed
-  /// outside it, including records that an earlier sync saved before it
-  /// failed. A sync that brings nothing new, or only this device's own
-  /// actions, returns no stale domain once both writers are current.
-  Future<SyncReport> synchronize(
-    JellyfinSession session,
-    JellyfinClient client,
-  ) async {
-    await client.validate(session);
-    final account = session.scope.key;
-    var replaced = 0;
-    final uploads = await _query(account, (journal) => journal.uploads);
-    for (final action in uploads) {
-      final identity = RecordJournal.identity(action);
-      final payload = jsonEncode(action);
-      Map<String, dynamic> stored;
-      try {
-        stored = await client.uploadPersonalRecord(session, identity, payload);
-      } on Exception {
-        // The server refuses an upload whose identity it holds with other
-        // content. Its copy was uploaded before any damage here, so it
-        // wins. A server that cannot be asked, or that lacks the action,
-        // leaves the failure as it was.
-        final copy = await _serverCopy(session, client, identity);
-        if (copy == null) rethrow;
-        if (!const DeepCollectionEquality().equals(copy, action)) {
-          await _takeServerCopies(account, [copy]);
-          replaced++;
-        }
-        await _update(account, (journal) => journal.acknowledge(identity));
-        continue;
-      }
-      if (stored['Id'] != identity ||
-          stored['Payload'] != payload ||
-          stored['Deleted'] != false ||
-          stored['Sequence'] is! int ||
-          (stored['Sequence'] as int) < 1) {
-        throw const FormatException(
-          'The server did not confirm the pending personal record.',
-        );
-      }
-      await _update(account, (journal) => journal.acknowledge(identity));
-    }
-    for (var request = 0; request < 128; request++) {
-      final after = await _query(account, (journal) => journal.cursor);
-      final page = await client.personalRecordChanges(session, after);
-      if (page['Objects'] is! List ||
-          page['Cursor'] is! int ||
-          page['HasMore'] is! bool) {
-        throw const FormatException(
-          'Invalid personal-record discovery response.',
-        );
-      }
-      final objects = page['Objects'] as List;
-      var previous = after;
-      final actions = <Map<String, dynamic>>[];
-      for (final value in objects) {
-        if (value is! Map<String, dynamic> ||
-            value['Sequence'] is! int ||
-            (value['Sequence'] as int) <= previous ||
-            value['Deleted'] != false ||
-            value['Payload'] is! String) {
-          throw const FormatException(
-            'Personal-record discovery is incomplete or contains retired actions.',
-          );
-        }
-        previous = value['Sequence'] as int;
-        final decoded = jsonDecode(value['Payload'] as String);
-        if (decoded is! Map<String, dynamic> ||
-            value['Id'] != RecordJournal.identity(decoded)) {
-          throw const FormatException(
-            'Invalid personal-record object identity.',
-          );
-        }
-        actions.add(decoded);
-      }
-      final differing = await _query(
-        account,
-        (journal) => [
-          for (final action in actions)
-            if (journal.retained(RecordJournal.identity(action))
-                case final local?
-                when !const DeepCollectionEquality().equals(local, action))
-              action,
-        ],
-      );
-      if (differing.isNotEmpty) {
-        await _takeServerCopies(account, differing);
-        replaced += differing.length;
-      }
-      if (page['Cursor'] != previous ||
-          (page['HasMore'] == true && objects.isEmpty)) {
-        throw const FormatException(
-          'Personal-record discovery did not advance safely.',
-        );
-      }
-      // The writers count as behind before the save, so that no read can
-      // hand out a snapshot between the save and the mark. A failed save
-      // costs one refresh that finds nothing new.
-      await _update(account, (journal) {
-        _changedOutsideWriters(account, journal.receive(actions));
-        journal.cursor = previous;
-      });
-      if (page['HasMore'] == false) {
-        return (stale: staleDomains(account), replaced: replaced);
-      }
-    }
-    throw Exception(
-      'Personal-record sync is incomplete. Retry to continue discovery.',
-    );
-  }
+  /// A detached snapshot of actions still awaiting server acknowledgment.
+  /// Editing the result cannot change retained or pending actions.
+  Future<List<Map<String, dynamic>>> pendingUploads(String account) => _query(
+    account,
+    (journal) =>
+        _derive(_copyActions, journal.uploads, small: journal.pending.isEmpty),
+  );
 
-  /// The server's copy of the action [identity], or null when the server
-  /// cannot be asked, lacks it, or answers with something else.
-  Future<Map<String, dynamic>?> _serverCopy(
-    JellyfinSession session,
-    JellyfinClient client,
-    String identity,
-  ) async {
-    try {
-      final stored = await client.personalRecord(session, identity);
-      if (stored['Id'] != identity ||
-          stored['Deleted'] != false ||
-          stored['Payload'] is! String) {
-        return null;
-      }
-      final copy = jsonDecode(stored['Payload'] as String);
-      return copy is Map<String, dynamic> &&
-              RecordJournal.identity(copy) == identity
-          ? copy
-          : null;
-    } on Exception {
-      return null;
+  /// The last discovery sequence durably saved with its received page.
+  Future<int> discoveryCursor(String account) =>
+      _query(account, (journal) => journal.cursor);
+
+  /// Marks an action uploaded only after transport verified its server copy.
+  /// The action itself stays retained. A failed write keeps it pending.
+  Future<void> acknowledge(String account, String identity) =>
+      _update(account, (journal) => journal.acknowledge(identity));
+
+  /// Receives a decoded discovery page and its cursor in one durable write.
+  /// The protocol validates page ordering before calling this method. A
+  /// cursor behind the saved cursor is rejected without changing records.
+  /// Marks changed domains stale before saving, so no read can accept an old
+  /// snapshot between the save and invalidation. A failed save can cause an
+  /// extra refresh but never loses the discovery cursor's pending records.
+  Future<void> receivePage(
+    String account,
+    List<Map<String, dynamic>> actions,
+    int cursor,
+  ) => _update(account, (journal) {
+    if (cursor < journal.cursor) {
+      throw RangeError.range(cursor, journal.cursor, null, 'cursor');
     }
-  }
+    _changedOutsideWriters(account, journal.receive(actions));
+    journal.cursor = cursor;
+  });
 
   /// Replaces each saved action of [account] that has the identity of one
   /// of [copies], the server's copies, by that copy. The server's copy wins,
@@ -588,17 +539,29 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   ///
   /// The journal is replayed with the copies in a hop. Throws a
   /// [FormatException] when the copies do not fit the journal, and changes
-  /// nothing then.
-  Future<void> _takeServerCopies(
+  /// nothing then. Returns the number of differing retained actions replaced;
+  /// new actions and copies equal to retained actions make no change.
+  Future<int> takeServerCopies(
     String account,
     List<Map<String, dynamic>> copies,
   ) {
     final operation = _writes.then((_) async {
       var completed = false;
       try {
-        final stored = (await _readAccount(account))!;
+        final stored = await _readAccount(account);
+        copies = [
+          for (final action in copies)
+            if (stored?.journal.retained(RecordJournal.identity(action))
+                case final local?
+                when !const DeepCollectionEquality().equals(local, action))
+              action,
+        ];
+        if (copies.isEmpty) {
+          completed = true;
+          return 0;
+        }
         final database = await _storage();
-        final sync = stored.journal.encode();
+        final sync = stored!.journal.encode();
         final restored = await _derive(
           _withServerCopies,
           (
@@ -628,6 +591,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           reported: false,
         );
         completed = true;
+        return copies.length;
       } finally {
         if (!completed) _forget(account);
       }
@@ -645,7 +609,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
             for (final MapEntry(key: record, value: versions)
                 in (stored?.journal.conflicts ?? const {}).entries)
               if (versions.every(
-                (version) => _readable(
+                (version) => readableRecord(
                   record,
                   version['value'] as Map<String, dynamic>?,
                 ),
@@ -1069,7 +1033,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           for (final entry in (copied[collection] as Map).entries)
             jsonEncode(['audio', collection, entry.key]):
                 entry.value as Map<String, dynamic>?,
-        ..._flatten({'resumes': copied['resumes']}, reading: false),
+        ...flattenRecords({'resumes': copied['resumes']}, reading: false),
       },
     );
   }
@@ -1086,18 +1050,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   @override
   Future<PlaceOrigin> origin(String accountKey, Edition edition) {
     final reading = edition.kind == EditionKind.text;
-    final record = jsonEncode([
-      if (reading) 'reading' else 'audio',
-      'resumes',
-      if (reading)
-        jsonEncode([
-          edition.id,
-          edition.files.single.key,
-          edition.files.single.revision,
-        ])
-      else
-        jsonEncode([edition.id, editionSources(edition)]),
-    ]);
+    final record = resumeRecordAddress(edition);
     return _query(accountKey, (journal) {
       final own = journal.lastOwn(record)?['value'];
       final versions = journal.versionsByRecord[record] ?? const [];
@@ -1133,14 +1086,14 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final handed = _handed.remove(writer);
     if (handed != null && identical(handed.snapshot, value)) {
       _observed[writer] = handed.records;
-      _behind.remove(writer);
+      _stale(account, reading: reading).value = false;
       return;
     }
     // NOTE: Engine rule 1. Production writers accept the snapshot that their
     // read returned, which the branch above takes. This branch serves other
     // callers, such as tests, and a writer that has no saved records.
     final snapshot = _copy(value ?? const {});
-    _observed[writer] = _flatten(
+    _observed[writer] = flattenRecords(
       reading ? {'reading': snapshot} : snapshot,
       reading: reading,
     );
@@ -1164,7 +1117,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       snapshot,
       reading: reading,
       records: (observed) {
-        final next = _flatten(
+        final next = flattenRecords(
           reading ? {'reading': snapshot} : snapshot,
           reading: reading,
         );
@@ -1241,10 +1194,37 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   }
 }
 
-/// The reading records of a [LocalResumeStore], as the reader uses them.
-class ReadingRecords implements ResumeStore, ReadingStore {
+/// A live writer and the domain whose stale signal controls its refresh.
+class _RegisteredWriter {
+  _RegisteredWriter(this.reading, this.account, this.flush, this.refresh);
+  final bool reading;
+  final String? Function() account;
+  final Future<void> Function() flush;
+  final Future<void> Function() refresh;
+}
+
+/// The reading domain shares its owner's writer coordination and durable
+/// journal, while exposing only reading snapshots and invalidation.
+class ReadingRecords implements ResumeStore, ReadingStore, RecordWriterHost {
   ReadingRecords._(this.owner);
   final LocalResumeStore owner;
+
+  @override
+  ValueListenable<bool> staleNotifier(String account) =>
+      owner._stale(account, reading: true);
+
+  @override
+  VoidCallback registerWriter({
+    required String? Function() account,
+    required Future<void> Function() flush,
+    required Future<void> Function() refresh,
+  }) => owner._registerWriter(
+    reading: true,
+    account: account,
+    flush: flush,
+    refresh: refresh,
+  );
+
   @override
   Future<Map<String, dynamic>?> read(String accountKey) =>
       owner._read(accountKey, reading: true);
@@ -1275,7 +1255,7 @@ class ReadingRecords implements ResumeStore, ReadingStore {
           for (final entry in (copied[collection] as Map).entries)
             jsonEncode(['reading', collection, entry.key]):
                 entry.value as Map<String, dynamic>?,
-        ..._flatten({
+        ...flattenRecords({
           'reading': {'resumes': copied['resumes']},
         }, reading: true),
       },
@@ -1292,91 +1272,6 @@ class ReadingRecords implements ResumeStore, ReadingStore {
   @override
   Future<PlaceOrigin> origin(String accountKey, Edition edition) =>
       owner.origin(accountKey, edition);
-}
-
-/// The collections of each domain that this build reads.
-const _collections = {
-  'audio': {'bookmarks', 'history', 'resumes'},
-  'reading': {'bookmarks', 'history', 'resumes'},
-};
-
-/// Whether this build knows the domain and the collection of [address].
-bool _knownAddress(List<dynamic> address) =>
-    _collections[address[0]]?.contains(address[1]) ?? false;
-
-/// Whether this build reads the record at [record] with [value], or its
-/// deletion when [value] is null: this build knows its address, and a
-/// history entry names a kind of move that this build knows. A kind that is
-/// not a string is no newer kind, so its record counts as read, and its
-/// decoding fails as damage.
-bool _readable(String record, Map<String, dynamic>? value) {
-  final address = jsonDecode(record) as List;
-  if (!_knownAddress(address)) return false;
-  final kind = value?['kind'];
-  return address[1] != 'history' ||
-      kind is! String ||
-      HistoryAction.values.any((known) => known.name == kind);
-}
-
-/// Throws a [FormatException] when the value of [action] is damaged: this
-/// build reads its record ([_readable]), but the value does not decode.
-void _validateActionValue(Map<String, dynamic> action) {
-  final value = action['value'] as Map<String, dynamic>?;
-  if (value == null || !_readable(action['record'] as String, value)) return;
-  final address = jsonDecode(action['record'] as String) as List;
-  final reading = address[0] == 'reading';
-  try {
-    switch (address[1]) {
-      case 'bookmarks':
-        if (value['id'] != address[2]) throw const FormatException();
-        if (reading) {
-          Bookmark.fromJson(value, decodeTextPosition);
-        } else {
-          Bookmark.fromJson(value, decodePosition);
-        }
-      case 'history':
-        if (value['id'] != address[2]) throw const FormatException();
-        if (reading) {
-          HistoryEvent.fromJson(value, decodeTextPosition);
-        } else {
-          HistoryEvent.fromJson(value, decodePosition);
-        }
-      case 'resumes':
-        if (reading) {
-          decodeTextPosition(value);
-        } else {
-          decodePosition(value);
-        }
-        final projected = reading
-            ? {
-                'reading': {
-                  'resumes': [value],
-                },
-              }
-            : {
-                'resumes': {
-                  value['edition'] as String: [
-                    <String, dynamic>{...value}..remove('edition'),
-                  ],
-                },
-              };
-        if (!_flatten(
-          projected,
-          reading: reading,
-        ).containsKey(action['record'])) {
-          throw const FormatException();
-        }
-    }
-  } on FormatException {
-    throw const FormatException(
-      'A personal record is invalid. Existing records were kept.',
-    );
-  } on TypeError {
-    // Record decoders also use checked casts for persisted field types.
-    throw const FormatException(
-      'A personal record is invalid. Existing records were kept.',
-    );
-  }
 }
 
 /// The settings of a listening [snapshot] and of its `reading` snapshot,
@@ -1397,43 +1292,6 @@ Map<String, dynamic> _metadata(Map<String, dynamic> snapshot) {
       'version': 1,
     },
   };
-}
-
-/// The listening or reading snapshot of an account with [metadata] and the
-/// record [values] of [RecordJournal.values]: the domain's settings plus
-/// the current value of each of its records that this build reads
-/// ([_readable]), as a fresh copy. It changes the listening resumes of
-/// [values].
-Map<String, dynamic> _snapshot(
-  Map<String, dynamic> metadata,
-  Map<String, Map<String, dynamic>> values, {
-  required bool reading,
-}) {
-  final domain = reading ? 'reading' : 'audio';
-  final snapshot = <String, dynamic>{
-    ...reading
-        ? metadata['reading'] as Map<String, dynamic>
-        : (Map.of(metadata)..remove('reading')),
-    'bookmarks': <dynamic>[],
-    'history': <dynamic>[],
-    'resumes': reading ? <dynamic>[] : <String, dynamic>{},
-  };
-  for (final entry in values.entries) {
-    final address = jsonDecode(entry.key) as List;
-    if (address[0] != domain || !_readable(entry.key, entry.value)) continue;
-    final collection = address[1] as String;
-    final value = entry.value;
-    if (!reading && collection == 'resumes') {
-      final edition = value.remove('edition') as String;
-      ((snapshot['resumes'] as Map).putIfAbsent(
-        edition,
-        () => <dynamic>[],
-      ) as List).add(value);
-    } else {
-      (snapshot[collection] as List).add(value);
-    }
-  }
-  return _copy(snapshot);
 }
 
 Map<String, dynamic> _copy(Map<String, dynamic> value) =>
@@ -1464,8 +1322,8 @@ String _preferenceText(
 ) {
   final values = input.journal.values;
   return jsonEncode({
-    ..._snapshot(input.metadata, values, reading: false),
-    'reading': _snapshot(input.metadata, values, reading: true),
+    ...recordSnapshot(input.metadata, values, reading: false),
+    'reading': recordSnapshot(input.metadata, values, reading: true),
     'sync': input.journal.encode(),
   });
 }
@@ -1477,11 +1335,14 @@ _Views _views(
   Map<String, Map<String, dynamic>> values,
 ) {
   _View view({required bool reading}) {
-    final snapshot = _snapshot(metadata, values, reading: reading);
+    final snapshot = recordSnapshot(metadata, values, reading: reading);
     final copy = _copy(snapshot);
     return (
       snapshot: snapshot,
-      records: _flatten(reading ? {'reading': copy} : copy, reading: reading),
+      records: flattenRecords(
+        reading ? {'reading': copy} : copy,
+        reading: reading,
+      ),
     );
   }
 
@@ -1677,7 +1538,7 @@ Map<String, Map<String, dynamic>> _readableActions(
         account,
         'salvage',
         null,
-        _validateActionValue,
+        validateRecordAction,
       ).receive([action]);
       readable[identity] = action;
     } on FormatException {
@@ -1718,7 +1579,7 @@ _Restored _withServerCopies(
       for (final identity in (sync['pending'] as List).cast<String>())
         if (!copies.containsKey(identity)) identity,
     ],
-  }, _validateActionValue);
+  }, validateRecordAction);
   return (
     stored: (metadata: input.metadata, journal: journal),
     views: _views(input.metadata, journal.values),
@@ -1785,7 +1646,9 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
       kept.actions.putIfAbsent(identity, () => action);
       if (pending?.contains(identity) ?? true) kept.pending.add(identity);
     }
-    for (final MapEntry(key: record, :value) in _records(copy.records)) {
+    for (final MapEntry(key: record, :value) in recoverableRecords(
+      copy.records,
+    )) {
       if (holds?.records.contains(record) ?? false) continue;
       kept.records.putIfAbsent(record, () => value);
     }
@@ -1825,7 +1688,7 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
       input.account,
       replica,
       input.sync,
-      _validateActionValue,
+      validateRecordAction,
     )..persisted();
     changed = journal.receive(actions);
     return journal;
@@ -1933,14 +1796,14 @@ _Restored _salvaged(String account, _Readable copy, {required bool database}) {
           ? pending
           : readable.keys.toList(),
       'cursor': 0,
-    }, _validateActionValue);
+    }, validateRecordAction);
   } on FormatException {
     // NOTE: Actions that pass alone can still disagree with each other, such
     // as one that preserves a version of another record. The damaged data
     // keeps them, and the next sync brings back the ones that it had sent.
-    journal = RecordJournal(account, replica, null, _validateActionValue);
+    journal = RecordJournal(account, replica, null, validateRecordAction);
   }
-  for (final MapEntry(key: record, :value) in _records(records)) {
+  for (final MapEntry(key: record, :value) in recoverableRecords(records)) {
     try {
       journal.change(record, value);
     } on FormatException {
@@ -1973,44 +1836,6 @@ Map<String, dynamic>? _decodedObject(String text) {
   }
 }
 
-/// Each record of [combined], a snapshot in the format before the journal,
-/// that decodes on its own, by address, as [_flatten] reads it.
-Iterable<MapEntry<String, Map<String, dynamic>>> _records(
-  Map<String, dynamic> combined,
-) sync* {
-  for (final reading in [false, true]) {
-    final snapshot = reading ? combined['reading'] : combined;
-    if (snapshot is! Map<String, dynamic>) continue;
-    final pieces = <Map<String, dynamic>>[
-      for (final collection in ['bookmarks', 'history', if (reading) 'resumes'])
-        if (snapshot[collection] case final List values)
-          for (final value in values)
-            {
-              collection: [value],
-            },
-      if (!reading && snapshot['resumes'] is Map<String, dynamic>)
-        for (final MapEntry(key: edition, :value)
-            in (snapshot['resumes'] as Map<String, dynamic>).entries)
-          for (final place in value is List ? value : [value])
-            {
-              'resumes': {
-                edition: [place],
-              },
-            },
-    ];
-    for (final piece in pieces) {
-      try {
-        yield* _flatten(
-          reading ? {'reading': piece} : piece,
-          reading: reading,
-        ).entries;
-      } on FormatException {
-        continue;
-      }
-    }
-  }
-}
-
 /// A new random installation identity.
 String _replica() => List.generate(
   20,
@@ -2031,10 +1856,10 @@ RecordJournal _journal(String account, Map<String, dynamic> combined) {
     );
   }
   final replica = saved?['replica'] as String? ?? _replica();
-  final journal = RecordJournal(account, replica, saved, _validateActionValue);
+  final journal = RecordJournal(account, replica, saved, validateRecordAction);
   if (saved == null) {
     for (final reading in [false, true]) {
-      for (final entry in _flatten(combined, reading: reading).entries) {
+      for (final entry in flattenRecords(combined, reading: reading).entries) {
         journal.change(entry.key, entry.value);
       }
     }
@@ -2042,68 +1867,6 @@ RecordJournal _journal(String account, Map<String, dynamic> combined) {
   return journal;
 }
 
-Map<String, Map<String, dynamic>> _flatten(
-  Map<String, dynamic> combined, {
-  required bool reading,
-}) {
-  final domain = reading ? 'reading' : 'audio';
-  final snapshot = reading
-      ? combined['reading'] as Map<String, dynamic>?
-      : combined;
-  if (snapshot == null) return {};
-  for (final collection in ['bookmarks', 'history', if (reading) 'resumes']) {
-    final values = snapshot[collection];
-    if (values != null &&
-        (values is! List ||
-            values.any((value) => value is! Map<String, dynamic>))) {
-      throw const FormatException('Invalid personal-record collection.');
-    }
-  }
-  final result = <String, Map<String, dynamic>>{};
-  if (!reading &&
-      snapshot['resumes'] != null &&
-      snapshot['resumes'] is! Map<String, dynamic>) {
-    throw const FormatException('Listening resumes must be an object.');
-  }
-  for (final collection in ['bookmarks', 'history']) {
-    for (final value in (snapshot[collection] as List? ?? []).cast<Map>()) {
-      result[jsonEncode([domain, collection, value['id']])] =
-          Map<String, dynamic>.from(value);
-    }
-  }
-  if (reading) {
-    for (final value in (snapshot['resumes'] as List? ?? []).cast<Map>()) {
-      final address = jsonEncode([
-        value['edition'],
-        value['source'],
-        value['revision'],
-      ]);
-      result[jsonEncode([domain, 'resumes', address])] =
-          Map<String, dynamic>.from(value);
-    }
-  } else {
-    for (final entry in (snapshot['resumes'] as Map? ?? {}).entries) {
-      final values = entry.value is List ? entry.value as List : [entry.value];
-      for (final raw in values) {
-        if (raw is! Map<String, dynamic>) {
-          throw const FormatException('A listening resume must be an object.');
-        }
-        final value = Map<String, dynamic>.from(raw as Map);
-        final address = jsonEncode([
-          entry.key,
-          if (value['sources'] != null)
-            value['sources']
-          else ...[
-            value['source'],
-            value['revision'],
-          ],
-        ]);
-        result[jsonEncode([domain, 'resumes', address])] = {
-          ...value,
-          'edition': entry.key,
-        };
-      }
-    }
-  }
-  return result;
-}
+/// Copies the whole upload snapshot away from the store's retained actions.
+List<Map<String, dynamic>> _copyActions(List<Map<String, dynamic>> actions) =>
+    (jsonDecode(jsonEncode(actions)) as List).cast<Map<String, dynamic>>();

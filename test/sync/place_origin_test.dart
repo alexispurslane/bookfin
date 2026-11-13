@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -114,9 +115,9 @@ void main() {
       'its own last place and names that device', () async {
     final phone = LocalResumeStore();
     await phone.reading.saveReading(account, _at('Miss Brooke'));
-    await phone.synchronize(server.session, server.client);
+    await RecordTransport(phone).synchronize(server.session, server.client);
     phoneAReadsTo('Lydgate');
-    await phone.synchronize(server.session, server.client);
+    await RecordTransport(phone).synchronize(server.session, server.client);
 
     final origin = await phone.reading.origin(account, _edition);
 
@@ -132,9 +133,9 @@ void main() {
     () async {
       final phone = LocalResumeStore();
       await phone.reading.saveReading(account, _at('Miss Brooke'));
-      await phone.synchronize(server.session, server.client);
+      await RecordTransport(phone).synchronize(server.session, server.client);
       phoneAReadsTo('Lydgate', device: null);
-      await phone.synchronize(server.session, server.client);
+      await RecordTransport(phone).synchronize(server.session, server.client);
 
       final origin = await phone.reading.origin(account, _edition);
 
@@ -146,9 +147,11 @@ void main() {
   test('the own last place stays after a restart', () async {
     final phone = await Phone.open('origin-restart');
     await phone.store.reading.saveReading(account, _at('Miss Brooke'));
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
     phoneAReadsTo('Lydgate');
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
 
     await phone.restart();
     final origin = await phone.store.reading.origin(account, _edition);

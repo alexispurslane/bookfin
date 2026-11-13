@@ -68,8 +68,7 @@ void main() {
           'milliseconds': 100,
         });
         fixture.publish(remote);
-        sync = RecordSync(records: records, playback: player)
-          ..bind(fixture.session);
+        sync = RecordSync(records: records)..bind(fixture.session);
         await sync.synchronize();
         expect(sync.conflicts, hasLength(1));
         expect(player.position!.milliseconds, 900);

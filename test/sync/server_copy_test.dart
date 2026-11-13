@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -65,7 +66,7 @@ void main() {
       });
 
       Future<SyncReport> sync() =>
-          records.synchronize(fixture.session, fixture.client);
+          RecordTransport(records).synchronize(fixture.session, fixture.client);
 
       /// Changes the saved copy of the action of the bookmark `mark` to the
       /// title [title], keeps it valid, and sets the discovery cursor to
@@ -162,7 +163,7 @@ void main() {
 
         final report = await sync();
         expect(report.replaced, 1);
-        expect(report.stale.listening, isTrue);
+        expect(records.staleNotifier(account).value, isTrue);
         expect(await savedTitle(), 'Server title');
         expect(
           (await keptAside()).any((text) => text.contains('Damaged title')),

@@ -3,12 +3,14 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/main.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
+import 'package:bookfin/sync/transport.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import '../foundation_test.dart' show disconnectedCatalog;
 import '../playback/playback_test.dart' show account;
+import 'controlled_transport.dart';
 
 // These tests run in fake time, so the coordinator reads the fake clock. Each
 // test disposes the coordinator, because a live timer fails a widget test.
@@ -17,8 +19,11 @@ void main() {
   /// from zero.
   Future<(RecordSync, CountingRecords)> signIn(WidgetTester tester) async {
     final records = CountingRecords();
-    final sync = RecordSync(records: records, now: tester.binding.clock.now)
-      ..bind(account());
+    final sync = RecordSync(
+      records: records,
+      transport: records.transport,
+      now: tester.binding.clock.now,
+    )..bind(account());
     await tester.pump();
     records.runs = 0;
     return (sync, records);
@@ -26,8 +31,11 @@ void main() {
 
   testWidgets('signing in syncs records at once', (tester) async {
     final records = CountingRecords();
-    final sync = RecordSync(records: records, now: tester.binding.clock.now)
-      ..bind(account());
+    final sync = RecordSync(
+      records: records,
+      transport: records.transport,
+      now: tester.binding.clock.now,
+    )..bind(account());
     await tester.pump();
     expect(records.runs, 1);
     await tester.pump(const Duration(seconds: 30));
@@ -188,16 +196,16 @@ class LifecycleSync extends RecordSync {
   }
 }
 
-class CountingRecords implements LocalResumeStore {
+class CountingRecords extends LocalResumeStore {
+  late final transport = ControlledTransport(this, synchronize);
   int runs = 0;
 
-  @override
   Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     runs++;
-    return (stale: (listening: false, reading: false), replaced: 0);
+    return (replaced: 0);
   }
 
   @override

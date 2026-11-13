@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -286,20 +287,22 @@ void main() {
       final tablet = await _Phone.open('sending');
       final account = server.session.scope.key;
       await tablet.store.save(account, _place(30000));
-      await tablet.store.synchronize(server.session, server.client);
+      await RecordTransport(tablet.store)
+          .synchronize(server.session, server.client);
       final sql = await _separateConnection(phone.path);
       await sql.execute(
         "CREATE TRIGGER cut AFTER INSERT ON record_actions BEGIN SELECT RAISE(ABORT, 'killed'); END",
       );
       await expectLater(
-        phone.store.synchronize(server.session, server.client),
+        RecordTransport(phone.store).synchronize(server.session, server.client),
         throwsA(anything),
       );
       await sql.execute('DROP TRIGGER cut');
       await sql.close();
 
       await phone.restart();
-      await phone.store.synchronize(server.session, server.client);
+      await RecordTransport(phone.store)
+          .synchronize(server.session, server.client);
       expect(_savedPlace(await phone.store.read(account)), 30000);
     },
   );
@@ -1240,9 +1243,11 @@ void main() {
         await phone.restart();
 
         await phone.store.recoverKept();
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
         final tablet = await _Phone.open('kept-sync-tablet');
-        await tablet.store.synchronize(server.session, server.client);
+        await RecordTransport(tablet.store)
+            .synchronize(server.session, server.client);
         final shown = await tablet.store.read(account);
         expect(_savedPlace(shown), 20000);
         expect(marks(shown), {'one'});
@@ -1266,15 +1271,17 @@ void main() {
       await phone.store.save(account, _place(10000));
 
       await expectLater(
-        phone.store.synchronize(server.session, connection),
+        RecordTransport(phone.store).synchronize(server.session, connection),
         throwsA(isA<SocketException>()),
       );
       await phone.restart();
       expect(_savedPlace(await phone.store.read(account)), 10000);
 
       connection.offline = false;
-      await phone.store.synchronize(server.session, connection);
-      await tablet.store.synchronize(server.session, connection);
+      await RecordTransport(phone.store)
+          .synchronize(server.session, connection);
+      await RecordTransport(tablet.store)
+          .synchronize(server.session, connection);
       expect(_savedPlace(await tablet.store.read(account)), 10000);
     });
 
@@ -1291,7 +1298,7 @@ void main() {
       });
       final store = LocalResumeStore();
 
-      await store.synchronize(server.session, server.client);
+      await RecordTransport(store).synchronize(server.session, server.client);
       expect(server.objects, hasLength(1));
       expect(await store.conflicts(account), isEmpty);
       expect(_savedPlace(await store.read(account)), 10000);
@@ -1304,7 +1311,8 @@ void main() {
         final tablet = await _Phone.open('salvage-tablet');
         final account = server.session.scope.key;
         await phone.store.save(account, _place(10000));
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
         await phone.store.save(
           account,
           ListeningChanges(
@@ -1317,10 +1325,12 @@ void main() {
         await sql.update('record_accounts', {'metadata': '{broken'});
 
         await phone.restart();
-        await phone.store.synchronize(server.session, server.client);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, server.client);
         expect(server.objects, hasLength(2));
         expect(await phone.store.conflicts(account), isEmpty);
-        await tablet.store.synchronize(server.session, server.client);
+        await RecordTransport(tablet.store)
+            .synchronize(server.session, server.client);
         final shown = await tablet.store.read(account);
         expect(_savedPlace(shown), 10000);
         expect((shown!['bookmarks'] as List).single['id'], 'mark');
@@ -1336,13 +1346,16 @@ void main() {
         final connection = _Connection(server);
         addTearDown(connection.close);
         await phone.store.save(account, _place(10000));
-        await phone.store.synchronize(server.session, connection);
-        await tablet.store.synchronize(server.session, connection);
+        await RecordTransport(phone.store)
+            .synchronize(server.session, connection);
+        await RecordTransport(tablet.store)
+            .synchronize(server.session, connection);
 
         await phone.store.save(account, _place(20000));
         await tablet.store.save(account, _place(30000));
         for (final device in [phone, tablet, phone]) {
-          await device.store.synchronize(server.session, connection);
+          await RecordTransport(device.store)
+              .synchronize(server.session, connection);
         }
 
         for (final device in [phone, tablet]) {

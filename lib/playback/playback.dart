@@ -13,6 +13,7 @@ import '../foundation/time.dart' show audioTime;
 import 'audio_outline.dart';
 import 'reporting.dart';
 import 'records.dart';
+import 'record_writer.dart';
 
 export 'audio_outline.dart' show PlaybackChapter;
 export 'records.dart';
@@ -185,11 +186,19 @@ class Playback extends ChangeNotifier {
     required this.store,
     this.reports,
   }) {
+    if (store case final RecordWriterHost host) {
+      _unregisterWriter = host.registerWriter(
+        account: () => _session?.scope.key,
+        flush: flush,
+        refresh: refreshPersonalRecords,
+      );
+    }
     _samples = engine.samples.listen(
       _accept,
       onError: (Object error) => unawaited(_sampleStreamFailed()),
     );
   }
+  VoidCallback? _unregisterWriter;
   final Downloads downloads;
   final AudioEngine engine;
   final ListeningStore store;
@@ -1850,6 +1859,7 @@ class Playback extends ChangeNotifier {
       await stop();
       await flush();
     } finally {
+      _unregisterWriter?.call();
       reports?.stop();
       await reports?.idle;
       reports?.close();

@@ -9,6 +9,7 @@ import '../crossings/crossings.dart' show TextLanding;
 import '../downloads/downloads.dart';
 import '../foundation/time.dart' show roundEstimate;
 import '../playback/playback.dart';
+import '../playback/record_writer.dart';
 import 'book_map.dart';
 import 'contents.dart';
 import 'document.dart';
@@ -229,8 +230,16 @@ class ReaderSession extends ChangeNotifier {
       _timeLeftChanges = _Signal(() => timeLeft),
       _keptPageChanges = _Signal(() => (_keptPage, _readingKeptPage)),
     ];
+    if (store case final RecordWriterHost host) {
+      _unregisterWriter = host.registerWriter(
+        account: () => _account,
+        flush: flush,
+        refresh: refreshPersonalRecords,
+      );
+    }
     speed?.charactersPerMinute.addListener(_emit);
   }
+  VoidCallback? _unregisterWriter;
   final Downloads downloads;
   final ReadingStore store;
   final PublicationLoader load;
@@ -1922,6 +1931,7 @@ class ReaderSession extends ChangeNotifier {
 
   @override
   void dispose() {
+    _unregisterWriter?.call();
     _disposed = true;
     speed?.charactersPerMinute.removeListener(_emit);
     _clear();

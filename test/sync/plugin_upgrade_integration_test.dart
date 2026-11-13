@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
@@ -119,9 +120,9 @@ void main() {
             ],
           });
         }
-        await second.synchronize(session, client);
-        await first.synchronize(session, client);
-        await second.synchronize(session, client);
+        await RecordTransport(second).synchronize(session, client);
+        await RecordTransport(first).synchronize(session, client);
+        await RecordTransport(second).synchronize(session, client);
         expect(await first.conflicts(account), hasLength(1));
         final deleted = (await second.read(account))!;
         second.acceptSnapshot(account, deleted);
@@ -132,7 +133,7 @@ void main() {
           (value) => value['id'] == 'history-first',
         );
         await second.write(account, deleted);
-        await second.synchronize(session, client);
+        await RecordTransport(second).synchronize(session, client);
         final offline = (await first.read(account))!;
         first.acceptSnapshot(account, offline);
         (offline['bookmarks'] as List).add(
@@ -148,7 +149,7 @@ void main() {
         final saved = (await firstDatabase.read(account))!;
         expect(saved, await savedBeforeUpgrade.readAsString());
         expect((jsonDecode(saved) as Map)['sync']['pending'], hasLength(1));
-        await first.synchronize(session, client);
+        await RecordTransport(first).synchronize(session, client);
         final after = (await first.read(account))!;
         expect(
           (after['bookmarks'] as List).map((value) => value['id']),
@@ -171,8 +172,8 @@ void main() {
           conflict.key,
           RecordJournal.identity(chosen),
         );
-        await first.synchronize(session, client);
-        await second.synchronize(session, client);
+        await RecordTransport(first).synchronize(session, client);
+        await RecordTransport(second).synchronize(session, client);
         expect(await first.conflicts(account), isEmpty);
         expect(await second.conflicts(account), isEmpty);
         expect((await first.read(account))!['bookmarks'], hasLength(4));
@@ -199,7 +200,7 @@ void main() {
             (jsonDecode((await firstDatabase.read(account))!) as Map)['sync']
                 as Map;
         expect(committed['pending'], isEmpty);
-        await first.synchronize(session, client);
+        await RecordTransport(first).synchronize(session, client);
         expect((await first.read(account))!['bookmarks'], hasLength(4));
       }
       await firstDatabase.checkInvariants();

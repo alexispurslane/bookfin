@@ -288,8 +288,11 @@ void main() {
     setUp(() async {
       records = ControlledRecords();
       clock = DateTime.now();
-      controlled = RecordSync(records: records, now: () => clock)
-        ..bind(account());
+      controlled = RecordSync(
+        records: records,
+        transport: records.transport,
+        now: () => clock,
+      )..bind(account());
       // Signing in syncs at once. These tests start after that sync.
       await pumpEventQueue();
     });

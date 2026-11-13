@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
@@ -124,8 +125,8 @@ void main() {
           ],
         });
       }
-      await secondStore.synchronize(session, client);
-      await firstStore.synchronize(session, client);
+      await RecordTransport(secondStore).synchronize(session, client);
+      await RecordTransport(firstStore).synchronize(session, client);
       expect((await firstStore.read(account))!['bookmarks'], hasLength(2));
       expect((await firstStore.read(account))!['history'], hasLength(2));
       expect(
@@ -141,7 +142,7 @@ void main() {
         unorderedEquals([900, 100]),
       );
 
-      await secondStore.synchronize(session, client);
+      await RecordTransport(secondStore).synchronize(session, client);
       final secondSaved = (await secondStore.read(account))!;
       secondStore.acceptSnapshot(account, secondSaved);
       (secondSaved['bookmarks'] as List).removeWhere(
@@ -151,7 +152,7 @@ void main() {
         (value) => value['id'] == 'history-first',
       );
       await secondStore.write(account, secondSaved);
-      await secondStore.synchronize(session, client);
+      await RecordTransport(secondStore).synchronize(session, client);
       await firstDatabase.close();
 
       final reopened = await RecordDatabase.open(
@@ -160,7 +161,7 @@ void main() {
       );
       addTearDown(reopened.close);
       final restarted = LocalResumeStore(openDatabase: () async => reopened);
-      await restarted.synchronize(session, client);
+      await RecordTransport(restarted).synchronize(session, client);
       expect((await restarted.read(account))!['bookmarks'], hasLength(1));
       expect((await restarted.read(account))!['history'], hasLength(1));
       final conflict = (await restarted.conflicts(account)).entries.single;
@@ -172,7 +173,7 @@ void main() {
         conflict.key,
         RecordJournal.identity(chosen),
       );
-      await restarted.synchronize(session, client);
+      await RecordTransport(restarted).synchronize(session, client);
       expect(await restarted.conflicts(account), isEmpty);
       final resolved = (await restarted.read(account))!;
       expect((resolved['resumes'] as Map)['book'][0]['milliseconds'], 100);
@@ -196,10 +197,10 @@ void main() {
       final otherRestarted = LocalResumeStore(
         openDatabase: () async => otherReopened,
       );
-      await otherRestarted.synchronize(session, client);
+      await RecordTransport(otherRestarted).synchronize(session, client);
       expect(await otherRestarted.conflicts(account), isEmpty);
       expect((await otherRestarted.read(account))!['bookmarks'], hasLength(3));
-      await otherRestarted.synchronize(session, client);
+      await RecordTransport(otherRestarted).synchronize(session, client);
       expect((await otherRestarted.read(account))!['bookmarks'], hasLength(3));
       await otherReopened.checkInvariants();
     },

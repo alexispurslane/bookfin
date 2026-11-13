@@ -50,7 +50,7 @@ void main() {
     );
     await playback.bind(server.session, [title]);
     clock = DateTime(2026, 11, 7, 16, 29);
-    sync = RecordSync(records: records, playback: playback, now: () => clock)
+    sync = RecordSync(records: records, now: () => clock)
       ..suspend()
       ..bind(server.session);
     await sync.synchronize();
@@ -79,18 +79,24 @@ void main() {
   test('the next sync refreshes the real stale listening domain and clears its failure', () async {
     await failRefresh();
     expect(sync.lastSyncNotifier.value?.failure, isNotNull);
-    expect(records.staleDomains(server.session.scope.key), (
-      listening: true,
-      reading: false,
-    ));
+    expect(
+      (
+        listening: records.staleNotifier(server.session.scope.key).value,
+        reading: records.reading.staleNotifier(server.session.scope.key).value,
+      ),
+      (listening: true, reading: false),
+    );
     expect(playback.bookmarks, isEmpty);
     records.failRead = false;
     await sync.synchronize();
     expect(playback.bookmarks.single.title, 'From another device');
-    expect(records.staleDomains(server.session.scope.key), (
-      listening: false,
-      reading: false,
-    ));
+    expect(
+      (
+        listening: records.staleNotifier(server.session.scope.key).value,
+        reading: records.reading.staleNotifier(server.session.scope.key).value,
+      ),
+      (listening: false, reading: false),
+    );
     expect(sync.lastSyncNotifier.value?.failure, isNull);
   });
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -109,7 +110,8 @@ void main() {
           'title': 'Remote B',
         });
         fixture.publish(remote);
-        await records.synchronize(fixture.session, fixture.client);
+        await RecordTransport(records)
+            .synchronize(fixture.session, fixture.client);
         held.holdRead();
         final refreshing = player.refreshPersonalRecords();
         await held.readReady!.future;
@@ -165,7 +167,8 @@ void main() {
           'title': 'Remote Y',
         });
         fixture.publish(remote);
-        await records.synchronize(fixture.session, fixture.client);
+        await RecordTransport(records)
+            .synchronize(fixture.session, fixture.client);
         await reader.bind(audio.account(user: 'bob'), [reading.book]);
         await reader.bind(fixture.session, [reading.book]);
         await reader.open(reading.book, reading.edition);
@@ -214,7 +217,8 @@ void main() {
           'title': 'Remote B',
         });
         fixture.publish(remote);
-        await records.synchronize(fixture.session, fixture.client);
+        await RecordTransport(records)
+            .synchronize(fixture.session, fixture.client);
         held.holdRead();
         final refreshing = reader.refreshPersonalRecords();
         await held.readReady!.future;

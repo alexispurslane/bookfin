@@ -165,9 +165,7 @@ Future<void> runBookfin({bool gallery = false}) async {
       reader: reader,
       crossings: crossings,
       hearing: hearing,
-      sync: gallery
-          ? null
-          : RecordSync(records: records, playback: playback, reader: reader),
+      sync: gallery ? null : RecordSync(records: records),
     ),
   );
 }

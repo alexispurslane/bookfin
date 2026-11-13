@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -351,7 +352,7 @@ void main() {
           bookmarks: {'mark': bookmark('mark', title: 'New')},
         ),
       );
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       final uploaded = [
         for (final object in fixture.objects.values)
           jsonDecode(object['Payload'] as String) as Map<String, dynamic>,
@@ -407,7 +408,7 @@ void main() {
         bookmarks: {'mark': bookmark('mark', title: 'Local')},
       );
       await store.save(account, local);
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       final remote = RecordJournal(account, 'remote', {
         'version': 1,
         'replica': 'remote',
@@ -423,7 +424,7 @@ void main() {
         bookmark('mark', title: 'Remote'),
       );
       fixture.publish(remote);
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       await store.save(
         account,
         local.followedBy(ListeningChanges(settings, resumes: resume(3000))),

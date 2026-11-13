@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -433,7 +434,7 @@ Future<Map<String, dynamic>> measureAcknowledgments(
       ),
     );
     var store = LocalResumeStore(openDatabase: () async => database);
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     final sql = await databaseFactoryFfi.openDatabase(path);
     await auditWrites(sql);
     final times = <double>[];
@@ -443,7 +444,7 @@ Future<Map<String, dynamic>> measureAcknowledgments(
           (retainedResumes + iteration + 1) * 1000;
       await store.write(account, snapshot);
       final watch = Stopwatch()..start();
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       watch.stop();
       times.add(watch.elapsedMicroseconds / 1000);
     }

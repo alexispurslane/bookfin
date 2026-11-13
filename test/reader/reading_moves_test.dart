@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart' show JellyfinSession;
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/store.dart' show LocalResumeStore;
@@ -850,7 +851,8 @@ void main() {
       return (reader, cedar);
     }
 
-    Future<void> syncB() => phoneB.synchronize(server.session, server.client);
+    Future<void> syncB() =>
+        RecordTransport(phoneB).synchronize(server.session, server.client);
 
     test('Phone A reads on and syncs. Phone B, which last showed an earlier '
         'page, syncs and opens the book at A\'s place. It records "Opened at '
@@ -941,7 +943,8 @@ void main() {
       sqfliteFfiInit();
       final phone = await Phone.open('opened-kill');
       Future<void> sync() =>
-          phone.store.synchronize(server.session, server.client);
+          RecordTransport(phone.store)
+              .synchronize(server.session, server.client);
       final (first, cedar) = await phoneBReadToBirch(phone.store.reading, sync);
       phoneAReadsTo(cedar);
       await sync();

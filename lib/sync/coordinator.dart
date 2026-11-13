@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../catalog/jellyfin.dart';
-import '../playback/playback.dart';
 import '../playback/store.dart';
-import '../reader/session.dart';
+import 'transport.dart';
 import 'journal.dart' show DeepCollectionEquality;
 
 /// What the Sync page shows about an action that the user started: Sync now
@@ -74,7 +73,8 @@ typedef _Result = ({String? message});
 /// message. After a sync, Playback and the reader refresh only when the
 /// store reports that records of their domain changed outside them, and the
 /// conflicts notify only when they differ. A refresh that fails stops
-/// nothing else, as [_refresh] says. The user starts [syncNow] and
+/// nothing else, as [LocalResumeStore.refreshWriters] says. The user starts
+/// [syncNow] and
 /// [resolve], which show busy in [statusNotifier] until they end, and then
 /// why a choice was not saved. Every sync sets [lastSyncNotifier], which
 /// says how it ended and why it failed, and [conflictsNotifier].
@@ -91,14 +91,12 @@ class RecordSync {
 
   RecordSync({
     required this.records,
-    this.playback,
-    this.reader,
+    RecordTransport? transport,
     this.now = DateTime.now,
-  });
+  }) : transport = transport ?? RecordTransport(records);
+  final RecordTransport transport;
   final LocalResumeStore records;
   final DateTime Function() now;
-  final Playback? playback;
-  final ReaderSession? reader;
   JellyfinSession? _session;
   JellyfinClient? _client;
   Timer? _timer;
@@ -170,34 +168,7 @@ class RecordSync {
     }
     final session = _session;
     if (_disposed || session == null) return;
-    await _refresh(records.staleDomains(session.scope.key));
-  }
-
-  /// Refreshes Playback when [stale] names listening, and the reader when
-  /// it names reading. Returns whether every refresh that ran could read
-  /// its records.
-  ///
-  /// Each refresh is independent of the other and of the sync or choice
-  /// before it, so a refresh that fails with an [Exception] stops nothing:
-  /// the other refresh runs, and the caller goes on. The store keeps the
-  /// domain of a failed refresh stale, because its writer took in no
-  /// snapshot ([LocalResumeStore.staleDomains]). The next sync reports the
-  /// domain again and refreshes it.
-  Future<bool> _refresh(StaleDomains stale) async {
-    Future<bool> read(Future<void> Function()? refresh) async {
-      try {
-        await refresh?.call();
-        return true;
-      } on Exception {
-        return false;
-      }
-    }
-
-    final results = await Future.wait([
-      if (stale.listening) read(playback?.refreshPersonalRecords),
-      if (stale.reading) read(reader?.refreshPersonalRecords),
-    ]);
-    return !results.contains(false);
+    await records.refreshWriters(session.scope.key);
   }
 
   /// Stops the periodic sync while the app is in the background.
@@ -254,8 +225,7 @@ class RecordSync {
     final session = _session!;
     final generation = _generation;
     try {
-      await playback?.flush();
-      await reader?.flush();
+      await records.flushWriters();
       final accepted = await records.resolve(
         session.scope.key,
         record,
@@ -263,11 +233,11 @@ class RecordSync {
         bookmarkTitles: bookmarkTitles,
       );
       if (!_current(generation)) return null;
-      // Both writers take the choice in before the sync that sends it. A
+      // Stale writers take the choice in before the sync that sends it. A
       // refresh that fails here reports nothing. After a choice that was
       // saved, the sync below refreshes the stale domain again and reports
       // how that ended. A choice that was not accepted changed no record.
-      await _refresh((listening: true, reading: true));
+      await records.refreshWriters(session.scope.key);
       if (!_current(generation)) return null;
       if (accepted) return await _sync();
       final conflicts = await records.conflicts(session.scope.key);
@@ -279,7 +249,7 @@ class RecordSync {
     } on Exception {
       // Only a step that saved no choice can fail into here: a flush or the
       // save itself, or the read of the versions of a choice that was not
-      // accepted. [_refresh] and [_sync] handle their own failures.
+      // accepted. The refresh and sync handle their own failures.
       if (!_current(generation)) return null;
       return (
         message: 'The choice was not saved. Both versions were kept. Retry after checking device storage.',
@@ -329,11 +299,10 @@ class RecordSync {
     final generation = _generation;
     _periodStart = now();
     try {
-      await playback?.flush();
-      await reader?.flush();
-      final (:stale, :replaced) = await records.synchronize(session, client);
+      await records.flushWriters();
+      final report = await transport.synchronize(session, client);
       if (!_current(generation)) return null;
-      final refreshed = await _refresh(stale);
+      final refreshed = await records.refreshWriters(session.scope.key);
       if (!_current(generation)) return null;
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
@@ -342,7 +311,7 @@ class RecordSync {
       // only the failure, to its own kind.
       return _ended(
         failure: refreshed ? null : RecordSyncFailure.refreshFailed,
-        replaced: replaced,
+        replaced: report.replaced,
       );
     } on Exception catch (error) {
       if (!_current(generation)) return null;
@@ -360,7 +329,8 @@ class RecordSync {
 
   /// Why a sync that threw [error] failed, when the records on this phone
   /// could be read. [error] comes from a flush or from the sync with
-  /// Jellyfin, never from a refresh, which [_refresh] handles.
+  /// Jellyfin, never from a refresh, which
+  /// [LocalResumeStore.refreshWriters] handles.
   static RecordSyncFailure _cause(Exception error) => switch (error) {
     CatalogFailure(kind: CatalogFailureKind.unavailable, status: 404) ||
     CatalogFailure(kind: CatalogFailureKind.invalidResponse) ||

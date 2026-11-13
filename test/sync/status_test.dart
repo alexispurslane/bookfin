@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
+import 'package:bookfin/sync/transport.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account;
+import 'controlled_transport.dart';
 
 // A background sync is one that the app starts: the 30-second period, the
 // return to the front, and the sync after sign-in. Sync now and a choice
@@ -20,7 +22,11 @@ void main() {
   setUp(() async {
     records = ControlledRecords();
     clock = DateTime(2026, 11, 7, 16, 29);
-    sync = RecordSync(records: records, now: () => clock)..bind(account());
+    sync = RecordSync(
+      records: records,
+      transport: records.transport,
+      now: () => clock,
+    )..bind(account());
     // Signing in syncs at once. These tests start after that sync.
     await pumpEventQueue();
     records.runs = 0;
@@ -270,7 +276,8 @@ void main() {
 }
 
 /// Personal records whose sync can wait on [gate], fail, and find [found].
-class ControlledRecords implements LocalResumeStore {
+class ControlledRecords extends LocalResumeStore {
+  late final transport = ControlledTransport(this, synchronize);
   int runs = 0;
   Completer<void>? gate;
 
@@ -301,7 +308,6 @@ class ControlledRecords implements LocalResumeStore {
     kept.value = (recovered: kept.value.recovered, kept: false);
   }
 
-  @override
   Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
@@ -309,7 +315,7 @@ class ControlledRecords implements LocalResumeStore {
     runs++;
     await gate?.future;
     if (error case final error?) throw error;
-    return (stale: (listening: false, reading: false), replaced: replaced);
+    return (replaced: replaced);
   }
 
   @override

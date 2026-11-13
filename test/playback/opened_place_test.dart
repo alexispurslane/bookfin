@@ -5,6 +5,7 @@
 // test/reader/reading_moves_test.dart).
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -119,7 +120,8 @@ void main() {
 
   /// Syncs [phone] and shows what the sync brought, as the app does.
   Future<void> sync(_Phone phone) async {
-    await phone.store.synchronize(server.session, server.client);
+    await RecordTransport(phone.store)
+        .synchronize(server.session, server.client);
     await phone.playback.refreshPersonalRecords();
   }
 

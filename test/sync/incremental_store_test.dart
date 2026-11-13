@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -157,7 +158,7 @@ void main() {
       await store.write(account, listening(1000));
       await store.write(account, listening(2000));
       await forbidWholeAccountReplacement(disk.sql);
-      await store.synchronize(fixture.session, fixture.client);
+      await RecordTransport(store).synchronize(fixture.session, fixture.client);
       await disk.records.close();
       final reopened = await RecordDatabase.open(
         factory: databaseFactoryFfi,
@@ -253,7 +254,7 @@ void main() {
       "CREATE TRIGGER fail_ack BEFORE UPDATE OF pending ON record_actions BEGIN SELECT RAISE(ABORT, 'disk full during acknowledgment'); END",
     );
     await expectLater(
-      store.synchronize(fixture.session, fixture.client),
+      RecordTransport(store).synchronize(fixture.session, fixture.client),
       throwsA(isA<DatabaseException>()),
     );
     expect(fixture.objects, hasLength(1));
@@ -266,7 +267,8 @@ void main() {
     );
     addTearDown(reopened.close);
     final restarted = LocalResumeStore(openDatabase: () async => reopened);
-    await restarted.synchronize(fixture.session, fixture.client);
+    await RecordTransport(restarted)
+        .synchronize(fixture.session, fixture.client);
     expect(fixture.objects, hasLength(1));
     final saved = jsonDecode((await reopened.read(account))!) as Map;
     expect(saved['sync']['actions'], original['sync']['actions']);
@@ -305,8 +307,9 @@ void main() {
     }
 
     publish(remote.uploads.last);
-    await LocalResumeStore(openDatabase: () async => disk.records)
-        .synchronize(fixture.session, fixture.client);
+    await RecordTransport(
+      LocalResumeStore(openDatabase: () async => disk.records),
+    ).synchronize(fixture.session, fixture.client);
     final held = jsonDecode((await disk.records.read(account))!) as Map;
     expect(held['sync']['actions'], [remote.uploads.last]);
     expect(held['sync']['cursor'], 1);
@@ -321,12 +324,14 @@ void main() {
     expect((await restarted.read(account))!['bookmarks'], isEmpty);
     await restarted.write(account, listening(2000));
     publish(remote.uploads.first);
-    await restarted.synchronize(fixture.session, fixture.client);
+    await RecordTransport(restarted)
+        .synchronize(fixture.session, fixture.client);
     expect((await restarted.read(account))!['bookmarks'], isEmpty);
     final stale = RecordJournal(account, 'late');
     stale.change(address, bookmark);
     fixture.publish(stale);
-    await restarted.synchronize(fixture.session, fixture.client);
+    await RecordTransport(restarted)
+        .synchronize(fixture.session, fixture.client);
     expect((await restarted.read(account))!['bookmarks'], isEmpty);
     expect((await restarted.conflicts(account))[address], hasLength(2));
     final saved = jsonDecode((await reopened.read(account))!) as Map;
@@ -358,7 +363,7 @@ void main() {
     });
     fixture.publish(remote);
     final store = LocalResumeStore(openDatabase: () async => disk.records);
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     final original = jsonDecode((await disk.records.read(account))!) as Map;
     final action = remote.uploads.single;
     final changed = jsonDecode(jsonEncode(action)) as Map<String, dynamic>;
@@ -371,7 +376,8 @@ void main() {
     };
     // The server's copy wins (ta-tso8): an action never changes, and the
     // server holds the copy uploaded before any damage on this phone.
-    final report = await store.synchronize(fixture.session, fixture.client);
+    final report = await RecordTransport(store)
+        .synchronize(fixture.session, fixture.client);
     expect(report.replaced, 1);
     final replaced = jsonDecode((await disk.records.read(account))!) as Map;
     expect(replaced['sync']['actions'], [changed]);
@@ -447,8 +453,9 @@ void main() {
       'Payload': jsonEncode(later),
       'Deleted': false,
     };
-    await LocalResumeStore(openDatabase: () async => disk.records)
-        .synchronize(fixture.session, fixture.client);
+    await RecordTransport(
+      LocalResumeStore(openDatabase: () async => disk.records),
+    ).synchronize(fixture.session, fixture.client);
     await disk.records.close();
     final reopened = await RecordDatabase.open(
       factory: databaseFactoryFfi,
@@ -458,7 +465,8 @@ void main() {
     final restarted = LocalResumeStore(openDatabase: () async => reopened);
     expect((await restarted.read(account))!['bookmarks'], isEmpty);
     fixture.publish(first);
-    await restarted.synchronize(fixture.session, fixture.client);
+    await RecordTransport(restarted)
+        .synchronize(fixture.session, fixture.client);
     expect(
       ((await restarted.read(account))!['bookmarks'] as List).map(
         (mark) => mark['id'],
@@ -467,7 +475,8 @@ void main() {
     );
     final duplicate = second.uploads.single;
     fixture.objects[RecordJournal.identity(duplicate)]!['Sequence'] = 4;
-    await restarted.synchronize(fixture.session, fixture.client);
+    await RecordTransport(restarted)
+        .synchronize(fixture.session, fixture.client);
     expect(await restarted.conflicts(account), isEmpty);
     final saved = jsonDecode((await reopened.read(account))!) as Map;
     expect(saved['sync']['actions'], hasLength(3));
@@ -504,16 +513,16 @@ void main() {
     });
     final store = LocalResumeStore(openDatabase: () async => disk.records);
     fixture.publish(held);
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     fixture.publish(dependency);
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     final concurrent = RecordJournal(account, 'concurrent');
     concurrent.change(address, {
       'edition': 'edition',
       ...listening(100)['resumes']['edition'] as Map,
     });
     fixture.publish(concurrent);
-    await store.synchronize(fixture.session, fixture.client);
+    await RecordTransport(store).synchronize(fixture.session, fixture.client);
     expect((await store.conflicts(account))[address], hasLength(2));
     await disk.records.close();
     final reopened = await RecordDatabase.open(
