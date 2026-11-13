@@ -29,3 +29,7 @@ no merge conflict occurred. Retained supplied install/upgrade/restart/backup
 proof is for Jellyfin 12.4.0 macOS ARM64 only. No redundant suite rerun for this
 clean integration. Live deployment/publication, Android and broader release
 acceptance remain open; this ticket is not closed.
+
+## Approved batch API follow-up
+
+The user approved boo-s11s on 2026-11-12: client batching first, then an additive batch upload API and larger discovery pages selected by plugin version, retaining the current v1 fallback. The parent has inspected this ticket's integrated package evidence. boo-s11s will own the changed source, package metadata/version and disposable compatibility checks, and report the new candidate here. Existing identity, database and retained records must survive. The current 0.1.1.0 evidence applies only to that candidate; live deployment and publication remain outside the follow-up.
