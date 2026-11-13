@@ -5,6 +5,9 @@ import 'package:bookfin/speech/book_search.dart';
 import 'package:bookfin/speech/book_words.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../real_time.dart';
+import 'held_jobs.dart';
+
 /// Words that name the moment that they were read, so that a test can tell
 /// one read from another.
 Future<BookWords?> stamped() async => BookWords(
@@ -14,6 +17,12 @@ Future<BookWords?> stamped() async => BookWords(
 );
 
 String first(BookWords words) => words.words.first;
+
+/// A read that gives the words once the test lets it go on.
+ReadBook slow(SendPort ready) => () async {
+  await held(ready);
+  return stamped();
+};
 
 void main() {
   test('reads a book once for several searches', () async {
@@ -65,6 +74,23 @@ void main() {
     final one = await search.withBook('a', stamped, first);
     await Future<void>.delayed(const Duration(milliseconds: 200));
     expect(await search.withBook('a', stamped, first), isNot(one));
+  });
+
+  // On the fake clock of a widget test: see worker_test.dart.
+  testWidgets('a first read of a book that takes hours is not cut short', (
+    tester,
+  ) async {
+    final search = BookSearch();
+    final ready = Signal();
+    addTearDown(ready.close);
+    final found = ending(search.withBook('a', slow(ready.send), first));
+    await runUntil(tester, () => ready.got);
+    await tester.pump(const Duration(hours: 5));
+    expect(found.ended, isFalse);
+    release(ready);
+    await runUntil(tester, () => found.ended);
+    expect(found.value, isNotNull);
+    await finish(tester, search.close());
   });
 
   test('an error of the work reaches the caller', () async {

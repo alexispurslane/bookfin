@@ -290,6 +290,9 @@ class HeardWindows {
     );
     _queue.remove(next);
     final job = _running = next;
+    // A hearing that fails gives no window. The next window waits for the
+    // end of this one, so a hearing must always end: [Speech] fails a
+    // window whose worker is stuck in a native call, at its limit.
     unawaited(
       _run(job)
           .then(

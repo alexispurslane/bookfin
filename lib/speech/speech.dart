@@ -59,11 +59,39 @@ Future<SpeechModel?> findSpeechModel() async {
 /// The native library gives no model when it cannot read the file, and on
 /// an Android phone whose CPU lacks an instruction that the library needs
 /// (native/speech/bookfin_speech.c).
+///
+/// A native call can hang, such as a call to a codec of the phone. A window
+/// that the worker does not hear within [_windowLimit] fails with
+/// [WorkerStopped], and the next window starts a new worker ([KeptWorker]
+/// owns that rule). After two such windows, every later window fails at
+/// once until the app starts again.
 class Speech {
   Speech({required this._locate, this._idle = const Duration(minutes: 2)});
 
   final Future<SpeechModel?> Function() _locate;
   final Duration _idle;
+
+  /// The longest time that the worker has for one window before it counts
+  /// as stuck.
+  ///
+  /// Source: docs/plans/cross-edition-places.md, "Measurements on the
+  /// emulator (t2-4ci0)". One 8 s window, decode included, took 3.1 s at
+  /// the median in the background (2.1 to 18.2 s over 15 windows) and
+  /// 10.3 s at the median for a tap (7.4 to 16.5 s over 6 windows), on an
+  /// emulator whose host had a load near 54 on 10 cores. The limit is about
+  /// ten times the slower median, and more than five times the slowest
+  /// window that was measured, so a slow but healthy phone stays inside
+  /// it. A limit that is too long costs only a longer wait at a rare hang.
+  /// A limit that is too short loses every window of a slow phone.
+  ///
+  /// The first window after a start also holds the start of the worker and
+  /// the load of the model. The load took 106 to 253 ms on the emulator
+  /// ("Timings per step"), which is small beside the limit, so the first
+  /// window has no longer limit of its own.
+  ///
+  /// NOTE: No phone was measured yet. Compare this value with the window
+  /// times of the Pixel 8 acceptance (t2-02vi).
+  static const _windowLimit = Duration(seconds: 100);
 
   /// The worker, once the model is located. Null without a model.
   late final Future<KeptWorker<_Model?>?> _worker = () async {
@@ -83,6 +111,7 @@ class Speech {
         () => _Model.load(model),
         name: 'speech',
         idle: idle,
+        limit: _windowLimit,
         end: (model) => model?.close(),
       );
 
@@ -114,6 +143,8 @@ class Speech {
   /// file's end, it holds silence or music, the file cannot be decoded, or
   /// this build has no speech model that this phone can load. [urgent]
   /// gives the window more threads, for a person who waits for it.
+  /// Throws [WorkerStopped] when the worker stops or does not hear the
+  /// window within [_windowLimit].
   Future<Heard?> hear(
     String path,
     int startMs,

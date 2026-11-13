@@ -7,6 +7,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/derived_store.dart';
 import 'package:bookfin/speech/heard_windows.dart';
 import 'package:bookfin/speech/words.dart';
+import 'package:bookfin/speech/worker.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 SourceFile file(String key, {String revision = 'r1', int duration = 600000}) =>
@@ -147,6 +148,37 @@ void main() {
     expect(await heard.hear(book, at(one, 60000)), isNull);
     expect(await heard.windowsOf(book), isEmpty);
   });
+
+  test('a window whose speech worker is stuck past its limit is a failed '
+      'window: it is not kept, and the next window is heard', () async {
+    // Speech fails such a window with this exception (speech.dart).
+    hearing.answer = (_, start) => start == 56000
+        ? throw const WorkerStopped('speech')
+        : Heard(['w$start', 'x'], const [0, 4000]);
+    final heard = windows();
+    final stuck = heard.hear(book, at(one, 60000));
+    final next = heard.hear(book, at(one, 120000));
+    expect(await stuck, isNull);
+    expect((await next)!.startMs, 116000);
+    expect(
+      [for (final window in await heard.windowsOf(book)) window.startMs],
+      [116000],
+    );
+    heard.checkInvariants();
+  });
+
+  test(
+    'a place whose window failed is heard again at the next request',
+    () async {
+      var calls = 0;
+      hearing.answer = (_, start) => calls++ == 0
+          ? throw const WorkerStopped('speech')
+          : Heard(['w$start', 'x'], const [0, 4000]);
+      final heard = windows();
+      expect(await heard.hear(book, at(one, 60000)), isNull);
+      expect((await heard.hear(book, at(one, 60000)))!.startMs, 56000);
+    },
+  );
 
   Future<void> hearAndStop(AudioPosition place) async {
     final heard = windows();

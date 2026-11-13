@@ -12,6 +12,10 @@ typedef ReadBook = Future<BookWords?> Function();
 /// both stay off the UI isolate (engine rule 1). The worker keeps the two
 /// latest books, and lets them go when it stops after [idle] without work.
 class BookSearch {
+  // NOTE: The worker has no limit. Its jobs read and search a book in Dart
+  // code, without a call to a codec of the phone that can hang. And the
+  // first read of a large book is slow for a good reason, so no time
+  // separates a slow read from a stuck one.
   BookSearch({Duration idle = const Duration(minutes: 2)})
     : _worker = KeptWorker(
         () => <String, BookWords>{},
