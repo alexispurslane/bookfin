@@ -1,0 +1,107 @@
+{
+  "ticket": "boo-56h7",
+  "integratedImplementationHead": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+  "commitMapping": {
+    "37af3fb580a5e59abbe9de5522dac854e895cb97": "ddf1cd8fa2e9a68fdde02705e8e9bef80484971c",
+    "191f709c38e5231120fa48f5e4c39479de9eb0f8": "ac63796a78dd1b494e63db3f7d362c47df647da5"
+  },
+  "integration": "Inspected complete implementation and review fixes. No production or test conflicts. Appended ticket conflict retained both parent launch record and child evidence.",
+  "reviewAcceptance": {
+    "originalReport": "docs/evidence/boo-56h7/original-review.json",
+    "originalSha256": "e2407fc44b1ca75d9552b50932f7161de06f4bbba906b1c26f2e87bd5d2f2a71",
+    "originalVerdicts": "changes-required for all three assessments; preserved unchanged",
+    "resolutions": "docs/evidence/boo-56h7/review-resolutions.json",
+    "parentDisposition": "R1 and R2 resolved: inspected meaningful red/green evidence and final owner/caller changes; combined tests pass. No second reviewer.",
+    "childLogsArchivedAndVerified": 48,
+    "sourceHashes": {
+      "lib/catalog/screen.dart": "ec7888e25636845a5f25948bdb570347000db95aea89ae02edf64407e289801b",
+      "lib/playback/native.dart": "51fdec5a74437a5014ba89b559bc31bfc758d6333cb90db41d16f76dc69429a0",
+      "lib/playback/playback.dart": "6e99d77430332f30edd3794fcec2a0d193d20ed91f4f35948971764a2ffb8005",
+      "lib/playback/records.dart": "cc964b6f8620f81790691f13f2cbc327dc442a0ca328a9f63e89cb17a0d83e11",
+      "lib/playback/store.dart": "d3ef6429263a9add1c89547c7eb10e248785b52f6f46cb740a7ca3fb7292f902",
+      "lib/playback/timeline.dart": "3f58fbbacf0d69c852407f0005d445e998e23ea50e0f0957151f79a9101e5f6c",
+      "test/app/play_choice_test.dart": "8815776ede2cd2749aebb246f2a5dcb5015c105f6f64281c0bb038f7064aef82",
+      "test/playback/play_choice_test.dart": "6fa0af37f593341053a12437185c9da834cf4f370218f63b8df7efaf76c44e37",
+      "test/playback/playback_test.dart": "a709e0c6956c5419156934143e72e6b5479a85005585b16809f4f3194256c30a",
+      "test/reader/persistence_test.dart": "0417d256f6c0ff3999b94fb7ebbc73d7ab9da8caac7deef20b425c050560f52e",
+      "test/sync/fixture.dart": "816841c585663ee93a4c6b65ec62d26c5e59aeaa96a2f53aef95a3648257eb0a"
+    },
+    "allElevenSourcesMatchFinalChild": true
+  },
+  "checks": [
+    {
+      "command": "nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded",
+      "head": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+      "exitCode": 0,
+      "result": "3768 passed, 27 skipped, zero failures",
+      "originalLog": "/tmp/bookfin-boo-56h7-integration/full.log",
+      "archive": "docs/evidence/boo-56h7/integration/full.log.gz",
+      "rawBytes": 696295,
+      "rawSha256": "956c7324ebee50cdbfe794d28e07bf1fe15fa12c318ca4c96c36eef3130ff6cd",
+      "archiveBytes": 62119,
+      "archiveSha256": "ea7a376858f791ff73fde37f1b1912b9c54918d13a5334d9728e863d52bfe0d4"
+    },
+    {
+      "command": "nix develop --command bash test/web_build_test.sh",
+      "head": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+      "exitCode": 0,
+      "result": "Production and gallery JavaScript builds succeeded; nonempty outputs checked",
+      "originalLog": "/tmp/bookfin-boo-56h7-integration/web-builds.log",
+      "archive": "docs/evidence/boo-56h7/integration/web-builds.log.gz",
+      "rawBytes": 2876,
+      "rawSha256": "8fe2d326d370425972119febd78d53018f90829e07978c92890d8920576bf41e",
+      "archiveBytes": 690,
+      "archiveSha256": "2d5ad599347dcfb37eaf2762b9cef31d06024f337cbbb26823b49c8fe1c813b2"
+    },
+    {
+      "command": "nix develop --command flutter analyze --no-pub lib test integration_test tool/showcase_fixture.dart",
+      "head": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+      "exitCode": 0,
+      "result": "No issues found",
+      "originalLog": "/tmp/bookfin-boo-56h7-integration/analysis.log",
+      "archive": "docs/evidence/boo-56h7/integration/analysis.log.gz",
+      "rawBytes": 96,
+      "rawSha256": "253bf8c5cbc7cd32cd5a61b509e24f0e7831b38ba01ce180cf1eb117b61063db",
+      "archiveBytes": 75,
+      "archiveSha256": "0ce3009a1993ca07b554d3e9b75783425a0f077fbe8b6b2e7008a7a6177dd6b6"
+    },
+    {
+      "command": "nix develop --command bash -c 'xargs dart format --output=none --set-exit-if-changed < /tmp/bookfin-boo-56h7-integration/changed-dart-paths.txt'",
+      "head": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+      "exitCode": 0,
+      "result": "11 files, zero changes",
+      "originalLog": "/tmp/bookfin-boo-56h7-integration/format.log",
+      "archive": "docs/evidence/boo-56h7/integration/format.log.gz",
+      "rawBytes": 48,
+      "rawSha256": "5e35af2bb617586489e543abfd92c200e8dcb2748f50cc24721080aee7798ad8",
+      "archiveBytes": 68,
+      "archiveSha256": "f503dec720f3e4b0c2c563546dd141e0e9ab0e4c4e9e753157eb7abbf723be9a"
+    },
+    {
+      "command": "git diff --check a314d7b8 HEAD",
+      "head": "ac63796a78dd1b494e63db3f7d362c47df647da5",
+      "exitCode": 0,
+      "result": "Passed at ac63796a",
+      "originalLog": "/tmp/bookfin-boo-56h7-integration/whitespace.log",
+      "archive": "docs/evidence/boo-56h7/integration/whitespace.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 20,
+      "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+    }
+  ],
+  "limits": [
+    "27 existing skips remain outside demonstrated execution. Complete full log is archived.",
+    "Browser checks establish default JavaScript compilation, not browser interaction or WebAssembly. Existing font and WebAssembly warnings retained.",
+    "Native headset, notification, lock-screen, installed-source and OS-process restart acceptance remains in boo-hxmd, blocked by t1-dth0.",
+    "Child first full-suite t5-rplx failure is preserved. Main includes the separately controlled t5-rplx test correction and passed this combined full suite.",
+    "Coverage, mutation testing and release hardening remain parent-owned after acceptance."
+  ],
+  "implementationClosedAfterIntegration": true,
+  "evidenceAssemblyFailure": {
+    "command": "git diff --cached --check",
+    "exitCode": 2,
+    "output": ".tickets/boo-hxmd.md:23: new blank line at EOF.",
+    "resolution": "Removed the generated trailing blank line; no implementation change."
+  }
+}

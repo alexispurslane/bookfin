@@ -1,8 +1,8 @@
 ---
 id: boo-56h7
-status: in_progress
+status: closed
 deps: []
-links: []
+links: [boo-hxmd]
 created: 2026-11-12T23:41:00Z
 type: bug
 priority: 1
@@ -99,3 +99,23 @@ five-test isolated retry passed. The unchanged full retry passed 3,767 tests
 with 27 skips. No reader source, test wait or timing threshold was changed.
 Both full logs and every failure are retained in the manifest. Final affected
 analysis reports no issues. The ticket remains in progress for parent integration.
+
+## Parent integration — 2026-11-13
+
+Integrated as ddf1cd8f and ac63796a. The parent inspected the complete change,
+the original review and both demonstrated fixes. Original changes-required
+verdicts remain unchanged; R1 and R2 have accepted evidence-backed resolutions.
+All eleven Dart files match the final child sources exactly. The parent
+archived and verified 48 child logs/ledger artifacts, including failures.
+
+Combined full suite at ac63796a: 3,768 passed, 27 existing skips, zero failures.
+Both real browser entry points compile to JavaScript. Analysis reports no
+issues; formatting checks eleven files with zero changes. Whitespace passes.
+Exact commands, logs, hashes and commit mapping are in
+`docs/evidence/boo-56h7/integration/integration.json`.
+
+Implementation is integrated and closed. Native acceptance is explicitly
+retained in linked boo-hxmd, blocked by t1-dth0; host callback and reconstructed
+restart tests do not establish Android media controls or process-kill behavior.
+General coverage, mutation testing and release hardening remain with the parent
+after acceptance. No native acceptance or release completion is claimed.
