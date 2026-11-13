@@ -89,11 +89,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 136:5     main.<fn>
-  
+
 00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: section CSS keeps prepared styling, main text size and chapter labels across settings
 00:00 +1 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: conditional short routes retain imports hidden by a deeper first route
 00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: conditional short routes retain imports hidden by a deeper first route [E]
@@ -136,11 +136,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 171:5     main.<fn>
-  
+
 00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual whole worker receives only its sections CSS
 00:00 +1 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual whole worker receives only its sections CSS [E]
   Expected: Set:[
@@ -178,11 +178,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 219:11    main.<fn>
-  
+
 00:00 +1 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual partial worker receives only its sections CSS
 00:00 +1 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual partial worker receives only its sections CSS [E]
   Expected: Set:[
@@ -220,11 +220,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 219:11    main.<fn>
-  
+
 00:00 +1 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual sample worker receives only its sections CSS
 00:01 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual sample worker receives only its sections CSS [E]
   Expected: Set:[
@@ -262,11 +262,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 219:11    main.<fn>
-  
+
 00:01 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: (tearDownAll)
 00:03 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: (setUpAll)
 00:03 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: section CSS survives a record reopen without reading the EPUB
@@ -300,65 +300,65 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: at location [0] is 'OPS/css/end.css' instead of 'OPS/css/two.css'
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 180:5          main.<fn>
-  
+
 00:03 +1 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a revision 5 record admits again to retain section CSS
 00:03 +1 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a revision 5 record admits again to retain section CSS [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 201:5          main.<fn>
-  
+
 00:03 +1 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again
 00:03 +1 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 241:7          main.<fn>
-  
+
 00:03 +1 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again
 00:03 +1 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 241:7          main.<fn>
-  
+
 00:03 +1 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again
 00:03 +1 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 241:7          main.<fn>
-  
+
 00:03 +1 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again
 00:03 +1 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 241:7          main.<fn>
-  
+
 00:03 +1 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with type section CSS facts is kept aside and admitted again
 00:03 +1 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with type section CSS facts is kept aside and admitted again [E]
   Expected: <2>
     Actual: <1>
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/admitted_books_test.dart 241:7          main.<fn>
-  
+
 00:03 +1 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: (tearDownAll)
 00:03 +1 -12: Some tests failed.
 

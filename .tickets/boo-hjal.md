@@ -91,6 +91,13 @@ structural validation, with semantic comparison on demand, as scoped.
 Performance evidence is limited to worker map entries for the measured books.
 Coverage and mutations remain with the parent after acceptance.
 
-All owned commands and the sole reviewer have finished. The final follow-up
-commit records review evidence only; it does not change implementation or tests.
+All owned commands and the sole reviewer have finished. Follow-up commits
+record evidence only; they do not change implementation or tests.
 The ticket remains in progress for parent integration, acceptance and closure.
+
+The final base-to-head `git diff --check` found trailing whitespace in six saved
+logs. Earlier working-tree checks had not included those added logs. The failure
+and repeated diagnostics are recorded in `18-base-diff-check.json`. Trailing
+spaces were removed without changing log lines or results; raw logs remain in
+implementation commit `513a112c9161363719a9d836be78d9173adcb435`. The complete
+diff then passed (`19-complete-diff-check.txt`). No code or test was changed.

@@ -724,7 +724,7 @@ Shell: showcase-winter: search hits opened: 1 of 1
   dart:async                                        Future.catchError
   package:bookfin/reader/epub/pager.dart 258:20     EpubPager.present
   test/reader/epub/chapter_titles_test.dart 157:13  main.<fn>
-  
+
 00:55 +569 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the scrub bar names the page under the finger in a seeded section
 00:56 +570 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a viewed page whose first place disagrees with the map forgets it
 00:56 +571 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept map with another number of sections is not used
@@ -905,7 +905,7 @@ Shell: showcase-winter: search hits opened: 1 of 1
 01:25 +726 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated page reports use section facts prepared in the worker [E]
   TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
   dart:isolate  _RawReceivePort._handleMessage
-  
+
 01:25 +726 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: a saved quote near the section end does not scan preceding text nodes
 Shell: Quote after 4000 text nodes: 14 text-list reads.
 01:25 +727 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated chapter labels reuse resolved targets and the fallback heading
@@ -920,7 +920,7 @@ Shell: 60 title queries: 2002 href reads, 2 target lookups, 1 heading traversals
   test/reader/epub/chapter_titles_test.dart 35:7       _Publication.stylesForSection
   package:bookfin/reader/epub/page_source.dart 354:20  PageSource.findPlace
   test/reader/epub/chapter_titles_test.dart 365:14     main.<fn>
-  
+
 01:25 +731 ~20 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: section titles survive eviction, settings changes and reopening
 01:25 +731 ~20 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: section titles survive eviction, settings changes and reopening [E]
   UnimplementedError: stylesForSection
@@ -944,7 +944,7 @@ Shell: 60 title queries: 2002 href reads, 2 target lookups, 1 heading traversals
   package:bookfin/reader/epub/page_source.dart 874:8    PageSource._ask
   package:bookfin/reader/epub/page_source.dart 389:12   PageSource.section
   test/reader/epub/chapter_titles_test.dart 397:50      main.<fn>
-  
+
 01:25 +731 ~20 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: (tearDownAll)
 01:25 +731 ~20 -3: Some tests failed.
 

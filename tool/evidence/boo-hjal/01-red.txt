@@ -90,11 +90,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 135:5     main.<fn>
-  
+
 00:00 +0 -1: section CSS keeps prepared styling, main text size and chapter labels across settings
 00:00 +1 -1: the actual whole worker receives only its sections CSS
 00:00 +1 -2: the actual whole worker receives only its sections CSS [E]
@@ -133,17 +133,17 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 192:11    main.<fn>
-  
+
 00:00 +1 -2: the actual partial worker receives only its sections CSS
 00:00 +1 -3: the actual partial worker receives only its sections CSS [E]
   Bad state: No element
   dart:core                                         Iterable.single
   test/reader/epub/section_styles_test.dart 182:86  main.<fn>
-  
+
 00:00 +1 -3: the actual sample worker receives only its sections CSS
 00:00 +1 -4: the actual sample worker receives only its sections CSS [E]
   Expected: Set:[
@@ -181,11 +181,11 @@ SDK iphonesimulator not installed.
               ...
             ]
      Which: larger than expected
-  
+
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
   test/reader/epub/section_styles_test.dart 192:11    main.<fn>
-  
+
 00:00 +1 -4: a real EPUB keeps every prepared section with fewer supplied sheets
 00:00 +2 -4: (tearDownAll)
 00:00 +2 -4: Some tests failed.

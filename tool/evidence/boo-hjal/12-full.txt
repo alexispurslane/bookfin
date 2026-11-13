@@ -1123,7 +1123,7 @@ The test description was:
 01:55 +1005 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled [E]
   Test failed. See exception logs above.
   The test description was: idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled
-  
+
 01:55 +1005 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: (tearDownAll)
 01:55 +1005 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: (setUpAll)
 01:55 +1005 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: an excerpt cannot restore a section whose page settings were dropped

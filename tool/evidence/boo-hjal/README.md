@@ -169,6 +169,25 @@ was launched. The original report preserves the following limits and gaps:
 
 All owned commands and the reviewer finished. Only ticket and review evidence
 changed after the reviewed implementation commit, so suites were not repeated.
-The final evidence check is `git diff --check` (exit 0, no output), saved in
+The evidence-only check is `git diff --check` (exit 0, no output), saved in
 `17-review-diff-check.txt`. Integration, acceptance, hardening and closure remain
 with the parent.
+
+## Final complete-diff check
+
+After the review-evidence commit, the first complete base-to-head whitespace
+check failed on trailing spaces in six saved logs. The previous checks examined
+working-tree changes, so they did not include the original untracked log files.
+The initial final check and a saved repeat both returned the same diagnostics.
+`18-base-diff-check.json` preserves the exact failed command, head, exit status
+and output. The logs were then normalized by removing trailing spaces and tabs
+only; line counts and results are unchanged. The raw captures remain available
+in implementation commit `513a112c9161363719a9d836be78d9173adcb435`.
+
+| Evidence | Exact command | Result |
+| --- | --- | --- |
+| `18-base-diff-check.json` | `git diff --check eb64fe705198fba0563df0a188939f6e57e16f35..HEAD` | Exit 2 at `68115474387311cf890801bc195a1e8a0cbab140`, twice: trailing whitespace in logs 01, 02, 06, 10, 11 and 12. |
+| `19-complete-diff-check.txt` | `git diff --check eb64fe705198fba0563df0a188939f6e57e16f35` | Exit 0 after log whitespace normalization; no output. |
+
+These evidence edits do not change implementation, tests or the original review
+report. No runtime suite was repeated for them.
