@@ -45,6 +45,7 @@ class PdfViewport extends StatefulWidget {
     required this.fontSize,
     required this.onReady,
     required this.onAddress,
+    required this.onRefinedAddress,
     required this.view,
     required this.onCancelRecognition,
     required this.onTap,
@@ -56,7 +57,16 @@ class PdfViewport extends StatefulWidget {
   final double fontSize;
   final PdfAddress? initial;
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
+
+  /// Reports the place that shows. A page that a turn or a jump shows
+  /// reports its place at once, before its text arrives, so the owner can
+  /// save the page while a scanned page is recognized.
   final ValueChanged<PdfAddress> onAddress;
+
+  /// Reports the place of the last [onAddress] report again, on the same
+  /// page, as the text of the page names it once that text arrives. The
+  /// text of a page that no longer shows reports nothing.
+  final ValueChanged<PdfAddress> onRefinedAddress;
 
   /// The session's chosen PDF view. The original page shows while the
   /// chosen view waits for words or text that match the place.
@@ -283,8 +293,11 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// Asks the book for the text of the shown page, whose place is
   /// [address]: the text for reading in reflow, and only the text layer on
-  /// the original page. Then it resolves the place in that text and
-  /// publishes it. With [lastViewport], the place is the end of the page.
+  /// the original page. It publishes the place at once, as it is known
+  /// without the text, because the page shows while its text is on its way
+  /// and recognition takes seconds (engine rule 3). Then it resolves the
+  /// place in the text and reports it as a refinement of the published
+  /// place. With [lastViewport], the refined place is the end of the page.
   Future<void> _requestText(
     int generation,
     PdfAddress address, {
@@ -307,6 +320,7 @@ class _PdfViewportState extends State<PdfViewport>
         return;
       }
       widget.onReady(this, _contents());
+      _publish();
       unawaited(_draw(generation));
       final text = await pendingText;
       if (!current()) return;
@@ -333,7 +347,9 @@ class _PdfViewportState extends State<PdfViewport>
     }
     if (!current()) return;
     widget.onReady(this, _contents());
-    _publish();
+    // Only this page's own request reaches here ([current]), so the
+    // refinement never names a page other than the published one.
+    widget.onRefinedAddress(_address);
   }
 
   List<ContentsEntry> _contents() => [

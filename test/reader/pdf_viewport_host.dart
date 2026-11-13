@@ -40,6 +40,8 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
           initial: widget.initial,
           onReady: widget.onReady,
           onAddress: widget.onAddress,
+          // The stand-in owner takes a refined place as the shown place.
+          onRefinedAddress: widget.onAddress,
           view: _view,
           onCancelRecognition: () => widget.book.textSupply?.cancel(),
           onTap: () {},

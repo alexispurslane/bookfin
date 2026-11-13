@@ -191,6 +191,7 @@ void main() {
             view: PdfPageView.original,
             onReady: (shown, _) => navigator = shown,
             onAddress: (_) {},
+            onRefinedAddress: (_) {},
             onCancelRecognition: () {},
             onTap: () {},
             onTurn: turns.add,

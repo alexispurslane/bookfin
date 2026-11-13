@@ -106,7 +106,12 @@ class LateTextPdf extends DrawnPdf {
 
 /// What a viewport reported to its owner.
 class Reports {
+  /// Every reported place, in order: the shown places and their
+  /// refinements.
   final addresses = <PdfAddress>[];
+
+  /// Only the places that the viewport reported as refinements.
+  final refined = <PdfAddress>[];
   var cancels = 0;
   DocumentNavigator? navigator;
 }
@@ -125,6 +130,9 @@ Widget viewport(
       view: view,
       onReady: (navigator, _) => reports.navigator = navigator,
       onAddress: reports.addresses.add,
+      onRefinedAddress: (address) => reports
+        ..addresses.add(address)
+        ..refined.add(address),
       onCancelRecognition: () => reports.cancels++,
       onTap: () {},
       onTurn: (_) {},
@@ -363,14 +371,18 @@ void main() {
         await reports.navigator!.move(true);
         await tester.pump();
       }
+      // The page itself is the place until its text arrives (boo-f9xa).
+      // Every place from then on is inside the reflowed page.
+      final inside = reports.addresses.skip(
+        reports.addresses.indexOf(reports.refined.first),
+      );
       expect(
-        reports.addresses.map((address) => address.character).toSet().length,
+        inside.map((address) => address.character).toSet().length,
         greaterThan(5),
       );
-      expect(
-        reports.addresses.map((address) => address.representation).toSet(),
-        {'fixture/fixture/extracted/fixture-text'},
-      );
+      expect(inside.map((address) => address.representation).toSet(), {
+        'fixture/fixture/extracted/fixture-text',
+      });
       await tester.pumpWidget(const SizedBox());
     },
   );

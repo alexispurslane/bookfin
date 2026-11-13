@@ -182,6 +182,7 @@ class _ProbeState extends State<_Probe> {
                   'WORD_VIEW ${address.sourcePage}:${address.character}',
                 );
               },
+              onRefinedAddress: (address) => _address = address,
               onCancelRecognition: () => _book?.textSupply?.cancel(),
               onTap: () {},
               onTurn: (forward) => unawaited(_turn(forward)),

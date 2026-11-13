@@ -52,6 +52,7 @@ Widget _reader(
           initial: initial,
           onReady: (navigator, _) => reports.navigator = navigator,
           onAddress: reports.addresses.add,
+          onRefinedAddress: reports.addresses.add,
           onCancelRecognition: () {},
           onTap: () {},
           onTurn: (forward) => unawaited(reports.navigator!.move(forward)),

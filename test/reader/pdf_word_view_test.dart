@@ -322,6 +322,7 @@ void main() {
               view: view,
               onReady: (navigator, _) => reported.navigator = navigator,
               onAddress: reported.places.add,
+              onRefinedAddress: reported.places.add,
               onCancelRecognition: () => book.textSupply?.cancel(),
               onTap: () {},
               onTurn: (forward) => unawaited(reported.navigator!.move(forward)),

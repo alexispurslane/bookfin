@@ -76,6 +76,7 @@ void main() {
             view: PdfPageView.pageWords,
             onReady: (value, _) => navigator = value,
             onAddress: (_) {},
+            onRefinedAddress: (_) {},
             onCancelRecognition: () {},
             onTap: onTap ?? () {},
             onTurn: (forward) => unawaited(navigator!.move(forward)),

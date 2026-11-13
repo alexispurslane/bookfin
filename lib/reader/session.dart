@@ -168,6 +168,7 @@ class ReadingChanges {
 /// - Every account whose save failed still has its changes pending.
 /// - The Undo offer is a recorded move of the account.
 /// - A pending move belongs to the open book.
+/// - The move that a refinement can still name ends in the open edition.
 /// - PDF preferences belong to the bound account and are keyed by book,
 ///   not edition. The open book's choices are derived from those preferences.
 ///
@@ -178,6 +179,14 @@ class ReadingChanges {
 /// that fails, or the open of another book, drops it. The move saves with
 /// its new place in one change set, and becomes the Undo offer
 /// ([undoOffer]). Page turns and changes of the text size are not moves.
+///
+/// A PDF page shows before its text arrives, and recognition of a scanned
+/// page takes seconds. The navigator reports the page itself at once, so
+/// the place and the move that ended there are saved while the text is on
+/// its way. When the text names the place, the navigator reports it again
+/// as a refinement ([refineAddress]). A refinement is the same place under
+/// a better name: it records no move, and the move that ended there takes
+/// the new name.
 ///
 /// Each [open] starts a reading visit: the first place that the book shows
 /// records an Opened entry there. If another device saved that place, and
@@ -413,6 +422,11 @@ class ReaderSession extends ChangeNotifier {
 
   /// The jump whose place has not shown yet, or null.
   _Move? _pending;
+
+  /// The move that the last [acceptAddress] ended at the visible place, or
+  /// null when that report ended none. [refineAddress] gives its end the
+  /// place as the text names it.
+  HistoryEvent<TextPosition>? _landed;
 
   /// The end of the last jump in the open book. Jumps run one after
   /// another. The open of another book drops the jumps that wait.
@@ -762,6 +776,7 @@ class ReaderSession extends ChangeNotifier {
     _message = null;
     _undo = null;
     _pending = null;
+    _landed = null;
     _jumps = Future.value();
   }
 
@@ -1131,18 +1146,56 @@ class ReaderSession extends ChangeNotifier {
   void acceptVisible(int eventToken, VisibleLocation location) =>
       acceptAddress(eventToken, EpubAddress(location));
 
+  /// Takes [address] as the place that the navigator now shows. It becomes
+  /// the visible place and is saved. The first place after a jump ends the
+  /// pending move (see [_endMove]).
   void acceptAddress(int eventToken, ReaderAddress address) {
+    if (!_place(eventToken, address)) return;
+    final move = _landed = _endMove(address);
+    unawaited(_save(resumes: [position!], history: {?move?.id: move}));
+    _emit();
+  }
+
+  /// Names the visible place more exactly. [address] is a place on the page
+  /// that already shows, as the text of that page names it once the text
+  /// arrives. It becomes the visible place and is saved, like a page turn.
+  ///
+  /// A refinement records no move. The move that ended when the page
+  /// showed, if any, now ends at [address], so History shows the words of
+  /// the place.
+  ///
+  /// A refinement never changes the page. An [address] in another resource
+  /// than the visible place changes nothing, so a late text of an earlier
+  /// page cannot move the place back. An [address] that names the place as
+  /// it is already named saves nothing.
+  void refineAddress(int eventToken, ReaderAddress address) {
+    final shown = _visibleAddress, earlier = _position;
+    if (shown == null ||
+        earlier == null ||
+        shown.resource != address.resource ||
+        jsonEncode(shown.toJson()) == jsonEncode(address.toJson())) {
+      return;
+    }
+    if (!_place(eventToken, address)) return;
+    final move = _landed = _nameEnds(_landed, earlier);
+    unawaited(_save(resumes: [position!], history: {?move?.id: move}));
+    _emit();
+  }
+
+  /// Makes [address] the visible place and the saved position, when the
+  /// book of [eventToken] is open and holds [address]. Gives whether it did.
+  bool _place(int eventToken, ReaderAddress address) {
     final admitted = document;
     if (!_live(eventToken) ||
         admitted == null ||
         edition == null ||
         !admitted.accepts(address)) {
-      return;
+      return false;
     }
     try {
       admitted.decodeAddress(address.toJson());
     } catch (_) {
-      return;
+      return false;
     }
     _visibleAddress = address;
     // The survey analyzes the shown page and the next one first, so the next
@@ -1168,9 +1221,40 @@ class ReaderSession extends ChangeNotifier {
           _compatible(saved) != null,
     );
     _resumes.add(position!);
-    final move = _endMove(address);
-    unawaited(_save(resumes: [position!], history: {?move?.id: move}));
-    _emit();
+    return true;
+  }
+
+  /// Gives [move] the visible place at each end where it names [earlier],
+  /// the same place before its text named it. The start of a visit names it
+  /// at both ends. Gives the changed move, which replaces [move] in
+  /// [history] and in the Undo offer. Null when [move] is null, or when
+  /// [history] holds it no more.
+  HistoryEvent<TextPosition>? _nameEnds(
+    HistoryEvent<TextPosition>? move,
+    TextPosition earlier,
+  ) {
+    final index = move == null
+        ? -1
+        : _history.indexWhere((event) => event.id == move.id);
+    if (index < 0) return null;
+    final old = _history[index];
+    TextPosition named(TextPosition end) =>
+        samePlace(end, earlier) ? position! : end;
+    final renamed = HistoryEvent(
+      id: old.id,
+      at: old.at,
+      kind: old.kind,
+      before: named(old.before),
+      after: named(old.after),
+      bookTitle: old.bookTitle,
+      editionLabel: old.editionLabel,
+      device: old.device,
+      counterpartOf: old.counterpartOf,
+      matchedBy: old.matchedBy,
+    );
+    _history = List.of(_history)..[index] = renamed;
+    if (_undo?.id == old.id) _undo = renamed;
+    return renamed;
   }
 
   /// Ends the pending move at [after], the place that the navigator now
@@ -1910,7 +1994,8 @@ class ReaderSession extends ChangeNotifier {
         _failedAccounts.any((key) => !_pendingWrites.containsKey(key)) ||
         (_recordsReady && _unreadChanges.containsKey(_account)) ||
         (_undo != null && !_history.contains(_undo)) ||
-        (_pending != null && (_pending!.token != token || edition == null))) {
+        (_pending != null && (_pending!.token != token || edition == null)) ||
+        (_landed != null && _landed!.after.editionId != edition?.id)) {
       throw StateError(
         'Reading state must belong to one current account, source, and processed publication.',
       );

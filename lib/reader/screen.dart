@@ -485,6 +485,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onReady: (navigator, entries) =>
             reader.attachDocument(token, navigator, entries),
         onAddress: (address) => reader.acceptAddress(token, address),
+        onRefinedAddress: (address) => reader.refineAddress(token, address),
         view: reader.pdfView,
         trimMargins: reader.trimMargins,
         onCancelRecognition: () => document.textSupply?.cancel(),
