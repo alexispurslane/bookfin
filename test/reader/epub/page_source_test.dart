@@ -296,6 +296,40 @@ void main() {
   );
 
   test(
+    'dropping page settings stops an excerpt already between layout steps',
+    () async {
+      open(
+        book(['<aside id="n"><p>${prose(100)}</p></aside>']),
+        budget: Duration.zero,
+      );
+      final section = await scheduler.until(source.section(0));
+      final pending = source.excerpt(
+        section,
+        section.dom.elementById('n')!,
+        width: 240,
+      );
+      // Dispose a wrongly returned page too, so the red test leaks nothing.
+      final stopped = expectLater(
+        pending.then((page) {
+          page?.dispose();
+          return page;
+        }),
+        throwsA(isA<PageRequestStopped>()),
+      );
+      source.settings = smallPage;
+      source.settings = const PageSettings(
+        width: 500,
+        height: 700,
+        fontSize: 22,
+        night: false,
+      );
+
+      await stopped;
+      source.checkInvariants();
+    },
+  );
+
+  test(
     'disposing the page source stops an excerpt between its layout steps',
     () async {
       open(
@@ -308,7 +342,7 @@ void main() {
         section.dom.elementById('n')!,
         width: 240,
       );
-      final stopped = expectLater(pending, throwsStateError);
+      final stopped = expectLater(pending, throwsA(isA<PageRequestStopped>()));
       source.dispose();
       await stopped;
     },

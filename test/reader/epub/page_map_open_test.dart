@@ -319,6 +319,125 @@ void main() {
     seeded.checkInvariants();
   });
 
+  test('an active note rebuilds when another page rejects its kept table '
+      'widths', () async {
+    final publication = book([
+      '<aside id="n"><table><tr><td>Speaker</td>'
+          '<td>${prose(300)}</td></tr>'
+          '<tr><td>Later</td><td>Last row.</td></tr></table></aside>',
+    ]);
+    final (truth, _) = await layOutWhole(publication);
+    final plain = open(publication);
+    final prepared = await scheduler.until(plain.section(0));
+    final expected = (await plain.excerpt(
+      prepared,
+      prepared.dom.elementById('n')!,
+      width: 320,
+    ))!;
+    addTearDown(expected.dispose);
+
+    final kept = truth.single;
+    final entry = kept.measures.tables.entries.single;
+    // Only the later row disproves the map. Its wrong first-cell extent
+    // changes both columns, including those of the long first row.
+    final widths = Float64List.fromList(entry.value)
+      ..[4] = 200
+      ..[5] = 200;
+    final pageMaps = mapsOf(publication);
+    await pageMaps.write(readerPage, [
+      _measured(kept, SectionMeasures(tables: {entry.key: widths})),
+    ]);
+    final seeded = open(publication, pageMaps: pageMaps, budget: Duration.zero);
+    final section = await scheduler.until(seeded.section(0));
+    await _eventually(() async => seeded.bookPages.value.complete);
+    final before = LayoutRun.laidOutUnits;
+    var finished = false;
+    final pending = seeded
+        .excerpt(section, section.dom.elementById('n')!, width: 320)
+        .then((page) {
+          finished = true;
+          addTearDown(page!.dispose);
+          return page;
+        });
+    // Wait for actual cell text, not an assumed number of layout steps.
+    while (LayoutRun.laidOutUnits == before && !finished) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    expect(finished, isFalse);
+    var dropped = 0;
+    seeded.keptMapDropped.addListener(() => dropped++);
+    final later = kept.starts.indexWhere(
+      (start) => start.item == entry.key && start.line == 1,
+    );
+    expect(later, greaterThanOrEqualTo(0));
+    await pageAt(seeded, kept.firsts[later]!);
+    expect(dropped, 1);
+    expect(
+      finished,
+      isFalse,
+      reason: 'rejection interrupts the long first row',
+    );
+
+    final page = await pending;
+    // Compare the actual column geometry before the full page signature,
+    // so a failure reports the small, useful difference first.
+    expect(
+      page.pieces.take(2).map((piece) => (piece.x, piece.paragraph.width)),
+      expected.pieces.take(2).map((piece) => (piece.x, piece.paragraph.width)),
+    );
+    expect(pageKey(page), pageKey(expected));
+    seeded.checkInvariants();
+  });
+
+  test('a delayed note rejects kept widths after its preparation left the '
+      'cache', () async {
+    final publication = book([
+      '<aside id="n"><table><tr><td>Speaker</td>'
+          '<td>${prose(12)}</td></tr></table></aside>',
+      for (var index = 1; index < 8; index++) paragraphs(1),
+    ]);
+    final (truth, _) = await layOutWhole(publication);
+    final plain = open(publication);
+    final prepared = await scheduler.until(plain.section(0));
+    final expected = (await plain.excerpt(
+      prepared,
+      prepared.dom.elementById('n')!,
+      width: 240,
+    ))!;
+    addTearDown(expected.dispose);
+    final kept = truth.first;
+    final entry = kept.measures.tables.entries.single;
+    final widths = Float64List.fromList(entry.value)
+      ..[0] *= 2
+      ..[1] *= 2;
+    final pageMaps = mapsOf(publication);
+    await pageMaps.write(readerPage, [
+      _measured(kept, SectionMeasures(tables: {entry.key: widths})),
+      ...truth.skip(1),
+    ]);
+    final seeded = open(publication, pageMaps: pageMaps);
+    final section = await scheduler.until(seeded.section(0));
+    await _eventually(() async => seeded.bookPages.value.complete);
+    // The caller still holds the prepared note while other sections fill
+    // the source's preparation cache, as delayed backlink lookup can do.
+    for (var index = 1; index < 8; index++) {
+      await scheduler.until(seeded.section(index));
+    }
+    var dropped = 0;
+    seeded.keptMapDropped.addListener(() => dropped++);
+
+    final page = (await seeded.excerpt(
+      section,
+      section.dom.elementById('n')!,
+      width: 240,
+    ))!;
+    addTearDown(page.dispose);
+
+    expect(dropped, 1);
+    expect(pageKey(page), pageKey(expected));
+    seeded.checkInvariants();
+  });
+
   test('a second open of a book shows its true page number at once', () async {
     final publication = _sixSections();
     final first = open(publication, pageMaps: mapsOf(publication));

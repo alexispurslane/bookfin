@@ -137,6 +137,9 @@ class PageRequestStopped implements Exception {
 ///   counts as ended. Kept maps are read only for the current and the
 ///   previous settings.
 /// - Every request of the work around the shown page is in progress.
+/// - Each active excerpt run belongs to a section with a request in
+///   progress. Section transitions release its unfinished pages too;
+///   successfully returned excerpt pages belong only to their caller.
 /// - Each true page start has its first place and its visible start, and
 ///   a section whose main run ended lists them in the page index.
 /// - The published page index is the current settings' one.
@@ -388,7 +391,8 @@ class PageSource {
   /// Uses the section's measurement owner, with the fragment's actual
   /// content widths. The caller owns the returned page and must dispose it.
   /// Returns null when the element has no visible flow. Stops when the
-  /// source has dropped the section's page settings.
+  /// source has dropped the section's page settings or is disposed, with
+  /// [PageRequestStopped]. Measurement rejection rebuilds unfinished work.
   Future<LaidPage?> excerpt(
     PreparedSection section,
     DomElement element, {
@@ -415,35 +419,32 @@ class PageSource {
       omit: omit,
     );
     if (fragment == null) return null;
-    while (true) {
-      final run = LayoutRun(fragment, measurements: layout.measurements);
-      var accepted = false;
-      try {
-        while (!run.done) {
-          run.step(_stepBudget);
-          if (run.contradicted) break;
-          if (!run.done) await Future<void>.delayed(Duration.zero);
-          if (_disposed) throw StateError('The page source is disposed.');
+    return _ask(_Rank.asked, null, (request) async {
+      request.layout = layout;
+      while (true) {
+        if (!identical(_layouts[(section.index, section.settings)], layout)) {
+          _settingsChanged();
         }
-        if (run.contradicted) {
-          // A note checks shared kept measurements too. Stop using them
-          // before rejecting them, then rebuild the note with fresh ones.
-          run.dispose();
-          _contradicted(layout);
-        } else {
-          final page = run.pages.single;
-          accepted = true;
-          return page;
-        }
-      } finally {
-        run.dispose();
-        if (!accepted) {
-          for (final page in run.pages) {
-            page.dispose();
+        final run = layout.startExcerpt(section, fragment);
+        try {
+          while (layout.excerpts.containsKey(run) && !run.done) {
+            run.step(_stepBudget);
+            if (run.contradicted) {
+              _contradicted(layout);
+              break;
+            }
+            if (!run.done) {
+              await request.wait(also: Future<void>.delayed(Duration.zero));
+            }
           }
+          // Any run can reject shared measures while this excerpt waits.
+          // The section releases every affected run; retry only its work.
+          if (layout.excerpts.containsKey(run)) return layout.takeExcerpt(run);
+        } finally {
+          layout.dropExcerpt(run);
         }
       }
-    }
+    });
   }
 
   /// The line holding [place], using the same measurements as this
@@ -775,6 +776,15 @@ class PageSource {
       }
       for (final run in [?layout.main, ?layout.anchored]) {
         run.run.checkInvariants();
+      }
+      if (layout.excerpts.isNotEmpty) {
+        check(
+          _requests.any((request) => identical(request.layout, layout)),
+          'an excerpt has no request keeping its section',
+        );
+        for (final run in layout.excerpts.keys) {
+          run.checkInvariants();
+        }
       }
     }
     for (final layout in _prepared) {
@@ -1503,13 +1513,16 @@ class PageSource {
   /// prepared section, whose runs stop first.
   void _dropMeasures(_SectionLayout layout) {
     layout.measures = null;
-    if (layout.prepared case final prepared?) {
-      layout.disposeRuns();
-      layout.measurements.forgetMeasures(prepared);
-    }
-    if (layout.part case final part?) {
-      layout.disposeRuns();
-      layout.measurements.forgetMeasures(part.section);
+    // A delayed excerpt can still hold preparation that left the cache
+    // before the request began. Its retained measures must go too.
+    final sections = {
+      ?layout.prepared,
+      ?layout.part?.section,
+      ...layout.excerpts.values,
+    };
+    layout.disposeRuns();
+    for (final section in sections) {
+      layout.measurements.forgetMeasures(section);
     }
   }
 
@@ -2036,6 +2049,11 @@ class _SectionLayout {
   /// The run from a page start that the main run did not reach.
   _Run? anchored;
 
+  /// Active excerpt runs and the preparation their fragments share. The
+  /// section owns their unfinished pages and releases them with its page
+  /// runs whenever their shared measurements are invalidated.
+  final excerpts = <LayoutRun, PreparedSection>{};
+
   /// The true page starts that the main run reached, in order, the first
   /// place of each of their pages ([LaidPage.startPlace]), and the number
   /// of the section's visible characters before each of them.
@@ -2117,11 +2135,38 @@ class _SectionLayout {
     return (at, at >= 0 && starts[at] == start);
   }
 
+  LayoutRun startExcerpt(PreparedSection section, PreparedSection fragment) {
+    final run = LayoutRun(fragment, measurements: measurements);
+    excerpts[run] = section;
+    return run;
+  }
+
+  /// Transfers the finished page to the caller before releasing the run.
+  LaidPage takeExcerpt(LayoutRun run) {
+    assert(excerpts.containsKey(run) && run.done);
+    final page = run.pages.single;
+    excerpts.remove(run);
+    run.dispose();
+    return page;
+  }
+
+  /// Releases unfinished work once, including pages not yet handed out.
+  void dropExcerpt(LayoutRun run) {
+    if (excerpts.remove(run) == null) return;
+    run.dispose();
+    for (final page in run.pages) {
+      page.dispose();
+    }
+  }
+
   void disposeRuns() {
     main?.run.dispose();
     anchored?.run.dispose();
     main = null;
     anchored = null;
+    for (final run in excerpts.keys.toList()) {
+      dropExcerpt(run);
+    }
   }
 }
 
