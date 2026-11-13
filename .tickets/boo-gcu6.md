@@ -10,6 +10,16 @@ assignee: Alexis Purslane
 parent: boo-fs0n
 tags: [survey-1112]
 ---
+
+## Launch — 2026-11-13
+
+Astra xhigh lead launched from eb64fe705198fba0563df0a188939f6e57e16f35. Running, stage uncertain; branch not yet reported. Exactly one fresh read-only Astra high reviewer authorized. Both latest PDF and EPUB integrations are committed prerequisites; parent combined verification is running independently.
+
+- clientRequestId: bookfin-boo-gcu6-astra-20261113-1
+- taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-gcu6-astra-20261113-1
+- childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-gcu6-astra-20261113-1
+- Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-gcu6-astra-20261113-1>
+
 # Write the settings of each record domain only when they change
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: confirmed. lib/playback/store.dart:900-913, 1216-1225 and 1444-1458. The listening settings and the reading settings share one account row. After the user changes the view setting of one PDF, `_smallSettings` returns false. From then on, every listening save (about one for each media-second) and every sync acknowledgment starts an isolate through `compute`, then encodes and rewrites the reading settings again. Store the settings of each domain separately and write them only when they change. Related closed ticket: boo-lj72.
