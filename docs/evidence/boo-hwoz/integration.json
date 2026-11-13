@@ -1,0 +1,130 @@
+{
+  "ticket": "boo-hwoz",
+  "integrationBase": "763511fdff64c9cd1628ae38a1a47fefd57867b3",
+  "testedImplementationHead": "ff54cf27a28ba20bd72ee8e2ece450520f9cf860",
+  "headAtEvidenceWriting": "403b803d24b5e20a9a249ca094dff477fba90eac",
+  "commitMapping": [
+    {
+      "child": "5055f01314fe443e255efd14fbda49df282304dd",
+      "main": "f688d00a094dcbca344bdd6fc98486c152af44e1"
+    },
+    {
+      "child": "5c051e9080240aafb68ea554df4781508e8b22f7",
+      "main": "5adbb4c81a740086566af88c73e5e163c9466830"
+    },
+    {
+      "child": "a39b2ce6cec7b51fff2ef3d71f8f185e6116608c",
+      "main": "ff54cf27a28ba20bd72ee8e2ece450520f9cf860"
+    }
+  ],
+  "inspection": [
+    "Complete diff, callers, behavior fixtures, review and resolutions inspected.",
+    "25 saved command-log hashes and ten source-capture hashes verified.",
+    "Child full-suite machine output independently counted: 3673 success, 27 skipped, one error, done.success=false.",
+    "Only ticket-history conflict; retained launch and implementation evidence. All three changed Dart files match the reviewed child.",
+    "Follow-up scope records changed only tickets while parent checks ran."
+  ],
+  "checks": [
+    {
+      "stage": "format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/catalog/jellyfin.dart",
+        "test/catalog/collection_queries_test.dart",
+        "test/catalog/library_visibility_test.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-hwoz-integration/format.log",
+      "elapsedSeconds": 2.36,
+      "sha256": "45677745de22edb703c8d6f33aa97667c853d61fd53a4d91027d6116d8b5d32f",
+      "bytes": 47,
+      "result": "Three files; zero changes"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "analyze",
+        "lib",
+        "test",
+        "integration_test",
+        "tool/showcase_fixture.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-hwoz-integration/analysis.log",
+      "elapsedSeconds": 6.37,
+      "sha256": "717f4ce78ef5b801d81b3878a2d0e323686b32492ca116d3f12980377db5e207",
+      "bytes": 81,
+      "result": "No issues found"
+    },
+    {
+      "stage": "affected",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded",
+        "test/catalog",
+        "test/settings",
+        "test/app",
+        "test/downloads",
+        "test/playback",
+        "test/sync"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-hwoz-integration/affected.log",
+      "elapsedSeconds": 97.1,
+      "sha256": "a7f6f57ddf5db76d55dc36896fe67a7f14a12be7f016f6cac7975fd23333f582",
+      "bytes": 285233,
+      "result": "1665 passed, 3 existing skips, zero failures"
+    },
+    {
+      "stage": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "763511fdff64c9cd1628ae38a1a47fefd57867b3",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-hwoz-integration/diff.log",
+      "elapsedSeconds": 0.02,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "result": "No whitespace errors"
+    }
+  ],
+  "reviewDisposition": {
+    "originalVerdicts": {
+      "correctness": "pass",
+      "ticketFulfillment": "changes-required",
+      "design": "changes-required"
+    },
+    "D1": "Recorded follow-up t9-ftlz is permitted by AGENTS.md touched-code rule and original reviewer remedy; this resolves the reporting obligation, not the runtime issue.",
+    "secondReview": false
+  },
+  "limits": [
+    "The child full suite failed at tf-il7u. Focused recurrence also happened with original production. Cause remains unknown; no full-suite success is claimed.",
+    "Large collection-result processing still runs on the UI isolate. Its unmeasured runtime cost remains in t9-ftlz.",
+    "Native server compatibility is source and loopback evidence, not live Jellyfin execution.",
+    "Parent reran integration-affected suites only. Existing skips remain unverified.",
+    "No device/browser, coverage/mutation, latency or heap-saving claims.",
+    "Original review verdicts and gaps remain unchanged.",
+    "Membership fetching remains every-refresh; user freshness choice is pending."
+  ],
+  "attributionCorrection": "The existing catalog-retention worker belongs to boo-8xyn, not boo-zs5i as named in the child validation narrative."
+}

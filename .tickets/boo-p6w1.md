@@ -116,3 +116,11 @@ Both keep narrowed queries, correct paging, account separation, and the saved
 library at launch. The question is pending. Do not infer a choice from time.
 The shared query improvement may proceed independently. Do not add a retained
 membership map or change refresh cadence until the choice is settled.
+
+## Shared query work integrated — 2026-11-13
+
+boo-hwoz is integrated through ff54cf27 and passed the parent's affected
+checks: 1,665 passed, 3 skipped. Its child full suite retained tf-il7u.
+The shared query improvement is complete; the freshness question remains
+pending. No answer has been inferred and no retained membership cache was
+added. Follow-up t9-ftlz owns collection CPU work independently of freshness.

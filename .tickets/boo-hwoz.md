@@ -1,6 +1,6 @@
 ---
 id: boo-hwoz
-status: in_progress
+status: closed
 deps: []
 links: [boo-p6w1, t9-ftlz]
 created: 2026-11-13T15:32:34Z
@@ -99,3 +99,45 @@ diff including review evidence and the follow-up ticket. No second review
 was requested. All owned commands and the reviewer have finished. The known
 tf-il7u full-suite failure and all other review limits remain explicit; parent
 owns integration, acceptance, hardening and closure.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated ordered child commits 5055f013, 5c051e90 and a39b2ce6 as
+f688d00a, 5adbb4c8 and ff54cf27. The only conflict was appended ticket
+history; both parent launch and child evidence remain. The three changed
+Dart files match the reviewed child exactly. No integration implementation
+or test edits were required.
+
+Parent inspection covered the complete diff, callers, fixtures, original
+review and resolutions. All 25 saved command-log hashes and ten source
+capture hashes match. The child machine log independently counts 3,673
+passes, 27 skips and one error, with done.success=false. Its tf-il7u failure
+also occurs with original production; cause remains unknown.
+
+Parent Nix checks passed, one command at a time:
+- Formatting of the three changed Dart files: zero changes.
+- dart analyze lib test integration_test tool/showcase_fixture.dart: no issues.
+- flutter test --no-pub --concurrency=2 --reporter=expanded test/catalog
+  test/settings test/app test/downloads test/playback test/sync:
+  1,665 passed, 3 existing skips, zero failures.
+- Complete integration-base whitespace check against 763511fd, repeated
+  with closure evidence staged and after the closure commit.
+
+Exact commands, results, commit mapping and parent log hashes are in
+docs/evidence/boo-hwoz/integration.json. Raw logs are under
+/tmp/bookfin-boo-hwoz-integration/. Follow-up scope commits made during
+verification change no production or tests.
+
+Closed for the integrated query scope with explicit limits. D1's linked
+follow-up route is permitted by AGENTS.md and the review; collection CPU
+work remains synchronous and unmeasured until t9-ftlz is implemented.
+The original changes-required fulfillment/design verdicts are preserved;
+no second review or reapproval is claimed. The child full suite did not
+pass and no new full-suite pass is claimed. tf-il7u is now under independent
+investigation. The catalog worker attribution in the child's validation
+narrative should be boo-8xyn, not boo-zs5i.
+
+Every-refresh membership fetching remains. Parent boo-p6w1 still waits
+for the user's freshness choice. Existing skips, live-server compatibility,
+device/browser acceptance, coverage/mutations and performance evidence remain
+unverified. No push, PR, deployment or worktree removal.
