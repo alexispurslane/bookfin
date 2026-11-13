@@ -1,0 +1,245 @@
+[
+  {
+    "skipCount": 1,
+    "context": [
+      "02:23 +1069: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn",
+      "02:24 +1069: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+      "  Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+      "02:24 +1069 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn"
+    ]
+  },
+  {
+    "skipCount": 2,
+    "context": [
+      "02:24 +1070 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page a jump into a table of a section that was laid out and let go does not measure the whole table again",
+      "02:24 +1070 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+      "  Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+      "02:24 +1070 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page a jump into a table of a section that was laid out and let go does not measure the whole table again"
+    ]
+  },
+  {
+    "skipCount": 3,
+    "context": [
+      "02:26 +1087 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after",
+      "02:26 +1087 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+      "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+      "02:26 +1087 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after"
+    ]
+  },
+  {
+    "skipCount": 4,
+    "context": [
+      "02:27 +1091 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before",
+      "02:27 +1092 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before",
+      "02:27 +1093 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/semantics_test.dart: an image is a node labeled with its alt text, and an image without alt text is labeled Image",
+      "02:27 +1093 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/semantics_test.dart: an image is a node labeled with its alt text, and an image without alt text is labeled Image"
+    ]
+  },
+  {
+    "skipCount": 5,
+    "context": [
+      "02:31 +1131 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/whole_book_pages_test.dart: the page label before the book is laid out the label shows the chapter numbers",
+      "02:31 +1131 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+      "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+      "02:31 +1131 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/whole_book_pages_test.dart: the page label before the book is laid out the label shows the chapter numbers"
+    ]
+  },
+  {
+    "skipCount": 6,
+    "context": [
+      "02:45 +1182 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+      "  Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+      "02:45 +1182 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 7,
+    "context": [
+      "02:45 +1182 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+      "  Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+      "02:45 +1182 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 8,
+    "context": [
+      "02:45 +1182 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "  Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+      "02:45 +1182 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 9,
+    "context": [
+      "02:45 +1182 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+      "  Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+      "02:45 +1182 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 10,
+    "context": [
+      "02:45 +1182 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+      "  Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+      "02:45 +1182 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 11,
+    "context": [
+      "02:45 +1182 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+      "  Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+      "02:45 +1182 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 12,
+    "context": [
+      "02:45 +1182 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "02:45 +1182 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+      "  Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+      "02:45 +1182 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it"
+    ]
+  },
+  {
+    "skipCount": 13,
+    "context": [
+      "02:56 +1231 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map",
+      "02:56 +1231 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/step_budget_test.dart: the step budget",
+      "  Skip: set BOOKFIN_EPUB_STEPS=1 to run",
+      "02:56 +1231 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map"
+    ]
+  },
+  {
+    "skipCount": 14,
+    "context": [
+      "03:01 +1282 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page",
+      "03:02 +1282 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+      "  Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+      "03:02 +1282 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page"
+    ]
+  },
+  {
+    "skipCount": 15,
+    "context": [
+      "03:03 +1295 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page",
+      "03:04 +1295 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+      "  Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+      "03:04 +1295 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page"
+    ]
+  },
+  {
+    "skipCount": 16,
+    "context": [
+      "03:08 +1414 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a kept line count that disagrees with a fresh one forgets the map",
+      "03:08 +1414 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+      "03:08 +1414 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a kept line count that disagrees with a fresh one forgets the map"
+    ]
+  },
+  {
+    "skipCount": 17,
+    "context": [
+      "03:08 +1422 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: the scrub bar names the page under the finger in a seeded section",
+      "03:09 +1422 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+      "  Skip: set BOOKFIN_EPUB_CORPUS=1",
+      "03:09 +1422 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: the scrub bar names the page under the finger in a seeded section"
+    ]
+  },
+  {
+    "skipCount": 18,
+    "context": [
+      "03:10 +1452 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a kept map whose section does not start at its first visible character is not used",
+      "03:11 +1452 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/corpus_test.dart: the corpus run",
+      "  Skip: set BOOKFIN_EPUB_CORPUS=1 to run",
+      "03:11 +1452 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: a kept map whose section does not start at its first visible character is not used"
+    ]
+  },
+  {
+    "skipCount": 19,
+    "context": [
+      "03:14 +1497 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: the pager a second open of a book with its kept map shows whole-book page numbers at once",
+      "03:14 +1497 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+      "03:14 +1497 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/page_map_open_test.dart: the pager a second open of a book with its kept map shows whole-book page numbers at once"
+    ]
+  },
+  {
+    "skipCount": 20,
+    "context": [
+      "03:21 +1605 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/pager_test.dart: a new text size keeps the shown place and reports nothing, and the text shown over later turns covers each section in order with no text skipped",
+      "03:21 +1605 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+      "  Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+      "03:21 +1605 ~20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/pager_test.dart: a new text size keeps the shown place and reports nothing, and the text shown over later turns covers each section in order with no text skipped"
+    ]
+  },
+  {
+    "skipCount": 21,
+    "context": [
+      "03:24 +1644 ~20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/epub/pager_test.dart: the page number follows turns into the next section and a new text size",
+      "03:25 +1645 ~20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word view of the margins book shows no running header and no folio, and shows every other word and region, such as its footnotes and its figure",
+      "03:25 +1646 ~20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word view of the margins book shows no running header and no folio, and shows every other word and region, such as its footnotes and its figure",
+      "03:25 +1646 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word view of the margins book shows no running header and no folio, and shows every other word and region, such as its footnotes and its figure"
+    ]
+  },
+  {
+    "skipCount": 22,
+    "context": [
+      "03:26 +1652 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word pages that the viewport draws leave out the running headers and folios that the frozen profile marks",
+      "03:27 +1652 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+      "  Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement.",
+      "03:27 +1652 ~22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word pages that the viewport draws leave out the running headers and folios that the frozen profile marks"
+    ]
+  },
+  {
+    "skipCount": 23,
+    "context": [
+      "03:27 +1652 ~22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: the word pages that the viewport draws leave out the running headers and folios that the frozen profile marks",
+      "03:27 +1653 ~22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: a shown word column stays unchanged when the book profile freezes and a text size change then uses the frozen profile",
+      "03:27 +1654 ~22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: returning to a page after the profile freezes replaces its old running-header column",
+      "03:28 +1654 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: returning to a page after the profile freezes replaces its old running-header column"
+    ]
+  },
+  {
+    "skipCount": 24,
+    "context": [
+      "03:28 +1655 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: a search hit in a running header opens the page's first screen, a place inside the folio opens the screen of the next shown word, and a place in the text opens its own screen",
+      "03:28 +1655 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/research/epub_layout_cache_test.dart: the layout cache survey",
+      "  Skip: set BOOKFIN_LAYOUT_CACHE=1",
+      "03:28 +1655 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/reader/column_running_lines_test.dart: a search hit in a running header opens the page's first screen, a place inside the folio opens the screen of the next shown word, and a place in the text opens its own screen"
+    ]
+  },
+  {
+    "skipCount": 25,
+    "context": [
+      "05:11 +3057 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/unreadable_discovery_test.dart: legacy discovery keeps invalid JSON between valid records and receives later pages and the next sync",
+      "05:12 +3057 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "  Skip: Run tool/plugin/prove.py in the pinned shells.",
+      "05:12 +3057 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/unreadable_discovery_test.dart: legacy discovery keeps invalid JSON between valid records and receives later pages and the next sync"
+    ]
+  },
+  {
+    "skipCount": 26,
+    "context": [
+      "05:16 +3117 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/unreadable_discovery_test.dart: batch discovery keeps tombstone between valid records and receives later pages and the next sync",
+      "05:17 +3118 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "  Skip: Run with tool/plugin/prove.py in the pinned sync dev shell.",
+      "05:17 +3118 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/labels_test.dart: a choice names the device that saved the place, the time to the second, and the chapter"
+    ]
+  },
+  {
+    "skipCount": 27,
+    "context": [
+      "05:24 +3208 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/refresh_after_sync_test.dart: listening records that came back from kept copies refresh only Playback",
+      "05:24 +3208 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+      "  Skip: Run tool/sync_fixture.py in the pinned shells.",
+      "05:24 +3208 ~27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639/test/sync/refresh_after_sync_test.dart: listening records that came back from kept copies refresh only Playback"
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "c6bfd50d": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "092f09e9": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "2d984b1b": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "311f8b60": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "19e53518": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "2a9df513": {
+    "isAncestor": true,
+    "exitCode": 0
+  },
+  "lib": {
+    "exists": true,
+    "unchangedFromOriginalBase": true,
+    "exitCode": 0,
+    "diff": ""
+  },
+  "test/reader/session_signals_test.dart": {
+    "exists": true,
+    "unchangedFromOriginalBase": true,
+    "exitCode": 0,
+    "diff": ""
+  },
+  "test/reader/unread_records_test.dart": {
+    "exists": true,
+    "unchangedFromOriginalBase": true,
+    "exitCode": 0,
+    "diff": ""
+  },
+  "test/reader/epub/page_source_frames_test.dart": {
+    "exists": true,
+    "unchangedFromOriginalBase": true,
+    "exitCode": 0,
+    "diff": ""
+  }
+}

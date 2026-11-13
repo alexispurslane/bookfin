@@ -30,9 +30,15 @@ Uint8List epub({String? chapter, Map<String, List<int>> extra = const {}}) {
     ),
     ...extra,
   };
+  // ZIP entry times are part of the source digest used to restore a place.
+  // Rebuilding this test book must not turn it into a replacement source.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final entry in entries.entries) {
-    archive.addFile(ArchiveFile(entry.key, entry.value.length, entry.value));
+    archive.addFile(
+      ArchiveFile(entry.key, entry.value.length, entry.value)
+        ..lastModTime = builtAt,
+    );
   }
   return Uint8List.fromList(ZipEncoder().encode(archive));
 }

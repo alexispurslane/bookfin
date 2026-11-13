@@ -1,0 +1,44 @@
+[
+  {
+    "source": "/tmp/claude-501/-Users-alexispurslane-Development-bookfin/44c29835-adb4-4015-8233-228855ea0249/tasks/bhdvckc4h.output",
+    "archive": "docs/evidence/t3-5o5r/history/boo-sy2d-terminal.output.gz",
+    "rawSha256": "054387ed4ac792501b353bfc64c8146447d51f889a115b4db8e040fa0013ca14",
+    "archiveSha256": "3333f7e0e9e0bc183b592f3f6e52fc8228305ab6a462ea1d2e87c4f95d42fe71",
+    "bytes": 781
+  },
+  {
+    "source": "/tmp/sy2d/full1.log",
+    "archive": "docs/evidence/t3-5o5r/history/sy2d-full1.log.gz",
+    "rawSha256": "e521fea4877782f96bdbede57079025f878b1d71753df862d58223ef4b721cce",
+    "archiveSha256": "81e272a16f9705a00d57e3556d1b736e81ed4a791e24300ed7aa6bc14e1b2714",
+    "bytes": 587188
+  },
+  {
+    "source": "/tmp/sy2d/full2.log",
+    "archive": "docs/evidence/t3-5o5r/history/sy2d-full2.log.gz",
+    "rawSha256": "c53c98d445cbedacfb968cd10f22a1209c8c9b472cd4850332b66aa5d370f340",
+    "archiveSha256": "df3840efcccf2737adf759aa3a7ff248b3eb84497e06489f42f424a96f0ba737",
+    "bytes": 594247
+  },
+  {
+    "source": "/tmp/sy2d/full3.log",
+    "archive": "docs/evidence/t3-5o5r/history/sy2d-full3.log.gz",
+    "rawSha256": "1bad26911e6bcc4db51ae657b7491f71511ad1243aa2cb34239032e0703e42df",
+    "archiveSha256": "7bb15c67d0ef051a9ed1f9f2fa980c381c8820bd0c01342c7b354b5a7951270f",
+    "bytes": 589661
+  },
+  {
+    "source": "/tmp/sy2d/full4.log",
+    "archive": "docs/evidence/t3-5o5r/history/sy2d-full4.log.gz",
+    "rawSha256": "29218ff3d30b7cf8d74ca5b8c0c7316aa08a76f526cb08738321dace4cccdb46",
+    "archiveSha256": "877c0891c4224ff2091006fbba2d3e54c0e0c7abbcc4d9653b36a0112cdb3366",
+    "bytes": 591571
+  },
+  {
+    "source": "/tmp/sy2d/reader1.log",
+    "archive": "docs/evidence/t3-5o5r/history/sy2d-reader1.log.gz",
+    "rawSha256": "249db5717a93f3a5744adf2b94be291d19553eaab19f3b7803c20cc52edb32c8",
+    "archiveSha256": "25d194a98de66c0b79d9814048b451146b1fe61c390c2bbeea373c0e960defbf",
+    "bytes": 328423
+  }
+]

@@ -1,0 +1,142 @@
+{
+  "ticket": "t3-5o5r",
+  "originalBase": "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+  "initialCheckout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+    "branch": "t3/reader-restart-test",
+    "head": "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+    "clean": true,
+    "originalBaseDiff": "empty"
+  },
+  "diagnosis": {
+    "proved": "The shared epub() fixture rebuilds identical entry payloads with clock-dependent ZIP entry metadata. Different entry times can change the original-file digest. ReaderSession completes the save, but the second independently admitted publication correctly refuses the saved place of another file digest.",
+    "notProved": "Neither historical failure has retained per-save, publication-digest or clock traces. The controlled experiment proves a cause of the exact assertion, not the actual ordering or exclusive cause of the November 8 and November 11 runs. No production data loss was established.",
+    "owner": "test/reader/publication_test.dart owns the shared EPUB construction used by both loads. Fix the entry time here; callers retain independent admission and production retains its source-identity checks.",
+    "change": "All entries use the same fixed local calendar time, 2026-01-01 00:00:00. ZIP encodes local calendar components, so using local DateTime also avoids a time-zone-dependent date in this fixture.",
+    "production": "No final changes under lib/. No changes to session_signals_test.dart, its assertions, flush calls or fixtures at callers.",
+    "regressionProtection": "Existing session_test.dart changed-content case rejects an old locator and retains its bookmark; the publication identity test still distinguishes changed chapter payloads. No fixture-size, timing, sleep, pump, skip or assertion changes."
+  },
+  "trace": [
+    {
+      "file": "test/reader/session_signals_test.dart",
+      "facts": "Both load closures independently call Publication.admit(epub()). FailingWrites.fail is false and its saveReading awaits MemoryResume.saveReading. The temporary trace prints only after this delegate completes."
+    },
+    {
+      "file": "test/playback/playback_test.dart",
+      "facts": "MemoryResume.saveReading applies ReadingChanges to values[accountKey]. The diagnostic prints that stored resume and its encoded anchor, plus the stored history, before reopen."
+    },
+    {
+      "file": "lib/reader/session.dart",
+      "facts": "acceptVisible causes the save through existing record operations. _save enqueues into _pendingWrites; _retryPending serializes saves; flush waits for the pending work. _open takes stored candidates through _compatible."
+    },
+    {
+      "file": "lib/reader/document.dart",
+      "facts": "ReaderDocument.restore requires the saved original-file digest, policy and engine to match. It returns null for the diagnostic second archive, and ReaderSession reports the incompatible source while retaining the old records."
+    },
+    {
+      "file": "archive-4.0.9 dependency",
+      "facts": "ArchiveFile.lastModTime lazily defaults to DateTime.now in epoch seconds. ZipEncoder converts it to local date/time and stores seconds divided by two. Relevant dependency source excerpts are retained in source-audit.txt.gz."
+    }
+  ],
+  "controlledProof": {
+    "red": "02-controlled-time-change-red: override only test archive times with 1767268800 then 1767268802 epoch seconds. The exact original restart assertion fails with expected epubcfi(/6/2!/4/2/1:0), actual null. One real delegated save completed, saveFailed=false, and the stored anchor remains present. All seven entry payload hashes match; both archives have 1440 bytes but different hashes and publication identities.",
+    "sameTimeControl": "03-controlled-same-time-green: same diagnostic patch, only the supplied timestamp step changes from 2 to 0. Identical archive hashes and identities; one successful save; reopened CFI matches; one test passes.",
+    "fixed": "04-fixed-focused: restore all diagnostic edits and give the existing shared helper a fixed time. All 51 focused tests pass.",
+    "negativeControl": "05-omitted-save-negative-control: temporarily omit the one await store.saveReading(entry.key, entry.value) in ReaderSession._retryPending. With the fixed fixture and the exact unchanged restart test, the expected CFI is again null and the test fails. This bounded diagnostic is the only deliberate production mutation.",
+    "restoration": "production-restoration.json records equal SHA-256 hashes before, after and at the original base for session.dart, plus a clean whole-lib diff. No diagnostic production change remains.",
+    "repeats": "07-restart-repeat-1 through -3: three independent Flutter processes after cause proof and production restoration; one unchanged restart test passes in each. These check process independence and restoration; they are not proof of historical ordering.",
+    "artifacts": "commands.jsonl gives exact commands, times, exits, original raw-log names/hashes and current logArchive paths/hashes. sourcePatchArchive captures each command source diff. archive.json records raw and compressed hashes/lengths. controlled-observations.json extracts complete diagnostic observations; the full archived logs are authoritative."
+  },
+  "historicalEvidence": [
+    {
+      "date": "2026-11-08",
+      "source": "history/629e520b.txt.gz; history/t3-5o5r.md.gz; history/t1-iu49.md.gz",
+      "available": "The committed investigation ticket records the reader-suite failure during t1-iu49, three isolated passes and two later suite passes.",
+      "gap": "Original assertion output and scheduling/digest/save traces not located."
+    },
+    {
+      "date": "2026-11-11",
+      "source": "history/boo-sy2d-terminal.output.gz; history/19100116.txt.gz; history/boo-sy2d.md.gz",
+      "available": "A retained Claude task output outside /tmp/sy2d names this exact failing test and reports 3017 passed, 25 skipped, 1 failed, matching the committed merge note. Its final wrapper exit is zero, but the retained Flutter summary is a failure.",
+      "gap": "This 781-byte artifact contains a tail only. It does not contain the failed assertion, archive times, digests, save outcomes or exact command."
+    },
+    {
+      "source": "history/sy2d-full1.log.gz through sy2d-full4.log.gz; history/sy2d-reader1.log.gz",
+      "available": "Complete other available sy2d runs retained with source paths, sizes and raw/compressed hashes in history/artifacts.json. Their failures are different cases; full4 passed.",
+      "gap": "None is the final combined run with 3017 passes and this failed restart assertion."
+    }
+  ],
+  "searchLimits": "history-search.txt.gz retains searches of /tmp including all readable file extensions, not just *.log, and Git ticket history. rg returned exit 2 because some unrelated Nix temporary directories were unreadable; those directories were not claimed searched. No raw historical assertion was found in available readable captures. The printed clock schedule is a controlled experiment, not a reconstructed historical schedule.",
+  "remainingFixtureInventory": {
+    "scope": "te-c2tc remains open for parent ownership. No other builder changes here.",
+    "alreadyFixed": [
+      "test/reader/session_native_test.dart",
+      "test/reader/publication_test.dart (this ticket)"
+    ],
+    "stillClockDependent": [
+      "test/reader/epub/page_source_test.dart",
+      "test/reader/epub/admission_test.dart: archive()",
+      "test/reader/epub/epubjs_fixtures.dart (replacement entries)",
+      "test/reader/epub/corpus/book.dart: madeUpEpub()",
+      "tool/showcase_media.dart",
+      "test/reader/epub/damaged_chapters_test.dart",
+      "test/reader/epub/section_styles_test.dart"
+    ],
+    "audit": "Source inventory searched ArchiveFile/lastModTime in test/reader and tool/showcase_media.dart. It finds two additional builders beyond the original linked-ticket list; this is not a claim about every future or external builder.",
+    "fixedWrappers": [
+      "admission_test.dart: showcase() already passes a fixed modified value to ZipEncoder",
+      "corpus/book.dart: showcaseBooks() already passes a fixed modified value to ZipEncoder"
+    ]
+  },
+  "limits": [
+    "The restart test creates a second ReaderSession in one process with MemoryResume; it does not prove OS process-death or physical-device persistence.",
+    "Broader storage/durability tests are executed as affected checks, but no new production loss claim is made.",
+    "Headless Flutter startup emits missing iphoneos/iphonesimulator SDK notices. These are retained; no iOS build/device claim is made.",
+    "No device/browser interactions, credentials, coverage, general mutation campaign, push, PR, merge, ticket closure or worktree removal.",
+    "Exactly one authorized fresh reviewer follows these completed implementation checks. Historical evidence limits remain explicit."
+  ],
+  "forks": [],
+  "terms": {
+    "sourceDigest": "The SHA-256 fingerprint of every byte of the original EPUB archive, including its ZIP entry metadata.",
+    "publicationIdentity": "The admitted-publication key derived from its original-file digest and the admission policy/revision.",
+    "entryPayload": "The uncompressed bytes of one named file inside the EPUB archive.",
+    "archiveEntryTime": "The entry modification time supplied in epoch seconds. ZIP stores local calendar components with two-second resolution.",
+    "CFI": "EPUB Canonical Fragment Identifier: the location string compared by the existing restart test.",
+    "successfulSave": "The ReaderSession save call completed through FailingWrites into MemoryResume.saveReading, which applied ReadingChanges to its account map. This is an in-process storage double, not physical disk persistence."
+  },
+  "checks": {
+    "focused": {
+      "passed": 51,
+      "skipped": 0,
+      "failed": 0
+    },
+    "independentRestartProcesses": {
+      "passed": 3,
+      "failed": 0
+    },
+    "affected": {
+      "passed": 2332,
+      "skipped": 24,
+      "failed": 0
+    },
+    "full": {
+      "passed": 3693,
+      "skipped": 27,
+      "failed": 0
+    },
+    "analysis": "flutter analyze --no-pub lib test: no issues",
+    "format": "dart format --output=none --set-exit-if-changed test/reader/publication_test.dart: 0 changed",
+    "expectedDiagnosticFailures": [
+      "02-controlled-time-change-red",
+      "05-omitted-save-negative-control"
+    ],
+    "unexpectedCheckFailures": [
+      {
+        "check": "initial original-base whitespace check after staging evidence",
+        "reason": "Two unchanged historical ticket snapshots end in an extra blank line.",
+        "resolution": "Retain all four historical ticket snapshots as byte-exact gzip archives; verify hashes and repeat whitespace checks.",
+        "evidence": "development-whitespace-failure.json"
+      }
+    ]
+  }
+}

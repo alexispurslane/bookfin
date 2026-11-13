@@ -1,0 +1,12 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "0ff376f0d27695d0ce3c10d120b718e0d52eadc0"
+  ],
+  "exitCode": 2,
+  "stdout": "docs/evidence/t3-5o5r/history/t1-iu49.md:28: new blank line at EOF.\ndocs/evidence/t3-5o5r/history/te-c2tc.md:15: new blank line at EOF.\n",
+  "stderr": "",
+  "resolution": "Compress the original historical ticket snapshots without changing their bytes; update references and archive hashes. The final whitespace checks then run again."
+}

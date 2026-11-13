@@ -1,0 +1,13 @@
+{
+  "file": "lib/reader/session.dart",
+  "beforeSha256": "51ea2f0192090ea2aeda01a0f8cf2eb6e6b9f4a43e62b4563960348cb6a2a2d3",
+  "restoredSha256": "51ea2f0192090ea2aeda01a0f8cf2eb6e6b9f4a43e62b4563960348cb6a2a2d3",
+  "baseSha256": "51ea2f0192090ea2aeda01a0f8cf2eb6e6b9f4a43e62b4563960348cb6a2a2d3",
+  "allProductionDiffExit": 0,
+  "restartTest": {
+    "file": "test/reader/session_signals_test.dart",
+    "baseSha256": "809242b71731f29cb28ac0211d7d2821be55b832d33d8def88a1de06aac7d4f1",
+    "finalSha256": "809242b71731f29cb28ac0211d7d2821be55b832d33d8def88a1de06aac7d4f1",
+    "byteIdentical": true
+  }
+}
