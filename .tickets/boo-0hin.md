@@ -1,6 +1,6 @@
 ---
 id: boo-0hin
-status: in_progress
+status: closed
 deps: [boo-f9xa]
 links: [boo-f9xa, boo-p9s3, td-rbtc, td-ez6p, te-t5oi]
 created: 2026-11-12T23:41:01Z
@@ -79,3 +79,21 @@ Final fix verification, all through nix develop, one heavy command at a time aft
 - `dart analyze lib/reader test/reader test/crossings tool/reader/word_view_probe.dart`: no issues. All 17 changed Dart files pass `dart format --output=none --set-exit-if-changed`. Both working-tree and original-base `git diff --check` pass. Log /tmp/boo-0hin-F1-checks-final.log.
 
 All owned commands have finished. F1 is resolved with the two meaningful red regressions and the final green checks; no independent re-review is claimed. No unresolved finding or design fork remains. Existing opt-in/external fixture skips and nonfatal missing iPhone SDK diagnostics remain limitations; no device, coverage or mutation work was performed. The ticket stays in progress for the parent's integration, combined checks, acceptance, hardening and closure.
+
+
+## Parent integration: Text frame correction
+
+The parent inspected the full extraction, independent review and direct F1 resolution, then integrated the two commits as 80a0b1fb and 8f528a43. Only the ticket appendices conflicted; both the launch record and child evidence were kept. The existing durable per-book PDF settings remain as approved on November 10.
+
+Parent inspection found a related in-page Text case: move() updated the saved character before the requested text screen entered a frame. This affected both a mounted viewport before its next frame and a detached viewport. Two real-session regressions failed meaningfully: restart recovered character 260 instead of the still-displayed character 0 (/tmp/boo-0hin-text-frame-red.log, 0 passed, 2 failed). The initial test load used a PDF-only property through ReaderAddress; that compile failure was corrected before the meaningful red run and is retained separately in /tmp/boo-0hin-text-frame-fixture-error.log.
+
+The parent fix makes the viewport acknowledge the exact prepared text layout and screen. Only a matching completed-frame acknowledgment changes the address eligible for persistence. Text preparation and in-page turns no longer report places independently. Report suppression uses the acknowledged text screen, and on-demand invariants check that its layout belongs to this request. The tests read records through a fresh session both before and after appearance, and verify the actual displayed PdfTextView screen.
+
+Focused verification through nix develop: all 114 tests in pdf_pager_test.dart, pdf_text_screens_test.dart, pdf_place_test.dart and pdf_word_view_test.dart passed (/tmp/boo-0hin-text-frame-focused.log). Analysis of lib/reader, test/reader, test/crossings and tool/reader/word_view_probe.dart found no issues (/tmp/boo-0hin-integrated-analysis.log). Final combined full-suite verification is the remaining closure gate. No new delegate or independent re-review was used for this direct fix.
+
+
+## Completed integrated verification
+
+The parent full Flutter suite after integrating boo-hmrp, the PDF pager, both child review fixes, and the Text frame correction passed 3,231 tests with 25 existing skips, zero failures, in 4 minutes 27 seconds. Command: `nix develop --command bash -c 'flutter test --no-pub --concurrency=2 --reporter expanded'`. Log: /tmp/boo-0hin-integrated-full.log. Affected analysis is clean and all three parent-changed Dart files need no formatting (/tmp/boo-0hin-integrated-analysis.log and /tmp/boo-0hin-integrated-format.log). git diff --check passed. All parent-owned commands finished.
+
+The parent closes boo-0hin after integration and this combined verification. Existing opt-in/external fixture skips remain; no Android/iOS acceptance, coverage/mutation campaign, push or publication is claimed. Deferred recognition-blocked navigation, draw-ahead, whitespace reports and off-isolate search/layout remain in their linked tickets.

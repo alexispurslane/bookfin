@@ -23,6 +23,20 @@ class _CountedScan extends HeldScan {
   }
 }
 
+class _LongScan extends HeldScan {
+  @override
+  Future<PdfText> text(int page) async {
+    final source = List.generate(180, (line) => 'River line $line.').join('\n');
+    return PdfText(
+      source: source,
+      text: source,
+      sourceOffsets: List.generate(source.length, (index) => index),
+      status: PdfTextStatus.candidate,
+      digest: 'long-scan-$page',
+    );
+  }
+}
+
 Widget _view(PdfPager pager, {ValueChanged<bool>? onTurn}) => MaterialApp(
   home: Scaffold(
     body: PdfViewport(
@@ -41,6 +55,54 @@ Widget _view(PdfPager pager, {ValueChanged<bool>? onTurn}) => MaterialApp(
 );
 
 void main() {
+  for (final detached in [false, true]) {
+    testWidgets(
+      '${detached ? 'a detached' : 'a mounted'} text-screen turn saves only after its content frame',
+      (tester) async {
+        final store = MemoryResume();
+        final reader = sessionOn(store, _LongScan());
+        await reader.bind(account(), [book]);
+        await reader.open(book, edition);
+        await reader.setPdfView(PdfPageView.text);
+        final pager = reader.pdfPager!;
+        await tester.pumpWidget(_view(pager));
+        await settle(tester);
+        final first = tester.widget<PdfTextView>(find.byType(PdfTextView));
+        expect(first.screens.count, greaterThan(1));
+        final oldPlace = reader.visibleAddress!.toJson();
+        if (detached) await tester.pumpWidget(const SizedBox());
+
+        await reader.move(true);
+        expect(pager.textScreen!.index, first.screen + 1);
+        if (detached) await tester.pump(const Duration(milliseconds: 100));
+        await reader.flush();
+        final next = await restarted(store);
+        await next.open(book, edition);
+        expect(next.initialAddress!.toJson(), oldPlace);
+        expect(reader.visibleAddress!.toJson(), oldPlace);
+
+        if (detached) await tester.pumpWidget(_view(pager));
+        await tester.pump();
+        final displayed = tester.widget<PdfTextView>(find.byType(PdfTextView));
+        expect(displayed.screen, first.screen + 1);
+        expect(
+          (reader.visibleAddress! as PdfAddress).character,
+          displayed.screens.firstCharacter(displayed.screen),
+        );
+        expect(
+          (reader.visibleAddress! as PdfAddress).character,
+          greaterThan(0),
+        );
+        await reader.flush();
+        final after = await restarted(store);
+        await after.open(book, edition);
+        expect(after.initialAddress!.toJson(), reader.visibleAddress!.toJson());
+        reader.checkInvariants();
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
   test(
     'opening a PDF attaches its navigation and contents before a view exists',
     () async {

@@ -13,6 +13,10 @@ import 'pdf_text_view.dart';
 import 'pdf_word_view.dart';
 import 'word_pages.dart';
 
+/// A prepared text layout and the screen requested within that layout.
+/// A viewport returns this exact pair after drawing its completed frame.
+typedef PdfTextScreen = ({PdfTextScreens layout, int index});
+
 class _TextScreen {
   _TextScreen(this.page, this.text, this.layout, this.index);
 
@@ -35,6 +39,8 @@ class _TextScreen {
 /// - Pending reports and appearance waits belong to the current request.
 /// - Report suppression compares both address and screen: incomplete word
 ///   addresses can be equal on distinct screens.
+/// - A prepared text screen changes the saved address only after the view
+///   acknowledges that exact layout and screen in a completed frame.
 /// - Disposal invalidates requests and releases timers, waits and images.
 /// Check these on demand with [checkInvariants]; public navigation guards
 /// remain active in release builds.
@@ -102,7 +108,7 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
   String? get reflowProblem => _reflowProblem;
   PdfWordScreens get words => _words;
   ValueListenable<bool>? get recognizing => _book.textSupply?.recognizing;
-  ({PdfTextScreens layout, int index})? get textScreen => switch (_textScreen) {
+  PdfTextScreen? get textScreen => switch (_textScreen) {
     final shown? => (layout: shown.layout, index: shown.index),
     null => null,
   };
@@ -144,6 +150,9 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
   PdfText? _text;
   ui.Image? _image;
   _TextScreen? _textScreen;
+  // The prepared screen can advance while the viewport is absent. Keep
+  // the last acknowledged screen identity for reporting and suppression.
+  PdfTextScreen? _appearedText;
   int _page = 1;
 
   /// Whether a turn showed the page, so that it takes only a crop known at
@@ -409,11 +418,21 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
   /// Accepts a completed content frame for [generation]. The viewport must
   /// report only content it actually drew, never a completed raster or a
   /// loading indicator. [words] identifies the exact prepared word screen
-  /// drawn in that frame. An old view's queued report cannot advance a new page.
-  void appeared(int generation, {WordScreen? words}) {
+  /// drawn in that frame; [text] identifies the exact text layout and screen.
+  /// An old view's queued report cannot advance a new page or text screen.
+  void appeared(int generation, {WordScreen? words, PdfTextScreen? text}) {
     if (_disposed || generation != _generation) return;
     if (words != null) {
       if (_usingWords) _words.appeared(words);
+      return;
+    }
+    if (text != null) {
+      if (!_usingText || text != textScreen || text == _appearedText) return;
+      _appearedText = text;
+      _textPlace();
+      _pageShown = true;
+      _publish();
+      if (!_appearance.isCompleted) _appearance.complete();
       return;
     }
     if (_pageShown) return;
@@ -512,7 +531,7 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
     if (_usingWords && words != null) {
       return (words.column.column, words.screen);
     }
-    final text = _textScreen;
+    final text = _appearedText;
     if (_usingText && text != null) return (text.layout, text.index);
     return null;
   }
@@ -549,6 +568,7 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
   void _clearTextScreen() {
     _textScreen?.layout.dispose();
     _textScreen = null;
+    _appearedText = null;
   }
 
   _TextScreen _layText(Size size) {
@@ -574,21 +594,8 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
       layout.screenAt(index < 0 ? text.text.length : index),
     );
     _textScreen = screen;
-    final placed = _address.toJson();
-    _textPlace();
-    // A layout whose shown screen begins at the place as it is already
-    // named, such as the first screen of a page after a turn, has nothing
-    // new to report.
-    if (mapEquals(placed, _address.toJson())) return screen;
-    final generation = _generation;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_disposed &&
-          generation == _generation &&
-          identical(_textScreen, screen) &&
-          _usingText) {
-        _publish();
-      }
-    });
+    // Preparation can outlive the viewport. Only its completed-frame
+    // acknowledgment changes the address eligible for persistence.
     return screen;
   }
 
@@ -610,9 +617,7 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
       if (screen >= 0 && screen < shown.layout.count) {
         _change(() {
           shown.index = screen;
-          _textPlace();
         });
-        _publish();
         return;
       }
     }
@@ -744,6 +749,8 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
   void checkInvariants() {
     if (!_book.accepts(_address) ||
         _address.sourcePage != _page ||
+        (_appearedText != null &&
+            (!_pageShown || _appearedText!.layout != _textScreen?.layout)) ||
         (_placeReported && !_pageShown) ||
         ((_latePlace?.isActive ?? false) && (!_pageShown || _placeReported)) ||
         (_disposed &&

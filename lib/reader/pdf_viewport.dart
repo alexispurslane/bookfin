@@ -40,8 +40,9 @@ class PdfViewport extends StatefulWidget {
   final ValueChanged<WordSettings> onWordLayout;
 
   /// Reports the request identity whose content entered a completed frame,
-  /// with the exact prepared screen when that content consists of word images.
-  final void Function(int generation, {WordScreen? words}) onAppeared;
+  /// with the exact prepared word or text screen when the page is reflowed.
+  final void Function(int generation, {WordScreen? words, PdfTextScreen? text})
+  onAppeared;
   final VoidCallback onRetry;
   final VoidCallback onTouch;
   final ValueChanged<String> onCopy;
@@ -85,18 +86,20 @@ class _PdfViewportState extends State<PdfViewport> {
 
   /// Called from content builders, not from construction of an unused
   /// waiting widget. A finished raster alone must never count as visibility.
-  void _pageInFrame() {
+  void _pageInFrame([PdfTextScreen? text]) {
     final pager = widget.pager;
     final generation = pager.generation;
     final report = widget.onAppeared;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && identical(widget.pager, pager)) report(generation);
+      if (mounted && identical(widget.pager, pager)) {
+        report(generation, text: text);
+      }
     });
   }
 
   Widget _reflowText() {
     final shown = widget.pager.textScreen!;
-    _pageInFrame();
+    _pageInFrame(shown);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: PdfTextView(screens: shown.layout, screen: shown.index),
