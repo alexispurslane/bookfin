@@ -1852,9 +1852,11 @@ class Playback extends ChangeNotifier {
     }
   }
 
-  /// Saves the current place and retries the pending changes of every
-  /// account. A retry that fails leaves its changes pending. Live Jellyfin
-  /// reports run independently and never delay local persistence.
+  /// Saves the current confirmed place and retries the pending changes of
+  /// every account, waiting only for local record writes. A retry that fails
+  /// leaves its changes pending. Audio commands, account restoration and
+  /// live Jellyfin reports never delay this flush. To wait for a command's
+  /// result, await that command; it saves the records it produces itself.
   ///
   /// A save that fails with an [Exception] is an expected failure, such as
   /// full storage. Its report is the save status ([unsavedChanges] and the
@@ -1863,10 +1865,9 @@ class Playback extends ChangeNotifier {
   /// app when it goes to the background, then leave no uncaught error. A
   /// save that fails with an [Error] is a bug and goes to the caller.
   Future<void> flush() async {
-    final generation = _generation;
-    await _binding;
-    await _operations.idle;
-    if (generation != _generation) return;
+    // _position changes only when the decoder confirms it. During binding,
+    // _save guards unrestored records; bind already queued the old account's
+    // changes before clearing its selection.
     if (_decoderAnchor != _recordedDecoderAnchor) _save();
     await _writes.idle;
     // An account change keeps pending records under their original account.

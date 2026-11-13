@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../playback/playback_test.dart' as audio;
+import '../playback/held_engine.dart';
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import '../catalog/controller_test.dart'
     show MemoryCatalogStore, MemoryCredentials;
@@ -38,6 +39,38 @@ const otherBook = Book(
 );
 
 void main() {
+  testUpload('sync exchanges durable records while an audio seek stays held', (
+    tester,
+    rig,
+  ) async {
+    rig.records.gate = Completer<void>();
+    rig.engine.emit(0, 3456, playing: true);
+    rig.engine.held = HeldCommand.seek;
+    final seeking = rig.player.seekEdition(78000);
+    await rig.engine.entered.future;
+    final syncing = rig.sync.syncNow();
+    try {
+      await tester.pump();
+      expect(rig.exchanges, 0);
+      rig.records.gate!.complete();
+      await tester.pump();
+      expect(rig.sentPlace('recording'), 3456);
+      expect(rig.engine.released.isCompleted, isFalse);
+      final reopened = LocalResumeStore(hop: inlineHop);
+      expect(
+        (await reopened.read(
+          rig.account,
+        ))!['resumes']['recording'].single['milliseconds'],
+        3456,
+      );
+    } finally {
+      if (!rig.records.gate!.isCompleted) rig.records.gate!.complete();
+      rig.engine.release();
+      await seeking;
+      await syncing;
+    }
+  });
+
   testUpload(
     'a stop whose audio device fails still uploads the last durable place',
     (tester, rig) async {
@@ -548,7 +581,7 @@ class SlowReports extends JellyfinClient {
   }
 }
 
-class FailingEngine extends audio.TestEngine {
+class FailingEngine extends HeldEngine {
   bool failPause = false;
 
   @override

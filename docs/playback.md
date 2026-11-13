@@ -98,7 +98,7 @@ History and bookmarks should use this existing owner, not create another player 
 | `unsavedChanges`, `saveFailed` | Distinguish queued or failed writes from durable success. Retry through `flush`. |
 | `replacementStart`, `confirmReplacement`, `cancelReplacement` | Offer a fresh start and accept or cancel that exact offer. Account or catalog changes invalidate earlier offers. |
 | `play`, `pause`, `stop`, `jump`, `setSpeed`, `setJumps`, `setSleep` | Shared commands for the UI and native controls. |
-| `flush` | Wait for queued commands and persist current state. It also waits for current report work. |
+| `flush` | Save the current confirmed place and retry pending records for every account. Wait only for local record writes. Await a command's own future when its result is needed. Teardown stops audio and drains live reports. |
 | `ResumeStore` | Replaceable persistence boundary for durable scoped records, not an agreed server-sync protocol. |
 | `checkInvariants` | On-demand check available in every build. Tests or a debug action can call it. |
 

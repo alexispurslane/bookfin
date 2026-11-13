@@ -1,11 +1,27 @@
 import 'dart:async';
 
+import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'playback_test.dart';
+import 'held_engine.dart';
+
+const _otherEdition = Edition(
+  id: 'other',
+  kind: EditionKind.audio,
+  label: 'Other recording',
+  files: [first],
+  memberIds: ['one:m1'],
+);
+const _otherBook = Book(
+  id: 'other',
+  title: 'Other book',
+  author: '',
+  editions: [_otherEdition],
+);
 
 /// A real store with a failure or a wait at the next save boundary.
 class _FailingStore extends LocalResumeStore {
@@ -35,11 +51,11 @@ class _FailingStore extends LocalResumeStore {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late _FailingStore store;
-  late TestEngine engine;
+  late HeldEngine engine;
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     store = _FailingStore();
-    engine = TestEngine();
+    engine = HeldEngine();
   });
 
   Future<Map<String, dynamic>> saved() async =>
@@ -66,11 +82,12 @@ void main() {
       );
       try {
         try {
-          await playback.bind(account(), [title]);
+          await playback.bind(account(), [title, _otherBook]);
           await playback.open(title, recording);
           await playback.flush();
           await body(playback);
         } finally {
+          engine.release();
           store.failures.clear();
           if (store.saveRelease case final release? when !release.isCompleted) {
             release.complete();
@@ -91,6 +108,153 @@ void main() {
     store.failures.add(StateError('A bug in the save.'));
     await playback.addBookmark(title: 'First');
   }
+
+  for (final command in HeldCommand.values) {
+    test(
+      'flush saves only the confirmed place during a held ${command.name}',
+      () async {
+        final uncaught = await withPlayback((playback) async {
+          await playback.seekEdition(11000);
+          await playback.addBookmark(title: 'Confirmed');
+          final history = playback.history
+              .map((event) => event.toJson())
+              .toList();
+          // This sample stays within the same second, so flush must save it.
+          engine.emit(0, 11234, playing: true);
+          engine.held = command;
+          var commandFinished = false;
+          final running = switch (command) {
+            HeldCommand.load => playback.open(_otherBook, _otherEdition),
+            HeldCommand.seek => playback.seekEdition(78000),
+            HeldCommand.pause => playback.pause(),
+          }.then((_) => commandFinished = true);
+          await engine.entered.future;
+          var flushed = false;
+          final flushing = playback.flush().then((_) => flushed = true);
+          try {
+            await flushing.timeout(const Duration(seconds: 5));
+            expect(flushed, isTrue, reason: 'local writes do not await audio');
+            expect(commandFinished, isFalse);
+            final records = await saved();
+            expect(records['selected'], 'recording');
+            expect(records['resumes'].keys, ['recording']);
+            expect(
+              records['resumes']['recording'].single['milliseconds'],
+              11234,
+            );
+            expect(records['history'], unorderedEquals(history));
+            expect(await savedBookmarks(), ['Confirmed']);
+            expect(playback.undoNotifier.value?.saved, isTrue);
+          } finally {
+            engine.release();
+            await running;
+            await flushing;
+          }
+          // The command saves its own result, without a second flush.
+          if (command != HeldCommand.load) {
+            final records = await saved();
+            expect(
+              records['resumes']['recording'].single['milliseconds'],
+              command == HeldCommand.seek ? 18000 : 11234,
+            );
+            expect(
+              (records['history'] as List).where(
+                (event) => event['kind'] == command.name,
+              ),
+              hasLength(command == HeldCommand.seek ? 2 : 1),
+            );
+          }
+        });
+        expect(uncaught, isEmpty);
+      },
+    );
+  }
+
+  test(
+    'flush waits for local durability while an audio seek stays held',
+    () async {
+      final uncaught = await withPlayback((playback) async {
+        await playback.seekEdition(11000);
+        engine.emit(0, 11234, playing: true);
+        engine.held = HeldCommand.seek;
+        final seeking = playback.seekEdition(78000);
+        await engine.entered.future;
+        store
+          ..saveStarted = Completer<void>()
+          ..saveRelease = Completer<void>();
+        var flushed = false;
+        final flushing = playback.flush().then((_) => flushed = true);
+        try {
+          await pumpEventQueue();
+          expect(store.saveStarted!.isCompleted, isTrue);
+          expect(flushed, isFalse);
+          expect(
+            (await saved())['resumes']['recording'].single['milliseconds'],
+            11000,
+          );
+          store.saveRelease!.complete();
+          await flushing.timeout(const Duration(seconds: 5));
+          expect(flushed, isTrue);
+          expect(engine.released.isCompleted, isFalse);
+          expect(
+            (await saved())['resumes']['recording'].single['milliseconds'],
+            11234,
+          );
+        } finally {
+          if (!store.saveRelease!.isCompleted) store.saveRelease!.complete();
+          engine.release();
+          await seeking;
+          await flushing;
+        }
+      });
+      expect(uncaught, isEmpty);
+    },
+  );
+
+  test(
+    'flush retries failed records while an account change waits for audio',
+    () async {
+      final uncaught = await withPlayback((playback) async {
+        store.failures.addAll([
+          Exception('bookmark storage unavailable'),
+          Exception('account-change storage unavailable'),
+        ]);
+        await playback.addBookmark(title: 'Alice only');
+        expect(playback.unsavedChanges, isTrue);
+        engine.held = HeldCommand.seek;
+        final seeking = playback.seekEdition(78000);
+        await engine.entered.future;
+        final binding = playback.bind(account(user: 'bob'), [title]);
+        var flushed = false;
+        final flushing = playback.flush().then((_) => flushed = true);
+        try {
+          await flushing.timeout(const Duration(seconds: 5));
+          expect(flushed, isTrue);
+          expect(await savedBookmarks(), ['Alice only']);
+          expect(
+            await LocalResumeStore().read(account(user: 'bob').scope.key),
+            isNull,
+          );
+          expect(engine.released.isCompleted, isFalse);
+        } finally {
+          engine.release();
+          await seeking;
+          await binding;
+          await flushing;
+        }
+        expect(playback.bookmarks, isEmpty);
+        expect(playback.position, isNull);
+        await playback.bind(account(), [title]);
+        expect(playback.bookmarks.single.title, 'Alice only');
+        expect(playback.position?.milliseconds, 0);
+        expect(
+          playback.history.where((event) => event.kind == HistoryAction.seek),
+          isEmpty,
+        );
+      });
+      expect(uncaught, isEmpty);
+    },
+  );
 
   group('after a save that failed with a bug', () {
     test('the next save writes, with the changes of the failed save', () async {

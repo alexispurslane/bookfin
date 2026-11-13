@@ -18,6 +18,7 @@ import 'playback_test.dart'
         recording,
         second,
         title;
+import 'observe_playback.dart';
 
 /// A decoder that takes time to sound: Play only records the command, and a
 /// test reports the first sound itself.
@@ -120,8 +121,12 @@ void main() {
 
     test('a decoder failure stops starting', () async {
       await playback.open(title, recording);
+      final stopped = waitForPlayback(
+        playback,
+        () => playback.starting == null,
+      );
       engine.events.addError(Exception('decoder failed'));
-      await playback.flush();
+      await stopped;
       expect(playback.starting, isNull);
     });
 

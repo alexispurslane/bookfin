@@ -8,6 +8,7 @@ import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../downloads/verified_reads.dart';
+import 'observe_playback.dart';
 
 const first = SourceFile(
   itemId: 'one',
@@ -245,8 +246,9 @@ void main() {
       await playback.bind(account(), []);
       expect(playback.book, isNull);
 
+      final reopened = waitForPlayback(playback, () => playback.book != null);
       await playback.bind(account(), [title]);
-      await playback.flush();
+      await reopened;
 
       expect(playback.book, title);
       expect(playback.editionMilliseconds, 72000);
@@ -437,8 +439,9 @@ void main() {
   test('a native playback failure stops audio and keeps the last durable source position', () async {
     await playback.open(title, recording);
     await playback.seekEdition(78000);
+    final stopped = waitForPlayback(playback, () => !playback.active);
     engine.events.addError(Exception('decoder failed'));
-    await playback.flush();
+    await stopped;
     expect(engine.isPlaying, isFalse);
     expect(playback.active, isFalse);
     expect(playback.position?.sourceKey, second.key);
