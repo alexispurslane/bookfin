@@ -1,6 +1,6 @@
 ---
 id: boo-s11s
-status: in_progress
+status: closed
 deps: [boo-hmrp]
 links: [boo-f4xm, boo-0931, boo-hmrp, t6-il6y, t8-dqir, t4-kdc8, te-6j4k]
 created: 2026-11-12T23:41:00Z
@@ -93,3 +93,13 @@ Full suite after fixes: `nix develop --command flutter test --no-pub --concurren
 The complete package and disposable compatibility proof was repeated with the fixed transport: `nix develop ./tool/research/sync --command bash -c 'set -e; PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tool/plugin -p "test_*.py" -v; PYTHONDONTWRITEBYTECODE=1 python3 tool/plugin/prove.py'`. Result: 3 package tests, 27 storage/API/outbox tests and all four actual Flutter invocations passed; C# builds had zero warnings/errors; two clean builds and the extracted-source rebuild remained byte identical. Proof time 112.013 seconds. Log `/tmp/boo-s11s-review-plugin-proof.log`; updated sanitized evidence `tool/evidence/plugin/packaging.json`. All 2,400 actions survived both client reopens with 10 upload requests, 10 acknowledgment transactions and 11 receiver discovery requests; host upload/receive times 525/223 ms. Candidate SHA-256 remains `4e37667dec6f0d8e0610849b6c2059b7b58266d2e0523c9e9f0d41ff9bb187e9`.
 
 Final source/package check under the pinned plugin shell matched all 17 source/proof hashes, canonical package and source ZIP hashes, metadata and README assembly version `0.2.0.0`, and confirmed owned servers stopped with ports 7464/7465 free. Log `/tmp/boo-s11s-review-manifest-final.log`. The first ad hoc check incorrectly compared the three-part project version `0.2.0` directly with the four-part assembly version (`/tmp/boo-s11s-review-manifest.log`); corrected the check to use the package's documented `.0` assembly component, with no source change. `git diff --check` passed (`/tmp/boo-s11s-review-diff.log`). All owned commands finished. Both review findings are resolved by the ticket lead with red-green evidence; the original reviewer verdicts above are retained, not presented as a second review. No unresolved finding, unverified review assessment or design fork remains. Android, live deployment, other server platforms and acceptance/hardening stay outside this host proof. Parent owns integration and closure.
+
+## Parent integration and closure
+
+Integrated the client-only, additive-plugin and review-fix commits as b01ca87a, 324e81e9 and 85da14fb. Only the launch/evidence append in this ticket conflicted; both were retained. Production, test, plugin and proof files are identical to the reviewed-and-fixed child. The parent inspected the complete original-base diff, the fresh reviewer report, both direct fixes and their meaningful red-green tests, and the actual plugin evidence. No new review verdict is claimed for the direct fix commit.
+
+Combined main (including the catalog migration and latest PDF frame fixes): `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded` passed 3,284 tests, 26 existing/opt-in skips, zero failures, 4:28. Log `/tmp/boo-s11s-integrated-full.log`. Eight-file formatting had zero changes; `flutter analyze --no-pub lib/sync lib/playback lib/catalog test/sync test/playback test/durability test/catalog` reported no issues. Log `/tmp/boo-s11s-integrated-analysis.log`. All checks ran through Nix; whitespace checks passed.
+
+The parent independently matched all 17 source/proof hashes against integrated files and both candidate ZIP hashes against the child artifacts. Unchanged plugin and proof sources retain the supplied 3 package tests, 27 storage/API tests, four actual Flutter invocations, reproducible builds, upgrade/restart/isolation/backup proof. The actual 2,400-action run retains all actions after both client reopens, using 10 upload requests, 10 acknowledgment transactions and 11 receiving discovery requests. This host proof was not redundantly rerun after the conflict-free source integration.
+
+Closed after local integration. t6-il6y remains open for deployment/acceptance. Android, other server versions/platforms, live installation, publication, coverage and mutations remain unverified or excluded. Parent commands finished. boo-0931 is now unblocked; all retained actions remain on disk.
