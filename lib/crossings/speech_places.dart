@@ -25,6 +25,13 @@ typedef SpeechPair = ({
   MatchedChapters? matched,
 });
 
+/// Prepares a worker reader for [text], with the outline Crossings already
+/// owns for its file revision. Null when speech cannot read the edition.
+typedef ReadEditionWords = Future<ReadBook?> Function(
+  Edition text,
+  TextOutline outline,
+);
+
 /// The speech stage of Crossings (docs/plans/cross-edition-places.md, "How
 /// Crossings lands a place by speech"). Like matched chapters, it turns a
 /// time of a recording into the characters of an ebook, and the reverse,
@@ -41,9 +48,9 @@ class SpeechPlaces {
 
   final HeardWindows heard;
 
-  /// The reader of the words of a downloaded ebook edition, or null when
-  /// speech cannot read them.
-  final Future<ReadBook?> Function(Edition text) words;
+  /// The reader of a downloaded ebook's words, using the pair's outline
+  /// for that file revision, or null when speech cannot read them.
+  final ReadEditionWords words;
 
   final _books = BookSearch();
 
@@ -56,7 +63,7 @@ class SpeechPlaces {
   /// Starts the anchor map of [pair] in the background, so that a later
   /// place lands without hearing a window.
   Future<void> prepare(SpeechPair pair) async {
-    final read = await words(pair.text);
+    final read = await words(pair.text, pair.outline);
     if (read != null) await _anchors(pair, read);
   }
 
@@ -69,7 +76,7 @@ class SpeechPlaces {
     final at = recording.editionTime(place);
     final length = recording.length;
     if (at == null || length == null || length == 0) return null;
-    final read = await words(pair.text);
+    final read = await words(pair.text, pair.outline);
     if (read == null) return null;
     final windows = await heard.windowsOf(pair.audio);
     var window = windows.where((window) => window.covers(place)).firstOrNull;
@@ -100,7 +107,7 @@ class SpeechPlaces {
   Future<int?> millisecondsAt(double characters, SpeechPair pair) async {
     final length = audioOutline(pair.audio).length;
     if (length == null || length == 0) return null;
-    final read = await words(pair.text);
+    final read = await words(pair.text, pair.outline);
     if (read == null) return null;
     final book = await _books.withBook(pair.textKey, read, _target(characters));
     if (book == null || book.words == 0) return null;

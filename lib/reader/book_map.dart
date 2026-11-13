@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +8,7 @@ import 'book_pages.dart';
 import 'document.dart';
 import 'epub/publication.dart';
 import 'pdf.dart';
+import 'section_text.dart';
 
 /// A place that the scrub bar points at, given as a fraction of the whole
 /// book and as the part of the book that holds it.
@@ -502,8 +502,6 @@ List<Map<String, double>> _measureIds(
     },
 ];
 
-final _space = RegExp(r'\s');
-
 /// The visible characters of the section [bytes]: the characters of its
 /// body, white space left out, as the reader counts them, and how many come
 /// before each element in [ids]. An id that the section lacks is left out.
@@ -514,27 +512,24 @@ final _space = RegExp(r'\s');
   Set<String> ids,
 ) {
   final before = <String, int>{};
-  var visible = 0;
-  var body = false;
   try {
-    for (final event in parseEvents(utf8.decode(bytes, allowMalformed: true))) {
-      switch (event) {
-        case XmlStartElementEvent(:final localName, :final attributes):
-          if (localName == 'body') body = true;
-          for (final attribute in attributes) {
-            if (attribute.localName == 'id' && ids.contains(attribute.value)) {
-              before.putIfAbsent(attribute.value, () => visible);
+    final visible = walkSection(
+      bytes,
+      onElement: (event, visible) {
+        switch (event) {
+          case XmlStartElementEvent(:final attributes):
+            for (final attribute in attributes) {
+              if (attribute.localName == 'id' &&
+                  ids.contains(attribute.value)) {
+                before.putIfAbsent(attribute.value, () => visible);
+              }
             }
-          }
-        case XmlTextEvent(:final value) when body:
-          visible += value.replaceAll(_space, '').length;
-        case XmlCDATAEvent(:final value) when body:
-          visible += value.replaceAll(_space, '').length;
-        default:
-      }
-    }
+          default:
+        }
+      },
+    );
+    return (visible: visible, before: before);
   } on Exception {
     return (visible: 0, before: const {});
   }
-  return (visible: visible, before: before);
 }

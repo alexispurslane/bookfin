@@ -154,7 +154,8 @@ Future<Publication> _keptOrAdmittedEpub(String path, String digest) async {
 }
 
 /// A reader of the words of the downloaded ebook [original] of [source],
-/// for the worker of the book's words (see [BookSearch]). The worker reads
+/// using Crossings' [outline] for the same file revision, for the worker
+/// of the book's words (see [BookSearch]). The worker reads
 /// later, outside Downloads' read of the download, so the reader writes
 /// nothing beside it: it reads the admitted book that Bookfin kept, else
 /// admits an EPUB again, and reads a MOBI only after Downloads prepared it
@@ -164,12 +165,13 @@ Future<Publication> _keptOrAdmittedEpub(String path, String digest) async {
 Future<ReadBook?> bookWordsReader(
   VerifiedFile original,
   SourceFile source,
+  TextOutline outline,
 ) async {
   final file = await _verifiedFile(original.uri);
   return switch (await _containerOf(file, source)) {
     'pdf' => null,
-    'mobi' || 'azw3' => _wordsOf(file.path, original.digest, keptMobi),
-    _ => _wordsOf(file.path, original.digest, _keptOrAdmittedEpub),
+    'mobi' || 'azw3' => _wordsOf(file.path, original.digest, outline, keptMobi),
+    _ => _wordsOf(file.path, original.digest, outline, _keptOrAdmittedEpub),
   };
 }
 
@@ -179,9 +181,10 @@ Future<ReadBook?> bookWordsReader(
 ReadBook _wordsOf(
   String path,
   String digest,
+  TextOutline outline,
   Future<Publication> Function(String path, String digest) admitted,
 ) =>
-    () async => bookWordsOf(await admitted(path, digest));
+    () async => bookWordsOf(await admitted(path, digest), outline);
 
 /// The regular local file at [uri], which Downloads verified. Throws for
 /// any other address and for a link, so that a reader never follows a

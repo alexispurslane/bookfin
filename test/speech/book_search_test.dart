@@ -3,10 +3,25 @@ import 'dart:typed_data';
 
 import 'package:bookfin/speech/book_search.dart';
 import 'package:bookfin/speech/book_words.dart';
+import 'package:bookfin/reader/epub/publication.dart';
+import 'package:bookfin/reader/text_outline.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../real_time.dart';
 import 'held_jobs.dart';
+import 'book_words_test.dart' show book;
+import '../reader/section_publication.dart';
+
+ReadBook countedRead(
+  Publication publication,
+  TextOutline outline,
+  SendPort report,
+) => () async {
+  final sections = CountedSections(publication.textFiles);
+  final words = bookWordsOf(SectionPublication(publication, sections), outline);
+  report.send(sections.reads);
+  return words;
+};
 
 /// Words that name the moment that they were read, so that a test can tell
 /// one read from another.
@@ -25,6 +40,31 @@ ReadBook slow(SendPort ready) => () async {
 };
 
 void main() {
+  test(
+    'a worker reads each section once when its outline is already owned',
+    () async {
+      final publication = book(['<p>Call me Ishmael.</p>', '<p>The end.</p>']);
+      final reports = ReceivePort();
+      addTearDown(reports.close);
+      final report = reports.first;
+      final search = BookSearch();
+      addTearDown(search.close);
+      final found = await search.withBook(
+        'edition:r1',
+        countedRead(
+          publication,
+          measureTextOutline(publication),
+          reports.sendPort,
+        ),
+        (words) => (words.words, Isolate.current.debugName),
+      );
+      expect(found!.$1, ['call', 'me', 'ishmael', 'the', 'end']);
+      expect(found.$2, isNot(Isolate.current.debugName));
+      final reads = await report as Map;
+      expect([for (final path in publication.spine) reads[path]], [1, 1]);
+    },
+  );
+
   test('reads a book once for several searches', () async {
     final search = BookSearch();
     addTearDown(search.close);

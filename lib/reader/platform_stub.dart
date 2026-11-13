@@ -27,6 +27,7 @@ Future<void> prepareDownloadedBook(
 Future<ReadBook?> bookWordsReader(
   VerifiedFile original,
   SourceFile source,
+  TextOutline outline,
 ) async => null;
 
 /// No ebook downloads on this platform, so no text outlines.

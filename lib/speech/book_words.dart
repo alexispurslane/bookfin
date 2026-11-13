@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -6,6 +5,7 @@ import 'package:xml/xml_events.dart';
 
 import '../reader/epub/publication.dart';
 import '../reader/text_outline.dart';
+import '../reader/section_text.dart';
 import 'words.dart';
 
 /// The normalized words of an ebook edition (see [normalizeWords]), each
@@ -81,8 +81,10 @@ final _backMatter = RegExp(
 );
 
 /// The words of [publication]: the body text of every section of its
-/// spine, in order. It parses every section, so run it in a worker isolate.
-BookWords bookWordsOf(Publication publication) {
+/// spine, in order, using the [outline] that Crossings owns for this file
+/// revision to locate back matter. It parses every section once, so run it
+/// in a worker isolate.
+BookWords bookWordsOf(Publication publication, TextOutline outline) {
   final words = <String>[];
   final offsets = <int>[];
   var visible = 0;
@@ -91,9 +93,6 @@ BookWords bookWordsOf(Publication publication) {
     if (bytes == null) continue;
     visible = _addSection(bytes, visible, words, offsets);
   }
-  // NOTE: The outline parses the sections again, for the starts of the
-  // contents entries. It costs about as much as the words, once a book.
-  final outline = measureTextOutline(publication);
   var bodyEnd = words.length;
   for (final entry in outline.entries) {
     if (entry.start > outline.length / 2 &&
@@ -135,7 +134,6 @@ int _addSection(
 ) {
   final added = words.length;
   final start = visible;
-  var body = false;
   final pending = StringBuffer();
   var pendingAt = visible;
   void flush() {
@@ -147,38 +145,35 @@ int _addSection(
     pending.clear();
   }
 
-  void read(String text) {
-    for (final rune in text.runes) {
-      if (isWhiteSpace(rune)) {
-        flush();
-        continue;
-      }
-      if (_parts(rune)) {
+  void read(String text, int before, bool whitespace) {
+    if (whitespace) {
+      flush();
+      return;
+    }
+    for (var index = 0; index < text.length; index++) {
+      final code = text.codeUnitAt(index);
+      if (_parts(code)) {
         flush();
       } else {
-        if (pending.isEmpty) pendingAt = visible;
-        pending.writeCharCode(rune);
+        if (pending.isEmpty) pendingAt = start + before + index;
+        pending.writeCharCode(code);
       }
-      // The book map counts UTF-16 code units, as String.length does.
-      visible += rune > 0xFFFF ? 2 : 1;
     }
   }
 
   try {
-    for (final event in parseEvents(utf8.decode(bytes, allowMalformed: true))) {
-      switch (event) {
-        case XmlStartElementEvent(:final localName):
-          if (localName == 'body') body = true;
-          if (!_inline.contains(localName)) flush();
-        case XmlEndElementEvent(:final localName):
-          if (!_inline.contains(localName)) flush();
-        case XmlTextEvent(:final value) when body:
-          read(value);
-        case XmlCDATAEvent(:final value) when body:
-          read(value);
-        default:
-      }
-    }
+    visible += walkSection(
+      bytes,
+      onText: read,
+      onElement: (event, _) {
+        switch (event) {
+          case XmlStartElementEvent(:final localName) ||
+              XmlEndElementEvent(:final localName):
+            if (!_inline.contains(localName)) flush();
+          default:
+        }
+      },
+    );
     flush();
   } on Exception {
     words.length = added;

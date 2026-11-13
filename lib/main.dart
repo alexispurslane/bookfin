@@ -159,10 +159,10 @@ Future<void> runBookfin({
                 ? null
                 : (
                     heard: heard,
-                    words: (text) async => switch (text.files) {
+                    words: (text, outline) async => switch (text.files) {
                       [final file] => await downloads.readLocalFile<ReadBook?>(
                         file,
-                        (original) => bookWordsReader(original, file),
+                        (original) => bookWordsReader(original, file, outline),
                       ),
                       _ => null,
                     },

@@ -432,7 +432,7 @@ void main() {
             localPath: (file) async => '/media/${file.itemId}.mp3',
             hop: inline,
           ),
-          words: (_) async => readsOf(
+          words: (_, _) async => readsOf(
             BookWords(
               zipfBook(length: 300).words,
               Int32List.fromList([

@@ -10,7 +10,6 @@ import '../playback/audio_outline.dart';
 import '../playback/records.dart' show MatchedBy;
 import '../reader/document.dart';
 import '../reader/text_outline.dart';
-import '../speech/book_search.dart';
 import '../speech/heard_windows.dart';
 import 'alignment.dart';
 import 'speech_places.dart';
@@ -111,11 +110,9 @@ final class Refining extends Crossing {
 
 /// What the speech stage of [Crossings] reads: the heard windows of each
 /// audio edition, and a reader of the words of a downloaded ebook edition,
-/// which gives null when speech cannot read them, as for a PDF.
-typedef CrossingSpeech = ({
-  HeardWindows heard,
-  Future<ReadBook?> Function(Edition text) words,
-});
+/// which takes the outline already owned for that edition's file revision
+/// and gives null when speech cannot read the words, as for a PDF.
+typedef CrossingSpeech = ({HeardWindows heard, ReadEditionWords words});
 
 /// The app's one owner of cross-edition landings (docs/plans/
 /// cross-edition-places.md, "Owners"). It derives the text outline of each

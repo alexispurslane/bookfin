@@ -3,8 +3,14 @@
 // "How Crossings lands a place by speech"). Matched chapters give the
 // estimate while speech works, and the landing when speech refuses.
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:bookfin/crossings/crossings.dart';
+import 'package:bookfin/downloads/downloads.dart' show VerifiedFile;
+import 'package:bookfin/reader/platform_io.dart';
+import 'package:bookfin/reader/admitted_books.dart';
+import 'package:bookfin/reader/text_outline.dart';
+import 'package:crypto/crypto.dart';
 import 'package:bookfin/speech/book_search.dart';
 import 'package:bookfin/speech/book_words.dart';
 import 'package:bookfin/speech/heard_windows.dart';
@@ -14,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../speech/heard_windows_test.dart'
     show FakeHearing, MemoryStore, inline;
 import '../speech/place_test.dart' show zipfBook;
+import '../reader/session_native_test.dart' show navBook;
 import 'crossings_test.dart'
     show MemoryOutlines, audio, book, ebookEdition, listening, reading;
 
@@ -92,7 +99,7 @@ void main() {
       hop: inline,
       speech: (
         heard: heard,
-        words: (text) async {
+        words: (text, outline) async {
           if (broken) throw StateError('A bug in speech.');
           return switch (readable) {
             final words? => readsOf(words),
@@ -108,6 +115,118 @@ void main() {
   /// The characters before the landing of a listening place in the ebook.
   double charactersOf(Crossing found) =>
       (found as TextLanding).share * book.length;
+
+  test('real speech reads reuse the owned outline and words, then read a new file revision', () async {
+    final folder = await Directory.systemTemp.createTemp('speech-outline-');
+    addTearDown(() => folder.delete(recursive: true));
+    final file = File('${folder.path}/book.epub');
+    final store = MemoryOutlines();
+    final measurements = <String>[];
+    final outlines = <String, TextOutline>{};
+    late VerifiedFile original;
+    const sentence = 'amber birch cedar dogwood elm fir ginger hazel';
+    hearing.answer = (_, _) => Heard(sentence.split(' '), [
+      0,
+      1000,
+      2000,
+      3000,
+      4000,
+      5000,
+      6000,
+      7000,
+    ]);
+
+    Future<void> writeBook(int prefixWords) async {
+      final bytes = navBook(
+        [
+          '<p>${'before ' * prefixWords}</p>',
+          '<p>$sentence</p>',
+          '<p>$sentence</p>',
+        ],
+        [
+          ('Preface', 'text/s0.xhtml'),
+          ('Body', 'text/s1.xhtml'),
+          ('Endnotes', 'text/s2.xhtml'),
+        ],
+      );
+      await file.writeAsBytes(bytes);
+      original = VerifiedFile(file.uri, sha256.convert(bytes).toString());
+      await prepareDownloadedBook(original, ebookEdition().files.single);
+    }
+
+    Crossings open({bool cached = false}) {
+      final crossing = Crossings(
+        store: store,
+        measure: (text) async {
+          if (cached) throw StateError('A kept outline must not be measured.');
+          final revision = text.files.single.revision;
+          measurements.add(revision);
+          final outline = await measureDownloadedOutline(
+            original,
+            text.files.single,
+          );
+          await AdmittedBooks.written(file);
+          outlines[revision] = outline;
+          return outline;
+        },
+        speech: (
+          heard: heard,
+          words: (text, outline) async {
+            // Crossings passes its own object, not a separately measured copy.
+            if (!cached) {
+              expect(
+                identical(outlines[text.files.single.revision], outline),
+                isTrue,
+              );
+            }
+            return bookWordsReader(original, text.files.single, outline);
+          },
+        ),
+      );
+      made.add(crossing);
+      return crossing;
+    }
+
+    Future<TextLanding> land(
+      Crossings crossing,
+      String revision,
+      int ms,
+    ) async => await crossing.landing(
+      listening(audio.files.first, ms),
+      from: audio,
+      into: ebookEdition(revision: revision),
+    ) as TextLanding;
+
+    await writeBook(20); // 120 prefix characters, then 39 body characters.
+    final crossing = open();
+    final first = await land(crossing, 't1', 40000);
+    expect(first.matchedBy, MatchedBy.speech);
+    expect(first.place.part, 1); // The repeated endnote cannot win the search.
+    expect(first.share * 198, 142);
+    // Keep the same revision but remove the readable source bytes. A second
+    // place must use the worker's kept words, without another read.
+    await file.writeAsString('unreadable');
+    for (final directory in folder.listSync().whereType<Directory>()) {
+      await directory.delete(recursive: true);
+    }
+    final reused = await land(crossing, 't1', 41000);
+    expect(reused.matchedBy, MatchedBy.speech);
+    expect(reused.share * 198, 145);
+    expect(measurements, ['t1']);
+
+    await writeBook(30);
+    final changed = await land(crossing, 't2', 40000);
+    expect(changed.matchedBy, MatchedBy.speech);
+    expect(changed.into.revision, 't2');
+    expect(changed.share * 258, 202);
+    expect(measurements, ['t1', 't2']);
+    // A new Crossings and BookSearch reopen both saved files. Only the
+    // outline store supplies the outline on this launch.
+    final reopened = await land(open(cached: true), 't2', 40000);
+    expect(reopened.matchedBy, MatchedBy.speech);
+    expect(reopened.place, changed.place);
+    expect(measurements, ['t1', 't2']);
+  });
 
   group('a listening place', () {
     // 100 s into disc two, 230 s into the recording: the narrator speaks
