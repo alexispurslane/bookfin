@@ -1,6 +1,6 @@
 ---
 id: boo-rw9z
-status: in_progress
+status: closed
 deps: []
 links: [boo-2bl9, boo-n7no, boo-w6m2]
 created: 2026-11-12T23:41:00Z
@@ -78,3 +78,17 @@ Original review base: `db45fcaa5e13cab6eb2de210d5d0403623f4a31b`. Original revie
 Overall verdict: pass. Findings: none. No fixes, rejected findings, unresolved material assessments or product forks. The reviewer confirmed the saved results, including six meaningful red failures and the 3,395-pass full suite. Execution parameters and exit codes are recorded by the builder; output logs alone do not independently prove every parameter. Independent reviewer execution, coverage, mutation testing, device acceptance and skipped opt-in checks were unavailable or excluded as instructed.
 
 Only this review evidence changed after the reviewed head; implementation and test content remain the versions that passed the final checks. No second review or re-check was requested. Ready for parent integration; ticket closure and acceptance remain with the parent.
+
+## Parent integration and closure, 2026-11-13
+
+Integrated onto main at `7b189bf7` as implementation `9b794f1e` and review evidence `4c020d1e`. Only the ticket conflicted; both the parent's launch record and the child's build evidence were retained. Production, tests and playback documentation are identical to the reviewed child head. The parent inspected all nine changed files, actual persistence/account/command/lifecycle/sync callers, the completed review and saved test results. No second reviewer or product edit was needed.
+
+| Check | Result | Log |
+| --- | --- | --- |
+| `nix develop --command flutter test --no-pub --concurrency=2 test/playback test/sync test/durability test/app test/reader/persistence_test.dart test/reader/records_test.dart test/reader/unread_records_test.dart test/reader/epub/saved_places_test.dart --reporter expanded` | Exit 0; 911 passed, 4 existing skips; 1:07 | `/tmp/boo-rw9z-integrated-affected.log` |
+| `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded` | Exit 0; 3,395 passed, 27 existing skips, zero failures; 4:35 | `/tmp/boo-rw9z-integrated-full.log` |
+| `nix develop --command bash /tmp/boo-rw9z-integrated-checks.sh` | Exit 0; seven changed Dart files format-clean; affected analysis found no issues | `/tmp/boo-rw9z-integrated-format.log`, `/tmp/boo-rw9z-integrated-analysis.log` |
+
+The script runs `dart format --output=none --set-exit-if-changed` on the seven Dart files in `git diff --name-only 7b189bf7 HEAD -- '*.dart'`, then `flutter analyze --no-pub lib/playback/playback.dart test/playback test/sync`. `git diff --check 7b189bf7 HEAD` passed. All commands finished, one heavy parent command at a time. The parent run had no failures.
+
+The documented later sync wait is now tracked by `boo-2bl9`: a stale Playback writer refresh still waits behind an audio command, so sync completion and later exchanges can wait after this ticket's independent flush and transport exchange. This ticket does not claim to solve that later step. Closed after integration and host verification. Android acceptance remains blocked by `t1-dth0`; hardening awaits acceptance. No device retry, browser work, coverage, mutation run, push, PR or deployment occurred.
