@@ -421,6 +421,7 @@ class LocalDownloads extends Downloads {
         return;
       }
       if (await _removeIfEmpty(record.directory)) return;
+      record.hadStorage = true;
       final manifest = record.file('record.json');
       if (await _regularFile(manifest)) {
         // Engine rule 1: a manifest is about 200 bytes and decodes in about
@@ -1212,9 +1213,10 @@ class LocalDownloads extends Downloads {
     return false;
   }
 
-  /// Look at every record's storage again, which notices files changed
-  /// outside the app. The app calls this when it resumes. Listeners hear
-  /// only about changes that the looks found.
+  /// Look at previously saved storage again, which notices files changed
+  /// outside the app. Sources that have never saved files need no disk work.
+  /// The app calls this when it resumes. Listeners hear only about changes
+  /// that the looks found.
   @override
   Future<void> refresh() async {
     final (:generation, account: _) = await _settled;
@@ -1222,6 +1224,7 @@ class LocalDownloads extends Downloads {
     var changed = false;
     for (final record in _records.values.toList()) {
       if (_disposed || generation != _generation) return;
+      if (!record.hadStorage) continue;
       if (record.complete) {
         // A rejected record notifies listeners itself.
         await _confirm(record, generation);
@@ -1645,6 +1648,7 @@ class LocalDownloads extends Downloads {
       ]) {
         await _safeDirectory(directory);
       }
+      record.hadStorage = true;
       if (!await _containedDirectory(record.directory, record.accountKey)) {
         throw const _MediaError('Download storage is not a private directory.');
       }
@@ -1822,6 +1826,11 @@ class _Record {
   /// Disk restoration for this source, shared by bindings and file lookups.
   Future<void>? restoring;
   Future<void> get ready => restoring ?? Future.value();
+
+  /// Restoration found a nonempty source directory, or a save created one.
+  /// Keep checking it on resume even if its files disappear. A source that
+  /// has only a readiness record needs no such storage inspection.
+  bool hadStorage = false;
   int bytes = 0;
   int? length;
   String? etag;

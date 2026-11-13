@@ -275,6 +275,59 @@ void main() {
     );
   });
 
+  for (final restored in [false, true]) {
+    test(
+      'refresh skips never-downloaded sources while checking ${restored ? 'restored' : 'new'} saved files',
+      () async {
+        final catalog = books([fixture.audio, fixture.text], padding: 120);
+        await downloads.bind(fixture.session(), catalog);
+        await downloads.request(fixture.text);
+        await downloads.idle;
+        if (restored) {
+          await restart();
+          await downloads.bind(fixture.session(), catalog);
+        }
+        expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+        final saved = directory(fixture.text.files.single);
+        await File('$saved/complete').delete();
+        final paths = <String>[];
+        await IOOverrides.runZoned(
+          downloads.refresh,
+          fseGetType: (path, followLinks) {
+            paths.add(path);
+            return Zone.root.run(
+              () => FileSystemEntity.type(path, followLinks: followLinks),
+            );
+          },
+        );
+        expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+        expect(paths, contains('$saved/complete'));
+        final untouched = catalog.single.editions
+            .where((edition) => edition.id != fixture.text.id)
+            .expand((edition) => edition.files)
+            .map(directory)
+            .toSet();
+        expect(paths.where(untouched.contains), isEmpty);
+        downloads.checkInvariants();
+      },
+    );
+  }
+
+  test(
+    'refresh still inspects a restored directory without a manifest',
+    () async {
+      final saved = directory(fixture.text.files.single);
+      await Directory(saved).create(recursive: true);
+      await File('$saved/kept').writeAsString('unrelated file');
+      await downloads.bind(fixture.session(), books([fixture.text]));
+      final derived = await Directory('$saved/.bookfin-ocr').create();
+      await File('${derived.path}/page').writeAsBytes([1, 2, 3]);
+      await downloads.refresh();
+      expect(downloads.status(fixture.text).unavailableBytes, 3);
+      expect(await File('$saved/kept').readAsString(), 'unrelated file');
+    },
+  );
+
   for (final read in [false, true]) {
     test(
       '${read ? 'owned reading' : 'file lookup'} finishes while an unrelated initial restore is held',

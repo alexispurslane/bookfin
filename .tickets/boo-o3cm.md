@@ -82,3 +82,40 @@ The second broader run passed 2645 tests with 24 skips (`/tmp/boo-o3cm-affected-
 - `git diff --check`: passed. All owned build/test commands finished before review launch. No timing threshold or test wait was changed.
 
 The implementation commit is ready for the one authorized read-only review of the entire original-base diff. Requested reviewer: provider `codex`, model `gpt-6-astra`, `reasoningEffort: high`, shared isolation, async mode, review role. Planned request identifier: `boo-o3cm-review-20261113-01`. Review acceptance remains pending; the parent alone integrates or closes this ticket.
+
+## Independent review and direct fix (2026-11-13)
+
+The one authorized fresh reviewer completed inspection of the entire diff from `77e6d62e3a7a6f7018fdeba3efd9d8862278aa81` to implementation commit `a457b8a917465f4b363cbf72a46cec2fbd04e37c`. The reviewer used `codex/gpt-6-astra`, `reasoningEffort: high`, review role, shared isolation and async mode, after the ticket lead called `orchestrator_capabilities` once. The reviewer started no children, edited no files and ran no builds or tests.
+
+Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1008241e-0482-4db2-ba3a-1ee0dd6df92a%3Adelegate-task%3Aboo-o3cm-review-20261113-01>.
+
+These are the original assessments, not a claim of reapproval after fixes:
+
+| Assessment | Original verdict | Evidence and gaps |
+| --- | --- | --- |
+| Correctness | changes-required | Retention, verification, account guards, transfer ownership and command ordering were preserved. R1 added unnecessary filesystem inspection on app resume. |
+| Ticket fulfillment | pass | Implementation and controlled-completion tests cover retained availability, compatibility changes, both requested-source access paths, immediate Playback binding, overlapping plans, credentials, account isolation, disposal, removal and active/pending transfers. R1 blocked overall acceptance. |
+| Design | pass | Downloads remains the sole availability/readiness owner. Readiness belongs to the existing record; readers keep the existing command/ownership path. The text-source index has one maintenance owner and an invariant. Sources: software-design User sections 4/6, Ousterhout information hiding and Muratori's restriction against speculative machinery. No separate design finding. |
+
+### R1: unnecessary resume probes of never-downloaded sources
+
+Severity: medium. Reviewed locations: `lib/downloads/local_downloads.dart:326` and `:1217`; app-resume caller: `lib/main.dart:351`. Trigger: bind a catalog with never-downloaded sources, then resume. Every source now needs a readiness record, but refresh still inspected every record as if it had stored files. With an existing account directory this added root/account/source checks for every absent source, before reaching later saved files. The reviewer requested a record-owned distinction for known storage, with real-file regression evidence and preserved missing/corrupt-file checks. No elapsed-time performance claim was made.
+
+Accepted and reproduced before changing production code. Two tests bind a catalog with 122 never-downloaded sources and one saved source, delete the saved original outside the app, record real filesystem paths during refresh, and require no probes of untouched source directories. One tests a new download and one restarts Downloads to restore durable files. Both failed on the unwanted paths; saved-file deletion detection already passed. A third preservation test confirms that a nonempty restored directory without a manifest still observes newly added derived files and keeps unrelated files.
+
+Direct fix: the existing source record remembers whether restoration found a nonempty directory or a save created its directory. Refresh skips only records without this storage history. The fact stays set after files disappear, preserving later verification and observation. Readiness, availability, command ordering, filesystem containment and saved-file verification keep their existing owners and paths. No additional availability cache or public option was introduced.
+
+| Exact command | Result | Log |
+| --- | --- | --- |
+| `nix develop --command flutter test --concurrency=2 test/downloads/binding_test.dart --plain-name refresh` | Meaningful red: 1 passed, 2 failed, no skips; both failures report probes of untouched source directories. | `/tmp/boo-o3cm-review-r1-red.log` |
+| `nix develop --command flutter test --concurrency=2 test/downloads/binding_test.dart test/downloads/status_test.dart test/downloads/directories_test.dart` | Green: 44 passed, no failures or skips. Includes all 25 binding tests. | `/tmp/boo-o3cm-review-r1-green.log` |
+| `nix develop --command dart format lib/downloads/local_downloads.dart lib/app/account_binding.dart test/downloads/binding_test.dart test/app/account_binding_test.dart` | Four files, one test file reformatted. | `/tmp/boo-o3cm-review-format.log` |
+| `nix develop --command flutter analyze lib/downloads lib/app/account_binding.dart test/downloads test/app/account_binding_test.dart` | No issues. | `/tmp/boo-o3cm-review-analysis.log` |
+| `nix develop --command flutter test --concurrency=2 test/downloads test/app test/playback test/sync test/reader test/speech/hearing_policy_test.dart` | 2649 passed, 24 skipped, no failures. | `/tmp/boo-o3cm-review-affected.log` |
+| `nix develop --command flutter test --concurrency=2` | 3378 passed, 27 skipped, no failures. | `/tmp/boo-o3cm-review-full.log` |
+| `nix develop --command dart format --output=none --set-exit-if-changed lib/downloads/local_downloads.dart lib/app/account_binding.dart test/downloads/binding_test.dart test/app/account_binding_test.dart` | Four files, zero changes, exit 0. | `/tmp/boo-o3cm-review-format-check.log` |
+| `git diff --check` | Passed, exit 0. | `/tmp/boo-o3cm-review-diff-check.log` |
+
+All required affected/full checks passed after the direct fix, one heavy command at a time. All owned commands and the sole reviewer have finished. The earlier full-suite failure and its unchanged retries remain recorded above and in `t5-rplx`; the final full run also passed that reader-recovery test. Its intermittent cause remains unresolved. Skips retain the suite's existing optional corpus, benchmark and separate integration-test requirements; no test or timing threshold was changed to obtain a pass.
+
+R1 is resolved by the ticket lead with the evidence above. There are no unresolved findings or product forks. No second review is authorized or claimed; the original independent correctness verdict remains changes-required, followed by this direct fix and verification. No device action, coverage or mutation campaign was run. Device acceptance remains blocked separately by `t1-dth0`. The parent owns integration, acceptance, hardening and ticket closure.
