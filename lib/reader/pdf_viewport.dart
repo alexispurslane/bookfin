@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -58,14 +59,17 @@ class PdfViewport extends StatefulWidget {
   final PdfAddress? initial;
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
 
-  /// Reports the place that shows. A page that a turn or a jump shows
-  /// reports its place at once, before its text arrives, so the owner can
-  /// save the page while a scanned page is recognized.
+  /// Reports the place that shows. A page whose text or words arrive
+  /// promptly reports once, with the place as they name it. A page that
+  /// still waits for them 50 ms after it began to show reports the page
+  /// itself then, so the owner can save the page while a scanned page is
+  /// recognized.
   final ValueChanged<PdfAddress> onAddress;
 
   /// Reports the place of the last [onAddress] report again, on the same
-  /// page, as the text of the page names it once that text arrives. The
-  /// text of a page that no longer shows reports nothing.
+  /// page and the same screen of it, as the text of the page names it once
+  /// that text arrives. The text of a page that no longer shows reports
+  /// nothing.
   final ValueChanged<PdfAddress> onRefinedAddress;
 
   /// The session's chosen PDF view. The original page shows while the
@@ -154,6 +158,24 @@ class _PdfViewportState extends State<PdfViewport>
   /// Whether the last request for the shown page's text failed.
   bool _textFailed = false;
 
+  /// Whether the shown page reported its place since it loaded.
+  bool _placeReported = false;
+
+  /// Reports the page-level place of the shown page when its text or its
+  /// words are late (see [_reportWhenLate]), or null.
+  Timer? _latePlace;
+
+  /// The longest time that a page shows without a report of its place.
+  ///
+  /// The text layer of a page answers in a few milliseconds, also when the
+  /// text outline holds PDFium for one slice of about 8 ms. Such a page
+  /// reports once, with its full place: a page-level report before it would
+  /// double the saves and the synced records of every page turn (boo-s11s).
+  /// Recognition takes seconds. 50 ms is several times the first and far
+  /// below the second, and it leaves the save half of the 100 ms after
+  /// which a stopped app must not lose the page.
+  static const _placeWait = Duration(milliseconds: 50);
+
   /// Why the original page could not be drawn, or null.
   String? _failure;
 
@@ -169,6 +191,10 @@ class _PdfViewportState extends State<PdfViewport>
       onPlace: (place) {
         _address = place;
         _publish();
+      },
+      onRefinedPlace: (place) {
+        _address = place;
+        widget.onRefinedAddress(place);
       },
       onGiveUp: () => unawaited(_requestText(_generation, _address)),
     );
@@ -228,6 +254,7 @@ class _PdfViewportState extends State<PdfViewport>
   void dispose() {
     _generation++;
     _search++;
+    _latePlace?.cancel();
     _words.showing.removeListener(_wordStateChanged);
     _words.waitingForText.removeListener(_wordStateChanged);
     _words.dispose();
@@ -248,11 +275,13 @@ class _PdfViewportState extends State<PdfViewport>
     _search++;
     if (_loading) widget.onCancelRecognition();
     final generation = ++_generation;
+    _latePlace?.cancel();
     _zoom.value = Matrix4.identity();
     setState(() {
       _page = address.sourcePage;
       _turned = turned;
       _address = address;
+      _placeReported = false;
       _positionResolved = false;
       _failure = null;
       _text = null;
@@ -270,6 +299,14 @@ class _PdfViewportState extends State<PdfViewport>
     if (!_usingText) await _draw(generation);
   }
 
+  /// Opens the shown page, whose place is [address], in the word view, and
+  /// falls back to its text when it has no words to show.
+  ///
+  /// While an earlier word screen stays on the display, the place does not
+  /// advance: the first word screen of the page reports it. With no word
+  /// screen to keep, the original page shows while the words are on their
+  /// way, so words that are late let the page report its place first
+  /// ([_reportWhenLate]).
   Future<void> _startWords(
     int generation,
     PdfAddress address, {
@@ -285,6 +322,7 @@ class _PdfViewportState extends State<PdfViewport>
     await Future<void>.value();
     if (!current()) return;
     widget.onReady(this, _contents());
+    if (_words.screen.value == null) _reportWhenLate(generation);
     unawaited(_draw(generation));
     if (await _words.shows(address.sourcePage)) return;
     if (!current()) return;
@@ -293,11 +331,13 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// Asks the book for the text of the shown page, whose place is
   /// [address]: the text for reading in reflow, and only the text layer on
-  /// the original page. It publishes the place at once, as it is known
-  /// without the text, because the page shows while its text is on its way
-  /// and recognition takes seconds (engine rule 3). Then it resolves the
-  /// place in the text and reports it as a refinement of the published
-  /// place. With [lastViewport], the refined place is the end of the page.
+  /// the original page. Then it resolves the place in the text and reports
+  /// it. With [lastViewport], that place is the end of the page.
+  ///
+  /// The page shows while its text is on its way, and recognition takes
+  /// seconds. So a text that is late lets the page report its place first,
+  /// as it is known without the text ([_reportWhenLate], engine rule 3).
+  /// The place in the text is then a refinement of the reported place.
   Future<void> _requestText(
     int generation,
     PdfAddress address, {
@@ -320,7 +360,7 @@ class _PdfViewportState extends State<PdfViewport>
         return;
       }
       widget.onReady(this, _contents());
-      _publish();
+      _reportWhenLate(generation);
       unawaited(_draw(generation));
       final text = await pendingText;
       if (!current()) return;
@@ -347,9 +387,23 @@ class _PdfViewportState extends State<PdfViewport>
     }
     if (!current()) return;
     widget.onReady(this, _contents());
-    // Only this page's own request reaches here ([current]), so the
-    // refinement never names a page other than the published one.
-    widget.onRefinedAddress(_address);
+    if (_placeReported) {
+      // Only this page's own request reaches here ([current]), so the
+      // refinement never names a page other than the reported one.
+      widget.onRefinedAddress(_address);
+    } else {
+      _publish();
+    }
+  }
+
+  /// Reports the place of the shown page, the page of [generation], once
+  /// [_placeWait] passed, unless the page reports its place before then.
+  /// The place is then the page as it is known without its text or words.
+  void _reportWhenLate(int generation) {
+    if (_placeReported || (_latePlace?.isActive ?? false)) return;
+    _latePlace = Timer(_placeWait, () {
+      if (mounted && generation == _generation) _publish();
+    });
   }
 
   List<ContentsEntry> _contents() => [
@@ -416,6 +470,8 @@ class _PdfViewportState extends State<PdfViewport>
   BookSurvey? get _crops => widget.trimMargins ? widget.book.survey : null;
 
   void _publish() {
+    _latePlace?.cancel();
+    _placeReported = true;
     widget.onAddress(_address);
   }
 
@@ -463,7 +519,12 @@ class _PdfViewportState extends State<PdfViewport>
       layout.screenAt(index < 0 ? text.text.length : index),
     );
     _textScreen = screen;
+    final placed = _address.toJson();
     _textPlace();
+    // A layout whose shown screen begins at the place as it is already
+    // named, such as the first screen of a page after a turn, has nothing
+    // new to report.
+    if (mapEquals(placed, _address.toJson())) return screen;
     final generation = _generation;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted &&

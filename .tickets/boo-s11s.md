@@ -2,7 +2,7 @@
 id: boo-s11s
 status: open
 deps: [boo-hmrp]
-links: [boo-f4xm, boo-0931, boo-hmrp, t6-il6y]
+links: [boo-f4xm, boo-0931, boo-hmrp, t6-il6y, t8-dqir]
 created: 2026-11-12T23:41:00Z
 type: task
 priority: 1

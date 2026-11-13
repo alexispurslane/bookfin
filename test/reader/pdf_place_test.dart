@@ -6,7 +6,9 @@ import 'dart:convert';
 
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/records.dart';
+import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -37,6 +39,10 @@ class HeldScan extends HeldPdf {
   /// The words that recognition reads on [page].
   static String words(int page) =>
       'Page $page of the scan begins with these recognized words.';
+
+  /// Lets go of the text of [page], as a book does that keeps the text of
+  /// only some pages: the next request for it waits for [recognize] again.
+  void forget(int page) => _recognition.remove(page);
 
   /// Ends the recognition of [page] with its words.
   void recognize(int page) {
@@ -69,12 +75,70 @@ class HeldScan extends HeldPdf {
   Future<PdfText> text(int sourcePage) => _of(sourcePage).future;
 }
 
-/// Lets the reports and the saves that wait in microtasks run.
+/// A scan whose recognition the reader can cancel, as the bundled
+/// recognition does: a cancel ends every wait for a page's text with a
+/// failed text, and a later request for the page waits again.
+class CancelableScan extends HeldScan {
+  @override
+  late final PdfTextSupply textSupply = _HeldRecognition(this);
+
+  void _cancel() {
+    final waits = [
+      for (final MapEntry(key: page, value: wait) in _recognition.entries)
+        if (!wait.isCompleted) (page, wait),
+    ];
+    for (final (page, wait) in waits) {
+      _recognition.remove(page);
+      wait.complete(
+        const PdfText(
+          source: '',
+          text: '',
+          sourceOffsets: [],
+          status: PdfTextStatus.failed,
+          reason: 'Recognition was canceled.',
+        ),
+      );
+    }
+  }
+}
+
+/// The recognition of a [CancelableScan]. Only its cancel does anything,
+/// and the scan itself gives the text of each page.
+class _HeldRecognition implements PdfTextSupply {
+  _HeldRecognition(this.scan);
+  final CancelableScan scan;
+  @override
+  final recognizing = ValueNotifier(false);
+  @override
+  void bind(PdfTextLease lease) {}
+  @override
+  void cancel() => scan._cancel();
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// A scan whose words for the word view never arrive, so the original page
+/// of each page shows under the progress line.
+class HeldWords extends HeldScan {
+  @override
+  Future<PageGeometry?> geometry(int sourcePage, {bool background = false}) =>
+      Completer<PageGeometry?>().future;
+}
+
+/// Lets 100 ms pass, and the reports and the saves that wait in microtasks
+/// run. A stop of the app after that time must not lose a page that shows,
+/// whether its text arrived or not.
 Future<void> settle(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 100));
   for (var frame = 0; frame < 3; frame++) {
     await tester.pump();
   }
 }
+
+/// The kinds of the reading moves of [reader], newest first.
+List<HistoryAction> kindsOf(ReaderSession reader) => [
+  for (final move in reader.history) move.kind,
+];
 
 /// A reading session on one phone store.
 ReaderSession sessionOn(MemoryResume store, HeldScan scan) {
@@ -92,16 +156,18 @@ ReaderSession sessionOn(MemoryResume store, HeldScan scan) {
   return reader;
 }
 
-/// Opens [scan] in the reader's Text view, as the reader screen shows it.
+/// Opens [scan] in the reader's Text view, or in [view], as the reader
+/// screen shows it.
 Future<ReaderSession> read(
   WidgetTester tester,
   HeldScan scan,
-  MemoryResume store,
-) async {
+  MemoryResume store, {
+  PdfPageView view = PdfPageView.text,
+}) async {
   final reader = sessionOn(store, scan);
   await reader.bind(account(), [book]);
   await reader.open(book, edition);
-  await reader.setPdfView(PdfPageView.text);
+  await reader.setPdfView(view);
   await tester.pumpWidget(
     MaterialApp(
       home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
@@ -191,9 +257,11 @@ void main() {
       await tester.pump();
       unawaited(reports.navigator!.move(true));
       await settle(tester);
+      // Page 2 showed for less than the wait for a late text, so only the
+      // page that the person stopped on reports its place.
       expect(
         reports.addresses.skip(before).map((address) => address.sourcePage),
-        [2, 3],
+        [3],
       );
       await tester.pumpWidget(const SizedBox());
     });
@@ -218,6 +286,54 @@ void main() {
         isEmpty,
         reason: 'The text of page 2 names no place once page 3 shows.',
       );
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('a page whose text is ready reports its place once, as its '
+        'text names it', (tester) async {
+      final scan = HeldScan()
+        ..recognize(1)
+        ..recognize(2);
+      final reports = Reports();
+      await tester.pumpWidget(viewport(scan, reports, view: PdfPageView.text));
+      await settle(tester);
+      final before = reports.addresses.length;
+      await reports.navigator!.move(true);
+      await settle(tester);
+      final turned = reports.addresses.skip(before).toList();
+      expect(turned.first.quote, HeldScan.words(2));
+      expect(
+        turned.map((address) => jsonEncode(address.toJson())).toSet(),
+        hasLength(1),
+        reason: 'Every report of the turn names the same full place.',
+      );
+      expect(reports.refined, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('a turn back to a scanned page reports that page first, and '
+        'then its end as its text names it', (tester) async {
+      final scan = HeldScan()..recognize(2);
+      final reports = Reports();
+      await tester.pumpWidget(
+        viewport(
+          scan,
+          reports,
+          view: PdfPageView.text,
+          initial: PdfAddress(2, 0),
+        ),
+      );
+      await settle(tester);
+      final before = reports.addresses.length;
+      unawaited(reports.navigator!.move(false));
+      await settle(tester);
+      final early = reports.addresses.skip(before).single;
+      expect((early.sourcePage, early.character), (1, 0));
+      expect(reports.refined, isEmpty);
+      scan.recognize(1);
+      await settle(tester);
+      expect(reports.refined.single.sourcePage, 1);
+      expect(reports.refined.single.character, HeldScan.words(1).length);
       await tester.pumpWidget(const SizedBox());
     });
 
@@ -271,7 +387,6 @@ void main() {
       await settle(tester);
       expect(reader.history.first.kind, HistoryAction.chapter);
       expect(reader.history.first.after.sourcePage, 3);
-      expect(reader.undoOffer?.action.id, reader.history.first.id);
       // The place that the jump left stays in reach after a stop: the saved
       // place is page 3, and the move still names page 1.
       final next = await restarted(store);
@@ -358,6 +473,256 @@ void main() {
       reader.checkInvariants();
     });
 
+    testWidgets('the Undo offer of a jump to a scanned page shows when the '
+        'jump has finished, not while the page is recognized', (tester) async {
+      final store = MemoryResume();
+      final scan = HeldScan()..recognize(1);
+      final reader = await read(tester, scan, store);
+      unawaited(reader.goToContents('page:3'));
+      await settle(tester);
+      // The move is recorded and saved, and Undo is not offered yet: a tap
+      // on it would wait for the recognition of page 3 (td-rbtc).
+      expect(reader.history.first.kind, HistoryAction.chapter);
+      expect(
+        (await restarted(store)).history.first.kind,
+        HistoryAction.chapter,
+      );
+      expect(reader.undoOffer, isNull);
+      scan.recognize(3);
+      await settle(tester);
+      expect(reader.undoOffer?.action.id, reader.history.first.id);
+      expect(
+        reader.describe(reader.undoOffer!.action.after).quote,
+        HeldScan.words(3),
+      );
+      reader.checkInvariants();
+    });
+
+    testWidgets('an Undo asked for during the recognition of a jump does not '
+        'run after a later page turn', (tester) async {
+      final scan = CancelableScan()..recognize(1);
+      final reader = await read(tester, scan, MemoryResume());
+      // From Contents to page 3, which is not recognized yet.
+      unawaited(reader.goToContents('page:3'));
+      await settle(tester);
+      expect(reader.position!.sourcePage, 3);
+      // A tap on Undo, if the reader offers it now.
+      unawaited(reader.undoMove());
+      await settle(tester);
+      expect(reader.position!.sourcePage, 3);
+      // The turn cancels the recognition of page 3, which ends the jump.
+      unawaited(reader.move(true));
+      await settle(tester);
+      expect(reader.position!.sourcePage, 4);
+      expect(kindsOf(reader), [HistoryAction.chapter, HistoryAction.open]);
+      reader.checkInvariants();
+    });
+
+    testWidgets('an Undo that waits behind a jump is dropped when the person '
+        'turns the page', (tester) async {
+      final scan = CancelableScan()
+        ..recognize(1)
+        ..recognize(2);
+      final reader = await read(tester, scan, MemoryResume());
+      await reader.goToContents('page:2');
+      await settle(tester);
+      expect(reader.undoOffer, isNotNull);
+      // A jump to page 4 starts. Its page did not report its place yet, so
+      // the offer of the jump before it still shows.
+      unawaited(reader.goToContents('page:4'));
+      await tester.pump();
+      expect(reader.undoOffer, isNotNull);
+      unawaited(reader.undoMove());
+      await tester.pump();
+      unawaited(reader.move(true));
+      await settle(tester);
+      expect(reader.position!.sourcePage, 5);
+      expect(kindsOf(reader), isNot(contains(HistoryAction.undo)));
+      reader.checkInvariants();
+    });
+
+    testWidgets('an Undo that waits behind a jump is dropped when the person '
+        'asks for another jump', (tester) async {
+      final scan = CancelableScan()
+        ..recognize(1)
+        ..recognize(2)
+        ..recognize(5);
+      final reader = await read(tester, scan, MemoryResume());
+      await reader.goToContents('page:2');
+      await settle(tester);
+      // A jump to page 4 starts, and the offer of the jump before it still
+      // shows. The Undo and then the jump to page 5 wait behind it.
+      unawaited(reader.goToContents('page:4'));
+      await tester.pump();
+      unawaited(reader.undoMove());
+      await tester.pump();
+      unawaited(reader.goToContents('page:5'));
+      await settle(tester);
+      scan.recognize(4);
+      await settle(tester);
+      expect(reader.position!.sourcePage, 5);
+      expect(kindsOf(reader), isNot(contains(HistoryAction.undo)));
+      expect(reader.history.first.before.sourcePage, 4);
+      reader.checkInvariants();
+    });
+
+    testWidgets('a turn to a page whose text is ready saves the place once, '
+        'as its text names it', (tester) async {
+      final store = CountingStore();
+      final scan = HeldScan()
+        ..recognize(1)
+        ..recognize(2);
+      final reader = await read(tester, scan, store);
+      final before = store.saves;
+      await reader.move(true);
+      await settle(tester);
+      expect(reader.describe(reader.position!).quote, HeldScan.words(2));
+      expect(store.saves, before + 1);
+    });
+
+    testWidgets('a jump to a page whose text is ready saves the place and '
+        'the move once', (tester) async {
+      final store = CountingStore();
+      final scan = HeldScan()
+        ..recognize(1)
+        ..recognize(3);
+      final reader = await read(tester, scan, store);
+      final before = store.saves;
+      await reader.goToContents('page:3');
+      await settle(tester);
+      expect(
+        reader.describe(reader.history.first.after).quote,
+        HeldScan.words(3),
+      );
+      expect(store.saves, before + 1);
+    });
+
+    testWidgets('a turn in the word view with no word screen to keep saves '
+        'the page while its words are on their way', (tester) async {
+      final store = MemoryResume();
+      final reader = await read(
+        tester,
+        HeldWords(),
+        store,
+        view: PdfPageView.pageWords,
+      );
+      expect(reader.position!.sourcePage, 1);
+      unawaited(reader.move(true));
+      await settle(tester);
+      expect(reader.position!.sourcePage, 2);
+      // Android stops Bookfin here: the words of page 2 did not arrive.
+      final next = await restarted(store);
+      await next.open(book, edition);
+      expect((next.initialAddress as PdfAddress).sourcePage, 2);
+    });
+
+    testWidgets('a change of the view during recognition keeps the end of '
+        'the jump for the words of the page', (tester) async {
+      final scan = HeldScan()..recognize(1);
+      final reader = await read(tester, scan, MemoryResume());
+      unawaited(reader.goToContents('page:3'));
+      await settle(tester);
+      final moves = reader.history.length;
+      // Each change of the view reports the place of page 3 again.
+      await reader.setPdfView(PdfPageView.original);
+      await settle(tester);
+      await reader.setPdfView(PdfPageView.text);
+      await settle(tester);
+      scan.recognize(3);
+      await settle(tester);
+      expect(reader.history, hasLength(moves));
+      expect(reader.history.first.kind, HistoryAction.chapter);
+      expect(
+        reader.describe(reader.history.first.after).quote,
+        HeldScan.words(3),
+      );
+      reader.checkInvariants();
+    });
+
+    /// The moves that [jump] records to a page under recognition: first
+    /// when the page shows, and then when its text arrives. [page] is the
+    /// page of the jump, whose text [scan] holds back.
+    Future<void> recordsOneMove(
+      WidgetTester tester,
+      ReaderSession reader,
+      HeldScan scan,
+      int page,
+      HistoryAction kind,
+      Future<void> Function() jump,
+    ) async {
+      final moves = reader.history.length;
+      unawaited(jump());
+      await settle(tester);
+      expect(reader.position!.sourcePage, page);
+      expect(reader.history, hasLength(moves + 1));
+      expect(reader.history.first.kind, kind);
+      final id = reader.history.first.id;
+      scan.recognize(page);
+      await settle(tester);
+      expect(reader.history, hasLength(moves + 1));
+      expect(reader.history.first.id, id);
+      expect(reader.history.first.after.sourcePage, page);
+      expect(reader.undoOffer?.action.id, id);
+      reader.checkInvariants();
+    }
+
+    testWidgets('a search jump to a page under recognition records one '
+        'move', (tester) async {
+      final scan = HeldScan();
+      for (var page = 1; page <= 5; page++) {
+        scan.recognize(page);
+      }
+      final reader = await read(tester, scan, MemoryResume());
+      await reader.search('begins');
+      final hit = reader.hits.firstWhere(
+        (hit) => (hit.address as PdfAddress).sourcePage == 3,
+      );
+      scan.forget(3);
+      await recordsOneMove(
+        tester,
+        reader,
+        scan,
+        3,
+        HistoryAction.search,
+        () => reader.openHit(hit),
+      );
+    });
+
+    testWidgets('a scrub to a page under recognition records one move', (
+      tester,
+    ) async {
+      final scan = HeldScan()..recognize(1);
+      final reader = await read(tester, scan, MemoryResume());
+      await recordsOneMove(
+        tester,
+        reader,
+        scan,
+        4,
+        HistoryAction.seek,
+        () => reader.goTo(const BookTarget(fraction: .6, part: 3, progress: 0)),
+      );
+    });
+
+    testWidgets('a History go-to to a page under recognition records one '
+        'move', (tester) async {
+      final scan = HeldScan()
+        ..recognize(1)
+        ..recognize(4);
+      final reader = await read(tester, scan, MemoryResume());
+      await reader.goToContents('page:4');
+      await settle(tester);
+      final jump = reader.history.first;
+      scan.forget(1);
+      await recordsOneMove(
+        tester,
+        reader,
+        scan,
+        1,
+        HistoryAction.historyRestore,
+        () => reader.restoreHistory(jump.id),
+      );
+    });
+
     testWidgets('a turn to a page whose text names nothing new saves the '
         'place once', (tester) async {
       final store = CountingStore();
@@ -419,6 +784,35 @@ void main() {
       reader.refineAddress(reader.token, named(scan, 2, await scan.text(2)));
       expect(reader.history.single, same(visit));
       expect(reader.describe(reader.position!).quote, HeldScan.words(2));
+      reader.checkInvariants();
+    });
+
+    test('a second report of the same place keeps the move for the '
+        'refinement', () async {
+      final scan = HeldScan()..recognize(1);
+      final reader = await opened(scan);
+      reader.acceptAddress(reader.token, PdfAddress(1, 0));
+      // A change of the view during recognition reports the place again.
+      reader.acceptAddress(reader.token, PdfAddress(1, 0));
+      reader.refineAddress(reader.token, named(scan, 1, await scan.text(1)));
+      final visit = reader.history.single;
+      expect(reader.describe(visit.after).quote, HeldScan.words(1));
+      expect(visit.moved, isFalse);
+      reader.checkInvariants();
+    });
+
+    test('a refinement after the place moved inside the page leaves the '
+        'earlier move as it was', () async {
+      final scan = HeldScan()..recognize(1);
+      final reader = await opened(scan);
+      final text = await scan.text(1);
+      reader.acceptAddress(reader.token, PdfAddress(1, 0));
+      final visit = reader.history.single;
+      // The person turned a screen inside the page, which ends no move.
+      reader.acceptAddress(reader.token, PdfAddress(1, 8));
+      reader.refineAddress(reader.token, scan.addressFor(1, text, 8));
+      expect(reader.history.single, same(visit));
+      expect(reader.describe(reader.position!).quote, isNotEmpty);
       reader.checkInvariants();
     });
 

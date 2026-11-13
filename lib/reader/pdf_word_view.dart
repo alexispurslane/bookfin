@@ -60,7 +60,10 @@ class _OpenPage {
 /// The word view of the source page that a [PdfViewport] shows: which of
 /// its screens shows, the place of that screen, and the waits for the
 /// page's words and for its text. The viewport opens each page that it
-/// shows, and the screens report their place through [onPlace].
+/// shows. Each screen that shows reports its place through [onPlace]. When
+/// the page's text attaches to the shown screen, the screen reports its
+/// place again through [onRefinedPlace]: the same place under a better
+/// name.
 ///
 /// Places follow "The text under the images":
 /// - Once the text attaches, the place of a screen is the first character
@@ -79,14 +82,25 @@ class _OpenPage {
 /// its content does not reflow. The viewport then shows it as before the
 /// word view: its text, or its original page.
 class PdfWordScreens {
-  PdfWordScreens(this.book, {required this.onPlace, required this.onGiveUp}) {
+  PdfWordScreens(
+    this.book, {
+    required this.onPlace,
+    required this.onRefinedPlace,
+    required this.onGiveUp,
+  }) {
     _pages = _newPages();
   }
 
   final PdfBook book;
 
-  /// Reports the place of the shown screen.
+  /// Reports the place of a screen that shows: the first screen of a page,
+  /// and each screen that a turn or a new layout shows.
   final ValueChanged<PdfAddress> onPlace;
+
+  /// Reports the place of the screen of the last [onPlace] report again,
+  /// as the page's text names it once the text attaches. The screen did
+  /// not change, so this is no move of the place.
+  final ValueChanged<PdfAddress> onRefinedPlace;
 
   /// Reports that the shown page, whose words showed, has no words to show
   /// any more: a band failed, or its text says that it does not reflow.
@@ -307,7 +321,7 @@ class PdfWordScreens {
     }
     if (_showing.value) {
       _publishText(open);
-      _report(open);
+      onRefinedPlace(_placeOf(open));
     }
   }
 
@@ -389,25 +403,27 @@ class PdfWordScreens {
     if (!open.shown.isCompleted) open.shown.complete(true);
     _publishText(open);
     _showing.value = true;
-    _report(open);
+    onPlace(_placeOf(open));
   }
 
-  void _report(_OpenPage open) {
+  /// The place of the shown screen of [open], by the rules of "The text
+  /// under the images".
+  PdfAddress _placeOf(_OpenPage open) {
     final attached = open.attached, attachment = attached?.attachment;
     if (!open.turned &&
         (attachment == null || _openingCharacter(open) == null)) {
-      onPlace(open.place);
-    } else if (attachment == null) {
-      onPlace(PdfAddress(open.page, 0, pageCount: book.pageCount));
-    } else {
-      final shown = _pages.shown.value!;
-      final character = shown.column.column.firstCharacter(
-        shown.screen,
-        attachment,
-        open.reflow!.analysis,
-      );
-      onPlace(book.addressFor(open.page, attached!.text, character ?? 0));
+      return open.place;
     }
+    if (attachment == null) {
+      return PdfAddress(open.page, 0, pageCount: book.pageCount);
+    }
+    final shown = _pages.shown.value!;
+    final character = shown.column.column.firstCharacter(
+      shown.screen,
+      attachment,
+      open.reflow!.analysis,
+    );
+    return book.addressFor(open.page, attached!.text, character ?? 0);
   }
 
   void _publishText(_OpenPage open) {

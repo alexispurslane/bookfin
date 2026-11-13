@@ -177,16 +177,20 @@ class ReadingChanges {
 /// place. The first place that the navigator then reports ends the move. A
 /// move that ends on the page where it began records nothing, and a jump
 /// that fails, or the open of another book, drops it. The move saves with
-/// its new place in one change set, and becomes the Undo offer
-/// ([undoOffer]). Page turns and changes of the text size are not moves.
+/// its new place in one change set. It becomes the Undo offer ([undoOffer])
+/// when its jump ends. Page turns and changes of the text size are not
+/// moves.
 ///
 /// A PDF page shows before its text arrives, and recognition of a scanned
-/// page takes seconds. The navigator reports the page itself at once, so
-/// the place and the move that ended there are saved while the text is on
-/// its way. When the text names the place, the navigator reports it again
-/// as a refinement ([refineAddress]). A refinement is the same place under
-/// a better name: it records no move, and the move that ended there takes
-/// the new name.
+/// page takes seconds. When the text is late, the navigator reports the
+/// page itself first, so the place and the move that ended there are saved
+/// while the text is on its way. When the text names the place, the
+/// navigator reports it again as a refinement ([refineAddress]). A text
+/// that arrives promptly gives one report, with the place as the text
+/// names it. A refinement is the same place under a better name: it
+/// records no move, and the move that ended there takes the new name. The
+/// jump itself ends when the text arrives, and the next jump waits for
+/// that (td-rbtc), so the Undo offer of the move waits too.
 ///
 /// Each [open] starts a reading visit: the first place that the book shows
 /// records an Opened entry there. If another device saved that place, and
@@ -423,14 +427,19 @@ class ReaderSession extends ChangeNotifier {
   /// The jump whose place has not shown yet, or null.
   _Move? _pending;
 
-  /// The move that the last [acceptAddress] ended at the visible place, or
-  /// null when that report ended none. [refineAddress] gives its end the
-  /// place as the text names it.
+  /// The move that an [acceptAddress] ended at the visible place, or null
+  /// when the place moved on since then without the end of another move.
+  /// [refineAddress] gives its end the place as the text names it.
   HistoryEvent<TextPosition>? _landed;
 
   /// The end of the last jump in the open book. Jumps run one after
   /// another. The open of another book drops the jumps that wait.
   Future<void> _jumps = Future.value();
+
+  /// Counts the page turns and the jumps that the person asked for. A jump
+  /// that still waits when the next request comes is older than that
+  /// request, and does not run.
+  int _requests = 0;
   bool _disposed = false;
   bool _recordsReady = false;
   int _accountGeneration = 0;
@@ -482,6 +491,10 @@ class ReaderSession extends ChangeNotifier {
   /// holds it, or null when there is none. A page turn keeps the offer.
   /// The next move, [undoMove], [dismissUndo], and the open of another
   /// book end it.
+  ///
+  /// The move of a jump is offered when the jump has ended, not when its
+  /// place first shows. Until then the next jump waits (see [_jump]), so an
+  /// Undo in that time would do nothing at first and run late.
   UndoOffer<TextPosition>? get undoOffer => switch (_undo) {
     null => null,
     final action => (
@@ -1150,8 +1163,15 @@ class ReaderSession extends ChangeNotifier {
   /// the visible place and is saved. The first place after a jump ends the
   /// pending move (see [_endMove]).
   void acceptAddress(int eventToken, ReaderAddress address) {
+    final earlier = _position;
     if (!_place(eventToken, address)) return;
-    final move = _landed = _endMove(address);
+    final move = _endMove(address);
+    // A report that ends no move and names the place as it was, such as
+    // the report of a change of the view during recognition, keeps the
+    // move that the text of the page can still name.
+    if (move != null || earlier == null || !samePlace(earlier, position!)) {
+      _landed = move;
+    }
     unawaited(_save(resumes: [position!], history: {?move?.id: move}));
     _emit();
   }
@@ -1240,18 +1260,7 @@ class ReaderSession extends ChangeNotifier {
     final old = _history[index];
     TextPosition named(TextPosition end) =>
         samePlace(end, earlier) ? position! : end;
-    final renamed = HistoryEvent(
-      id: old.id,
-      at: old.at,
-      kind: old.kind,
-      before: named(old.before),
-      after: named(old.after),
-      bookTitle: old.bookTitle,
-      editionLabel: old.editionLabel,
-      device: old.device,
-      counterpartOf: old.counterpartOf,
-      matchedBy: old.matchedBy,
-    );
+    final renamed = old.withEnds(named(old.before), named(old.after));
     _history = List.of(_history)..[index] = renamed;
     if (_undo?.id == old.id) _undo = renamed;
     return renamed;
@@ -1259,8 +1268,10 @@ class ReaderSession extends ChangeNotifier {
 
   /// Ends the pending move at [after], the place that the navigator now
   /// shows, and records it, unless it ends on the page where it began.
-  /// Gives the recorded move, which becomes the Undo offer. An undo move
-  /// ends the offer.
+  /// Gives the recorded move. It ends the Undo offer before it. It becomes
+  /// the offer itself, unless it is an undo move: at once for the start of
+  /// a visit, and when the jump ends for the move of a jump (see
+  /// [_offerUndo]).
   HistoryEvent<TextPosition>? _endMove(ReaderAddress after) {
     final move = _pending;
     _pending = null;
@@ -1278,9 +1289,25 @@ class ReaderSession extends ChangeNotifier {
       counterpart: move.counterpart,
     );
     if (move.before != null) {
-      _undo = move.kind == HistoryAction.undo ? null : event;
+      move.recorded = event.id;
+      _undo = move.kind == HistoryAction.undo || move.jump ? null : event;
     }
     return event;
+  }
+
+  /// Offers Undo for the move that [jump] recorded, now that the navigator
+  /// ended the jump. An Undo runs as a jump, and a jump waits for the jump
+  /// before it. So an offer that showed while its own jump still ran would
+  /// do nothing when tapped, and then run late. A move that the person
+  /// deleted in that time, and an undo move, offer nothing.
+  void _offerUndo(_Move jump) {
+    if (jump.kind == HistoryAction.undo) return;
+    final recorded = _history
+        .where((event) => event.id == jump.recorded)
+        .firstOrNull;
+    if (recorded == null) return;
+    _undo = recorded;
+    _emit();
   }
 
   /// Adds an entry of [kind] from [before] to [after] in the open book to
@@ -1423,7 +1450,9 @@ class ReaderSession extends ChangeNotifier {
 
   /// Takes back the move of [undoOffer]: shows the place where it began, as
   /// an undo move, and ends the offer. If that place cannot be shown, the
-  /// offer stays.
+  /// offer stays. It also stays when the Undo waits for another jump and
+  /// the person turns a page or asks for a jump in that time, because the
+  /// Undo then does not run (see [_jump]).
   Future<void> undoMove() async {
     final offer = _undo;
     if (offer == null) return;
@@ -1498,16 +1527,21 @@ class ReaderSession extends ChangeNotifier {
   /// shown place. Jumps in one book run one after another, so each one
   /// begins where the one before it ended. Completes with whether the
   /// navigator did not fail. A jump that waits when another book opens
-  /// does not run.
+  /// does not run. A jump that waits when the person turns a page or asks
+  /// for another jump does not run either. The newer request replaces it:
+  /// a late jump would take the person away from the page that they turned
+  /// to, or show a place for seconds that they no longer asked for.
   Future<bool> _jump(
     HistoryAction kind,
     Future<void> Function(DocumentNavigator navigator) go, {
     _Counterpart? counterpart,
   }) {
-    final generation = token;
+    final generation = token, request = ++_requests;
     final jump = _jumps.then((_) async {
       final navigator = _navigator;
-      if (navigator == null || !_live(generation)) return false;
+      if (navigator == null || !_live(generation) || request != _requests) {
+        return false;
+      }
       final before = position;
       // A jump before the book shows a place has no place to begin from,
       // and leaves the start of the visit pending.
@@ -1520,11 +1554,13 @@ class ReaderSession extends ChangeNotifier {
               end: _pager?.shownEnd,
               token: token,
               counterpart: counterpart,
+              jump: true,
             );
       try {
         return await _navigate(() => go(navigator));
       } finally {
         if (identical(_pending, move)) _pending = null;
+        if (move != null && _live(generation)) _offerUndo(move);
       }
     });
     _jumps = jump.then((_) {}, onError: (Object _) {});
@@ -1629,9 +1665,13 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
+  /// Turns one page, forward or back. A jump that still waits for the
+  /// jump before it does not run after the turn (see [_jump]).
   Future<void> move(bool forward) async {
     final navigator = _navigator;
-    if (navigator != null) await _navigate(() => navigator.move(forward));
+    if (navigator == null) return;
+    _requests++;
+    await _navigate(() => navigator.move(forward));
   }
 
   /// Whether the open book has chapters on its map. The chapter arrows then
@@ -2059,8 +2099,18 @@ class _Move {
     this.end,
     this.device,
     this.counterpart,
+    this.jump = false,
   });
   final HistoryAction kind;
+
+  /// Whether a jump in the open book made this move
+  /// ([ReaderSession._jump]). Its navigator can still run when the first
+  /// reported place ends the move.
+  final bool jump;
+
+  /// The id of the move that the first reported place recorded, or null
+  /// while the navigator reported none, and when the move recorded nothing.
+  String? recorded;
 
   /// The place that showed when the jump began, or for an open that starts
   /// a visit elsewhere, this phone's own last place in the edition. Null for

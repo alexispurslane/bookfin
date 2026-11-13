@@ -371,18 +371,14 @@ void main() {
         await reports.navigator!.move(true);
         await tester.pump();
       }
-      // The page itself is the place until its text arrives (boo-f9xa).
-      // Every place from then on is inside the reflowed page.
-      final inside = reports.addresses.skip(
-        reports.addresses.indexOf(reports.refined.first),
-      );
       expect(
-        inside.map((address) => address.character).toSet().length,
+        reports.addresses.map((address) => address.character).toSet().length,
         greaterThan(5),
       );
-      expect(inside.map((address) => address.representation).toSet(), {
-        'fixture/fixture/extracted/fixture-text',
-      });
+      expect(
+        reports.addresses.map((address) => address.representation).toSet(),
+        {'fixture/fixture/extracted/fixture-text'},
+      );
       await tester.pumpWidget(const SizedBox());
     },
   );

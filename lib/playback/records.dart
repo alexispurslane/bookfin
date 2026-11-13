@@ -115,6 +115,23 @@ class HistoryEvent<P extends Place> {
   /// other move. A name that this build does not know reads as null.
   final MatchedBy? matchedBy;
 
+  /// This move with [before] and [after] as its ends, and every other
+  /// field as it is. The id stays, so the result replaces this move
+  /// wherever moves are kept or merged by id. A field that this class
+  /// gains is copied here.
+  HistoryEvent<P> withEnds(P before, P after) => HistoryEvent(
+    id: id,
+    at: at,
+    kind: kind,
+    before: before,
+    after: after,
+    bookTitle: bookTitle,
+    editionLabel: editionLabel,
+    device: device,
+    counterpartOf: counterpartOf,
+    matchedBy: matchedBy,
+  );
+
   bool get changesPosition => switch (kind) {
     HistoryAction.seek ||
     HistoryAction.jump ||

@@ -24,3 +24,15 @@ A possible fix: the navigator's display completes when the page shows and its pl
 
 A test holds the recognition of a scanned page open, jumps to it in the text view, and then asks for Undo. The reader shows the place before the jump without waiting for the recognition.
 
+
+## Notes
+
+**2026-11-13T02:30:15Z**
+
+The second change of boo-f9xa, on 2026-11-12, did not fix this ticket. It removed two results of the wait that this ticket describes.
+
+1. The Undo offer of a jump now shows when the jump has ended, not when its page first reports its place. ReaderSession._endMove ends the earlier offer when it records the move of a jump, and _offerUndo sets the new offer when the navigator call of the jump completes. So the Undo pill no longer shows during the recognition of the page of the jump, where a tap did nothing and then ran late. The move is still recorded and saved at the first report.
+
+2. A jump that waits behind another jump does not run when the person turns a page or asks for another jump in that time. ReaderSession counts these requests in _requests, and _jump drops a waiting jump whose number is not the newest. Before, a waiting Undo ran after the page turn that ended the jump in front of it, and took the person back.
+
+What stays for this ticket: a jump still waits for the text of the page of the jump before it. When the navigator's display completes at the first report of the place, the Undo offer can show at that time again, because _offerUndo already runs at the end of the navigator call. The rule that drops a waiting jump can stay as it is.

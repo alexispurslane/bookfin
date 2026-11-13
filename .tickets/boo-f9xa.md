@@ -2,7 +2,7 @@
 id: boo-f9xa
 status: in_progress
 deps: []
-links: [boo-0hin, boo-p9s3, td-rbtc, td-ez6p]
+links: [boo-0hin, boo-p9s3, td-rbtc, td-ez6p, t8-dqir]
 created: 2026-11-12T23:41:01Z
 type: bug
 priority: 1
@@ -40,3 +40,29 @@ Verification on 2026-11-12, through nix develop:
 - dart analyze on the 11 changed Dart files: no issues.
 
 Found work, filed as tickets: td-rbtc (a second PDF jump, Undo included, waits for the recognition of the page of the jump before it) and td-ez6p (the word view does not save the new page while its original image shows and no earlier word screen is retained).
+
+**2026-11-13T02:31:59Z**
+
+Second change, after review, on 2026-11-12. It keeps the order of the reports, the moves recorded and the two callbacks of the first change.
+
+B1. The Undo offer of a jump shows when the jump has ended, not at the first report of its page. The move is still recorded and saved at the first report. ReaderSession._endMove ends the earlier offer there, and _offerUndo sets the new offer when the navigator call of the jump completes. A jump that waits behind another jump does not run when the person turns a page or asks for another jump in that time (_requests in ReaderSession). So a waiting Undo can not run late.
+
+EZ (td-ez6p). In the word view with no word screen to keep, the page reports its place when its words are late.
+
+D1. PdfWordScreens has a second callback, onRefinedPlace. When the text attaches to the word screen that shows, the screen reports its place through it, and the viewport passes it to onRefinedAddress. A screen that shows, also after a turn or a new layout, still reports through onPlace.
+
+B3. The viewport reports the page-level place only when the text or the words are late: 50 ms after the page began to wait (_placeWait in lib/reader/pdf_viewport.dart). A page whose text arrives before that reports once, with the full place. The first text screen of a page reports nothing more when its place is the one that was reported. A turn in the text view to a page with ready text now makes one save. It made two before the first change and three after it.
+
+B2. A second report of the same place that ends no move keeps the move that a refinement can still name.
+
+D2. HistoryEvent.withEnds in lib/playback/records.dart copies a move with new ends. ReaderSession._nameEnds uses it.
+
+Existing tests changed. In test/reader/pdf_place_test.dart, settle now lets 100 ms pass, 'after two fast turns' expects only the last page, and 'a jump to a scanned page saves its move' no longer expects the Undo offer during recognition. In test/reader/pdf_viewport_test.dart, 'every place inside one reflowed page names the digest that came with its page text' has the body of the base commit again, because a page with ready text gives no page-level report.
+
+Verification on 2026-11-12, through nix develop:
+- flutter test test/reader/pdf_place_test.dart test/playback/records_test.dart test/reader/pdf_word_view_test.dart: 76 passed (31, 1 and 44).
+- flutter test of every test file under test/reader whose name starts with pdf_, ocr_, session, reading_, scrub or dock, of test/reader/records_test.dart and test/playback/records_test.dart, and of 17 more test files that use Undo, jumps, page turns or the PDF viewport: 618 passed, 1 skipped (pdf_open_benchmark_test.dart needs BOOKFIN_PDF_OPEN_BENCHMARK), 0 failed.
+- dart analyze on the 10 changed or dependent Dart files: no issues. dart format: no changes.
+- No device and no emulator was used.
+
+Found work, filed as a ticket: t8-dqir (a page of the text view whose text begins with white space still reports its place twice). td-rbtc and td-ez6p have notes about this change.

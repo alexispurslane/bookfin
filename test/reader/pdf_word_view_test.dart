@@ -218,7 +218,12 @@ class HeldWordPdf extends CopiedPdf {
 
 /// What a viewport reported to its owner.
 class Reports {
+  /// Every reported place, in order: the shown places and their
+  /// refinements.
   final places = <PdfAddress>[];
+
+  /// Only the places that the viewport reported as refinements.
+  final refined = <PdfAddress>[];
   DocumentNavigator? navigator;
 }
 
@@ -322,7 +327,9 @@ void main() {
               view: view,
               onReady: (navigator, _) => reported.navigator = navigator,
               onAddress: reported.places.add,
-              onRefinedAddress: reported.places.add,
+              onRefinedAddress: (place) => reported
+                ..places.add(place)
+                ..refined.add(place),
               onCancelRecognition: () => book.textSupply?.cancel(),
               onTap: () {},
               onTurn: (forward) => unawaited(reported.navigator!.move(forward)),
@@ -849,6 +856,94 @@ void main() {
       reports.places.last.character,
       firstCharacter(words.column.column, 1, read.attachment!, reflow.analysis),
     );
+    await close(tester, book);
+  });
+
+  testWidgets('the text that attaches to the shown word screen names its '
+      'place as a refinement, and a screen turn reports a new place', (
+    tester,
+  ) async {
+    final supply = HeldRecognition.gibbon();
+    final book = await open(tester, footnotePage, textSupply: supply);
+    final reports = await show(tester, book);
+    await showsScreen(tester, 1, 0);
+    unawaited(reports.navigator!.move(true));
+    await showsScreen(tester, 1, 1);
+    expect(
+      reports.refined,
+      isEmpty,
+      reason: 'A screen that shows is a place, also after a turn.',
+    );
+    final before = reports.places.length;
+
+    supply.textArrives.complete();
+    await settle(
+      tester,
+      () => reports.places.length > before,
+      'the text names the place of the shown screen',
+    );
+    expect(shown(tester)!.screen, 1);
+    expect(reports.refined.single, same(reports.places.last));
+    expect(reports.refined.single.character, greaterThan(0));
+
+    unawaited(reports.navigator!.move(false));
+    await showsScreen(tester, 1, 0);
+    expect(reports.places.last.representation, isNotNull);
+    expect(
+      reports.refined,
+      hasLength(1),
+      reason: 'A turn to another screen moves the place.',
+    );
+    await close(tester, book);
+  });
+
+  testWidgets('a page that opens in the word view with no earlier word '
+      'screen reports its place while its words are on their way', (
+    tester,
+  ) async {
+    final born = await open(tester, marginsBook);
+    final wordsArrive = hold();
+    final book = HeldWordPdf(born, geometryWait: (_) => wordsArrive.future);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    await settle(
+      tester,
+      () => reports.places.isNotEmpty,
+      'page three reports its place',
+    );
+    expect(shown(tester), isNull, reason: 'The words did not arrive yet.');
+    expect(reports.places.single.sourcePage, 3);
+    expect(reports.refined, isEmpty);
+
+    wordsArrive.complete();
+    await showsScreen(tester, 3, 0);
+    expect(reports.places.last.sourcePage, 3);
+    await close(tester, book);
+  });
+
+  testWidgets('while an earlier word screen stays on the display, a page '
+      'whose words are late does not report its place', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    final place = reports.places.last;
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+
+    unawaited(reports.navigator!.move(false));
+    await settle(
+      tester,
+      () => book.waitingBands > 0,
+      'the previous page waits',
+    );
+    // Far longer than the wait after which a page reports its place.
+    await tester.pump(const Duration(seconds: 1));
+    expect(shown(tester), same(before));
+    expect(reports.places.last, same(place));
+
+    bandsArrive.complete();
+    await settle(tester, () => shown(tester)?.page == 2, 'page two shows');
+    expect(reports.places.last.sourcePage, 2);
     await close(tester, book);
   });
 
@@ -1443,6 +1538,7 @@ void main() {
       final screens = PdfWordScreens(
         book,
         onPlace: (_) {},
+        onRefinedPlace: (_) {},
         onGiveUp: () => fallbacks++,
       );
       addTearDown(screens.dispose);

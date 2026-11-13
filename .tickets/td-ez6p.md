@@ -24,3 +24,11 @@ A possible fix: _startWords reports the opening place at once when PdfWordScreen
 
 A test opens a page in the word view with no earlier word screen and holds its words open. The session's saved place is that page before the words show. The rule for a retained word screen still holds.
 
+
+## Notes
+
+**2026-11-13T02:30:15Z**
+
+The second change of boo-f9xa fixed this on 2026-11-12. In lib/reader/pdf_viewport.dart, _startWords now asks for a late report of the place when PdfWordScreens holds no word screen (_words.screen.value == null). If the first word screen did not show within 50 ms, the viewport reports the place of the page, and the session saves it. The first word screen then reports the place again, and the text refines it. The rule for a retained word screen did not change: while an earlier word screen stays on the display, the place does not advance.
+
+Tests: in test/reader/pdf_word_view_test.dart, 'a page that opens in the word view with no earlier word screen reports its place while its words are on their way' failed before the change and passes now. 'while an earlier word screen stays on the display, a page whose words are late does not report its place' holds the rule for a retained screen. It fails when the condition on the retained screen is removed. In test/reader/pdf_place_test.dart, 'a turn in the word view with no word screen to keep saves the page while its words are on their way' covers the acceptance criterion with a session and a restart. Only the orchestrator closes this ticket.
