@@ -2,7 +2,7 @@
   "ticket": "boo-r8st",
   "originalBase": "e23662daf2e4e9b737aee4366c418f0ec5591145",
   "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb",
-  "branch": "t3/c0996feb",
+  "branch": "t3/bounded-note-previews",
   "logDirectory": "/tmp/bookfin-boo-r8st-evidence",
   "commands": [
     {

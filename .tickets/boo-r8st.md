@@ -99,7 +99,8 @@ Parent owns integration, user acceptance, coverage, mutations and closure.
 ## Implementation evidence — 2026-11-13
 
 Lead checkout: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb`,
-branch `t3/c0996feb`. It began clean at original base
+branch `t3/bounded-note-previews` (renamed from `t3/c0996feb` at the base,
+as confirmed by the branch reflog). It began clean at original base
 `e23662daf2e4e9b737aee4366c418f0ec5591145`; no prerequisite diff was pending.
 
 The original failures are retained in
