@@ -1,6 +1,6 @@
 ---
 id: td-6hd7
-status: in_progress
+status: closed
 deps: [boo-7z9a]
 links: [boo-7z9a]
 created: 2026-11-09T15:41:19Z
@@ -37,3 +37,9 @@ No second review, Android test, operating-system process kill, coverage, mutatio
 
 
 Final fix verification completed: 528 affected tests passed; the complete suite passed 3,322 tests with 26 existing skips and no failures (`/tmp/boo-7z9a-review-affected-final.log`, `/tmp/boo-7z9a-review-full.log`). All review findings were resolved in one fix stage. td-6hd7 is fully proved within the requested automated real-file retain-and-report scope, including R4's active notice path. The ticket remains open only for parent integration, acceptance/hardening and closure; no further implementation gap is known.
+
+## Parent integration and closure, 2026-11-13
+
+Integrated with boo-7z9a as 7c4fa38f and c475c4f3b229dfb115a76ab578b7e0ccc90081b1. The parent inspected exact-byte preservation, failed-retention ordering, fresh reopen, and active recovery-notice evidence, including the R4 red-green regression. Production/tests match the child's final commit. The combined main suite passed 3,353 tests with 27 existing skips and no failures (`/tmp/boo-7z9a-integrated-full.log`); affected analysis, 14-file formatting and catalog browser compilation passed. Full commands and limits are recorded in boo-7z9a.
+
+The requested retain-and-report implementation is merged and verified, so this ticket closes with boo-7z9a. Device acceptance and post-acceptance hardening remain project-level work; no actual process-kill or Android proof is claimed.

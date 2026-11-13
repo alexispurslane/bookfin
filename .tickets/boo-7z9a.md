@@ -1,6 +1,6 @@
 ---
 id: boo-7z9a
-status: in_progress
+status: closed
 deps: [boo-jlhy]
 links: [td-6hd7, boo-8xyn]
 created: 2026-11-12T23:41:00Z
@@ -123,3 +123,16 @@ The post-first-frame migration schedule is preserved. Its completion now reconci
 - Final complete `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded`: 3,322 passed, 26 existing opt-in/external-fixture skips, zero failures, 4:48. `/tmp/boo-7z9a-review-full.log`. Implementation and tests were frozen throughout; only ticket evidence changed. The full run includes all 37 choice tests and 21 file-storage tests. All owned commands and the sole reviewer finished.
 
 All R1–R4 and D1–D2 findings are resolved with the evidence above. There are no unresolved forks or material unverified assessments. The linked td-6hd7 retain-and-report requirement is now fully proved within the assigned automated real-file scope, including the post-restore migration notice path. Both tickets remain open for parent integration, acceptance, hardening and closure. No OS process-kill or Android behavior/performance proof is claimed. The lead is ready for integration after the named-path fix commit and clean-worktree check.
+
+## Parent integration and closure, 2026-11-13
+
+The parent inspected the complete original-base-to-8a28e785 diff, the fresh review, its four meaningful failing regressions and their passing results, migration/startup callers, and the final verification logs. R1–R4 and D1–D2 have recorded resolutions and regression evidence; this is parent integration inspection, not a second independent review. The child's clean branch and two commits were verified before integration.
+
+Integrated 442f3601 as 7c4fa38f and 8a28e785 as c475c4f3b229dfb115a76ab578b7e0ccc90081b1 on main. The only conflict was the ticket's parallel launch and implementation notes; both were retained. All affected production and test files match the child's final commit exactly. `git diff --check 3c092a78 HEAD` passed.
+
+- `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded`: 3,353 passed, 27 existing opt-in/external-fixture skips, zero failures, 4:41. Log: `/tmp/boo-7z9a-integrated-full.log`. The combined suite includes the catalog, app and durability regressions plus intervening integrated work.
+- `nix develop --command dart format --output=none --set-exit-if-changed` with the same 14 Dart paths listed above: 14 checked, zero changes. Log: `/tmp/boo-7z9a-integrated-format.log`.
+- `nix develop --command flutter analyze --no-pub lib/catalog lib/main.dart test/catalog test/app test/compile/catalog_store.dart`: no issues, 3.5 seconds. Log: `/tmp/boo-7z9a-integrated-analysis.log`.
+- `nix develop --command flutter build web --no-pub --target test/compile/catalog_store.dart`: passed, 21.3 seconds. Log: `/tmp/boo-7z9a-integrated-browser.log`. Existing nonfatal Wasm/font diagnostics remain. This proves the changed catalog boundary compiles; the full-app PDF browser blocker t7-3j9c remains outside scope.
+
+All parent commands finished and ran sequentially. Close boo-7z9a and td-6hd7 for their integrated implementation and automated retain-and-report evidence. Device acceptance remains blocked by t1-dth0; no Android latency, live browser behavior, actual process kill, coverage, mutation, push or deployment claim is made. Acceptance and broader hardening remain separate project work. No catalog product decision is pending.
