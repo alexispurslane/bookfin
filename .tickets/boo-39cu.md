@@ -1,6 +1,6 @@
 ---
 id: boo-39cu
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-12T23:41:01Z
@@ -20,3 +20,21 @@ Found in the code survey of November 12 (main at f9f26500). Nothing was run for 
 **2026-11-13T22:12:19Z**
 
 Parent asked the user on 2026-11-13 whether removing a playing audiobook should save its place, stop playback and remove files immediately, or keep playing and remove files when the user pauses or switches books. Both designs require confirmation, preserve personal records and stop removal on a failed save. The choice is pending; no implementation lead is running. The survey failure remains plausible until reproduced.
+
+## User decision and implementation scope — 2026-11-13
+
+The user selected: keep playing and defer removal until pause or book switch.
+Keep the existing confirmation and show that removal is pending where needed.
+Save the listening place before releasing the files. A failed required save
+stops removal. Preserve History, bookmarks, saved places, and all unrelated
+accounts/editions. Paused audio may be removed without starting playback.
+
+Use the existing Downloads removal/read ownership and Playback command owner.
+Make multi-file playback, seeks, pause, switch, account/source replacement and
+asynchronous save/removal failures coherent. Do not make the UI widget own the
+pending action. Establish the original failure with a controlled reproduction.
+
+Concurrent boo-xyrl adds current-account Clear data. Keep Downloads' public
+removal boundary usable by that action; it must receive the same active-audio
+protection. Preserve the integrated Ask-at-Play and scoped playback notices.
+Parent owns integration, native acceptance, hardening and closure.
