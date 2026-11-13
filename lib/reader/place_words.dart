@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import '../catalog/model.dart';
 import '../playback/records.dart';
 import 'book_map.dart';
@@ -24,8 +22,8 @@ PlaceWords describeTextPlace(
   ReaderAddress? address,
   BookMap? map,
 }) {
-  final anchor = _anchor(place);
-  final quote = switch (anchor['quote']) {
+  final anchor = textAnchorPreview(place);
+  final quote = switch (anchor.quote) {
     final String text when text.trim().isNotEmpty => text.trim().replaceAll(
       RegExp(r'\s+'),
       ' ',
@@ -33,7 +31,7 @@ PlaceWords describeTextPlace(
     _ => null,
   };
   // A PDF anchor names its source page, and an EPUB anchor its CFI.
-  if (anchor case {'page': final int page} when anchor['cfi'] == null) {
+  if (anchor case (page: final int page, hasCfi: false, quote: _)) {
     return (
       short: 'p. $page',
       chapter: null,
@@ -88,19 +86,6 @@ PlaceWords describeAlong(
   quote: quote,
   along: AlongText(page: page, fraction: fraction),
 );
-
-/// The saved anchor of [place], or an empty map when it is not a JSON
-/// object, as in a place saved by an early build.
-Map<String, dynamic> _anchor(TextPosition place) {
-  try {
-    return switch (jsonDecode(place.anchor)) {
-      final Map<String, dynamic> anchor => anchor,
-      _ => const {},
-    };
-  } on FormatException {
-    return const {};
-  }
-}
 
 /// The number of words of a quote that name a place in a timeline row.
 const _wordsShown = 6;

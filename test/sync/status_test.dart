@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:bookfin/playback/record_codec.dart';
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
@@ -88,11 +90,13 @@ void main() {
   test('a background sync publishes the conflicts it finds', () async {
     records.found = {
       '["audio","resumes","x"]': [
-        {'value': null},
+        {'account': 'alice', 'replica': 'phone', 'sequence': 1, 'value': null},
       ],
     };
     await sync.synchronize();
-    expect(sync.conflictsNotifier.value.keys, ['["audio","resumes","x"]']);
+    expect(sync.conflictsNotifier.value.keys, [
+      RecordAddress('audio', 'resumes', 'x'),
+    ]);
   });
 
   test('Sync now shows busy, then how the sync ended', () async {
@@ -215,7 +219,10 @@ void main() {
       records.gate = Completer();
       final background = sync.synchronize();
       await pumpEventQueue();
-      final choice = sync.resolve('["audio","resumes","x"]', 'chosen');
+      final choice = sync.resolve(
+        RecordAddress('audio', 'resumes', 'x'),
+        'chosen',
+      );
       expect(sync.busy, isTrue);
       expect(records.resolved, isEmpty);
       records.gate!.complete();
@@ -229,7 +236,10 @@ void main() {
 
   test('a choice stays busy until the sync after it finishes', () async {
     records.gate = Completer();
-    final choice = sync.resolve('["audio","resumes","x"]', 'chosen');
+    final choice = sync.resolve(
+      RecordAddress('audio', 'resumes', 'x'),
+      'chosen',
+    );
     await pumpEventQueue();
     expect(records.resolved, ['chosen']);
     expect(sync.busy, isTrue);
@@ -255,7 +265,12 @@ void main() {
     () async {
       records.found = {
         '["audio","resumes","x"]': [
-          {'value': null},
+          {
+            'account': 'alice',
+            'replica': 'phone',
+            'sequence': 1,
+            'value': null,
+          },
         ],
       };
       await sync.syncNow();
@@ -324,20 +339,20 @@ class ControlledRecords extends LocalResumeStore {
   }
 
   @override
-  Future<Map<String, List<Map<String, dynamic>>>> conflicts(
-    String account,
-  ) async => unreadable ? throw Exception('Records cannot be read.') : found;
+  Future<RecordConflicts> conflicts(String account) async => unreadable
+      ? throw Exception('Records cannot be read.')
+      : recordConflicts(found);
 
   @override
   Future<bool> resolve(
     String account,
-    String record,
+    RecordAddress record,
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) async {
     if (refuseChoice) return false;
     resolved.add(identity);
-    found = {...found}..remove(record);
+    found = {...found}..remove(record.encoded);
     return true;
   }
 

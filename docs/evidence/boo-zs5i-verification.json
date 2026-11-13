@@ -1,0 +1,360 @@
+{
+  "ticket": "boo-zs5i",
+  "originalBase": "e5928982036392cf6e59b308841db3666be884cb",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-839b50df",
+  "branch": "t3/typed-record-conflict-views",
+  "initialHead": "e5928982036392cf6e59b308841db3666be884cb",
+  "initialClean": true,
+  "reviewStatus": "pending",
+  "scope": [
+    "RecordAddress validates three nonempty string parts and retains the exact encoded key for equality and persistence.",
+    "The same domain decoders validate personal records and derive immutable resume, bookmark and history conflict values.",
+    "LocalResumeStore projects conflicts in its existing worker path. RecordSync, labels, choice callbacks, alerts, the Sync page and Settings consume typed views.",
+    "The journal remains authoritative. Resolving a choice reads current originals and never serializes a UI view.",
+    "The reader and conflict labels share tolerant reading-anchor preview parsing. Opaque anchors remain valid when their preview is unavailable.",
+    "Conflict equality uses a private detached copy only for comparison, preserving full-content equality and server-copy repair notifications."
+  ],
+  "callerAudit": {
+    "production": [
+      "lib/playback/record_codec.dart",
+      "lib/playback/records.dart",
+      "lib/playback/store.dart",
+      "lib/reader/place_words.dart",
+      "lib/sync/record_address.dart",
+      "lib/sync/journal.dart",
+      "lib/sync/coordinator.dart",
+      "lib/sync/labels.dart",
+      "lib/sync/choice.dart",
+      "lib/sync/alert.dart",
+      "lib/sync/screen.dart",
+      "lib/settings/screen.dart",
+      "lib/catalog/book_page.dart",
+      "lib/playback/screen.dart"
+    ],
+    "notes": [
+      "Settings waitingChoices and book/player callbacks inherit the typed interface without production layout changes.",
+      "Migrated all LocalResumeStore conflict/resolve callers in test, including plugin integration tests and test doubles.",
+      "Migrated actual address readers in tool/showcase_fixture.dart and affected tests.",
+      "Audited integration_test; no direct conflict consumers need edits.",
+      "Journal-only tests and research tools keep their raw journal interface; whole-domain snapshots remain out of scope."
+    ]
+  },
+  "checks": [
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/journal_test.dart test/sync/device_records_test.dart test/sync/labels_test.dart test/sync/screen_test.dart test/sync/alert_test.dart test/sync/unknown_records_test.dart",
+      "log": "/tmp/boo-zs5i-logs/baseline.log",
+      "result": "79 passed",
+      "exitCode": 0,
+      "purpose": "Before refactoring"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/conflict_views_test.dart",
+      "log": "/tmp/boo-zs5i-logs/characterization.log",
+      "result": "13 passed",
+      "exitCode": 0,
+      "purpose": "New preservation tests against the original raw interface"
+    },
+    {
+      "command": "nix develop --command dart analyze lib/playback/record_codec.dart lib/playback/store.dart lib/sync test/sync test/durability",
+      "log": "/tmp/boo-zs5i-logs/migration-analysis.log",
+      "result": "74 migration diagnostics",
+      "exitCode": 3,
+      "purpose": "Incomplete caller migration; not behavioral red"
+    },
+    {
+      "command": "nix develop --command dart analyze lib test integration_test tool/showcase_fixture.dart",
+      "log": "/tmp/boo-zs5i-logs/migration-analysis-2.log",
+      "result": "12 migration diagnostics",
+      "exitCode": 3,
+      "purpose": "Incomplete caller migration, including a switch syntax error; not behavioral red"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/conflict_views_test.dart test/sync/journal_test.dart test/sync/device_records_test.dart test/sync/labels_test.dart test/sync/screen_test.dart test/sync/alert_test.dart test/sync/unknown_records_test.dart test/sync/reading_history_test.dart test/sync/refresh_after_sync_test.dart",
+      "log": "/tmp/boo-zs5i-logs/focused-1.log",
+      "result": "126 passed",
+      "exitCode": 0,
+      "purpose": "Initial typed interface"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/conflict_views_test.dart test/sync/record_address_test.dart test/sync/journal_test.dart test/sync/device_records_test.dart test/sync/labels_test.dart test/sync/screen_test.dart test/sync/alert_test.dart test/sync/unknown_records_test.dart test/sync/reading_history_test.dart test/sync/refresh_after_sync_test.dart test/sync/coordinator_test.dart test/playback/records_test.dart test/reader/place_words_test.dart",
+      "log": "/tmp/boo-zs5i-logs/focused-2.log",
+      "result": "160 passed",
+      "exitCode": 0,
+      "purpose": "Expanded boundaries and store/UI contract"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync test/playback test/reader/records_test.dart test/reader/unread_records_test.dart test/reader/place_words_test.dart test/durability test/catalog test/settings test/app",
+      "log": "/tmp/boo-zs5i-logs/affected.log",
+      "result": "1433 passed, 3 skipped, 2 failed",
+      "exitCode": 1,
+      "purpose": "Retained failures: raw JSON assertion migrated incorrectly; incomplete Settings fixture"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync test/playback test/reader/records_test.dart test/reader/unread_records_test.dart test/reader/place_words_test.dart test/durability test/catalog test/settings test/app",
+      "log": "/tmp/boo-zs5i-logs/affected-2.log",
+      "result": "1428 passed, 3 skipped, 2 failed",
+      "exitCode": 1,
+      "purpose": "Retained failures: t5-rplx recurrence and missing dart:convert import in Settings test"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart test/settings/screen_test.dart test/sync/incremental_store_test.dart",
+      "log": "/tmp/boo-zs5i-logs/affected-failures-check.log",
+      "result": "21 passed, 1 failed",
+      "exitCode": 1,
+      "purpose": "Settings fixture now also showed a same-named chapter; reader retry passed unchanged"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/coordinator_test.dart --plain-name 'a repaired server copy with the same action identity updates its choice'",
+      "log": "/tmp/boo-zs5i-logs/repair-equality-red.log",
+      "result": "2 meaningful failures: no conflict notification after server-copy repair",
+      "exitCode": 1,
+      "purpose": "Regression caused by identity-only equality; reproduced before fixing"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/coordinator_test.dart test/sync/conflict_views_test.dart test/settings/screen_test.dart test/sync/incremental_store_test.dart test/reader/unread_records_test.dart",
+      "log": "/tmp/boo-zs5i-logs/repair-equality-green.log",
+      "result": "60 passed",
+      "exitCode": 0,
+      "purpose": "Content equality fixes the repair regression; both migration corrections pass"
+    },
+    {
+      "command": "nix develop --command dart analyze lib test integration_test tool/showcase_fixture.dart",
+      "log": "/tmp/boo-zs5i-logs/analysis-final.log",
+      "result": "2 style infos; corrected with braces",
+      "exitCode": 0,
+      "purpose": "No errors or warnings; final clean analysis follows"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync test/playback test/reader/records_test.dart test/reader/unread_records_test.dart test/reader/place_words_test.dart test/durability test/catalog test/settings test/app",
+      "log": "/tmp/boo-zs5i-logs/affected-final.log",
+      "result": "1437 passed, 3 skipped",
+      "exitCode": 0,
+      "purpose": "All affected tests after fixes"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "log": "/tmp/boo-zs5i-logs/full.log",
+      "result": "3596 passed, 27 skipped",
+      "exitCode": 0,
+      "purpose": "Full Flutter suite"
+    },
+    {
+      "command": "nix develop --command dart analyze lib test integration_test tool/showcase_fixture.dart",
+      "log": "/tmp/boo-zs5i-logs/analysis-final-2.log",
+      "result": "No issues found",
+      "exitCode": 0,
+      "purpose": "Final affected analysis, including integration callers and showcase tool"
+    },
+    {
+      "command": "nix develop --command bash -c 'xargs dart format --output=none --set-exit-if-changed < /tmp/boo-zs5i-logs/changed-dart-paths.txt'",
+      "log": "/tmp/boo-zs5i-logs/format-check-final.log",
+      "result": "31 files, 0 changed",
+      "exitCode": 0,
+      "purpose": "All changed Dart files"
+    }
+  ],
+  "failures": [
+    {
+      "id": "migration-assertion",
+      "resolution": "Restored the stored-JSON assertion in incremental_store_test; this was not a typed conflict consumer."
+    },
+    {
+      "id": "settings-fixture",
+      "resolution": "Used a record validated by the existing decoder, with a previous source so the test still measures the catalog title independently of chapter text. Restored dart:convert for its other assertions."
+    },
+    {
+      "id": "repair-equality",
+      "resolution": "Test first reproduced missing notifications on both storage backends. Replaced identity-only equality with the original deep content comparison on a private detached copy."
+    },
+    {
+      "id": "t5-rplx",
+      "resolution": "Unresolved existing intermittent reader failure, reproduced at unread_records_test.dart:97. The test and reader/session.dart are unchanged. Its event-queue wait does not await the store, but that observation does not establish the cause. Targeted and final affected runs passed without timing changes. No claim that a retry proves cause."
+    }
+  ],
+  "limits": [
+    "No devices, browser, production Jellyfin fixture, coverage, mutation testing, performance claims or timing-threshold changes.",
+    "Three affected integration tests skip without the existing external plugin fixture. Their typed callers pass static analysis.",
+    "No changes to boo-2bl9 audio-command queues, typed whole snapshots, shared writer, Ask-at-Play, reading tracks or bookmark title design.",
+    "Full raw logs remain at the listed machine-local paths; the committed manifest records their hashes.",
+    "Parent owns integration, acceptance, hardening and ticket closure."
+  ],
+  "forks": [],
+  "formatCommands": [
+    {
+      "command": "nix develop --command bash -c 'xargs dart format < /tmp/boo-zs5i-logs/changed-dart-paths.txt'",
+      "logs": [
+        "/tmp/boo-zs5i-logs/format-write.log",
+        "/tmp/boo-zs5i-logs/format-final-write.log"
+      ]
+    },
+    {
+      "command": "nix develop --command bash -c 'xargs dart format --output=none --set-exit-if-changed < /tmp/boo-zs5i-logs/changed-dart-paths.txt'",
+      "logs": [
+        "/tmp/boo-zs5i-logs/format-check.log",
+        "/tmp/boo-zs5i-logs/format-check-final.log"
+      ]
+    }
+  ],
+  "changedDartPaths": [
+    "lib/playback/record_codec.dart",
+    "lib/playback/records.dart",
+    "lib/playback/store.dart",
+    "lib/reader/place_words.dart",
+    "lib/sync/alert.dart",
+    "lib/sync/choice.dart",
+    "lib/sync/coordinator.dart",
+    "lib/sync/journal.dart",
+    "lib/sync/labels.dart",
+    "lib/sync/record_address.dart",
+    "lib/sync/screen.dart",
+    "test/durability/record_store_test.dart",
+    "test/playback/incremental_save_test.dart",
+    "test/sync/conflict_views_test.dart",
+    "test/sync/conflicts.dart",
+    "test/sync/coordinator_test.dart",
+    "test/sync/device_records_test.dart",
+    "test/sync/event_upload_test.dart",
+    "test/sync/incremental_store_test.dart",
+    "test/sync/labels_test.dart",
+    "test/sync/plugin_integration_test.dart",
+    "test/sync/plugin_upgrade_integration_test.dart",
+    "test/sync/reading_history_test.dart",
+    "test/sync/record_address_test.dart",
+    "test/sync/refresh_after_sync_test.dart",
+    "test/sync/schedule_test.dart",
+    "test/sync/screen_test.dart",
+    "test/sync/stale_domains_test.dart",
+    "test/sync/status_test.dart",
+    "tool/showcase_fixture.dart",
+    "test/settings/screen_test.dart"
+  ],
+  "logs": [
+    {
+      "path": "/tmp/boo-zs5i-logs/affected-2.log",
+      "sha256": "55cd4f177ee1762563f6bfeda4529541a7e6fdc6c417565668d91044bb5fe017",
+      "bytes": 279360
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/affected-failures-check.log",
+      "sha256": "92505eba03ee9efe06228a44522a5c54d77806d7e4c89ae11b77b3caa4996519",
+      "bytes": 9342
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/affected-final.log",
+      "sha256": "1b5ce995300030e0ede8ea74427f44d945409ca47fae1b4c3b61b52b5e0c0965",
+      "bytes": 274515
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/affected.log",
+      "sha256": "5626d284d7beccc2378ee49a248ee6f72e203027199b355ea0b5bbfefac65ee3",
+      "bytes": 282233
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/analysis-final-2.log",
+      "sha256": "717f4ce78ef5b801d81b3878a2d0e323686b32492ca116d3f12980377db5e207",
+      "bytes": 81
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/analysis-final.log",
+      "sha256": "6db9436dc01a084d46004be902a33d6f19c5daba96b4ffad4cbed311eb96422e",
+      "bytes": 434
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/baseline.log",
+      "sha256": "c260c0ebc4ff3de4784e81927202b7b449b221bb9521fbf2ddc3e747acdb7ca9",
+      "bytes": 16212
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/characterization.log",
+      "sha256": "06abd9c7ba9641ac09efa803d1518f9479f2e02706ea53dee25e3f7fd02c1f3e",
+      "bytes": 3174
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/focused-1.log",
+      "sha256": "56149f48385e8bb8591ead34482fba184d66cb4d883ed1e033533e14010778f5",
+      "bytes": 24955
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/focused-2.log",
+      "sha256": "249109e61c3bb86f9339e7963b8b81efffb7011482088c8f19183139c79170a6",
+      "bytes": 31091
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/format-check-final.log",
+      "sha256": "7108eb124551caac8ce41ba0fc205364fe4e04ed26acef9e124f9f461139256b",
+      "bytes": 48
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/format-check.log",
+      "sha256": "bdd9094ecff5cc84cc3bc3188f76e3b10ba19c105af3ab97bd31e2c2a174f534",
+      "bytes": 48
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/format-final-write.log",
+      "sha256": "eecdef70593f8c6c48d783ff9cd18318d5f94b1aa140ee9b0b85258c8a667a34",
+      "bytes": 172
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/format-write.log",
+      "sha256": "a8a5e07c2d8ab9de7d3f87415c214de7b2318039de3b67805fecb85d4b23aef5",
+      "bytes": 987
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/full.log",
+      "sha256": "024a8e11dfc093ef3eb11d374d7311b901d5a2bc415b6ba8b5902ddac52c6ccc",
+      "bytes": 719589
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/migration-analysis-2.log",
+      "sha256": "b55108e4189b50c8d2fc1802f634db16710703aebf8885838106746fe203e352",
+      "bytes": 2165
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/migration-analysis.log",
+      "sha256": "8521889b023067ed90047a98a2aa0df392a6d80edd38782ecde7f1298d2adaf4",
+      "bytes": 14776
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/repair-equality-green.log",
+      "sha256": "436b24d8b8a204fe3c3f53c14af23d6acf2216956f18350e019dd9d739cd95ee",
+      "bytes": 13243
+    },
+    {
+      "path": "/tmp/boo-zs5i-logs/repair-equality-red.log",
+      "sha256": "ed43ee0f70b9ef08b316282f484da42f57dbeb769fd438dcc37a965f476a6209",
+      "bytes": 3353
+    }
+  ],
+  "fullSuiteSkipReasons": [
+    "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+    "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+    "Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+    "Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+    "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+    "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+    "Skip: set BOOKFIN_EPUB_STEPS=1 to run",
+    "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+    "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+    "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+    "Skip: set BOOKFIN_EPUB_CORPUS=1",
+    "Skip: set BOOKFIN_EPUB_CORPUS=1 to run",
+    "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+    "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+    "Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement.",
+    "Skip: set BOOKFIN_LAYOUT_CACHE=1",
+    "Skip: Run tool/plugin/prove.py in the pinned shells.",
+    "Skip: Run with tool/plugin/prove.py in the pinned sync dev shell.",
+    "Skip: Run tool/sync_fixture.py in the pinned shells."
+  ],
+  "failureNotes": "The full suite passes after the fixes. The earlier t5-rplx failure remains recorded, with no claim of cause or correction. tf-il7u did not reproduce in this run.",
+  "diffCheck": {
+    "command": "git diff --check e5928982036392cf6e59b308841db3666be884cb",
+    "result": "pass; repeated after staging to include all new files",
+    "log": "/tmp/boo-zs5i-logs/original-base-diff-check.log"
+  }
+}

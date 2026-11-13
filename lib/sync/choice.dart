@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'record_address.dart';
 import 'labels.dart';
 
 /// Reports that the user keeps the saved version [identity] of [record].
 /// [bookmarkTitles] holds the bookmark title of every version, so that each
 /// place that stays a bookmark says where it came from.
 typedef ResolveChoice = void Function(
-  String record,
+  RecordAddress record,
   String identity,
   Map<String, String> bookmarkTitles,
 );
@@ -29,7 +30,7 @@ class ConflictChoice extends StatelessWidget {
     required this.enabled,
     required this.onResolve,
   });
-  final String record;
+  final RecordAddress record;
   final ConflictLabels labels;
 
   /// False while a sync or a choice that the user started runs.

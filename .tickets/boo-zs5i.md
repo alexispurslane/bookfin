@@ -97,3 +97,39 @@ Astra high reviewer authorized. Parent integrates and closes.
 - taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-zs5i-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-zs5i-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-zs5i-astra-20261113-1>
+
+## Implementation evidence — 2026-11-13
+
+Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-839b50df`.
+Branch: `t3/typed-record-conflict-views`.
+Original base and initial HEAD: `e5928982036392cf6e59b308841db3666be884cb`.
+The initial tree was clean. No checkout was created, reset, switched or removed.
+
+RecordAddress owns address validation and keeps the exact encoded key.
+The store derives immutable conflict values with the same domain decoders used
+for action validation. All conflict consumers and resolution callbacks use the
+typed interface. The journal still owns retained originals and resolution.
+The reader and conflict labels share tolerant anchor preview parsing.
+
+The initial 79 focused tests and 13 new preservation tests passed before the
+interface change. Tests cover all six supported kinds, deletions, future kinds,
+opaque anchors, exact legacy identities, detached ownership, labels, account
+isolation and durable resolution. A test caught an identity-only comparison
+regression during implementation: server-copy repair succeeded without updating
+the shown choice. Both storage backends failed for that reason before the fix.
+Deep content equality on a private detached copy preserves the original behavior.
+
+Final affected suites: 1,437 passed and 3 existing fixture-dependent skips.
+Full Flutter suite: 3,596 passed and 27 existing skips. All Flutter runs used
+concurrency two. Final analysis found no issues. All 31 changed Dart files pass
+formatting. The complete original-base diff passes the whitespace check.
+
+Evidence, exact commands, saved log paths and hashes, migration failures and
+resolutions: `docs/evidence/boo-zs5i-verification.json`.
+The known t5-rplx reader test failed once in an intermediate affected run. It
+passed unchanged in later targeted, affected and full runs. Its cause remains
+unproven. No timing threshold or reader-session behavior changed.
+
+No device, browser, coverage or mutation work ran. Concurrent boo-2bl9 work and
+all excluded feature tickets remain separate. The single read-only review is
+next. Integration, acceptance, hardening and ticket closure remain with the parent.

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/database.dart';
@@ -317,10 +318,14 @@ void main() {
         );
         final after = await actions('alice');
         expect(after, hasLength(before.length + 1));
-        expect(jsonDecode(after.last['record'] as String)[1], 'resumes');
         expect(
-          (await sql.query('written'))
-              .map((row) => jsonDecode(row['record'] as String)[1]),
+          RecordAddress.parse(after.last['record'] as String).collection,
+          'resumes',
+        );
+        expect(
+          (await sql.query('written')).map(
+            (row) => RecordAddress.parse(row['record'] as String).collection,
+          ),
           ['resumes'],
         );
         final saved = (await store.read('alice'))!;
@@ -360,7 +365,7 @@ void main() {
       expect(
         uploaded.map(
           (action) => [
-            jsonDecode(action['record'] as String)[2],
+            RecordAddress.parse(action['record'] as String).id,
             action['value'],
           ],
         ),

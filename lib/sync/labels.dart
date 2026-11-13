@@ -1,9 +1,9 @@
-import 'dart:convert';
-
 import '../catalog/model.dart';
 import '../foundation/time.dart' show audioTime, duration, listenedWhen;
 import '../playback/audio_outline.dart';
-import 'journal.dart';
+import '../playback/record_codec.dart';
+import '../playback/records.dart';
+import 'record_address.dart';
 
 /// What a choice between the saved versions of one record says.
 final class ConflictLabels {
@@ -60,18 +60,12 @@ final class ConflictTrack {
 
 /// The conflicts of [conflicts] whose records belong to an edition of
 /// [book], in their order.
-Map<String, List<Map<String, dynamic>>> bookConflicts(
-  Map<String, List<Map<String, dynamic>>> conflicts,
-  Book book,
-) => {
+RecordConflicts bookConflicts(RecordConflicts conflicts, Book book) => {
   for (final entry in conflicts.entries)
     if (entry.value.any(
-      (version) => switch (version['value']) {
-        final Map<String, dynamic> value => book.editions.any(
-          (edition) => edition.id == _position(value)['edition'],
-        ),
-        _ => false,
-      },
+      (version) => book.editions.any(
+        (edition) => edition.id == version.value?.position.editionId,
+      ),
     ))
       entry.key: entry.value,
 };
@@ -79,14 +73,10 @@ Map<String, List<Map<String, dynamic>>> bookConflicts(
 /// What the Settings row says while choices wait in [conflicts], for
 /// example "A choice waits · First Frost", or null while none waits. [books]
 /// is the current library, which names the books.
-String? waitingChoices(
-  Map<String, List<Map<String, dynamic>>> conflicts,
-  List<Book> books,
-) {
+String? waitingChoices(RecordConflicts conflicts, List<Book> books) {
   if (conflicts.isEmpty) return null;
   final titles = {
-    for (final MapEntry(key: record, value: versions) in conflicts.entries)
-      _title(record, versions, books),
+    for (final versions in conflicts.values) _title(versions, books),
   }.join(', ');
   return conflicts.length == 1
       ? 'A choice waits · $titles'
@@ -131,28 +121,25 @@ final class ChoiceLabel {
   String get text => '$source · $place';
 }
 
-/// The labels of the saved versions [versions] of [record], which are sync
-/// actions as `RecordJournal.conflicts` holds them. [books] is the current
+/// The labels of typed [versions] of [record], derived from the journal.
+/// [books] is the current
 /// library, which names the book and the chapters. [now] is the current
 /// local time, and [clock] writes the local time of day of a moment in the
 /// app's locale, for example "9:12 PM".
 ConflictLabels labelConflict(
-  String record,
-  List<Map<String, dynamic>> versions, {
+  RecordAddress record,
+  List<ConflictVersion> versions, {
   required List<Book> books,
   required DateTime now,
   required String Function(DateTime at) clock,
 }) {
-  final address = jsonDecode(record) as List;
-  final values = [
-    for (final version in versions) version['value'] as Map<String, dynamic>?,
-  ];
-  final names = [for (final version in versions) _deviceName(version)];
+  final values = [for (final version in versions) version.value];
+  final names = [for (final version in versions) version.device];
   final sources = [
     for (final (index, version) in versions.indexed)
       _source(
         names[index],
-        _savedAt(version, values[index]),
+        version.savedAt,
         // A second device of the same name also says when it saved.
         named: names.where((name) => name == names[index]).length == 1,
         now: now,
@@ -162,63 +149,59 @@ ConflictLabels labelConflict(
   final chapters = [
     for (final value in values) value == null ? null : _chapter(books, value),
   ];
-  final kind = switch (address[1]) {
+  final kind = switch (record.collection) {
     'bookmarks' => 'bookmark',
     'history' => 'history entry',
     _ => 'saved place',
   };
   final value = values.nonNulls.firstOrNull;
   return ConflictLabels(
-    title: _title(record, versions, books),
-    kind: '${address.first == 'audio' ? 'Listening' : 'Reading'} $kind',
+    title: _title(versions, books),
+    kind: '${record.domain == 'audio' ? 'Listening' : 'Reading'} $kind',
     book: value == null ? null : _book(books, value),
     choices: [
       for (final (index, version) in versions.indexed)
         ChoiceLabel(
-          identity: RecordJournal.identity(version),
+          identity: version.identity,
           source: sources[index],
           time: _time(values[index]),
           detail: _detail(values[index], chapters[index]),
           bookmarkTitle: [sources[index], ?chapters[index]].join(' · '),
         ),
     ],
-    track: address[1] == 'resumes' ? _track(books, values) : null,
+    track: record.collection == 'resumes' ? _track(books, values) : null,
   );
 }
 
-/// The name of the book of the versions [versions] of [record].
-String _title(
-  String record,
-  List<Map<String, dynamic>> versions,
-  List<Book> books,
-) => switch (versions
-    .map((version) => version['value'])
-    .whereType<Map<String, dynamic>>()
-    .firstOrNull) {
-  null => 'Book unavailable',
-  final value => _bookName(books, value),
-};
+/// The name of the book of the first nondeleted version.
+String _title(List<ConflictVersion> versions, List<Book> books) =>
+    switch (versions.map((version) => version.value).nonNulls.firstOrNull) {
+      null => 'Book unavailable',
+      final value => _bookName(books, value),
+    };
 
 /// The track of the listening places [values] in their edition of [books],
 /// or null when one of them is no listening place in a known file of it.
-ConflictTrack? _track(List<Book> books, List<Map<String, dynamic>?> values) {
+ConflictTrack? _track(List<Book> books, List<RecordValue?> values) {
   final first = values.firstOrNull;
-  final edition = first == null ? null : _edition(books, first);
+  final edition = first == null ? null : _edition(books, first.position);
   if (edition == null) return null;
   final outline = audioOutline(edition);
   final total = outline.length;
   if (total == null || total <= 0) return null;
   final places = <int>[];
   for (final value in values) {
-    if (value == null || value['edition'] != edition.id) return null;
-    final milliseconds = value['milliseconds'];
+    final position = value?.position;
+    if (position is! AudioPosition || position.editionId != edition.id) {
+      return null;
+    }
     final known = edition.files.any(
       (file) =>
-          file.key == value['source'] && file.revision == value['revision'],
+          file.key == position.sourceKey && file.revision == position.revision,
     );
-    final offset = known ? outline.fileStarts[value['source']] : null;
-    if (offset == null || milliseconds is! int) return null;
-    places.add(offset + milliseconds);
+    final offset = known ? outline.fileStarts[position.sourceKey] : null;
+    if (offset == null) return null;
+    places.add(offset + position.milliseconds);
   }
   return ConflictTrack(
     places: [for (final place in places) (place / total).clamp(0.0, 1.0)],
@@ -229,25 +212,6 @@ ConflictTrack? _track(List<Book> books, List<Map<String, dynamic>?> values) {
     ],
     length: duration(total),
   );
-}
-
-/// The name of the device that saved [version], or null when the version
-/// does not name one, as versions from before device names do not.
-String? _deviceName(Map<String, dynamic> version) =>
-    switch (version['device']) {
-      final String name when name.trim().isNotEmpty => name.trim(),
-      _ => null,
-    };
-
-/// When [version] was saved, or else when its [value] says it was made, or
-/// null when neither says.
-DateTime? _savedAt(Map<String, dynamic> version, Map<String, dynamic>? value) {
-  for (final at in [version['savedAt'], value?['createdAt'], value?['at']]) {
-    if (at is String) {
-      if (DateTime.tryParse(at) case final parsed?) return parsed;
-    }
-  }
-  return null;
 }
 
 /// The source of a version: the device [name] alone when it is [named] by
@@ -270,95 +234,64 @@ String _source(
   return name == null ? 'Saved $when' : '$name, saved $when';
 }
 
-/// The place of a resume, a bookmark, or a history entry [value].
-Map<String, dynamic> _position(Map<String, dynamic> value) =>
-    (value['position'] ?? value['after'] ?? value) as Map<String, dynamic>;
-
-/// The name of the chapter that holds the place of [value]: the audio
-/// chapter of the current library, or the source page of a reading place.
-/// Null when the library lacks the source file or the place has no page.
-String? _chapter(List<Book> books, Map<String, dynamic> value) {
-  final position = _position(value);
-  final milliseconds = position['milliseconds'];
-  if (milliseconds is int) {
+/// The chapter of a listening place or the source page of a reading place.
+String? _chapter(List<Book> books, RecordValue value) {
+  final position = value.position;
+  if (position is AudioPosition) {
     return _edition(books, position)?.files
         .where(
           (file) =>
-              file.key == position['source'] &&
-              file.revision == position['revision'],
+              file.key == position.sourceKey &&
+              file.revision == position.revision,
         )
         .firstOrNull
-        ?.chapterAt(milliseconds);
+        ?.chapterAt(position.milliseconds);
   }
-  final page = _readingAddress(position)?['page'];
-  return page is int ? 'Source page $page' : null;
+  final page = textAnchorPreview(position as TextPosition).page;
+  return page == null ? null : 'Source page $page';
 }
 
-/// The time of the listening place of [value], or null when it has none.
-String? _time(Map<String, dynamic>? value) =>
-    switch (value == null ? null : _position(value)['milliseconds']) {
-      final int milliseconds => audioTime(milliseconds),
-      _ => null,
-    };
+String? _time(RecordValue? value) => switch (value?.position) {
+  AudioPosition(:final milliseconds) => audioTime(milliseconds),
+  _ => null,
+};
 
 /// What [value] holds besides its time: its [chapter], or its reading
 /// place, and the title and note of a bookmark.
-String _detail(Map<String, dynamic>? value, String? chapter) {
+String _detail(RecordValue? value, String? chapter) {
   if (value == null) return 'Keep deletion';
-  final position = _position(value);
-  final parts = <String>[];
-  if (position['milliseconds'] is int) {
-    if (chapter != null) parts.add(chapter);
-  } else if (position['anchor'] is String) {
-    if (chapter != null) parts.add(chapter);
-    final quote = _readingAddress(position)?['quote'];
+  final parts = <String>[?chapter];
+  if (value.position case final TextPosition position) {
+    final quote = textAnchorPreview(position).quote;
     parts.add(
-      quote is String && quote.trim().isNotEmpty
+      quote != null && quote.trim().isNotEmpty
           ? '“$quote”'
           : 'Saved reading place (preview unavailable)',
     );
   }
-  for (final name in ['title', 'note']) {
-    if (value[name] is String && (value[name] as String).isNotEmpty) {
-      parts.add(value[name] as String);
+  if (value case BookmarkValue(:final bookmark)) {
+    for (final text in [bookmark.title, bookmark.note]) {
+      if (text != null && text.isNotEmpty) parts.add(text);
     }
   }
   return parts.join(' · ');
 }
 
-/// The decoded anchor of a reading [position], or null when it is not an
-/// object.
-Map<String, dynamic>? _readingAddress(Map<String, dynamic> position) {
-  final anchor = position['anchor'];
-  if (anchor is! String) return null;
-  try {
-    final decoded = jsonDecode(anchor);
-    return decoded is Map<String, dynamic> ? decoded : null;
-  } on FormatException {
-    return null;
-  }
-}
-
-Edition? _edition(List<Book> books, Map<String, dynamic> position) => books
+Edition? _edition(List<Book> books, Place position) => books
     .expand((book) => book.editions)
-    .where((edition) => edition.id == position['edition'])
+    .where((edition) => edition.id == position.editionId)
     .firstOrNull;
 
-/// The book of [value] in the current library, or null.
-Book? _book(List<Book> books, Map<String, dynamic> value) {
-  final position = _position(value);
-  return books
-      .where(
-        (book) =>
-            book.editions.any((edition) => edition.id == position['edition']),
-      )
-      .firstOrNull;
-}
+Book? _book(List<Book> books, RecordValue value) => books
+    .where(
+      (book) => book.editions.any(
+        (edition) => edition.id == value.position.editionId,
+      ),
+    )
+    .firstOrNull;
 
-/// The title of the book of [value] in the current library, or else the
-/// title that [value] saved, marked as outside the library.
-String _bookName(List<Book> books, Map<String, dynamic> value) =>
+String _bookName(List<Book> books, RecordValue value) =>
     _book(books, value)?.title ??
-    (value['bookTitle'] is String
-        ? '${value['bookTitle']} (not in the current library)'
+    (value.bookTitle != null
+        ? '${value.bookTitle} (not in the current library)'
         : 'Book not in the current library');

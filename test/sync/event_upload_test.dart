@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -87,7 +87,7 @@ void main() {
     tester,
     rig,
   ) async {
-    await rig.sync.resolve('["audio","resumes","gone"]', 'gone');
+    await rig.sync.resolve(RecordAddress('audio', 'resumes', 'gone'), 'gone');
     expect(rig.sync.message, isNotNull);
     rig.engine.emit(0, 3456, playing: true);
     await rig.player.pause();
@@ -521,9 +521,9 @@ class UploadRig {
 
   int? sentPlace(String edition) {
     final places = sent.where((action) {
-      final address = jsonDecode(action['record'] as String) as List;
-      return address[0] == 'audio' &&
-          address[1] == 'resumes' &&
+      final address = RecordAddress.parse(action['record'] as String);
+      return address.domain == 'audio' &&
+          address.collection == 'resumes' &&
           action['value']?['edition'] == edition;
     });
     return places.isEmpty ? null : places.last['value']['milliseconds'] as int;

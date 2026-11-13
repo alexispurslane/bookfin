@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
-import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -161,17 +161,16 @@ void main() {
         expect((await first.reading.read(account))!['bookmarks'], hasLength(2));
         final conflict = (await first.conflicts(account)).entries.single;
         expect(
-          conflict.value.map((action) => action['value']['milliseconds']),
+          conflict.value.map(
+            (action) => (action.value!.position as AudioPosition).milliseconds,
+          ),
           unorderedEquals([900, 100]),
         );
         final chosen = conflict.value.firstWhere(
-          (action) => action['value']['milliseconds'] == 100,
+          (action) =>
+              (action.value!.position as AudioPosition).milliseconds == 100,
         );
-        await first.resolve(
-          account,
-          conflict.key,
-          RecordJournal.identity(chosen),
-        );
+        await first.resolve(account, conflict.key, chosen.identity);
         await RecordTransport(first).synchronize(session, client);
         await RecordTransport(second).synchronize(session, client);
         expect(await first.conflicts(account), isEmpty);

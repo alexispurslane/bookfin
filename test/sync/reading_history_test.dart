@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/playback/record_codec.dart';
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -313,7 +315,7 @@ void main() {
       Future<List<String>> listeningActions() async => [
         for (final action
             in (await phone.database.load(account))!['sync']['actions'] as List)
-          if ((jsonDecode(action['record'] as String) as List)[0] == 'audio')
+          if (RecordAddress.parse(action['record'] as String).domain == 'audio')
             jsonEncode(action),
       ];
       final before = await listeningActions();
@@ -362,6 +364,7 @@ void main() {
   test('a choice between two versions of a move names it a reading history entry with the quote of its place', () {
     final record = jsonEncode(['reading', 'history', 'one']);
     Map<String, dynamic> version(String replica, String device, String to) => {
+      'account': 'alice',
       'replica': replica,
       'sequence': 1,
       'record': record,
@@ -370,11 +373,13 @@ void main() {
     };
 
     final labels = labelConflict(
-      record,
-      [
-        version('phone', 'Pixel 8', 'Dorothea'),
-        version('tablet', 'Pixel Tablet', 'Casaubon'),
-      ],
+      RecordAddress.parse(record),
+      recordConflicts({
+        record: [
+          version('phone', 'Pixel 8', 'Dorothea'),
+          version('tablet', 'Pixel Tablet', 'Casaubon'),
+        ],
+      }).values.single,
       books: const <Book>[],
       now: DateTime.utc(2026, 11, 9, 22),
       clock: (at) => '${at.hour}:${at.minute}',

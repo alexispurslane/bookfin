@@ -10,6 +10,7 @@ import '../catalog/model.dart' show Edition, EditionKind;
 import '../foundation/hop.dart';
 import '../reader/session.dart' show ReadingChanges, ReadingStore;
 import '../sync/journal.dart';
+import '../sync/record_address.dart';
 import 'database.dart';
 import 'playback.dart';
 import 'record_codec.dart';
@@ -500,11 +501,11 @@ class LocalResumeStore
   /// handed earlier no longer counts as taking the change in.
   void _changedOutsideWriters(String account, Iterable<String> records) {
     for (final record in records) {
-      final address = jsonDecode(record) as List;
+      final address = RecordAddress.parse(record);
       if (!knownRecordAddress(address)) continue;
-      final writer = _writer(account, reading: address[0] == 'reading');
+      final writer = _writer(account, reading: address.domain == 'reading');
       _handed.remove(writer);
-      _stale(account, reading: address[0] == 'reading').value = true;
+      _stale(account, reading: address.domain == 'reading').value = true;
     }
   }
 
@@ -964,27 +965,13 @@ class LocalResumeStore
     return operation;
   }
 
-  Future<Map<String, List<Map<String, dynamic>>>> conflicts(String account) =>
+  /// Detached typed choices derived from the journal, never persistence input.
+  Future<RecordConflicts> conflicts(String account) =>
       _access(account, (stored) {
-        // NOTE: Engine rule 1. Only records with competing versions are
-        // copied, which are few, so the copy costs less than a hop.
-        final conflicts = jsonDecode(
-          jsonEncode({
-            for (final MapEntry(key: record, value: versions)
-                in (stored?.journal.conflicts ?? const {}).entries)
-              if (versions.every(
-                (version) => readableRecord(
-                  record,
-                  version['value'] as Map<String, dynamic>?,
-                ),
-              ))
-                record: versions,
-          }),
-        ) as Map<String, dynamic>;
-        return {
-          for (final entry in conflicts.entries)
-            entry.key: (entry.value as List).cast<Map<String, dynamic>>(),
-        };
+        final conflicts =
+            stored?.journal.conflicts ??
+            const <String, List<Map<String, dynamic>>>{};
+        return _derive(recordConflicts, conflicts, small: conflicts.isEmpty);
       });
 
   /// Keeps the saved version [identity] of [record] and replaces the
@@ -996,26 +983,25 @@ class LocalResumeStore
   /// one gets a general title.
   Future<bool> resolve(
     String account,
-    String record,
+    RecordAddress record,
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) async {
     final device = await _device();
     return _update(account, (journal) async {
-      final versions = journal.conflicts[record];
+      final versions = journal.conflicts[record.encoded];
       final selected = versions
           ?.where((action) => RecordJournal.identity(action) == identity)
           .firstOrNull;
       if (selected == null) {
         return false;
       }
-      final address = jsonDecode(record) as List;
-      if (address[1] == 'resumes') {
+      if (record.collection == 'resumes') {
         for (final action in versions!) {
           if (action['value'] == null) continue;
           final now = DateTime.now();
           final bookmark = resumeBookmarkRecord(
-            address[0] as String,
+            record.domain,
             action['value'] as Map<String, dynamic>,
             id: 'conflict.${RecordJournal.identity(action)}',
             createdAt: now,
@@ -1033,14 +1019,14 @@ class LocalResumeStore
         }
       }
       await journal.changeStored(
-        record,
+        record.encoded,
         selected['value'] as Map<String, dynamic>?,
         resolve: true,
         read: (ids) => _retainedActions(account, ids),
         device: device,
         savedAt: DateTime.now(),
       );
-      _changedOutsideWriters(account, [record]);
+      _changedOutsideWriters(account, [record.encoded]);
       return true;
     });
   }
@@ -2557,7 +2543,7 @@ _InterpretedObjects _interpretObjects(
           validateRecordAction(action);
           actions.add(action);
           unreadable = !readableRecord(
-            action['record'] as String,
+            RecordAddress.parse(action['record'] as String),
             action['value'] as Map<String, dynamic>?,
           );
         }

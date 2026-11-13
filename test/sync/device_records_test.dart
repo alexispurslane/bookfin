@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/shelf.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -138,9 +139,11 @@ void main() {
       }, device: 'Pixel Tablet');
     fixture.publish(tablet);
     await RecordTransport(phone).synchronize(fixture.session, fixture.client);
-    final versions = (await phone.conflicts(account))[_resume]!;
+    final versions = (await phone.conflicts(
+      account,
+    ))[RecordAddress.parse(_resume)]!;
     final labels = labelConflict(
-      _resume,
+      RecordAddress.parse(_resume),
       versions,
       books: CatalogLibrary.build([audio.title]).books,
       now: DateTime.now(),
@@ -152,7 +155,7 @@ void main() {
     expect(
       await phone.resolve(
         account,
-        _resume,
+        RecordAddress.parse(_resume),
         chosen.identity,
         bookmarkTitles: {
           for (final choice in labels.choices)
@@ -179,9 +182,11 @@ void main() {
     await phone.save(account, _place(45000));
     await RecordTransport(phone).synchronize(fixture.session, fixture.client);
 
-    final versions = (await phone.conflicts(account))[_resume]!;
+    final versions = (await phone.conflicts(
+      account,
+    ))[RecordAddress.parse(_resume)]!;
     final labels = labelConflict(
-      _resume,
+      RecordAddress.parse(_resume),
       versions,
       books: CatalogLibrary.build([audio.title]).books,
       now: DateTime.now(),

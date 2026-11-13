@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
@@ -1027,7 +1028,9 @@ void main() {
       await phone.store.recoverKept();
       final places = (await phone.store.conflicts('alice')).values
           .expand((versions) => versions)
-          .map((action) => (action['value'] as Map)['milliseconds'])
+          .map(
+            (action) => (action.value!.position as AudioPosition).milliseconds,
+          )
           .toSet();
       expect(places, {10000, 20000});
     });
@@ -1361,19 +1364,19 @@ void main() {
         for (final device in [phone, tablet]) {
           final versions = (await device.store.conflicts(account)).values
               .expand((versions) => versions)
-              .map((action) => action['value']['milliseconds'])
+              .map(
+                (action) =>
+                    (action.value!.position as AudioPosition).milliseconds,
+              )
               .toSet();
           expect(versions, {20000, 30000});
         }
         final conflict = (await phone.store.conflicts(account)).entries.single;
         final tabletPlace = conflict.value.firstWhere(
-          (action) => action['value']['milliseconds'] == 30000,
+          (action) =>
+              (action.value!.position as AudioPosition).milliseconds == 30000,
         );
-        await phone.store.resolve(
-          account,
-          conflict.key,
-          'action.${tabletPlace['replica']}.${tabletPlace['sequence']}',
-        );
+        await phone.store.resolve(account, conflict.key, tabletPlace.identity);
         final resolved = (await phone.store.read(account))!;
         expect(_savedPlace(resolved), 30000);
         expect(

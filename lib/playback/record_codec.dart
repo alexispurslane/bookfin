@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import '../catalog/model.dart';
+import '../sync/journal.dart';
+import '../sync/record_address.dart';
 import 'records.dart';
 
 /// The collections of each domain that this build reads.
@@ -9,23 +11,26 @@ const _collections = {
   'reading': {'bookmarks', 'history', 'resumes'},
 };
 
-String _recordAddress(String domain, String collection, Object? id) =>
-    jsonEncode([domain, collection, id]);
+String _recordAddress(String domain, String collection, Object? id) {
+  if (id is! String) {
+    throw const FormatException('Invalid personal-record address.');
+  }
+  return RecordAddress(domain, collection, id).encoded;
+}
 
 /// Whether this build knows the domain and the collection of [address].
-bool knownRecordAddress(List<dynamic> address) =>
-    _collections[address[0]]?.contains(address[1]) ?? false;
+bool knownRecordAddress(RecordAddress address) =>
+    _collections[address.domain]?.contains(address.collection) ?? false;
 
-/// Whether this build reads the record at [record] with [value], or its
+/// Whether this build reads the record at [address] with [value], or its
 /// deletion when [value] is null: this build knows its address, and a
 /// history entry names a kind of move that this build knows. A kind that is
 /// not a string is no newer kind, so its record counts as read, and its
 /// decoding fails as damage.
-bool readableRecord(String record, Map<String, dynamic>? value) {
-  final address = jsonDecode(record) as List;
+bool readableRecord(RecordAddress address, Map<String, dynamic>? value) {
   if (!knownRecordAddress(address)) return false;
   final kind = value?['kind'];
-  return address[1] != 'history' ||
+  return address.collection != 'history' ||
       kind is! String ||
       HistoryAction.values.any((known) => known.name == kind);
 }
@@ -33,34 +38,155 @@ bool readableRecord(String record, Map<String, dynamic>? value) {
 /// Throws a [FormatException] when the value of [action] is damaged: this
 /// build reads its record ([readableRecord]), but the value does not decode.
 void validateRecordAction(Map<String, dynamic> action) {
+  final address = RecordAddress.parse(action['record'] as String);
   final value = action['value'] as Map<String, dynamic>?;
-  if (value == null || !readableRecord(action['record'] as String, value)) {
-    return;
+  if (readableRecord(address, value)) _decodeRecordValue(address, value);
+}
+
+/// A supported personal-record value, decoded by the same path that validates
+/// journal actions. These views contain no mutable wire maps.
+sealed class RecordValue {
+  const RecordValue();
+
+  /// The saved place, bookmark place, or destination of a history move.
+  Place get position;
+
+  /// The saved book title, or null when the record does not supply one.
+  String? get bookTitle;
+}
+
+/// A listening or reading resume, without its persistence-only fields.
+final class ResumeValue extends RecordValue {
+  const ResumeValue(this.position, this.bookTitle);
+  @override
+  final Place position;
+  @override
+  final String? bookTitle;
+}
+
+/// A bookmark decoded with the position decoder of its domain.
+final class BookmarkValue extends RecordValue {
+  const BookmarkValue(this.bookmark);
+  final Bookmark<Place> bookmark;
+  @override
+  Place get position => bookmark.position;
+  @override
+  String? get bookTitle => bookmark.bookTitle;
+}
+
+/// A history move decoded with the position decoder of its domain.
+final class HistoryValue extends RecordValue {
+  const HistoryValue(this.event);
+  final HistoryEvent<Place> event;
+  @override
+  Place get position => event.after;
+  @override
+  String get bookTitle => event.bookTitle;
+}
+
+/// A detached, read-only choice. Null [value] means deletion. [identity] is
+/// the original action identity, used to ask the store to resolve its current
+/// versions. The view must never be encoded as a persistence action.
+final class ConflictVersion {
+  const ConflictVersion._(
+    this._original,
+    this.identity,
+    this.value,
+    this.device,
+    this.savedAt,
+  );
+  // Used only for equality. Recovery can replace an action from the server
+  // under the same identity, including fields this build does not interpret.
+  // This detached copy is private; resolution always rereads the journal.
+  final Map<String, dynamic> _original;
+  final String identity;
+  final RecordValue? value;
+
+  /// The trimmed device name, or null when no readable name was saved.
+  final String? device;
+
+  /// When the action was saved, falling back to the bookmark or history time
+  /// for legacy actions. Null when neither time can be read.
+  final DateTime? savedAt;
+
+  // Preserve the journal's content comparison, including map-order independence.
+  // Reallocating an unchanged view must not notify, but a repaired copy must.
+  @override
+  bool operator ==(Object other) =>
+      other is ConflictVersion &&
+      identity == other.identity &&
+      const DeepCollectionEquality().equals(_original, other._original);
+  @override
+  int get hashCode => identity.hashCode;
+}
+
+/// Supported conflicts, in journal order. Both collection levels and their
+/// typed values are immutable and detached from the journal.
+typedef RecordConflicts = Map<RecordAddress, List<ConflictVersion>>;
+
+/// Projects already validated journal versions. A conflict containing any
+/// unreadable future value is retained by the journal but has no choices.
+RecordConflicts recordConflicts(
+  Map<String, List<Map<String, dynamic>>> conflicts,
+) {
+  final result = <RecordAddress, List<ConflictVersion>>{};
+  for (final entry in conflicts.entries) {
+    final address = RecordAddress.parse(entry.key);
+    if (!entry.value.every(
+      (action) =>
+          readableRecord(address, action['value'] as Map<String, dynamic>?),
+    )) {
+      continue;
+    }
+    result[address] = List.unmodifiable(
+      entry.value.map((source) {
+        // The view owns this copy even when its caller retains mutable inputs.
+        final action = jsonDecode(jsonEncode(source)) as Map<String, dynamic>;
+        final value = _decodeRecordValue(
+          address,
+          action['value'] as Map<String, dynamic>?,
+        );
+        final device = action['device'];
+        final original = action['value'] as Map<String, dynamic>?;
+        DateTime? savedAt;
+        for (final at in [
+          action['savedAt'],
+          original?['createdAt'],
+          original?['at'],
+        ]) {
+          if (at is String) savedAt = DateTime.tryParse(at);
+          if (savedAt != null) break;
+        }
+        return ConflictVersion._(
+          action,
+          RecordJournal.identity(action),
+          value,
+          device is String && device.trim().isNotEmpty ? device.trim() : null,
+          savedAt,
+        );
+      }),
+    );
   }
-  final address = jsonDecode(action['record'] as String) as List;
-  final reading = address[0] == 'reading';
+  return Map.unmodifiable(result);
+}
+
+RecordValue? _decodeRecordValue(
+  RecordAddress address,
+  Map<String, dynamic>? value,
+) {
+  if (value == null) return null;
+  final reading = address.domain == 'reading';
+  final decodePlace = reading ? decodeTextPosition : decodePosition;
   try {
-    switch (address[1]) {
+    switch (address.collection) {
       case 'bookmarks':
-        if (value['id'] != address[2]) throw const FormatException();
-        if (reading) {
-          Bookmark.fromJson(value, decodeTextPosition);
-        } else {
-          Bookmark.fromJson(value, decodePosition);
-        }
+        if (value['id'] != address.id) throw const FormatException();
+        return BookmarkValue(Bookmark.fromJson(value, decodePlace));
       case 'history':
-        if (value['id'] != address[2]) throw const FormatException();
-        if (reading) {
-          HistoryEvent.fromJson(value, decodeTextPosition);
-        } else {
-          HistoryEvent.fromJson(value, decodePosition);
-        }
+        if (value['id'] != address.id) throw const FormatException();
+        return HistoryValue(HistoryEvent.fromJson(value, decodePlace));
       case 'resumes':
-        if (reading) {
-          decodeTextPosition(value);
-        } else {
-          decodePosition(value);
-        }
+        final position = decodePlace(value);
         final projected = reading
             ? {
                 'reading': {
@@ -77,9 +203,15 @@ void validateRecordAction(Map<String, dynamic> action) {
         if (!flattenRecords(
           projected,
           reading: reading,
-        ).containsKey(action['record'])) {
+        ).containsKey(address.encoded)) {
           throw const FormatException();
         }
+        return ResumeValue(
+          position,
+          value['bookTitle'] is String ? value['bookTitle'] as String : null,
+        );
+      default:
+        throw const FormatException();
     }
   } on FormatException {
     throw const FormatException(
@@ -115,11 +247,11 @@ Map<String, dynamic> recordSnapshot(
     'resumes': reading ? <dynamic>[] : <String, dynamic>{},
   };
   for (final entry in values.entries) {
-    final address = jsonDecode(entry.key) as List;
-    if (address[0] != domain || !readableRecord(entry.key, entry.value)) {
+    final address = RecordAddress.parse(entry.key);
+    if (address.domain != domain || !readableRecord(address, entry.value)) {
       continue;
     }
-    final collection = address[1] as String;
+    final collection = address.collection;
     final value = entry.value;
     if (!reading && collection == 'resumes') {
       final edition = value.remove('edition') as String;

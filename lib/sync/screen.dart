@@ -12,6 +12,7 @@ import '../foundation/time.dart' show dayAndTime, listenedWhen, timeOfDay;
 import '../playback/store.dart' show KeptRecords;
 import 'choice.dart';
 import 'coordinator.dart';
+import 'record_address.dart';
 import 'labels.dart';
 
 /// The Personal records page. It runs Sync now and the choice between saved
@@ -591,7 +592,7 @@ class _Choices extends StatefulWidget {
 
 class _ChoicesState extends State<_Choices> {
   /// The record whose choice is open, or null for the first one.
-  String? _open;
+  RecordAddress? _open;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(

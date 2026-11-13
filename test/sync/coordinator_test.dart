@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 
@@ -69,7 +71,8 @@ void main() {
         ) as Map;
         final action = (saved['sync']['actions'] as List).lastWhere(
           (action) =>
-              (jsonDecode(action['record'] as String) as List)[1] == 'resumes',
+              RecordAddress.parse(action['record'] as String).collection ==
+              'resumes',
         ) as Map;
         final remote = RecordJournal(fixture.session.scope.key, 'remote');
         remote.change(action['record'] as String, {
@@ -103,10 +106,11 @@ void main() {
         fixture.session.rejectCredential();
         final conflict = sync.conflicts.entries.single;
         final chosen = conflict.value.singleWhere(
-          (action) => action['value']['milliseconds'] == 900,
+          (action) =>
+              (action.value!.position as AudioPosition).milliseconds == 900,
         );
         final requests = fixture.requests;
-        await sync.resolve(conflict.key, RecordJournal.identity(chosen));
+        await sync.resolve(conflict.key, chosen.identity);
         expect(await savedMilliseconds(), 900);
         expect(sync.conflicts, isEmpty);
         expect(
@@ -203,10 +207,12 @@ void main() {
           () async {
             final conflict = sync.conflicts.entries.single;
             final selected = conflict.value.singleWhere(
-              (action) => action['value']['milliseconds'] == chosen,
+              (action) =>
+                  (action.value!.position as AudioPosition).milliseconds ==
+                  chosen,
             );
             await expectLater(
-              sync.resolve(conflict.key, RecordJournal.identity(selected)),
+              sync.resolve(conflict.key, selected.identity),
               completes,
             );
             expect(player.position!.milliseconds, 900);
@@ -228,12 +234,61 @@ void main() {
         );
       }
 
+      test('reallocated unchanged store views do not notify and a new version does', () async {
+        final before = sync.conflicts;
+        final record = before.keys.single;
+        final again = await records.conflicts(fixture.session.scope.key);
+        expect(identical(before[record]!.first, again[record]!.first), isFalse);
+        var notifications = 0;
+        sync.conflictsNotifier.addListener(() => notifications++);
+        await sync.synchronize();
+        await sync.syncNow();
+        expect(notifications, 0);
+        final third = RecordJournal(fixture.session.scope.key, 'third')
+          ..change(record.encoded, {
+            'edition': audio.recording.id,
+            'source': audio.first.key,
+            'revision': audio.first.revision,
+            'sources': editionSources(audio.recording),
+            'milliseconds': 1200,
+          });
+        fixture.publish(third);
+        await sync.synchronize();
+        expect(notifications, 1);
+        expect(sync.conflicts[record], hasLength(3));
+        expect(before[record], hasLength(2));
+      });
+
+      test('a repaired server copy with the same action identity updates its choice', () async {
+        final record = sync.conflicts.keys.single;
+        final previous = sync.conflicts[record]!.singleWhere(
+          (version) => version.identity == 'action.remote.1',
+        );
+        final object = fixture.objects['action.remote.1']!;
+        final repaired =
+            jsonDecode(object['Payload'] as String) as Map<String, dynamic>;
+        repaired['value']['milliseconds'] = 1200;
+        object['Payload'] = jsonEncode(repaired);
+        object['Sequence'] = fixture.objects.length + 1;
+        var notifications = 0;
+        sync.conflictsNotifier.addListener(() => notifications++);
+        await sync.synchronize();
+        expect(sync.lastSyncNotifier.value?.replaced, 1);
+        expect(notifications, 1);
+        final current = sync.conflicts[record]!.singleWhere(
+          (version) => version.identity == previous.identity,
+        );
+        expect((current.value!.position as AudioPosition).milliseconds, 1200);
+        expect((previous.value!.position as AudioPosition).milliseconds, 100);
+      });
+
       test('a displayed conflict that changed before the tap gives a recoverable result', () async {
         final conflict = sync.conflicts.entries.single;
         final selected = conflict.value.singleWhere(
-          (action) => action['value']['milliseconds'] == 100,
+          (action) =>
+              (action.value!.position as AudioPosition).milliseconds == 100,
         );
-        final identity = RecordJournal.identity(selected);
+        final identity = selected.identity;
         await records.resolve(
           fixture.session.scope.key,
           conflict.key,

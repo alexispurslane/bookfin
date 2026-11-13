@@ -5,6 +5,9 @@ import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/settings/screen.dart';
+import 'package:bookfin/playback/record_codec.dart';
+import 'package:bookfin/sync/record_address.dart';
+import 'package:bookfin/sync/journal.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -230,17 +233,22 @@ void main() {
       'after a library refresh, the record sync page names the book from the new library',
       (tester) async {
         await signIn(tester);
-        final edition = catalog.books.single.editions.single.id;
-        final records = ControlledRecords()
-          ..found = {
-            jsonEncode(['audio', 'resumes', edition]): [
-              {
-                'replica': 'phone',
-                'sequence': 1,
-                'value': {'edition': edition, 'milliseconds': 1000},
-              },
-            ],
-          };
+        final edition = catalog.books.single.editions.single;
+        // A valid place in an older source has no chapter in this library.
+        final record = RecordAddress(
+          'audio',
+          'resumes',
+          jsonEncode([edition.id, 'saved-source', 'previous-revision']),
+        ).encoded;
+        final journal =
+            RecordJournal('alice', 'phone', null, validateRecordAction)
+              ..change(record, {
+                'edition': edition.id,
+                'source': 'saved-source',
+                'revision': 'previous-revision',
+                'milliseconds': 1000,
+              });
+        final records = ControlledRecords()..found = {record: journal.uploads};
         final sync = RecordSync(records: records, transport: records.transport)
           ..bind(catalog.session);
         await sync.synchronize();

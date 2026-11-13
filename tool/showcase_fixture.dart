@@ -32,6 +32,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:image/image.dart' as img;
 
 import 'showcase_media.dart' as media;
@@ -557,9 +558,11 @@ class _Storage {
   void _addConflict(String payload) {
     if (_conflictAdded) return;
     final action = jsonDecode(payload) as Map<String, dynamic>;
-    final address = jsonDecode(action['record'] as String) as List;
+    final address = RecordAddress.parse(action['record'] as String);
     final value = action['value'];
-    if (address[0] != 'audio' || address[1] != 'resumes' || value is! Map) {
+    if (address.domain != 'audio' ||
+        address.collection != 'resumes' ||
+        value is! Map) {
       return;
     }
     _conflictAdded = true;

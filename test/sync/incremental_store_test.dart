@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
@@ -333,7 +335,10 @@ void main() {
     await RecordTransport(restarted)
         .synchronize(fixture.session, fixture.client);
     expect((await restarted.read(account))!['bookmarks'], isEmpty);
-    expect((await restarted.conflicts(account))[address], hasLength(2));
+    expect(
+      (await restarted.conflicts(account))[RecordAddress.parse(address)],
+      hasLength(2),
+    );
     final saved = jsonDecode((await reopened.read(account))!) as Map;
     expect(saved['sync']['actions'], containsAll(remote.uploads));
     expect(
@@ -523,7 +528,10 @@ void main() {
     });
     fixture.publish(concurrent);
     await RecordTransport(store).synchronize(fixture.session, fixture.client);
-    expect((await store.conflicts(account))[address], hasLength(2));
+    expect(
+      (await store.conflicts(account))[RecordAddress.parse(address)],
+      hasLength(2),
+    );
     await disk.records.close();
     final reopened = await RecordDatabase.open(
       factory: databaseFactoryFfi,
@@ -532,9 +540,9 @@ void main() {
     addTearDown(reopened.close);
     final restarted = LocalResumeStore(openDatabase: () async => reopened);
     expect(
-      (await restarted.conflicts(
-        account,
-      ))[address]!.map((action) => action['value']['milliseconds']),
+      (await restarted.conflicts(account))[RecordAddress.parse(address)]!.map(
+        (action) => (action.value!.position as AudioPosition).milliseconds,
+      ),
       unorderedEquals([900, 100]),
     );
     expect((await restarted.read(account))!['resumes'], isEmpty);

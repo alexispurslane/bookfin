@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:bookfin/playback/record_codec.dart';
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -109,7 +111,7 @@ class _Records extends LocalResumeStore {
   @override
   Future<bool> resolve(
     String account,
-    String record,
+    RecordAddress record,
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) async {
@@ -121,11 +123,8 @@ class _Records extends LocalResumeStore {
   }
 
   @override
-  Future<Map<String, List<Map<String, dynamic>>>> conflicts(
-    String account,
-  ) async => {
-    for (final entry in found.entries) entry.key: [...entry.value],
-  };
+  Future<RecordConflicts> conflicts(String account) async =>
+      recordConflicts(found);
 
   /// Whether the next retry of kept copies fails.
   bool recoveryFails = false;
@@ -260,7 +259,7 @@ void main() {
   test('a sync that finds the same saved versions again does not notify the list of choices', () async {
     records.found = {
       '["audio","resumes","x"]': [
-        {'value': null},
+        {'account': 'alice', 'replica': 'phone', 'sequence': 1, 'value': null},
       ],
     };
     await sync.synchronize();
@@ -344,13 +343,18 @@ void main() {
         ..stale = (listening: true, reading: false)
         ..found = {
           '["audio","resumes","x"]': [
-            {'value': null},
+            {
+              'account': 'alice',
+              'replica': 'phone',
+              'sequence': 1,
+              'value': null,
+            },
           ],
         };
       playback.refreshFailure = Exception('The listening records failed.');
       await sync.synchronize();
 
-      expect(sync.conflicts.keys, ['["audio","resumes","x"]']);
+      expect(sync.conflicts.keys, [RecordAddress('audio', 'resumes', 'x')]);
     });
   });
 
@@ -361,20 +365,20 @@ void main() {
     });
 
     test('does not say that the choice was not saved', () async {
-      await sync.resolve('["audio","resumes","x"]', 'chosen');
+      await sync.resolve(RecordAddress('audio', 'resumes', 'x'), 'chosen');
 
       expect(records.chosen, ['chosen']);
       expect(sync.message, isNull);
     });
 
     test('does not stop the refresh of the other domain', () async {
-      await sync.resolve('["audio","resumes","x"]', 'chosen');
+      await sync.resolve(RecordAddress('audio', 'resumes', 'x'), 'chosen');
 
       expect(reader.refreshes, 1);
     });
 
     test('does not stop the sync that sends the choice', () async {
-      await sync.resolve('["audio","resumes","x"]', 'chosen');
+      await sync.resolve(RecordAddress('audio', 'resumes', 'x'), 'chosen');
 
       expect(records.syncs, 1);
     });

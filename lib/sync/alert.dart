@@ -7,6 +7,7 @@ import '../foundation/listenable_selector.dart';
 import '../foundation/time.dart' show timeOfDay;
 import 'choice.dart';
 import 'coordinator.dart';
+import 'record_address.dart';
 import 'labels.dart';
 
 /// Gives every page below it the record sync of the app, so that the book
@@ -34,7 +35,7 @@ Future<void> chooseConflict(
   BuildContext context,
   RecordSync sync, {
   required Book book,
-  required String record,
+  required RecordAddress record,
 }) async {
   final versions = sync.conflicts[record];
   if (versions == null) return;
@@ -100,7 +101,7 @@ class BookConflictAlert extends StatelessWidget {
   });
   final ValueListenable<RecordConflicts> conflicts;
   final Book book;
-  final ValueChanged<String> onChoose;
+  final ValueChanged<RecordAddress> onChoose;
 
   /// A pill, as in the player, instead of a notice.
   final bool compact;

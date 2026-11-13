@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:bookfin/playback/record_codec.dart';
+import 'package:bookfin/sync/record_address.dart';
+import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/sync/labels.dart';
 import 'package:flutter/material.dart';
@@ -81,8 +84,8 @@ ConflictLabels _label(
   String? record,
   List<Book> books = const [_book],
 }) => labelConflict(
-  record ?? _record,
-  versions,
+  RecordAddress.parse(record ?? _record),
+  recordConflicts({record ?? _record: versions}).values.single,
   books: books,
   now: _now,
   clock: _clock,
@@ -298,17 +301,33 @@ void main() {
         author: 'A. Writer',
         editions: [edition],
       );
+      final sources = editionSources(edition);
+      final record = resumeRecordAddress(edition);
       final inLater = {
         ..._place('tablet', _hour, device: 'Pixel Tablet'),
+        'record': record,
         'value': {
           'edition': edition.id,
+          'sources': sources,
           'source': later.key,
           'revision': later.revision,
           'milliseconds': _hour,
         },
       };
       final track = _label(
-        [_place('phone', _chapterSeven, device: 'Pixel 8'), inLater],
+        [
+          {
+            ..._place('phone', _chapterSeven, device: 'Pixel 8'),
+            'record': record,
+            'value': {
+              ..._place('phone', _chapterSeven)['value']
+                  as Map<String, dynamic>,
+              'sources': sources,
+            },
+          },
+          inLater,
+        ],
+        record: record,
         books: const [book],
       ).track!;
       expect(track.places, [_chapterSeven / (8 * _hour), 6 / 8]);
@@ -335,6 +354,8 @@ void main() {
           'position': _place(replica, _chapterSeven)['value'],
           'createdAt': '2026-11-07T21:12:00Z',
           'title': title,
+          'bookTitle': 'Winter Road',
+          'editionLabel': 'Ada Narrator',
         },
       };
       final labels = _label(record: record, [
@@ -378,8 +399,12 @@ void main() {
         },
       },
     ];
-    expect(bookConflicts({_record: ours, other: theirs}, _book).keys, [
-      _record,
-    ]);
+    expect(
+      bookConflicts(
+        recordConflicts({_record: ours, other: theirs}),
+        _book,
+      ).keys,
+      [RecordAddress.parse(_record)],
+    );
   });
 }

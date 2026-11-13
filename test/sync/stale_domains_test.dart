@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/store.dart';
@@ -166,12 +167,14 @@ void main() {
           ..publish(other);
         await sync();
         await writersTakeIn();
-        final chosen = (await records.conflicts(account))[record]!.first;
+        final chosen = (await records.conflicts(
+          account,
+        ))[RecordAddress.parse(record)]!.first;
         expect(
           await records.resolve(
             account,
-            record,
-            RecordJournal.identity(chosen),
+            RecordAddress.parse(record),
+            chosen.identity,
           ),
           isTrue,
         );

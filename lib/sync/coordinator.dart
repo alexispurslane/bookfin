@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../catalog/jellyfin.dart';
+import '../playback/record_codec.dart';
 import '../playback/store.dart';
-import 'transport.dart';
 import 'journal.dart' show DeepCollectionEquality;
+import 'record_address.dart';
+import 'transport.dart';
+
+export '../playback/record_codec.dart' show RecordConflicts;
 
 /// What the Sync page shows about an action that the user started: Sync now
 /// or a choice between saved versions.
@@ -61,10 +65,6 @@ typedef RecordSyncOutcome = ({
   DateTime? synced,
   int replaced,
 });
-
-/// The records with saved versions to choose between: each record address
-/// with its saved versions.
-typedef RecordConflicts = Map<String, List<Map<String, dynamic>>>;
 
 /// What one sync or choice tells the user who started it beyond how its
 /// sync ended, or null when nothing.
@@ -330,7 +330,7 @@ class RecordSync {
   /// as bookmarks with the titles of [bookmarkTitles], as
   /// [LocalResumeStore.resolve] says.
   Future<void> resolve(
-    String record,
+    RecordAddress record,
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) => _act(() async {

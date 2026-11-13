@@ -365,6 +365,27 @@ TextPosition decodeTextPosition(Object? value) {
   );
 }
 
+/// Optional display hints in an opaque text anchor. Early and future anchors
+/// need not be reader-restorable to remain valid personal records. A preview
+/// only reads the hints it knows and never validates the anchor's format.
+({int? page, String? quote, bool hasCfi}) textAnchorPreview(
+  TextPosition place,
+) {
+  try {
+    final anchor = jsonDecode(place.anchor);
+    if (anchor is Map<String, dynamic>) {
+      return (
+        page: anchor['page'] is int ? anchor['page'] as int : null,
+        quote: anchor['quote'] is String ? anchor['quote'] as String : null,
+        hasCfi: anchor['cfi'] != null,
+      );
+    }
+  } on FormatException {
+    // Opaque non-JSON anchors remain usable, with no preview.
+  }
+  return (page: null, quote: null, hasCfi: false);
+}
+
 /// One moment of a book's timeline: a move or a bookmark.
 sealed class TimelineEntry {
   const TimelineEntry();

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/sync/record_address.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/shelf.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -222,7 +223,7 @@ void main() {
     (tester) async {
       sync.refuse = true;
       var syncs = 0;
-      final choices = <(String, String, Map<String, String>)>[];
+      final choices = <(RecordAddress, String, Map<String, String>)>[];
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -248,7 +249,7 @@ void main() {
       expect(syncs, 1);
       final (record, identity, _) = choices.single;
       expect(
-        sync.conflicts[record]!.map(RecordJournal.identity),
+        sync.conflicts[record]!.map((version) => version.identity),
         contains(identity),
       );
       expect(tester.takeException(), isNull);
@@ -259,21 +260,26 @@ void main() {
     'choosing a saved place reports the bookmark titles that name each place\'s device',
     (tester) async {
       sync.refuse = true;
-      final choices = <(String, String, Map<String, String>)>[];
+      final choices = <(RecordAddress, String, Map<String, String>)>[];
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: ConflictChoice(
               record: sync.conflicts.keys.firstWhere(
-                (record) => record.contains('"audio","resumes"'),
+                (record) =>
+                    record.domain == 'audio' && record.collection == 'resumes',
               ),
               labels: labelConflict(
                 sync.conflicts.keys.firstWhere(
-                  (record) => record.contains('"audio","resumes"'),
+                  (record) =>
+                      record.domain == 'audio' &&
+                      record.collection == 'resumes',
                 ),
                 sync.conflicts.entries
                     .firstWhere(
-                      (entry) => entry.key.contains('"audio","resumes"'),
+                      (entry) =>
+                          entry.key.domain == 'audio' &&
+                          entry.key.collection == 'resumes',
                     )
                     .value,
                 books: [audio.title],
@@ -290,10 +296,10 @@ void main() {
       await tester.tap(find.text('Keep B'));
       final (record, identity, bookmarkTitles) = choices.single;
       final versions = sync.conflicts[record]!;
-      expect(identity, RecordJournal.identity(versions.last));
+      expect(identity, versions.last.identity);
       expect(bookmarkTitles, {
-        RecordJournal.identity(versions.first): 'Pixel 8 · Opening',
-        RecordJournal.identity(versions.last): 'Pixel Tablet · Opening',
+        versions.first.identity: 'Pixel 8 · Opening',
+        versions.last.identity: 'Pixel Tablet · Opening',
       });
     },
   );
@@ -733,7 +739,7 @@ class RefusingSync extends RecordSync {
 
   @override
   Future<void> resolve(
-    String record,
+    RecordAddress record,
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) => refuse

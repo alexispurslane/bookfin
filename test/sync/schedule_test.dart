@@ -218,9 +218,7 @@ class CountingRecords extends LocalResumeStore {
   }
 
   @override
-  Future<Map<String, List<Map<String, dynamic>>>> conflicts(
-    String account,
-  ) async => {};
+  Future<RecordConflicts> conflicts(String account) async => {};
 
   /// The app retries kept copies after its first frame. These tests keep
   /// none.

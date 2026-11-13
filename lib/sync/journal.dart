@@ -3,6 +3,8 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import 'record_address.dart';
+
 class RecordJournal {
   RecordJournal(
     this.account,
@@ -431,7 +433,7 @@ class RecordJournal {
   }
 
   static bool _isResume(String record) =>
-      (jsonDecode(record) as List)[1] == 'resumes';
+      RecordAddress.parse(record).collection == 'resumes';
 
   /// Adds an action of this installation that sets [record] to [value], or
   /// deletes it when [value] is null, and marks it for upload. With
@@ -592,12 +594,7 @@ class RecordJournal {
     // NOTE: The journal accepts any domain and collection, so that a build
     // keeps and syncs the records of a newer build. Its owner decides which
     // records it reads.
-    final address = jsonDecode(record);
-    if (address is! List ||
-        address.length != 3 ||
-        address.any((part) => part is! String || part.isEmpty)) {
-      throw const FormatException('Invalid personal-record address.');
-    }
+    RecordAddress.parse(record);
   }
 
   Map<String, Map<int, List<String>>> get _dependencies => {

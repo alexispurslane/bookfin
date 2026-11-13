@@ -117,6 +117,8 @@ final northConflict = {
         )['value'],
         'createdAt': '2026-11-07T21:12:00Z',
         'title': 'Ferry at dawn',
+        'bookTitle': 'Northbound',
+        'editionLabel': 'Ana Ruiz',
       },
     },
     {
