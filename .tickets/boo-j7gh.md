@@ -1,6 +1,6 @@
 ---
 id: boo-j7gh
-status: in_progress
+status: closed
 deps: []
 links: [t7-vq21]
 created: 2026-11-12T23:41:02Z
@@ -23,6 +23,33 @@ Astra high reviewer authorized. Parent closes after integration and verification
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-j7gh-astra-20261113-1>
 
 # Count visible book characters with one walker and measure the outline once
+
+## Parent integration and closure — 2026-11-13
+
+Verified child identity, clean status, the complete original-base diff and
+original review. Inspected the shared traversal, both character-counting
+callers, all three speech entry points, transferable worker closure, actual
+callers and tests. Integrated without conflicts: `40a6a233` became `42bc9400`
+and `deffaaaa` became `571b9e2e`. The main.dart callback merged with the already
+integrated gallery startup separation. Original reviewer verdicts are preserved.
+Inherited corrupt-record mutation D1 remains unfixed and tracked in t7-vq21;
+the parent confirmed and expanded its caller audit separately.
+
+Parent verification ran through `nix develop --command bash -c`, sequentially:
+
+- Changed-file `dart format --output=none --set-exit-if-changed`: 15 files,
+  zero changes.
+- `flutter analyze --no-pub lib test integration_test`: no issues.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded`: 3,567 passed,
+  27 existing skips, no failures; completed in 5:03.
+
+Driver exit 0. Logs: `/tmp/boo-j7gh-integrated-format.log`,
+`/tmp/boo-j7gh-integrated-analysis.log`, `/tmp/boo-j7gh-integrated-full.log`
+and `/tmp/boo-j7gh-integrated-driver.log`. Complete integration diff and staged
+whitespace checks passed. All owned checks finished. This closes integrated
+implementation; device/visual acceptance and hardening remain separate.
+No Android latency, unconditional non-mutating admission, device/browser,
+coverage or mutation claim. No push, PR, deployment or worktree removal.
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: confirmed. lib/speech/book_words.dart:94-164 and lib/reader/book_map.dart:528-531 each walk a section and count visible characters, and the two counts must agree to the character. Only one fixture test compares them. A change to what counts as visible in one walker moves every speech landing silently. `BookWords` also calls `measureTextOutline` again, though Crossings already holds that outline. Use one walker that yields each text run with its visible offset, and pass the kept outline into the read job.
 
