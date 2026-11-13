@@ -48,3 +48,16 @@ formatting and complete-diff whitespace checks. Preserve failure and skip logs.
 The ticket lead builds and fixes. Exactly one fresh read-only reviewer assesses
 correctness, fulfillment and design. Parent owns integration, user acceptance,
 coverage, mutations and closure. Device work remains blocked by t1-dth0.
+
+## Parent launch record — 2026-11-13
+
+- Original base: `62f4fb238861fd601acb2668a9a4d646c8a28c77`.
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-56h7-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-56h7-astra-20261113-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-56h7-astra-20261113-1>.
+- Client request ID: `bookfin-boo-56h7-astra-20261113-1`.
+- Branch at launch inspection: `t3/preserve-external-play`.
+- Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-fd6f0347`.
+- Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
+- Stages: build, review, then one fix stage if needed. Parent handles integration and closure.
+- Launch accepted and running. No implementation result or acceptance is claimed.

@@ -48,3 +48,13 @@ tests: native-epub-reader.md's implemented note section, places_test.dart's
 note group, pager_test.dart's note/backlink cases, page_source excerpt tests
 and ReaderScreen._followLink. No delegate launched and no product choice
 was settled here.
+
+## Remaining user choice — 2026-11-13
+
+The accepted design already gives normal notes a scrolling glass sheet and a
+title-row Go to note action. The parent asked what happens only when a note
+exceeds the bounded excerpt capacity: show its beginning with Go to note for
+the rest, or navigate directly to the full note. The first option was recommended
+to preserve the current reading page. No answer has arrived. Do not infer one.
+The representation of an original-DOM range is an implementation responsibility,
+not a product question. No implementation or delegate has started.

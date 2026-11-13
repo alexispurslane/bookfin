@@ -53,3 +53,16 @@ formatting and complete-diff whitespace checks. This tighter concurrency limit
 supersedes the original limit of four. Exactly one fresh read-only reviewer
 assesses the complete change. Parent owns integration, acceptance, hardening
 and closure. No device/browser work or general mutation campaign is in scope.
+
+## Parent launch record — 2026-11-13
+
+- Original base: `62f4fb238861fd601acb2668a9a4d646c8a28c77`.
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-t5-rplx-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-t5-rplx-astra-20261113-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-t5-rplx-astra-20261113-1>.
+- Client request ID: `bookfin-t5-rplx-astra-20261113-1`.
+- Branch at launch inspection: `t3/unread-record-retry-race`.
+- Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95`.
+- Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
+- Stages: build, review, then one fix stage if needed. Parent handles integration and closure.
+- Launch accepted and running. No implementation result or acceptance is claimed.
