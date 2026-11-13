@@ -772,22 +772,7 @@ class ReaderSession extends ChangeNotifier {
     _pdfPager = null;
     final previous = _document;
     _document = null;
-    if (previous != null) {
-      unawaited(
-        _closing.run(previous.dispose).onError<Object>((error, stack) {
-          // This chain orders releases; each document owns its failed close.
-          // Report it without making the next document inherit that failure.
-          FlutterError.reportError(
-            FlutterErrorDetails(
-              exception: error,
-              stack: stack,
-              library: 'bookfin reader',
-              context: ErrorDescription('while closing an ebook'),
-            ),
-          );
-        }),
-      );
-    }
+    if (previous != null) unawaited(_releaseDocument(previous));
     _edition = null;
     _book = null;
     _position = null;
@@ -806,6 +791,22 @@ class ReaderSession extends ChangeNotifier {
     _landed = null;
     _jumps = Future.value();
   }
+
+  /// Releases a document in close order and reports any failure, even when
+  /// its opening request no longer belongs to this session.
+  Future<void> _releaseDocument(ReaderDocument document) =>
+      _closing.run(document.dispose).onError<Object>((error, stack) {
+        // Each document keeps its failed close. Reporting it here does not
+        // make the next document inherit that failure.
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: error,
+            stack: stack,
+            library: 'bookfin reader',
+            context: ErrorDescription('while closing an ebook'),
+          ),
+        );
+      });
 
   /// Opens [selected], an ebook edition of [book], at its saved place, or
   /// at [at] when that place fits the edition.
@@ -891,7 +892,7 @@ class ReaderSession extends ChangeNotifier {
       }
       final known = await origin;
       if (!_live(generation) || !_current(selected)) {
-        await admitted.dispose();
+        await _releaseDocument(admitted);
         return;
       }
       _document = admitted;

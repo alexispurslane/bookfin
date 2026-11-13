@@ -21,6 +21,7 @@ class TrackedDocument implements native.PdfDocument {
   final native.PdfDocument document;
   var releases = 0;
   Object? failure;
+  StackTrace? failureStack;
   @override
   bool get isEncrypted => document.isEncrypted;
   @override
@@ -32,7 +33,9 @@ class TrackedDocument implements native.PdfDocument {
   Future<void> dispose() async {
     releases++;
     await document.dispose();
-    if (failure case final error?) throw error;
+    if (failure case final error?) {
+      Error.throwWithStackTrace(error, failureStack ?? StackTrace.current);
+    }
   }
 
   @override
@@ -360,4 +363,65 @@ void main() {
       await runtime.shutdown();
     },
   );
+
+  for (final leaving in ['close', 'account change', 'another open']) {
+    test('a late document reports its close failure after $leaving', () async {
+      final failure = AssertionError('late document close');
+      final stack = StackTrace.current;
+      final started = Completer<void>();
+      final admit = Completer<void>();
+      var opens = 0;
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = File(simple).absolute.uri;
+      final reader = ReaderSession(
+        downloads: downloads,
+        store: MemoryResume(),
+        load: loadPublication,
+        loadDocument: (file, source) async {
+          final pdf = await runtime.open(file.uri.toFilePath(), file.digest);
+          if (++opens == 1) {
+            tracked.documents.single
+              ..failure = failure
+              ..failureStack = stack;
+            started.complete();
+            await admit.future;
+          }
+          return pdf;
+        },
+      );
+      addTearDown(downloads.dispose);
+      addTearDown(reader.dispose);
+      await reader.bind(account(), [book]);
+      final opening = reader.open(book, edition);
+      await started.future;
+      switch (leaving) {
+        case 'close':
+          reader.closeView(reader.token);
+        case 'account change':
+          await reader.bind(account(user: 'bob'), [book]);
+        case 'another open':
+          await reader.open(book, edition);
+      }
+      final current = reader.document;
+      admit.complete();
+      await opening;
+      expect(reader.document, same(current));
+      expect(tracked.documents.first.releases, 1);
+      expect(reports, hasLength(1));
+      expect(reports.single.exception, same(failure));
+      expect(reports.single.stack, same(stack));
+      await reader.open(book, edition);
+      expect(reader.document, isA<PdfBook>());
+      expect(reader.message, isNull);
+      reader.closeView(reader.token);
+      await runtime.shutdown();
+      expect(
+        tracked.documents.every((document) => document.releases == 1),
+        isTrue,
+      );
+      expect(reports, hasLength(1));
+      reader.checkInvariants();
+      runtime.checkInvariants();
+    });
+  }
 }
