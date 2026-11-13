@@ -30,3 +30,7 @@ Astra xhigh lead launched from 00b5860e7cdabcc943871913409036646900bd13; running
 - taskId: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1>
+
+## Parent prerequisite steering — 2026-11-13
+
+The launch base includes download integration before the parent fixture/ordering corrections were committed. Sent the running lead explicit authorization to cherry-pick parent commit 7cb281777c991f4e05fd4b731ba70bd3ba7a2971 before broad/full verification. It carries the corrected catalog-only credential fixture, sync repair retention and account notification ordering, with regressions. These are parent-owned prerequisites, not EPUB implementation. Lead must record the prerequisite SHA separately, exclude it from the ticket's own review attribution/implementation commit list, preserve owned edits, and report any conflict instead of overwriting. The parent will skip the duplicate prerequisite at integration. Steering returned delivered/running; no child status was polled.
