@@ -25,3 +25,12 @@ Use the real startup coordination path in controlled tests. Prove a meaningful f
 Primary ownership: `lib/main.dart`, `test/app/app_shell_test.dart`, `test/boot_shell_test.dart`, any narrow startup regression file and this ticket. Change catalog code only if its existing interface cannot support coherent ownership. boo-o3cm concurrently owns Downloads and AccountBinding; boo-3y46 owns remote record admission. Parent handles overlap. Read the integrated boo-jlhy, boo-7z9a and boo-721h behavior before moving startup code.
 
 Required final checks through Nix: focused startup tests, `test/app test/catalog test/boot_shell_test.dart test/downloads test/playback test/sync`, affected analysis and formatting, and the full Flutter suite. Concurrency two; one heavy command at a time. Exactly one fresh read-only Astra reviewer at high; implementation and direct fixes use Astra at xhigh. No second reviewer, device work, browser work, coverage, mutations, deployment, push, PR or ticket closure. Parent owns integration, acceptance and hardening.
+
+## Delegated task
+
+Original base: `ed355cd7bce324ce109a0022a468cb3c462eb5c5`.
+Client request ID: `bookfin-boo-2gse-astra-20261113-1`.
+Task ID: `node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-2gse-astra-20261113-1`.
+Child thread ID: `thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-2gse-astra-20261113-1`.
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-2gse-astra-20261113-1>.
+Launch returned running on codex/gpt-6-astra with reasoningEffort xhigh. Branch and precise stage not yet reported. Build, one fresh read-only review and direct fixes are authorized. Completion delivery is automatic.
