@@ -35,7 +35,7 @@ List<CatalogEntry> _largeLibrary({String prefix = 'Book'}) => [
     entry('item$index', title: '$prefix $index', source: 'source$index'),
 ];
 
-/// Whether [input], the value that a hop copies into its worker, holds
+/// Whether [input], a worker input or result, holds
 /// catalog entries. A record shows its fields only through its text, so a
 /// record that names an entry or a cache counts as holding entries.
 bool _carriesEntries(Object? input) => switch (input) {
@@ -114,16 +114,36 @@ void main() {
   late ReceivePort reports;
   late List<(String?, int)> builds;
 
-  /// Whether each hop copied entries into its worker, in hop order.
+  /// Whether each worker input holds decoded entries, in hop order.
   late List<bool> crossings;
+  late List<bool> returnedEntries;
+  late List<String?> sentText;
 
   CatalogController newController() => CatalogController(
     credentials: credentials,
     store: store,
     clientFactory: (server, device) => client,
-    hop: <M, R>(FutureOr<R> Function(M) work, M input) {
+    hop: <M, R>(FutureOr<R> Function(M) work, M input) async {
       crossings.add(_carriesEntries(input));
-      return _recordingHop(reports.sendPort, work, input);
+      sentText.add(switch (input) {
+        (
+          scope: AccountScope _,
+          text: final String text,
+          choices: CatalogChoices _,
+        ) =>
+          text,
+        (
+          scope: AccountScope _,
+          text: final String text,
+          choices: CatalogChoices _,
+          previousHidden: Set<String> _,
+        ) =>
+          text,
+        _ => null,
+      });
+      final result = await _recordingHop(reports.sendPort, work, input);
+      returnedEntries.add(_carriesEntries(result));
+      return result;
     },
   );
 
@@ -136,6 +156,8 @@ void main() {
     client = FixtureClient(Uri.parse('https://books.example'));
     builds = [];
     crossings = [];
+    returnedEntries = [];
+    sentText = [];
     reports = ReceivePort()
       ..listen((report) => builds.add(report as (String?, int)));
     controller = newController();
@@ -789,7 +811,10 @@ void main() {
       await controller.refresh();
       expect(controller.accessBlocked, isTrue);
       expect(controller.books, isEmpty);
-      expect(controller.cache!.accessBlocked, isFalse);
+      expect(
+        CatalogCache.decode(account('alice').scope, saved!).accessBlocked,
+        isFalse,
+      );
       failBuild = false;
       client.failure = null;
       await controller.refresh();
@@ -1011,6 +1036,41 @@ void main() {
 
   group('what crosses to the worker', () {
     test(
+      'restoring returns usable books without decoded server entries',
+      () async {
+        client.entries = _largeLibrary();
+        await signIn();
+        final restarted = newController();
+        addTearDown(restarted.dispose);
+        returnedEntries.clear();
+        await restarted.restore();
+        expect(restarted.books, hasLength(40));
+        expect(returnedEntries, [false]);
+        restarted.checkInvariants();
+      },
+    );
+
+    test('visibility rebuilds from saved text without fetching or rewriting the catalog', () async {
+      client.entries = _largeLibrary();
+      await signIn();
+      final saved = store.values[account('alice').scope.key];
+      final requests = client.catalogReads;
+      crossings.clear();
+      returnedEntries.clear();
+      sentText.clear();
+      expect(await controller.setHiddenLibraries({'books'}), isTrue);
+      expect(controller.books, isEmpty);
+      expect(await controller.setHiddenLibraries({}), isTrue);
+      expect(controller.books, hasLength(40));
+      expect(client.catalogReads, requests);
+      expect(store.values[account('alice').scope.key], same(saved));
+      expect(crossings, [false, false]);
+      expect(returnedEntries, [false, false]);
+      expect(sentText, [same(saved), same(saved)]);
+      controller.checkInvariants();
+    });
+
+    test(
       'a refresh hands the worker Jellyfin\'s responses, not built entries',
       () async {
         client = _PagedClient(Uri.parse('https://books.example'), [
@@ -1023,6 +1083,7 @@ void main() {
         expect(crossings, [false]);
         expect(builds, [('catalog worker', 1)]);
         expect(controller.books, hasLength(40));
+        expect(returnedEntries, [false]);
       },
     );
 
@@ -1052,16 +1113,22 @@ void main() {
     });
 
     test(
-      'a correction rebuilds from decoded entries and saves only choices',
+      'a correction rebuilds from saved text and saves only choices',
       () async {
         client.entries = _largeLibrary();
         await signIn();
+        final text = store.values[account('alice').scope.key];
         crossings.clear();
+        sentText.clear();
+        returnedEntries.clear();
         await controller.correctBook(
           'book:item1',
           const BookDetails(title: 'Corrected', author: 'Writer'),
         );
-        expect(crossings, [true]);
+        expect(crossings, [false]);
+        expect(sentText, [same(text)]);
+        expect(returnedEntries, [false]);
+        expect(store.values[account('alice').scope.key], same(text));
         expect(
           controller.books.map((book) => book.title),
           contains('Corrected'),
@@ -1088,6 +1155,7 @@ void main() {
         client.entries = _largeLibrary();
         await signIn();
         crossings.clear();
+        returnedEntries.clear();
         client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
         await controller.refresh();
         expect(crossings, [false]);
@@ -1101,6 +1169,7 @@ void main() {
         );
         expect(saved.accessBlocked, isTrue);
         expect(saved.entries, hasLength(40));
+        expect(returnedEntries, [false]);
         controller.checkInvariants();
       },
     );

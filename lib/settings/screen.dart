@@ -158,7 +158,7 @@ class SettingsTab extends StatelessWidget {
                   subtitle: const Text(
                     'Book links, file groups, order, and details',
                   ),
-                  enabled: catalog.cache != null && !account.accessBlocked,
+                  enabled: catalog.hasCatalog && !account.accessBlocked,
                   onTap: () => _resetCorrections(context, session.scope.key),
                 ),
               ),

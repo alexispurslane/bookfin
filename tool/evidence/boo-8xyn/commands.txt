@@ -1,0 +1,29 @@
+Working directory: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5
+Original base: 6a5e2b95fa449be40c8de74431718346fb85b180
+
+00-transfer.txt (exit 0):
+nix develop --command bash -c 'command -v flutter; command -v dart; dart --version; sed -n "1,110p" "$FLUTTER_ROOT/packages/flutter/lib/src/foundation/_isolates_io.dart"; sed -n "1,80p" "$FLUTTER_ROOT/packages/flutter/lib/src/foundation/_isolates_web.dart"; sed -n "15,95p" "$FLUTTER_ROOT/packages/flutter/lib/src/foundation/isolates.dart"; rg -n "without copying|strings|Isolate.exit|unexpected|transitive object" "$FLUTTER_ROOT/bin/cache/dart-sdk/lib/isolate/isolate.dart"'
+
+01-boundary-red.txt (exit 1, five expected assertion failures):
+nix develop --command flutter test --concurrency=2 test/catalog/catalog_signals_test.dart --name 'what crosses to the worker' --reporter expanded
+
+02-format.txt (exit 0):
+nix develop --command dart format lib/catalog/controller.dart lib/catalog/library_view.dart lib/settings/screen.dart test/catalog/catalog_signals_test.dart test/catalog/choices_test.dart
+
+03-boundary-green.txt (exit 0):
+nix develop --command flutter test --concurrency=2 test/catalog/catalog_signals_test.dart --name 'what crosses to the worker' --reporter expanded
+
+04-signals-choices.txt (exit 0):
+nix develop --command flutter test --concurrency=2 test/catalog/catalog_signals_test.dart test/catalog/choices_test.dart --reporter expanded
+
+05-affected.txt (exit 0, 1563 passed, 3 skipped):
+nix develop --command flutter test --concurrency=2 test/catalog test/settings test/app test/downloads test/playback test/sync --reporter expanded
+
+06-full.txt (exit 0, 3554 passed, 27 skipped):
+nix develop --command flutter test --concurrency=2 --reporter expanded
+
+07-format-check.txt (exit 0, five files, zero changes):
+nix develop --command dart format --output=none --set-exit-if-changed lib/catalog/controller.dart lib/catalog/library_view.dart lib/settings/screen.dart test/catalog/catalog_signals_test.dart test/catalog/choices_test.dart
+
+08-analysis.txt (exit 0, no issues):
+nix develop --command flutter analyze --no-pub lib/catalog lib/settings test/catalog test/settings test/app test/downloads test/playback test/sync

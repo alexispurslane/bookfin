@@ -1,0 +1,6 @@
+{
+  "command": "git diff --cached --check 6a5e2b95fa449be40c8de74431718346fb85b180",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": ""
+}

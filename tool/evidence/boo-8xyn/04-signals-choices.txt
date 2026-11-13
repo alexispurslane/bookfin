@@ -1,0 +1,164 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.4 (2.5.5 available)
+  shared_preferences_foundation 2.5.7 (2.6.2 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.7 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+38 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the library signal a refresh that changes no book notifies status and not library
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the library signal a refresh that changes a book publishes the new books
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the library signal a correction publishes the corrected books
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the library signal signing out and losing access publish the empty library
+00:00 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the account signal changes on sign-in and sign-out, and not on a refresh of the same account
+00:00 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the account signal says when access is blocked
+00:00 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal is refreshing while a refresh runs, and only then
+00:00 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a restore from storage is not a refresh
+00:00 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a refresh that reaches Jellyfin reports that Jellyfin is reachable
+00:00 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a refresh that cannot reach Jellyfin reports it, and a later successful refresh clears it
+00:00 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal Jellyfin stays unreachable while a retry runs
+00:00 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a cancelled retry leaves Jellyfin unreachable
+00:00 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal an expired sign-in is reported as expired, not as unreachable
+00:00 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal revoked access is reported as revoked, not as unreachable
+00:00 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a saved denial is revoked access after a restart
+00:00 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a refresh that Jellyfin answers with an incomplete catalog still reaches Jellyfin
+00:00 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal a sign-in that cannot reach Jellyfin reports it
+00:00 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the status signal signing out forgets that Jellyfin was unreachable
+00:00 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a refresh that cannot reach Jellyfin leaves the telling to the reach
+00:00 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a background refresh that Jellyfin answers with an incomplete catalog says nothing
+00:00 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a background refresh whose catalog cannot be saved says nothing
+00:00 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a refresh that the person asked for reports a catalog that cannot be saved
+00:00 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a background refresh still reports an expired sign-in and revoked access
+00:00 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what a refresh tells the person a sign-in that cannot reach Jellyfin asks to check the address and the connection
+00:00 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs joins a background refresh and reports its failure after Jellyfin answered
+00:00 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs starts no second request to Jellyfin
+00:00 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs a background refresh that joins one the person asked for keeps it reported
+00:00 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs a background refresh that nobody asked about stays silent
+00:00 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs a refresh with other hidden libraries replaces the running one
+00:00 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a refresh asked for while another runs a refresh asked for during a restore runs after it, from the restored catalog
+00:00 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a sign-in that Jellyfin accepts succeeded
+00:00 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a refresh has not succeeded while it runs, and has when it ends
+00:00 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a restore from storage has not reached Jellyfin, so it has not succeeded
+00:00 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a refresh that cannot reach Jellyfin did not succeed
+00:00 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded an expired sign-in did not succeed
+00:00 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded revoked access did not succeed
+00:00 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded signing out forgets the last success
+00:00 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a cancelled refresh did not succeed
+00:00 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a correction after a refresh keeps the refresh a success
+00:00 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a correction that cannot be saved keeps the refresh a success
+00:00 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a refresh that Jellyfin answers with an incomplete catalog reached Jellyfin and did not succeed
+00:00 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded a refresh whose catalog cannot be saved reached Jellyfin and did not succeed
+00:00 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: whether the last sign-in or refresh succeeded the status and the catalog agree on success at every status notice
+00:00 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a sign-in over a saved denial a sign-in that lists the selected libraries ends the denial, so the saved books appear at once
+00:00 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a sign-in over a saved denial the status never says that access is revoked and that the sign-in succeeded
+00:00 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a sign-in over a saved denial after a sign-in ends the denial, a restart shows the library with its corrections
+00:00 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a sign-in over a saved denial a sign-in whose end of the denial cannot be saved did not succeed and keeps the saved denial
+00:00 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a sign-in over a saved denial a sign-in after a denial shows only the book libraries that Jellyfin lists now
+00:00 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an unchanged response restores access after a denial could not be prepared for storage
+00:00 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an unchanged response repairs the saved catalog after a cancelled write finishes
+00:00 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a replacement refresh repairs a superseded save even with unchanged books and libraries
+00:00 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an unchanged refresh neither builds books nor rewrites their saved catalog
+00:00 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an unchanged refresh can succeed when storage cannot accept writes
+00:00 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a library rename is saved without rebuilding unchanged books
+00:00 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books hiding an empty library is saved without rebuilding unchanged books
+00:00 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an unchanged refresh preserves a correction saved while the request runs
+00:00 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a restore builds the books once, in another isolate
+00:00 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a refresh builds the books once, in another isolate
+00:00 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a correction builds the books once, in another isolate
+00:00 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books a one-book library builds in another isolate, because its build costs more than a hop
+00:00 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: the build of the books an empty library builds here, because a hop costs more than its build
+00:00 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker restoring returns usable books without decoded server entries
+00:00 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker visibility rebuilds from saved text without fetching or rewriting the catalog
+00:00 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker a refresh hands the worker Jellyfin's responses, not built entries
+00:00 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker a catalog that the worker finds incomplete is reported to a person who asked, and the saved books stay
+00:00 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker a correction rebuilds from saved text and saves only choices
+00:00 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker a saved denial hands the worker the saved text, not the entries
+00:00 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker corrections in a row each start from the last saved one
+00:00 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: what crosses to the worker access that returns after a saved denial brings the books back
+00:00 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a corrupt saved catalog a small corrupt catalog gives the same message and keeps the account signed in
+00:00 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a corrupt saved catalog a large corrupt catalog gives the same message and keeps the account signed in
+00:00 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/catalog_signals_test.dart: a corrupt saved catalog a corrupt catalog at sign-in keeps the sign-in, and stays saved until the user asks for a refresh
+00:04 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: choices survive a missing server cache and a real-file reopen
+00:04 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: choices survive a corrupt server cache and a real-file reopen
+00:04 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: replacing a legacy catalog commits its choices before overwriting it
+00:04 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: refresh retains unreadable legacy bytes outside the replacement catalog
+00:04 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: hiding a known library saves only choices without fetching server entries
+00:04 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a failed choice commit leaves the previous choices after reopen and can retry
+00:04 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: an interrupted first choice commit keeps legacy choices for restart
+00:04 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: migration commits choices for inactive preference accounts before removing them
+00:04 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: new corrections win when migration overlaps and retained legacy remains after restart
+00:04 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: refresh preserves exact legacy bytes 15 through restart
+00:04 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: refresh preserves exact legacy bytes 2 through restart
+00:04 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: unknown committed choices are retained and reported instead of reviving older corrections
+00:04 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a failed first choice migration prevents replacement and retries from the sole legacy copy
+00:04 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: failure to retain unreadable bytes prevents refresh replacement until retry
+00:04 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: an account switch during a choice commit never adopts the former accounts choices
+00:04 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a choice committed during a pending server response wins after refresh and reopen
+00:04 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a correction queued behind a server write uses the adopted entries and preserves its choices
+00:04 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: links recording groups file order and details survive dropping the server cache
+00:04 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: saving existing choices after reopening storage never reads the server catalog
+00:04 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: missing correction map in committed choices is retained and reported
+00:04 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: unknown detail field in committed choices is retained and reported
+00:04 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: legacy text whose entries cannot build is retained while readable choices survive
+00:04 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a fetched empty library is remembered so later visibility changes stay local
+00:04 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: launch migration extracts inactive native accounts before their caches can be lost
+00:04 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: native discovery failure does not strand retained preference accounts
+00:04 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: an invalid legacy account identity reports failure without stranding another account
+00:04 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: browser migration saves inactive choices independently of preference caches
+00:04 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a temporary choice read failure keeps the committed record intact for retry
+00:04 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a temporary legacy read failure preserves its corrections until migration can retry
+00:04 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: access denial after an interrupted choice read adopts a coherent saved account
+00:04 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a correction persists no server catalog bytes
+00:04 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: an obsolete account restore cannot adopt choices after waiting for a write
+00:04 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: a failed access recovery cache write keeps committed visibility coherent on retry
+00:04 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: one unreadable native file cannot strand independent native choices
+00:04 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: background legacy damage reaches the active notice without a server refresh
+00:04 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: background legacy damage reaches the active notice after an unchanged refresh
+00:04 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5/test/catalog/choices_test.dart: native version one selected libraries migrate to no hidden libraries after reopen
+00:04 +109: All tests passed!

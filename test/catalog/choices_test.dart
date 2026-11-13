@@ -821,7 +821,7 @@ void main() {
     final catalog = controller();
     await catalog.connect('https://books.example', 'alice', 'password');
     expect(catalog.accessBlocked, isTrue);
-    expect(catalog.cache, isNotNull);
+    expect(catalog.hasCatalog, isTrue);
     expect(catalog.checkInvariants, returnsNormally);
     final reopened = controller(
       storage: LocalCatalogStore(files: DiskCatalogFiles(root)),

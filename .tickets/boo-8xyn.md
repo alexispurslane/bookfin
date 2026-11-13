@@ -82,3 +82,33 @@ Astra high reviewer authorized. Parent integrates and closes.
 - taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-8xyn-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-8xyn-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-8xyn-astra-20261113-1>
+
+## Implementation checkpoint — 2026-11-13
+
+- Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-b2f263a5`.
+- Branch: `t3/catalog-worker-facts`.
+- Initial HEAD and original review base:
+  `6a5e2b95fa449be40c8de74431718346fb85b180`; initial status clean.
+- Read the parent audit, all worker/adoption/choice callers, both UI cache
+  callers, both test cache callers, and the derived library's retained fields.
+  No prior production edits or commits were present in this worktree.
+- The controller now retains catalog facts, encoded text, choices and derived
+  books. Worker results contain no CatalogCache. Corrections and visibility
+  decode the retained text inside their existing worker. `hasCatalog` replaces
+  public full-cache access. The invariant checker decodes only on demand.
+- Boundary red: five meaningful failures (restore, refresh and access revision
+  returned entries; correction and visibility sent entries). Boundary green:
+  eight passed. Focused signals/choices: 109 passed.
+- Pinned Flutter 3.47.4 native compute uses Isolate.run. Dart 3.13.3 shares
+  immutable strings; Isolate.run exits with its result without copying. Web
+  compute uses the current event loop. No heap, launch or latency claim.
+- Detailed caller audit, checks and saved output: `tool/evidence/boo-8xyn/`.
+  Remaining verification and sole read-only review are recorded there before
+  handoff. Parent retains integration, acceptance, hardening and closure.
+
+Required build checks completed before review: affected suites 1,563 passed,
+three opt-in skips; full Flutter suite 3,554 passed, 27 skips, no failures;
+changed-file formatting zero changes; affected analysis no issues. All commands
+used Nix, test concurrency two and one heavy command at a time. No device,
+browser, coverage, mutation or timing-threshold work. The only failed test run
+was the required meaningful red boundary run. See logs 01–08 and skips.txt.

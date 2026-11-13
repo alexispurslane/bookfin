@@ -90,7 +90,7 @@ class _LibraryShelfState extends State<LibraryShelf> {
                     listenable: catalog.statusNotifier,
                     select: () =>
                         catalog.statusNotifier.value.refreshing &&
-                        catalog.cache == null,
+                        !catalog.hasCatalog,
                     builder: (context, reading, _) => Text(
                       catalog.accountNotifier.value.accessBlocked
                           ? 'This account cannot read its book libraries.'
