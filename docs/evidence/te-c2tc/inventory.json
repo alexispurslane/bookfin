@@ -86,7 +86,7 @@
       "tool/research/epub_engines/test_calibrate.py",
       "tool/research/sync/fixture.py"
     ],
-    "other": "Plugin/APK ZIP writers do not construct EPUBs; navigator raster-fallback rewrites retain each original ZipInfo; read-only ZIP consumers create no entries."
+    "other": "Plugin/APK ZIP writers do not construct EPUBs; navigator raster-fallback probes create fresh SVG/JPEG entries in small resource ZIPs, not EPUB publications; read-only ZIP consumers create no entries."
   },
   "corruptionHelpers": "test/reader/epub/zip_test.dart edits existing headers directly; no clock creation. All deliberate CRC/size/flags mutations retained."
 }

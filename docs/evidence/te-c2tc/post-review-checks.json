@@ -1,0 +1,18 @@
+{
+  "reviewedHead": "60115c14377f6397decff61e4e73ce35f575314a",
+  "originalReviewTextSha256": "7c6ae4736a0b5ae7a08df27f5e6f3d95248054ea67f9ce88638503c38ae8653f",
+  "originalReviewCompressedTextMatchesJson": true,
+  "finalDartSourcePatchSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+  "allFinalChecksStillCoverFinalCode": true,
+  "runtimeAndEvidenceScriptsUnchangedSinceReview": true,
+  "findingF1": "corrected audit rationale after reading both source sites; no behavior defect",
+  "reviewVerdicts": {
+    "correctness": "pass",
+    "fulfillment": "pass",
+    "design": "pass"
+  },
+  "materialUnverifiedRequirements": [],
+  "secondReview": "not run; user authorized exactly one",
+  "repeatFullSuite": "not run; documentation-only change, no unresolved behavioral concern",
+  "remaining": "parent integration, acceptance, hardening and closure; separate research ticket td-bz4y"
+}

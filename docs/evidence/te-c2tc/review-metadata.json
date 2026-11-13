@@ -1,0 +1,32 @@
+{
+  "threadLink": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ad61a14dc-ef1f-41ba-80be-80fae459e327%3Adelegate-task%3Ate-c2tc-review-20261113-dac305e5>",
+  "taskId": "node:delegated-task:command%3Amcp%3Ad61a14dc-ef1f-41ba-80be-80fae459e327%3Adelegate-task%3Ate-c2tc-review-20261113-dac305e5",
+  "threadId": "thread:delegated-task:command%3Amcp%3Ad61a14dc-ef1f-41ba-80be-80fae459e327%3Adelegate-task%3Ate-c2tc-review-20261113-dac305e5",
+  "status": "completed",
+  "run": {
+    "runId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253Ad61a14dc-ef1f-41ba-80be-80fae459e327%253Adelegate-task%253Ate-c2tc-review-20261113-dac305e5:ordinal:1",
+    "ordinal": 1,
+    "status": "completed",
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "requestedAt": "2026-11-13T22:10:09.539Z",
+    "startedAt": "2026-11-13T22:10:09.812Z",
+    "completedAt": "2026-11-13T22:13:41.916Z"
+  },
+  "target": {
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "options": {
+      "reasoningEffort": "high"
+    }
+  },
+  "reviewsStarted": 1,
+  "originalReportPath": "docs/evidence/te-c2tc/review-original.json",
+  "correctness": "pass",
+  "fulfillment": "pass",
+  "design": "pass",
+  "materialUnverifiedRequirements": [],
+  "nonblockingFindingIds": [
+    "F1"
+  ]
+}

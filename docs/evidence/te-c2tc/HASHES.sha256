@@ -1,7 +1,7 @@
 ca561157d6d1f9ad418d50270b7ff75f439da5e206f44da17794aac20e270b48  docs/evidence/te-c2tc/affected-tests.txt
-793104d25b2e54ab031f55d3e34c4b4d424d9f451402cd48539305a1c392203b  docs/evidence/te-c2tc/archive.json
+573d3734bea436ce05e7c06d9e142c9ba57b213ee9a8ac97e1d7bf3a2540b5ad  docs/evidence/te-c2tc/archive.json
 977e490e0e4ccc4698fef3f86d547f6dab2910b88c0f77bb526dbbe1eb220166  docs/evidence/te-c2tc/caller-audit.json
-441bbf59a928322a15b3ccfd4e66e6771a9a558aa463b8e61983eb3abebd7b50  docs/evidence/te-c2tc/commands.jsonl
+a8c549a2bca7e4249986fa84b1831d36616d15ce960d883591527016ae47e936  docs/evidence/te-c2tc/commands.jsonl
 e5b988ab236d5464d62f1c3dddbe677113b26f3b16514c63c8248f0216311e6d  docs/evidence/te-c2tc/controlled-observations.json
 562e52dfaf23867ba53fc09ceb5c64251f7192a61f97e8a36fc9fc584ec962b3  docs/evidence/te-c2tc/development-failures.json
 c8c7a294f67c0e1b3ce86a1744dddd75c6680c7a980afa4cd042dca106027417  docs/evidence/te-c2tc/diagnostic/damaged-before.dart.gz
@@ -12,7 +12,7 @@ a69564024233d5019cc1f27e1b9d99ace03960488f5ee103a2bb95b004c28dfc  docs/evidence/
 334c017488362124b9a25c3d6aa2fea2ea68addfa64563067c46d77a2344ffd2  docs/evidence/te-c2tc/diagnostic/setup.json
 4a9094e838c203a67a553673579c7c50847e48609bff5287e8a1d21943c31dfb  docs/evidence/te-c2tc/diagnostic/timestamp_diagnostic_test.dart.gz
 f9d64f5885ed50d4d183ef91f3dfc4617de63131cf62953558027b95de24b9ba  docs/evidence/te-c2tc/direct-callers.txt
-b0d64cc719ffab3a19663ecb2a2dfc7683fbc652777e33478dea1196f763b4e6  docs/evidence/te-c2tc/inventory.json
+0978063cdef1d1aa126dbe0f8e85cda056af50d418fb28310f86f9ec33f7c220  docs/evidence/te-c2tc/inventory.json
 f1bc679221a2c8ab1ea6d904189b331df17687cc08ea805cd9051e1dd97862f7  docs/evidence/te-c2tc/investigation.json
 34b80a248fb8ebd7fa9884afecae5d02ad72ad0ee52535bb7f208f3f702b3690  docs/evidence/te-c2tc/logs/01-pub-get.log.gz
 da604f41fc9ee2e5293ab3accb2cc70fa773cb1a707b88fdb6c27899fc651aab  docs/evidence/te-c2tc/logs/02-controlled-red.log.gz
@@ -25,6 +25,8 @@ a1669758237b3a99a772d7148a8b7fe6cf5a18f7bdea3503b39e68bcb7588e1b  docs/evidence/
 9ebd25f0dcfd95cc1a9e74c457c81b0eb2b0d0b46797acfa14f702a2cbcb79a2  docs/evidence/te-c2tc/logs/09-format-check.log.gz
 24b38d1fee62938ba5e2e7b2b6f316caea1db2c375e5c1524a4eefe97e2cc481  docs/evidence/te-c2tc/logs/10-whitespace.log.gz
 f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837  docs/evidence/te-c2tc/logs/11-whitespace-fixed.log.gz
+f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837  docs/evidence/te-c2tc/logs/12-post-review-code-unchanged.log.gz
+f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837  docs/evidence/te-c2tc/logs/13-final-tree-whitespace.log.gz
 f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837  docs/evidence/te-c2tc/patches/01-pub-get.patch.gz
 947cc0908f30409386c12ceba87b4f77ecbb55b55e82914baeb36b37544ae757  docs/evidence/te-c2tc/patches/02-controlled-red.patch.gz
 061aa69c247eba8fc103300c96cb648eb14efd58098903373bfc28edcbb72310  docs/evidence/te-c2tc/patches/03-controlled-green.patch.gz
@@ -36,9 +38,16 @@ f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837  docs/evidence/
 8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1  docs/evidence/te-c2tc/patches/09-format-check.patch.gz
 8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1  docs/evidence/te-c2tc/patches/10-whitespace.patch.gz
 8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1  docs/evidence/te-c2tc/patches/11-whitespace-fixed.patch.gz
+8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1  docs/evidence/te-c2tc/patches/12-post-review-code-unchanged.patch.gz
+8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1  docs/evidence/te-c2tc/patches/13-final-tree-whitespace.patch.gz
+92d0612fb496ba67cf531229248d4ba7d67415f5e712644733e30db23413de26  docs/evidence/te-c2tc/post-review-checks.json
 3ac4a9a66fecc702705e137284d195929ce7f9103edfcab6010a5ff8ea86db90  docs/evidence/te-c2tc/pre-review-checks.json
 41578c46b2b787bc8bd2bb0c3f383a3b1d21cddab6058cc1c06ce0837c663756  docs/evidence/te-c2tc/preserved.json
 5d8383da2ef56f43282d583a7be1d5ec3ee13e601fb3696ec8177036666c8853  docs/evidence/te-c2tc/restoration.json
+f2dbce834c7aa2a071d6b1c5d6a98e6d77f8dde4b39a64a3c6f5679a074ee8ce  docs/evidence/te-c2tc/review-metadata.json
+faf1b37d5a7ffc2292446be4a396723ea5b2af98fb0dc827afcee56b6cf6e5f5  docs/evidence/te-c2tc/review-original.json
+94707a59ab16ae3705b4b98eaee691576b43f3eb586408eeb6efbf30b2a443aa  docs/evidence/te-c2tc/review-original.txt.gz
+c0d445f0df7f84b7665a1d3b7d565c981769592b98a77f457d0a83017fd6a619  docs/evidence/te-c2tc/review-resolutions.json
 4a44bc1f54f3918e7e5aa50c0f0425bbc5145f2486b3f992b6993ff86343d8a4  docs/evidence/te-c2tc/run.py
 eb37bcbb8e3b63530618147a020311d6e73bac3b8d110193d150273e15844138  docs/evidence/te-c2tc/source-inventory.txt
 a4ecaf6c1d61fa4a49a3289ef1192e70a8d981a795d240fdc8b06e73f8107adb  docs/evidence/te-c2tc/summarize.py

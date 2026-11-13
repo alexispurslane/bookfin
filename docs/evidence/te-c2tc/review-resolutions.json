@@ -1,0 +1,15 @@
+[
+  {
+    "finding": "F1",
+    "severity": "low; nonblocking",
+    "category": "evidence documentation",
+    "status": "fixed",
+    "evidence": [
+      "tool/research/readers/navigator/test_raster_fallback.py:47-48",
+      "tool/research/readers/navigator/test_raster_fallback.py:56-57"
+    ],
+    "change": "Corrected inventory.json: these probes create fresh SVG/JPEG entries and do not build EPUB publications. Removed the incorrect claim that they preserve original ZipInfo metadata.",
+    "verification": "Read both writer sites; documentation-only correction. Hash manifest refreshed. No runtime behavior changed and no passing broad test suite repeated.",
+    "originalReportTextSha256": "7c6ae4736a0b5ae7a08df27f5e6f3d95248054ea67f9ce88638503c38ae8653f"
+  }
+]

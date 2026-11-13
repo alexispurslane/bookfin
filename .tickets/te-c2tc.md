@@ -109,3 +109,17 @@ complete inventory and scope decisions are in `inventory.json`.
 
 One fresh read-only reviewer follows implementation. The parent owns integration,
 acceptance, hardening and ticket closure. The ticket remains in progress.
+
+## Sole review completed — 2026-11-13
+
+The fresh read-only reviewer assessed correctness/regressions, fulfillment and
+design separately: all pass; no material unverified requirements. Its original
+report is preserved unchanged in `docs/evidence/te-c2tc/review-original.json`
+and as a compressed exact text copy. Review metadata records its thread link.
+
+F1 was a low-severity audit wording error: the isolated raster-fallback probes
+create fresh SVG/JPEG ZIP entries rather than preserving original ZipInfo.
+The lead checked both writer sites and corrected only `inventory.json`. The
+resolution and updated hashes are retained. No runtime source changed after
+the passing final checks, so no broad/full suite was repeated. Ready for parent
+integration; acceptance, hardening and closure remain parent-owned.
