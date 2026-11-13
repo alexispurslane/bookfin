@@ -533,7 +533,20 @@ class LocalResumeStore
   /// Marks an action uploaded only after transport verified its server copy.
   /// The action itself stays retained. A failed write keeps it pending.
   Future<void> acknowledge(String account, String identity) =>
-      _update(account, (journal) => journal.acknowledge(identity));
+      acknowledgeBatch(account, [identity]);
+
+  /// Durably acknowledges only the verified identities in one transaction.
+  /// Every action remains retained, including superseded positions. Failure
+  /// rolls back the entire group; actions saved during upload stay pending.
+  Future<void> acknowledgeBatch(String account, Iterable<String> identities) {
+    final confirmed = identities.toList();
+    if (confirmed.isEmpty) return Future.value();
+    return _update(account, (journal) {
+      for (final identity in confirmed) {
+        journal.acknowledge(identity);
+      }
+    });
+  }
 
   /// Receives a decoded discovery page and its cursor in one durable write.
   /// The protocol validates page ordering before calling this method. A

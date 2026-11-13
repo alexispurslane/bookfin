@@ -8,6 +8,13 @@ import 'journal.dart';
 /// of the same action and were replaced by it during one exchange.
 typedef SyncReport = ({int replaced});
 
+typedef _UploadResult = ({
+  String identity,
+  Map<String, dynamic>? copy,
+  Exception? error,
+  StackTrace? stack,
+});
+
 /// The Bookfin plugin protocol: validates replies and exchanges immutable
 /// actions. The store owns durability, acknowledgments, cursor updates and
 /// damaged-copy replacement. This module never mutates a journal directly.
@@ -26,35 +33,25 @@ class RecordTransport {
     final account = session.scope.key;
     var replaced = 0;
     final uploads = await records.pendingUploads(account);
-    for (final action in uploads) {
-      final identity = RecordJournal.identity(action);
-      final payload = jsonEncode(action);
-      Map<String, dynamic> stored;
-      try {
-        stored = await client.uploadPersonalRecord(session, identity, payload);
-      } on Exception {
-        // The server refuses an upload whose identity it holds with other
-        // content. Its copy was uploaded before any damage here, so it
-        // wins. A server that cannot be asked, or that lacks the action,
-        // leaves the failure as it was.
-        final copy = await _serverCopy(session, client, identity);
-        if (copy == null) rethrow;
-        if (!const DeepCollectionEquality().equals(copy, action)) {
-          replaced += await records.takeServerCopies(account, [copy]);
+    // A group bounds in-flight requests and local commits. Completion order
+    // carries no causal meaning: the journal applies each action's context.
+    for (var start = 0; start < uploads.length; start += 4) {
+      final results = await Future.wait([
+        for (final action in uploads.skip(start).take(4))
+          _upload(session, client, action),
+      ]);
+      replaced += await records.takeServerCopies(account, [
+        for (final result in results) ?result.copy,
+      ]);
+      await records.acknowledgeBatch(account, [
+        for (final result in results)
+          if (result.error == null) result.identity,
+      ]);
+      for (final result in results) {
+        if (result.error case final error?) {
+          Error.throwWithStackTrace(error, result.stack!);
         }
-        await records.acknowledge(account, identity);
-        continue;
       }
-      if (stored['Id'] != identity ||
-          stored['Payload'] != payload ||
-          stored['Deleted'] != false ||
-          stored['Sequence'] is! int ||
-          (stored['Sequence'] as int) < 1) {
-        throw const FormatException(
-          'The server did not confirm the pending personal record.',
-        );
-      }
-      await records.acknowledge(account, identity);
     }
     for (var request = 0; request < 128; request++) {
       final after = await records.discoveryCursor(account);
@@ -106,6 +103,38 @@ class RecordTransport {
     );
   }
 
+  Future<_UploadResult> _upload(
+    JellyfinSession session,
+    JellyfinClient client,
+    Map<String, dynamic> action,
+  ) async {
+    final identity = RecordJournal.identity(action);
+    try {
+      final payload = jsonEncode(action);
+      Map<String, dynamic> stored;
+      try {
+        stored = await client.uploadPersonalRecord(session, identity, payload);
+      } on Exception {
+        // Only an independently verified server copy recovers a failed PUT.
+        final copy = await _serverCopy(session, client, identity);
+        if (copy == null) rethrow;
+        return (identity: identity, copy: copy, error: null, stack: null);
+      }
+      if (stored['Id'] != identity ||
+          stored['Payload'] != payload ||
+          stored['Deleted'] != false ||
+          stored['Sequence'] is! int ||
+          (stored['Sequence'] as int) < 1) {
+        throw const FormatException(
+          'The server did not confirm the pending personal record.',
+        );
+      }
+      return (identity: identity, copy: null, error: null, stack: null);
+    } on Exception catch (error, stack) {
+      return (identity: identity, copy: null, error: error, stack: stack);
+    }
+  }
+
   /// The server's copy of the action [identity], or null when the server
   /// cannot be asked, lacks it, or answers with something else.
   Future<Map<String, dynamic>?> _serverCopy(
@@ -117,6 +146,8 @@ class RecordTransport {
       final stored = await client.personalRecord(session, identity);
       if (stored['Id'] != identity ||
           stored['Deleted'] != false ||
+          stored['Sequence'] is! int ||
+          (stored['Sequence'] as int) < 1 ||
           stored['Payload'] is! String) {
         return null;
       }

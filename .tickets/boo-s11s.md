@@ -37,3 +37,15 @@ Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889a
 Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-s11s-astra-20261113-1
 Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-s11s-astra-20261113-1>
 Launch status: running; stage not yet reported. Completion will be delivered automatically.
+
+## Step 1: bounded existing-API uploads
+
+Inspected clean worktree `/Users/alexispurslane/.t3/worktrees/bookfin/t3-e16914e3`, branch `t3/batch-personal-record-sync`, original HEAD `1de1ed6ba8a0bd69af70b2123f7fd8a63cedd48f`. Read project rules, scope, dependency tree, and required design/TDD/role instructions. No checkout manipulation or device work.
+
+Transport sends at most four existing v1 PUT requests concurrently, waits for the group, validates each confirmation independently, and passes successful identities to LocalResumeStore. The store acknowledges the group in one durable transaction. Every immutable action stays retained. Failure leaves only unconfirmed actions pending; a failed acknowledgment transaction rolls back the entire group. Server-copy recovery keeps its existing durable owner. RecordSync scheduling is unchanged.
+
+Five behavior tests first failed for sequential upload, per-object commit, partial acknowledgment rollback, and skipped later confirmations. Log `/tmp/boo-s11s-step1-red.log`. A first test attempt could not load without dependency configuration; `nix develop --command flutter pub get` completed (`/tmp/boo-s11s-pub-get.log`). This setup failure is not red evidence. Focused green: 54 tests in `/tmp/boo-s11s-step1-green.log`.
+
+The first affected run passed 1,111 tests with two external-fixture skips and one old sequential-retry expectation failure (`/tmp/boo-s11s-step1-affected.log`). Updated that test to preserve verified partial successes and use a deterministic interrupted request. An initial analysis also found an unused import and null-aware-element lint; both fixed.
+
+Final command: `nix develop --command bash -c 'dart format test/sync/format_retry_test.dart lib/sync/transport.dart test/sync/batch_transport_test.dart && flutter analyze --no-pub lib/sync/transport.dart lib/playback/store.dart test/sync/batch_transport_test.dart test/sync/format_retry_test.dart && flutter test --no-pub --concurrency=2 test/sync test/playback test/durability test/catalog --reporter expanded'`. Result: analysis clean; 1,112 passed, 2 existing external-fixture skips, no failures, 1:08. Log `/tmp/boo-s11s-step1-affected-final.log`. Full suite and fresh review follow both steps. Host checks only; absent iOS SDK notices are unrelated to these host tests.

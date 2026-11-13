@@ -32,6 +32,8 @@ class _UnconfirmedUpload implements JsonTransport {
     required Map<String, String> headers,
     Map<String, dynamic>? body,
   }) async {
+    final interruptThisUpload = method == 'PUT' && interrupt;
+    if (interruptThisUpload) interrupt = false;
     if (method == 'PUT') {
       attempts.add((
         identity: uri.pathSegments.last,
@@ -44,8 +46,7 @@ class _UnconfirmedUpload implements JsonTransport {
       headers: headers,
       body: body,
     );
-    if (method == 'PUT' && interrupt) {
-      interrupt = false;
+    if (interruptThisUpload) {
       return {...response, 'Payload': 'unconfirmed'};
     }
     return response;
@@ -230,9 +231,17 @@ void main() {
         ),
       ),
     );
-    expect(await database.load(account), before);
+    final partial = (await database.load(account))!;
+    final confirmed = transport.attempts.skip(1).map((a) => a.identity).toSet();
+    expect(partial['sync']['actions'], before!['sync']['actions']);
+    expect(partial['sync']['pending'], [
+      for (final identity in pending)
+        if (!confirmed.contains(identity)) identity,
+    ]);
+    expect(partial['sync']['cursor'], before['sync']['cursor']);
     expect(await database.read('previous-account'), previous);
-    expect(transport.attempts.single.identity, endsWith('.10'));
+    expect(transport.attempts.first.identity, endsWith('.10'));
+    final firstGroupSize = transport.attempts.length;
     await database.close();
     database = await RecordDatabase.open(
       factory: databaseFactoryFfi,
@@ -240,7 +249,7 @@ void main() {
     );
     final restarted = LocalResumeStore(openDatabase: () async => database);
     await RecordTransport(restarted).synchronize(session, client);
-    expect(transport.attempts[1], transport.attempts.first);
+    expect(transport.attempts[firstGroupSize], transport.attempts.first);
     final saved = (await database.load(account))!['sync'] as Map;
     expect(saved['pending'], isEmpty);
     expect(saved['cursor'], 37);
