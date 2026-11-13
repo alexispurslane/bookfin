@@ -46,6 +46,39 @@ class MemoryCredentials implements CredentialStore {
 }
 
 class MemoryCatalogStore implements CatalogStore {
+  final choices = <String, CatalogChoices>{};
+  @override
+  Future<CatalogChoices> readChoices(AccountScope scope) async {
+    if (choices[scope.key] case final saved?) return saved;
+    final text = values[scope.key];
+    if (text != null) {
+      try {
+        final json = jsonDecode(text) as Map<String, dynamic>;
+        if (json['version'] == 1 || json['version'] == 2) {
+          return choices[scope.key] = CatalogChoices(
+            edits: CatalogEdits.fromJson(json['edits'] as Map<String, dynamic>),
+            hidden: json['version'] == 1
+                ? {}
+                : Set<String>.from(json['hidden'] as List),
+          );
+        }
+      } on Exception {
+        /* The real store retains malformed data. */
+      }
+    }
+    return choices[scope.key] = CatalogChoices();
+  }
+
+  @override
+  Future<void> writeChoices(AccountScope scope, CatalogChoices value) async {
+    if (writeStarted case final started? when !started.isCompleted) {
+      started.complete();
+    }
+    await gate?.future;
+    if (failWrites) throw StateError('disk failure');
+    choices[scope.key] = value;
+  }
+
   /// The saved catalog text of each account, by account scope key.
   final values = <String, String>{};
   bool failWrites = false;
@@ -291,7 +324,10 @@ void main() {
       await controller.signOut();
       await controller.connect('https://books.example', 'bob', 'password');
       expect(controller.books.single.title, 'The Orchard');
-      expect(controller.cache!.edits.details, isEmpty);
+      expect(
+        (await store.readChoices(account('bob').scope)).edits.details,
+        isEmpty,
+      );
     },
   );
 

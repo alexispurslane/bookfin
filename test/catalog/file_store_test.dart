@@ -107,7 +107,7 @@ void main() {
   test(
     'a migrated catalog restores corrections and hidden libraries offline',
     () async {
-      final text = CatalogCache(
+      final text = legacyCatalog(
         scope: scope,
         libraries: [
           const BookLibrary('books', 'Books'),
@@ -124,13 +124,13 @@ void main() {
             ),
           },
         ),
-      ).withContent().encode();
+      );
       await preferences.setString(key, text);
       await LocalCatalogStore().migrateLegacy();
       final reopened = await LocalCatalogStore().read(scope);
       expect(reopened, text);
       final decoded = CatalogCache.decode(scope, reopened!);
-      expect(decoded.hidden, {'hidden'});
+      expect((await LocalCatalogStore().readChoices(scope)).hidden, {'hidden'});
       expect(decoded.completedAt, DateTime.utc(2026, 11, 12));
       var networkRequests = 0;
       final catalog = CatalogController(
@@ -170,8 +170,8 @@ void main() {
           .list(recursive: true)
           .where((file) => file is File)
           .toList();
-      expect(files, hasLength(1));
-      expect(await File(files.single.path).readAsString(), 'first catalog');
+      expect(files, hasLength(2));
+      expect(await committedFile(disk, key).readAsString(), 'first catalog');
     },
   );
   test(
@@ -203,10 +203,9 @@ void main() {
       expect(await LocalCatalogStore().read(account('bob').scope), 'inactive');
       expect(legacy.allValueRequests, 0);
       expect(legacy.keyRequests, 1);
-      expect(
-        legacy.reads.where((key) => !key.startsWith('bookfin.catalog.v1.')),
-        ['reading-speed'],
-      );
+      expect(legacy.reads.where((key) => !key.startsWith('bookfin.catalog.')), [
+        'reading-speed',
+      ]);
     },
   );
 
@@ -389,13 +388,10 @@ void main() {
       final file = committedFile(disk, key);
       await file.writeAsBytes([0xff, 0xfe]);
       await preferences.setString(key, 'older');
-      await expectLater(
-        LocalCatalogStore().read(scope),
-        throwsA(isA<FileSystemException>()),
-      );
+      await expectLater(LocalCatalogStore().read(scope), throwsFormatException);
       await expectLater(
         LocalCatalogStore().migrateLegacy(),
-        throwsA(isA<FileSystemException>()),
+        throwsFormatException,
       );
       expect(await file.readAsBytes(), [0xff, 0xfe]);
       expect(await preferences.getString(key), 'older');
@@ -414,7 +410,7 @@ void main() {
       );
       expect(await LocalCatalogStore().read(account('carol').scope), isNull);
       final files = await disk.root.list().toList();
-      expect(files, hasLength(2));
+      expect(files, hasLength(4));
       for (final file in files) {
         expect(
           file.uri.pathSegments.last,
@@ -432,10 +428,12 @@ void main() {
       await LocalCatalogStore(files: controlled).write(scope, text);
       final file = committedFile(disk, key);
       final before = await file.stat();
+      controlled.reads = 0;
+      controlled.writes = 0;
       await preferences.setString('reading-speed', '1');
       await preferences.setString('reading-speed', '2');
       expect(controlled.reads, 0);
-      expect(controlled.writes, 1);
+      expect(controlled.writes, 0);
       expect(legacy.catalogWrites, 0);
       expect(await preferences.getString(key), isNull);
       expect((await file.stat()).modified, before.modified);
@@ -522,6 +520,11 @@ class ControlledFiles implements CatalogFiles {
   final release = Completer<void>();
 
   @override
+  Future<Set<String>> catalogKeys(String? Function(String) identify) =>
+      disk.catalogKeys(identify);
+  @override
+  Future<void> preserve(String key) => disk.preserve(key);
+  @override
   Future<String?> read(String key) {
     reads++;
     return disk.read(key);
@@ -546,9 +549,28 @@ class ControlledFiles implements CatalogFiles {
     if (blockCreation) {
       await File(disk.root.path).writeAsString('obstacle');
     }
-    if (blockRename) {
+    if (blockRename && key.startsWith('bookfin.catalog.v1.')) {
       await Directory(committedFile(disk, key).path).create(recursive: true);
     }
     await disk.write(key, text);
   }
 }
+
+// Hand-written version 2 fixture: production only writes server-only version 3.
+String legacyCatalog({
+  required AccountScope scope,
+  List<BookLibrary> libraries = const [],
+  Set<String> hidden = const {},
+  List<CatalogEntry> entries = const [],
+  CatalogEdits? edits,
+  DateTime? completedAt,
+}) => jsonEncode({
+  'version': 2,
+  'scope': scope.toJson(),
+  'accessBlocked': false,
+  'libraries': [for (final library in libraries) library.toJson()],
+  'hidden': hidden.toList(),
+  'entries': [for (final entry in entries) entry.toJson()],
+  'edits': (edits ?? CatalogEdits()).toJson(),
+  'completedAt': completedAt?.toIso8601String(),
+});

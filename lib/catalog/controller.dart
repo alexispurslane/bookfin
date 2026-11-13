@@ -119,7 +119,13 @@ enum _Work { idle, restore, refresh }
 /// and whether a caller asked for its outcome. A refresh asked for while it
 /// runs joins it, so [reported] can turn true while it runs.
 class _Refreshing {
-  _Refreshing(this.generation, this.hidden, {required this.reported});
+  _Refreshing(
+    this.generation,
+    this.hidden, {
+    required this.reported,
+    required this.verifiedBefore,
+  });
+  final bool verifiedBefore;
   final int generation;
   final Set<String>? hidden;
   bool reported;
@@ -143,41 +149,47 @@ const _hopText = 512;
 const _hopEntries = 1;
 
 /// Decodes the saved catalog [saved] and builds its library.
-_Built _restoreCatalog(({AccountScope scope, String text}) saved) {
+_Built _restoreCatalog(
+  ({AccountScope scope, String text, CatalogChoices choices}) saved,
+) {
   final cache = CatalogCache.decode(saved.scope, saved.text);
-  return (cache: cache, text: saved.text, library: _libraryOf(cache));
+  return (
+    cache: cache,
+    text: saved.text,
+    library: _libraryOf(cache.entries, saved.choices),
+  );
 }
 
-/// A change to the saved catalog [text] of [scope]: it gets [edits] and
+/// A change to the saved catalog [text] of [scope]: it keeps [choices] and
 /// [accessBlocked], and keeps its entries.
 typedef _Revision = ({
   AccountScope scope,
   String text,
-  CatalogEdits edits,
+  CatalogChoices choices,
   bool accessBlocked,
 });
 
 /// Decodes the saved catalog of [revision], applies the revision, and saves
 /// and builds the result. The saved text crosses to the worker as one block
-/// copy, so a correction or a denial copies no entries.
+/// copy, so an access change copies no entries.
 _Built _reviseCatalog(_Revision revision) {
   final saved = CatalogCache.decode(revision.scope, revision.text);
   return _saveCatalog(
     CatalogCache(
       scope: saved.scope,
       libraries: saved.libraries,
-      hidden: saved.hidden,
       entries: saved.entries,
-      edits: revision.edits,
+      included: saved.included,
       completedAt: saved.completedAt,
       accessBlocked: revision.accessBlocked,
     ),
+    revision.choices,
   );
 }
 
 /// A refresh's answer from Jellyfin for [scope]: its book [libraries], the
 /// [hidden] ones, and the catalog [pages] of the others, not yet decoded.
-/// The catalog keeps [edits]. If its digest matches [previousContent], the
+/// The catalog applies [choices]. If its digest matches [previousContent], the
 /// books need no build. [canKeepSavedCatalog] also requires unchanged account
 /// metadata and storage known to hold the current cache.
 typedef _Refresh = ({
@@ -185,7 +197,10 @@ typedef _Refresh = ({
   List<BookLibrary> libraries,
   Set<String> hidden,
   CatalogPages pages,
-  CatalogEdits? edits,
+  CatalogChoices choices,
+  Set<String> previousHidden,
+  Set<String> previousIncluded,
+  String? previousText,
   DateTime completedAt,
   String? previousContent,
   bool canKeepSavedCatalog,
@@ -197,38 +212,99 @@ typedef _Refresh = ({
 /// cross to the worker as block copies, so a refresh copies no entries.
 /// Throws a [CatalogFailure] when the pages are not one complete catalog.
 _Built? _refreshCatalog(_Refresh refresh) {
+  final entries = catalogEntries(refresh.pages);
+  final included = refresh.libraries.map((library) => library.id).toSet()
+    ..removeAll(refresh.hidden);
+  // Retain known hidden entries. Hiding a library changes only choices; its
+  // server data remains disposable and can be refreshed when shown again.
+  if (refresh.hidden.isNotEmpty && refresh.previousText != null) {
+    final previous = CatalogCache.decode(refresh.scope, refresh.previousText!);
+    final libraries = refresh.libraries.map((library) => library.id).toSet();
+    included.addAll(
+      previous.included.where(
+        (id) => refresh.hidden.contains(id) && libraries.contains(id),
+      ),
+    );
+    entries.addAll(
+      previous.entries.where(
+        (entry) =>
+            refresh.hidden.contains(entry.libraryId) &&
+            libraries.contains(entry.libraryId),
+      ),
+    );
+  }
   final cache = CatalogCache(
     scope: refresh.scope,
     libraries: refresh.libraries,
-    hidden: refresh.hidden,
-    entries: catalogEntries(refresh.pages),
-    edits: refresh.edits,
+    entries: entries,
+    included: included,
     completedAt: refresh.completedAt,
   ).withContent();
   final unchanged = cache.content == refresh.previousContent;
-  if (unchanged && refresh.canKeepSavedCatalog) return null;
+  final visibilityChanged = entries.any(
+    (entry) =>
+        refresh.previousHidden.contains(entry.libraryId) !=
+        refresh.hidden.contains(entry.libraryId),
+  );
+  final keep =
+      unchanged &&
+      refresh.canKeepSavedCatalog &&
+      setEquals(included, refresh.previousIncluded);
+  if (keep && !visibilityChanged) return null;
   return (
-    cache: cache,
-    text: cache.encode(),
-    library: unchanged ? null : _libraryOf(cache),
+    cache: keep
+        ? CatalogCache.decode(refresh.scope, refresh.previousText!)
+        : cache,
+    text: keep ? refresh.previousText! : cache.encode(),
+    library: unchanged && !visibilityChanged
+        ? null
+        : _libraryOf(entries, refresh.choices),
   );
 }
 
-/// Adds the content digest to [cache], encodes it and builds its library.
-_Built _saveCatalog(CatalogCache cache) {
+_Built _saveCatalog(CatalogCache cache, CatalogChoices choices) {
   final sealed = cache.withContent();
-  return (cache: sealed, text: sealed.encode(), library: _libraryOf(sealed));
+  return (
+    cache: sealed,
+    text: sealed.encode(),
+    library: _libraryOf(sealed.entries, choices),
+  );
 }
 
-CatalogLibrary _libraryOf(CatalogCache cache) {
+CatalogLibrary _libraryOf(List<CatalogEntry> entries, CatalogChoices choices) {
   final List<Book> books;
   try {
-    books = buildBooks(cache.entries, edits: cache.edits);
-  } catch (_) {
+    books = buildBooks([
+      for (final entry in entries)
+        if (!choices.hidden.contains(entry.libraryId)) entry,
+    ], edits: choices.edits);
+  } on Exception {
+    throw const FormatException('The catalog books could not be built.');
+  } on TypeError {
     throw const FormatException('The catalog books could not be built.');
   }
   return CatalogLibrary.build(books);
 }
+
+CatalogLibrary _correctCatalog(
+  ({List<CatalogEntry> entries, CatalogChoices choices}) input,
+) => _libraryOf(input.entries, input.choices);
+
+CatalogLibrary? _changeVisibility(
+  ({
+    List<CatalogEntry> entries,
+    CatalogChoices choices,
+    Set<String> previousHidden,
+  })
+  input,
+) =>
+    input.entries.any(
+      (entry) =>
+          input.choices.hidden.contains(entry.libraryId) !=
+          input.previousHidden.contains(entry.libraryId),
+    )
+    ? _libraryOf(input.entries, input.choices)
+    : null;
 
 /// The one owner of the signed-in account, its saved catalog and its books.
 ///
@@ -245,7 +321,7 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 ///   [CatalogLibrary.seriesOf], [CatalogLibrary.book] and
 ///   [CatalogLibrary.matches].
 /// - [session], [accessBlocked], [libraries] and the hidden libraries in
-///   [cache]: [accountNotifier].
+///   the account: [accountNotifier].
 /// - [busy], [verified] and [message]: [statusNotifier]. [busy] also
 ///   covers a restore.
 /// [readingOrder] stays: [CatalogLibrary] series are in reading order.
@@ -255,7 +331,8 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 /// - A verified catalog reached Jellyfin, and its access is not blocked.
 ///   So the status never says [CatalogReach.accessRevoked] and verified.
 /// - The cache belongs to the active account, and each cached item belongs
-///   to a shown book library: one that the user did not hide.
+///   to a completely fetched book library. Choices filter the visible books.
+/// - A restored cache has choices, and known saved choices require a value.
 /// - The saved text is present exactly when the cache is, and it encodes the
 ///   cache.
 /// - Known saved content requires a cache. A signed-out catalog retains no
@@ -281,6 +358,8 @@ class CatalogController extends ChangeNotifier {
   JellyfinClient? _active;
   JellyfinSession? _session;
   CatalogCache? _cache;
+  CatalogChoices? _choices;
+  bool _choicesStored = false;
 
   /// The text that saves [_cache], or null without a cache. A revision sends
   /// it to the worker instead of the entries.
@@ -298,7 +377,7 @@ class CatalogController extends ChangeNotifier {
   DateTime? _lastSuccessfulRefresh;
   List<BookLibrary> _libraries = [];
 
-  /// The library of [_cache], or the empty library without a cache.
+  /// The library built from [_cache] and [_choices], or empty without a cache.
   CatalogLibrary _built = CatalogLibrary.empty;
   _Work _work = _Work.idle;
 
@@ -351,7 +430,7 @@ class CatalogController extends ChangeNotifier {
   bool get busy => _work != _Work.idle;
   bool get verified => _verified;
   bool get accessBlocked => _accessBlocked;
-  String? get message => _message;
+  String? get message => _message ?? _choices?.notice;
 
   CatalogLibrary get _visible =>
       _session == null || _accessBlocked ? CatalogLibrary.empty : _built;
@@ -361,19 +440,20 @@ class CatalogController extends ChangeNotifier {
     restoring: _work == _Work.restore,
     accessBlocked: _accessBlocked,
     libraries: _libraries,
-    hidden: _cache?.hidden ?? const {},
+    hidden: _choices?.hidden ?? const {},
   );
 
   CatalogStatus get _status => (
     refreshing: _work == _Work.refresh,
     reach: _accessBlocked ? CatalogReach.accessRevoked : _reach,
-    message: _message,
+    message: _message ?? _choices?.notice,
     verified: _verified,
   );
 
   void checkInvariants() {
     if (_session == null &&
         (_cache != null ||
+            _choices != null ||
             _built.books.isNotEmpty ||
             _libraries.isNotEmpty ||
             _lastSuccessfulRefresh != null ||
@@ -395,14 +475,21 @@ class CatalogController extends ChangeNotifier {
                 _cache!.content)) {
       throw StateError('The saved text must encode the cache.');
     }
+    if ((_choicesStored && _choices == null) ||
+        (_cache != null && _choices == null)) {
+      throw StateError('A restored cache must have account choices.');
+    }
     if (_cacheStored && _cache == null) {
       throw StateError('Known saved content must have a cache.');
     }
     if (_cache case final cache?) {
-      final shown = cache.shown;
-      if (cache.entries.any((entry) => !shown.contains(entry.libraryId))) {
+      final known = cache.libraries.map((library) => library.id).toSet();
+      if (!known.containsAll(cache.included) ||
+          cache.entries.any(
+            (entry) => !cache.included.contains(entry.libraryId),
+          )) {
         throw StateError(
-          'Every cached item must belong to a shown book library.',
+          'Every cached item must belong to a completely fetched book library.',
         );
       }
     }
@@ -442,21 +529,25 @@ class CatalogController extends ChangeNotifier {
   Future<_Built> _revise(_Revision revision) =>
       _build(_reviseCatalog, revision, small: revision.text.length < _hopText);
 
-  /// Adopts [built] as the cache. The library changes only when the books
-  /// can differ: a cache with the content of the current one has the same
-  /// books, so the current library, and its book objects, stay.
+  /// Adopts the prepared server snapshot and its derived library. A null
+  /// library preserves the current books; the worker has checked that both
+  /// server content and applied visibility permit that reuse.
   void _adopt(_Built built) {
     assert(_session?.scope.key == built.cache.scope.key);
-    final previous = _cache;
     _cache = built.cache;
     _text = built.text;
     _cacheStored = true;
     _accessBlocked = built.cache.accessBlocked;
-    if (previous == null ||
-        built.cache.content == null ||
-        built.cache.content != previous.content) {
-      _built = built.library!;
-    }
+    if (built.library case final library?) _built = library;
+  }
+
+  /// Adopts only choices known to be committed for this account. The library
+  /// is derived from these choices and may be reused when visibility is equal.
+  void _adoptChoices(CatalogChoices choices, {CatalogLibrary? library}) {
+    assert(_session != null);
+    _choices = choices;
+    _choicesStored = true;
+    if (library != null) _built = library;
   }
 
   int _begin({_Work work = _Work.refresh}) {
@@ -494,11 +585,40 @@ class CatalogController extends ChangeNotifier {
   Future<void> _writeCatalog(AccountScope scope, String text) async {
     try {
       await _store.write(scope, text);
+      final choices = await _store.readChoices(scope);
       if (_session?.scope.key == scope.key) {
+        // Preparing the replacement may have discovered unreadable legacy data.
+        // Only its retained-data notice changes; ordered edits remain ours.
+        if (_choices == null) {
+          _adoptChoices(choices);
+        } else if (choices.retainedUnreadable &&
+            !_choices!.retainedUnreadable) {
+          _choices = CatalogChoices(
+            edits: _choices!.edits,
+            hidden: _choices!.hidden,
+            retainedUnreadable: true,
+          );
+        }
         _cacheStored = identical(text, _text);
       }
+    } on AssertionError {
+      rethrow;
     } catch (_) {
       if (_session?.scope.key == scope.key) _cacheStored = false;
+      rethrow;
+    }
+  }
+
+  Future<void> _writeChoices(AccountScope scope, CatalogChoices choices) async {
+    try {
+      await _store.writeChoices(scope, choices);
+      if (_session?.scope.key == scope.key) {
+        _choicesStored = identical(choices, _choices);
+      }
+    } on AssertionError {
+      rethrow;
+    } catch (_) {
+      if (_session?.scope.key == scope.key) _choicesStored = false;
       rethrow;
     }
   }
@@ -507,6 +627,8 @@ class CatalogController extends ChangeNotifier {
     ++_accountGeneration;
     _session = null;
     _cache = null;
+    _choices = null;
+    _choicesStored = false;
     _text = null;
     _cacheStored = false;
     _lastSuccessfulRefresh = null;
@@ -518,15 +640,20 @@ class CatalogController extends ChangeNotifier {
   }
 
   /// The saved catalog of [scope], decoded and built, or null when none is
-  /// saved.
+  /// saved. Choices load independently even when the server cache is absent.
   Future<_Built?> _readSaved(AccountScope scope) async {
     // An earlier account operation can still be finishing its disk write.
     await _cacheWrites;
+    final accountGeneration = _accountGeneration;
+    final choices = await _store.readChoices(scope);
+    if (accountGeneration != _accountGeneration || _disposed) return null;
+    _adoptChoices(choices);
     final text = await _store.read(scope);
     if (text == null) return null;
     return _build(_restoreCatalog, (
       scope: scope,
       text: text,
+      choices: choices,
     ), small: text.length < _hopText);
   }
 
@@ -551,6 +678,8 @@ class CatalogController extends ChangeNotifier {
           _libraries = saved.cache.libraries;
         }
       }
+    } on AssertionError {
+      rethrow;
     } catch (_) {
       if (_current(generation)) {
         _message =
@@ -602,6 +731,8 @@ class CatalogController extends ChangeNotifier {
       var readable = true;
       try {
         saved = await _readSaved(signedIn.scope);
+      } on AssertionError {
+        rethrow;
       } catch (_) {
         readable = false;
         if (_current(generation)) {
@@ -616,6 +747,8 @@ class CatalogController extends ChangeNotifier {
       _libraries = views;
       try {
         await _saveAccess(blocked: false, generation: generation);
+      } on AssertionError {
+        rethrow;
       } catch (_) {
         if (_current(generation)) {
           _message = 'Access is back, but your saved books could not be updated. Refresh your book libraries.';
@@ -625,6 +758,8 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return false;
       _verified = true;
       return readable;
+    } on AssertionError {
+      rethrow;
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
@@ -663,6 +798,35 @@ class CatalogController extends ChangeNotifier {
     return Future<void>.value();
   }
 
+  /// Saves a library choice and reports whether the selector can close.
+  /// A changed choice succeeds locally when its shown libraries are complete.
+  /// An unchanged selection still requests a refresh. A superseding operation,
+  /// failed save, or failed fetch of a missing library returns false.
+  Future<bool> setHiddenLibraries(Set<String> hidden) async {
+    final changed = !setEquals(hidden, _choices?.hidden);
+    final saving = refresh(hidden: hidden, byUser: true);
+    final generation = _generation;
+    await saving;
+    if (!_current(generation) ||
+        busy ||
+        _choices == null ||
+        !_choicesStored ||
+        _accessBlocked) {
+      return false;
+    }
+    final requested = {...hidden}
+      ..retainAll(_libraries.map((library) => library.id));
+    if (!setEquals(requested, _choices!.hidden)) return false;
+    final complete =
+        _cache?.included.containsAll(
+          _libraries
+              .where((library) => !requested.contains(library.id))
+              .map((library) => library.id),
+        ) ??
+        false;
+    return _verified || (changed && complete);
+  }
+
   /// Reads the account's book libraries from Jellyfin, and the catalog of
   /// each one that shows, then saves and shows them. The future ends when
   /// the refresh ends.
@@ -683,9 +847,10 @@ class CatalogController extends ChangeNotifier {
   /// One refresh runs at a time. A refresh while another runs, with the
   /// same hidden libraries or with none given, joins it and sends no second
   /// request. With [byUser], it asks for the outcome of the running
-  /// refresh. A refresh with other hidden libraries replaces the running
-  /// one. A refresh during a restore starts after the restore, from the
-  /// restored catalog.
+  /// refresh. A library choice replaces the running request. It only writes
+  /// choices when the selected libraries are already cached; showing a library
+  /// whose data is missing fetches it. A refresh during a restore starts after
+  /// the restore, from the restored catalog.
   Future<void> refresh({Set<String>? hidden, bool byUser = false}) {
     if (_work == _Work.restore) {
       return _restoring!.then((_) => refresh(hidden: hidden, byUser: byUser));
@@ -699,10 +864,12 @@ class CatalogController extends ChangeNotifier {
       return running.done;
     }
     if (_session == null) return Future<void>.value();
+    final verifiedBefore = _verified;
     final refreshing = _refreshing = _Refreshing(
       _begin(),
       hidden,
       reported: byUser,
+      verifiedBefore: verifiedBefore,
     );
     return refreshing.done = _refresh(refreshing);
   }
@@ -712,6 +879,19 @@ class CatalogController extends ChangeNotifier {
     final generation = refreshing.generation;
     _notify();
     try {
+      if (refreshing.hidden != null &&
+          !setEquals(refreshing.hidden, _choices?.hidden) &&
+          _cache != null &&
+          _choices != null &&
+          !_accessBlocked) {
+        if (await _selectLibraries(refreshing)) return;
+        if (!_current(generation)) return;
+      }
+      if (_choices == null) {
+        final choices = await _store.readChoices(currentSession.scope);
+        if (!_current(generation)) return;
+        _adoptChoices(choices);
+      }
       final device = await _credentials.deviceId();
       if (!_current(generation)) return;
       final client = _clientFactory(currentSession.scope.server, device);
@@ -722,7 +902,7 @@ class CatalogController extends ChangeNotifier {
       final views = await client.libraries(validated);
       if (!_current(generation)) return;
       _libraries = views;
-      final hidden = {...?(refreshing.hidden ?? _cache?.hidden)}
+      final hidden = {...?(refreshing.hidden ?? _choices?.hidden)}
         ..retainAll(views.map((library) => library.id));
       final shown = {
         for (final library in views)
@@ -735,12 +915,16 @@ class CatalogController extends ChangeNotifier {
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
         final previous = _cache;
+        final choices = _choices!.change(hidden: hidden);
         final built = await _build(_refreshCatalog, (
           scope: validated.scope,
           libraries: views,
           hidden: hidden,
           pages: pages,
-          edits: _cache?.edits,
+          choices: choices,
+          previousHidden: _choices!.hidden,
+          previousIncluded: previous?.included ?? const {},
+          previousText: _text,
           completedAt: DateTime.now().toUtc(),
           previousContent: previous?.scope.key == validated.scope.key
               ? previous?.content
@@ -750,15 +934,21 @@ class CatalogController extends ChangeNotifier {
               previous != null &&
               previous.scope.key == validated.scope.key &&
               !previous.accessBlocked &&
-              setEquals(previous.hidden, hidden) &&
               listEquals(
                 _libraryNames(previous.libraries),
                 _libraryNames(views),
               ),
-        ), small: pages.items < _hopEntries);
+        ), small: pages.items < _hopEntries && (_text?.length ?? 0) < _hopText);
         if (!_current(generation)) return;
+        if (!_choicesStored || !setEquals(_choices!.hidden, choices.hidden)) {
+          await _writeChoices(validated.scope, choices);
+          if (!_current(generation)) return;
+          _adoptChoices(choices);
+        }
         if (built != null) {
-          await _writeCatalog(validated.scope, built.text);
+          if (!_cacheStored || !identical(built.text, _text)) {
+            await _writeCatalog(validated.scope, built.text);
+          }
           if (!_current(generation)) return;
           _adopt(built);
         }
@@ -769,6 +959,8 @@ class CatalogController extends ChangeNotifier {
       });
       _cacheWrites = write.catchError((Object _) {});
       await write;
+    } on AssertionError {
+      rethrow;
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
@@ -785,6 +977,47 @@ class CatalogController extends ChangeNotifier {
         _notify();
       }
     }
+  }
+
+  /// Saves a library choice using known entries. Only showing a library whose
+  /// complete data is absent needs a server refresh. The same write queue as
+  /// corrections and refresh adoption prevents older work from winning.
+  Future<bool> _selectLibraries(_Refreshing refreshing) async {
+    var complete = false;
+    final scope = _session!.scope;
+    final generation = refreshing.generation;
+    final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
+      if (!_current(generation)) return;
+      final cache = _cache!;
+      final hidden = {...refreshing.hidden!}
+        ..retainAll(_libraries.map((library) => library.id));
+      final choices = _choices!.change(hidden: hidden);
+      final changed = !setEquals(choices.hidden, _choices!.hidden);
+      CatalogLibrary? library;
+      if (changed && cache.entries.isNotEmpty) {
+        library = await _build(_changeVisibility, (
+          entries: cache.entries,
+          choices: choices,
+          previousHidden: _choices!.hidden,
+        ), small: false);
+      }
+      if (!_current(generation)) return;
+      if (changed || !_choicesStored) {
+        await _writeChoices(scope, choices);
+        if (!_current(generation)) return;
+        _adoptChoices(choices);
+      }
+      if (library != null) _built = library;
+      complete = cache.included.containsAll(
+        _libraries
+            .where((library) => !hidden.contains(library.id))
+            .map((library) => library.id),
+      );
+      if (complete) _verified = refreshing.verifiedBefore;
+    });
+    _cacheWrites = write.catchError((Object _) {});
+    await write;
+    return complete;
   }
 
   /// Records [failure] of the sign-in or refresh of [generation]. It always
@@ -816,6 +1049,8 @@ class CatalogController extends ChangeNotifier {
       _reach = CatalogReach.signInExpired;
       try {
         await _writeCredentials(null);
+      } on AssertionError {
+        rethrow;
       } catch (_) {
         if (_current(generation)) _message = 'Secure sign-out could not be saved. Retry sign-out before leaving this device.';
       }
@@ -824,6 +1059,8 @@ class CatalogController extends ChangeNotifier {
       if (_session == null) return;
       try {
         await _saveAccess(blocked: true, generation: generation);
+      } on AssertionError {
+        rethrow;
       } catch (_) {
         // Without a saved denial, prevent automatic restoration of this account.
         await _writeCredentials(null);
@@ -854,11 +1091,12 @@ class CatalogController extends ChangeNotifier {
                 libraries: _libraries,
                 accessBlocked: true,
               ),
+              _choices ?? CatalogChoices(),
             )
           : await _revise((
               scope: scope,
               text: _text!,
-              edits: previous.edits,
+              choices: _choices!,
               accessBlocked: blocked,
             ));
       if (!_current(generation)) return;
@@ -877,6 +1115,8 @@ class CatalogController extends ChangeNotifier {
     final generation = _generation;
     try {
       await _writeCredentials(null);
+    } on AssertionError {
+      rethrow;
     } catch (_) {
       if (_current(generation)) {
         _message = 'Secure sign-out could not be saved. Retry sign-out before leaving this device.';
@@ -904,7 +1144,10 @@ class CatalogController extends ChangeNotifier {
       ));
 
   Future<void> _edit(CatalogEdits Function(CatalogEdits) change) {
-    if (_session == null || _cache == null || _accessBlocked) {
+    if (_session == null ||
+        _cache == null ||
+        _choices == null ||
+        _accessBlocked) {
       throw StateError('Sign in and load a book catalog before correcting it.');
     }
     final accountGeneration = _accountGeneration;
@@ -914,18 +1157,21 @@ class CatalogController extends ChangeNotifier {
       if (!currentAccount()) return;
       final previous = _cache!;
       try {
-        final built = await _revise((
-          scope: previous.scope,
-          text: _text!,
-          edits: change(previous.edits),
-          accessBlocked: false,
-        ));
+        final choices = _choices!.change(edits: change(_choices!.edits));
+        // The entries are already decoded. Only rebuilding the derived books
+        // needs the worker; no catalog decode, digest, encode or write occurs.
+        final library = await _build(_correctCatalog, (
+          entries: previous.entries,
+          choices: choices,
+        ), small: previous.entries.isEmpty);
         if (!currentAccount()) return;
-        await _writeCatalog(previous.scope, built.text);
+        await _writeChoices(previous.scope, choices);
         if (!currentAccount()) return;
-        _adopt(built);
+        _adoptChoices(choices, library: library);
         _message = null;
         _notify();
+      } on AssertionError {
+        rethrow;
       } catch (_) {
         if (currentAccount()) {
           _message = 'Your correction was not saved. Try again.';

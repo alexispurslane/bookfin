@@ -288,6 +288,41 @@ void main() {
         expect(find.textContaining('Cannot reach Jellyfin'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'a local library choice closes the selector after an offline refresh',
+      (tester) async {
+        await signIn(tester);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        Scaffold(body: LibrarySelector(catalog: controller)),
+                  ),
+                ),
+                child: const Text('Libraries'),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Libraries'));
+        await tester.pumpAndSettle();
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await finish(tester, controller.refresh());
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Books'));
+        await tester.tap(find.text('Save libraries'));
+        await runUntil(tester, () => !controller.busy);
+        await tester.pumpAndSettle();
+        expect(find.text('Book libraries to show'), findsNothing);
+        expect(controller.accountNotifier.value.hidden, {'books'});
+        expect(find.text('Libraries'), findsOneWidget);
+      },
+    );
   });
 
   testWidgets('the top bar switches the library between a grid and a list', (

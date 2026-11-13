@@ -2,8 +2,8 @@ import 'catalog_files_stub.dart'
     if (dart.library.io) 'catalog_files_io.dart'
     as platform;
 
-/// Application-private catalog text files. Keys are opaque account identities;
-/// implementations must map them to safe filenames and preserve read errors.
+/// Application-private catalog and choice text files. Implementations map
+/// opaque storage keys to safe filenames and preserve read errors.
 /// One LocalCatalogStore owns operations on these files for the app lifetime.
 abstract interface class CatalogFiles {
   /// Returns null only if no committed file exists, never for unreadable data.
@@ -12,6 +12,16 @@ abstract interface class CatalogFiles {
   /// Atomically replaces the committed text, flushing the replacement first.
   /// A failed write leaves the previous committed file intact.
   Future<void> write(String key, String text);
+
+  /// Retains the exact committed bytes under a separate, content-addressed
+  /// name. Failure must prevent replacement of the damaged original.
+  Future<void> preserve(String key);
+
+  /// Discovers account keys in committed snapshots for background migration.
+  /// [identify] is a pure decoder, run with disk work off the UI isolate, so
+  /// file storage need not know catalog formats or move whole catalogs back.
+  /// Unidentifiable data stays untouched for recovery by its account owner.
+  Future<Set<String>> catalogKeys(String? Function(String text) identify);
 }
 
 /// Native platforms keep files beside the host's private media directory.

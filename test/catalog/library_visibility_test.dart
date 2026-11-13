@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
-import 'package:bookfin/catalog/store.dart';
 import 'package:bookfin/catalog/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -209,10 +208,7 @@ void main() {
 
     await controller.refresh();
     expect(titles(controller), {'The Corrected Orchard', 'The Atlas'});
-    final saved = CatalogCache.decode(
-      alice.scope,
-      store.values[alice.scope.key]!,
-    );
+    final saved = await store.readChoices(alice.scope);
     expect(saved.hidden, isEmpty);
     expect(saved.edits.details['book:heard']?.title, 'The Corrected Orchard');
     controller.checkInvariants();

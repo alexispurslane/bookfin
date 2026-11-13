@@ -507,9 +507,9 @@ void main() {
         pending.complete([entry('late', title: 'Late')]);
         await background;
         expect(controller.books.single.title, isNot('Late'));
-        expect(client.catalogReads, before + 2);
+        expect(client.catalogReads, before + 1);
         expect(controller.accountNotifier.value.hidden, {'more'});
-        expect(controller.statusNotifier.value.verified, isTrue);
+        expect(controller.statusNotifier.value.verified, isFalse);
       },
     );
 
@@ -1051,7 +1051,7 @@ void main() {
     });
 
     test(
-      'a correction hands the worker the saved text, not the entries',
+      'a correction rebuilds from decoded entries and saves only choices',
       () async {
         client.entries = _largeLibrary();
         await signIn();
@@ -1060,7 +1060,7 @@ void main() {
           'book:item1',
           const BookDetails(title: 'Corrected', author: 'Writer'),
         );
-        expect(crossings, [false]);
+        expect(crossings, [true]);
         expect(
           controller.books.map((book) => book.title),
           contains('Corrected'),
@@ -1070,7 +1070,13 @@ void main() {
           store.values[account('alice').scope.key]!,
         );
         expect(saved.entries, hasLength(40));
-        expect(saved.edits.details['book:item1']!.title, 'Corrected');
+        expect(
+          (await store.readChoices(account('alice').scope))
+              .edits
+              .details['book:item1']!
+              .title,
+          'Corrected',
+        );
         controller.checkInvariants();
       },
     );

@@ -17,105 +17,178 @@ abstract interface class CredentialStore {
   Future<String> deviceId();
 }
 
-/// Keeps the saved catalog text of each account. The catalog encodes and
-/// decodes the text, off the UI isolate, so the store only moves text.
+/// Keeps disposable server text and durable choices independently per account.
+/// The store owns migration and ordering; the controller owns visible adoption.
 abstract interface class CatalogStore {
   /// The saved catalog text of [scope], or null when none is saved.
   Future<String?> read(AccountScope scope);
 
   /// Replaces the saved catalog text of [scope] with [text].
   Future<void> write(AccountScope scope, String text);
+
+  /// Loads durable choices, extracting legacy choices before a cache can
+  /// replace them. A retained-data notice must be shown to the person.
+  Future<CatalogChoices> readChoices(AccountScope scope);
+
+  /// Commits only the small choice record. The cache is never rewritten.
+  Future<void> writeChoices(AccountScope scope, CatalogChoices choices);
 }
 
-/// The saved catalog of one account: its Jellyfin book [libraries], the ids
-/// of the ones that the user [hidden], and the [entries] of the others.
-///
-/// A library shows unless the user hid it, so a library that Jellyfin adds
-/// later shows by default. Each entry belongs to a shown library.
+/// Durable account choices. [retainedUnreadable] records that older data is
+/// kept separately for recovery; it is never silently presented as no choices.
+class CatalogChoices {
+  CatalogChoices({
+    CatalogEdits? edits,
+    Set<String> hidden = const {},
+    this.retainedUnreadable = false,
+  }) : edits = edits ?? CatalogEdits(),
+       hidden = Set.unmodifiable(hidden);
+
+  final CatalogEdits edits;
+  final Set<String> hidden;
+  final bool retainedUnreadable;
+
+  String? get notice => retainedUnreadable
+      ? 'Some saved catalog choices could not be read. The damaged data was kept for recovery.'
+      : null;
+
+  CatalogChoices change({CatalogEdits? edits, Set<String>? hidden}) =>
+      CatalogChoices(
+        edits: edits ?? this.edits,
+        hidden: hidden ?? this.hidden,
+        retainedUnreadable: retainedUnreadable,
+      );
+
+  String encode(AccountScope scope) => jsonEncode({
+    'version': 1,
+    'scope': scope.toJson(),
+    'edits': edits.toJson(),
+    'hidden': hidden.toList(),
+    'retainedUnreadable': retainedUnreadable,
+  });
+
+  static CatalogChoices decode(AccountScope scope, String text) {
+    final json = jsonDecode(text) as Map<String, dynamic>;
+    if (json['version'] != 1 ||
+        AccountScope.fromJson(json['scope'] as Map<String, dynamic>).key !=
+            scope.key ||
+        json.keys.any(
+          (key) => !const {
+            'version',
+            'scope',
+            'edits',
+            'hidden',
+            'retainedUnreadable',
+          }.contains(key),
+        )) {
+      throw const FormatException('Saved catalog choices are not supported.');
+    }
+    return CatalogChoices(
+      edits: _readEdits(json['edits'], complete: true),
+      hidden: Set<String>.from(json['hidden'] as List),
+      retainedUnreadable: json['retainedUnreadable'] as bool,
+    );
+  }
+
+  static CatalogEdits _readEdits(Object? value, {bool complete = false}) {
+    final json = value as Map<String, dynamic>;
+    const fields = {'books', 'recordings', 'details', 'orders'};
+    if ((complete && fields.any((field) => json[field] is! Map)) ||
+        json.keys.any((key) => !fields.contains(key))) {
+      throw const FormatException(
+        'Saved catalog corrections are not supported.',
+      );
+    }
+    final details = json['details'] as Map<String, dynamic>? ?? {};
+    for (final value in details.values) {
+      final detail = value as Map<String, dynamic>;
+      if (detail.keys.any(
+        (key) => !const {'title', 'author', 'series', 'order'}.contains(key),
+      )) {
+        throw const FormatException('Saved book details are not supported.');
+      }
+    }
+    return CatalogEdits.fromJson(json);
+  }
+}
+
+String _encodeChoices(({AccountScope scope, CatalogChoices choices}) input) =>
+    input.choices.encode(input.scope);
+CatalogChoices _decodeChoices(({AccountScope scope, String text}) input) {
+  try {
+    return CatalogChoices.decode(input.scope, input.text);
+  } on Exception {
+    throw const FormatException('Saved catalog choices could not be decoded.');
+  } on TypeError {
+    throw const FormatException('Saved catalog choices could not be decoded.');
+  }
+}
+
+/// Disposable server data. User choices are supplied separately when building
+/// the visible library. Version 3 contains no authoritative user choices.
 class CatalogCache {
   CatalogCache({
     required this.scope,
     List<BookLibrary> libraries = const [],
-    Set<String> hidden = const {},
     List<CatalogEntry> entries = const [],
-    CatalogEdits? edits,
+    Set<String>? included,
     this.completedAt,
     this.accessBlocked = false,
     this.content,
   }) : libraries = List.unmodifiable(libraries),
-       hidden = Set.unmodifiable(hidden),
        entries = List.unmodifiable(entries),
-       edits = edits ?? CatalogEdits();
+       included = Set.unmodifiable(
+         included ?? libraries.map((library) => library.id).toSet(),
+       );
   final AccountScope scope;
   final List<BookLibrary> libraries;
-  final Set<String> hidden;
   final List<CatalogEntry> entries;
-  final CatalogEdits edits;
 
-  /// The successful refresh recorded in this saved snapshot. The controller
-  /// can complete later unchanged refreshes without rewriting this snapshot.
+  /// Libraries whose complete entries this snapshot holds, including empty ones.
+  final Set<String> included;
   final DateTime? completedAt;
   final bool accessBlocked;
 
-  /// The ids of the [libraries] that show: every library that the user did
-  /// not hide.
-  Set<String> get shown => {
-    for (final library in libraries)
-      if (!hidden.contains(library.id)) library.id,
-  };
-
-  /// A digest of [entries] and [edits], which decide the books, or null when
-  /// it is not known. Two caches with the same content have the same books.
+  /// Digest of server entries only. Choices cannot invalidate this digest.
   final String? content;
 
-  /// This cache with its [content] digest. It encodes every entry, so it is
-  /// whole-catalog work for another isolate.
-  CatalogCache withContent() => CatalogCache(
-    scope: scope,
-    libraries: libraries,
-    hidden: hidden,
-    entries: entries,
-    edits: edits,
-    completedAt: completedAt,
-    accessBlocked: accessBlocked,
-    content: sha256
-        .convert(
-          utf8.encode(
-            jsonEncode([
-              for (final entry in entries) entry.toJson(),
-              edits.toJson(),
-            ]),
-          ),
-        )
-        .toString(),
-  );
+  CatalogCache withContent() {
+    return CatalogCache(
+      scope: scope,
+      libraries: libraries,
+      entries: entries,
+      included: included,
+      completedAt: completedAt,
+      accessBlocked: accessBlocked,
+      content: sha256
+          .convert(
+            utf8.encode(
+              jsonEncode([for (final entry in entries) entry.toJson()]),
+            ),
+          )
+          .toString(),
+    );
+  }
 
   String encode() => jsonEncode({
-    'version': 2,
+    'version': 3,
     'accessBlocked': accessBlocked,
     'scope': scope.toJson(),
     'libraries': libraries.map((library) => library.toJson()).toList(),
-    'hidden': hidden.toList(),
     'entries': entries.map((entry) => entry.toJson()).toList(),
-    'edits': edits.toJson(),
+    'included': included.toList(),
     'completedAt': completedAt?.toIso8601String(),
     'content': content,
   });
 
-  /// The cache that [value] encodes. Throws a [FormatException] when the
-  /// text is not a catalog of [scope]. The catalog builds the books from the
-  /// result in the same isolate hop, and a failed build also counts as an
-  /// unreadable catalog there.
-  ///
-  /// Version 1 saved the libraries that the user selected, under a rule
-  /// where a library showed only when selected. Those choices did not hide
-  /// anything, so a version 1 catalog decodes with no hidden library, and
-  /// keeps its entries and corrections.
+  /// Accepts old server snapshots without adopting their choices. Version 1
+  /// selected libraries did not mean hidden libraries. Version 2 forbade
+  /// entries from hidden libraries. New snapshots may retain hidden entries.
   static CatalogCache decode(AccountScope scope, String value) {
     try {
       final json = jsonDecode(value) as Map<String, dynamic>;
       final version = json['version'];
-      if ((version != 1 && version != 2) ||
+      if ((version != 1 && version != 2 && version != 3) ||
           AccountScope.fromJson(json['scope'] as Map<String, dynamic>).key !=
               scope.key) {
         throw const FormatException();
@@ -129,29 +202,40 @@ class CatalogCache {
             ),
           )
           .toList();
-      final result = CatalogCache(
-        scope: scope,
-        accessBlocked: json['accessBlocked'] as bool? ?? false,
-        libraries: [
-          for (final library
-              in (json['libraries'] as List).cast<Map<String, dynamic>>())
-            BookLibrary(library['id'] as String, library['name'] as String),
-        ],
-        hidden: version == 1 ? const {} : Set.from(json['hidden'] as List),
-        entries: entries,
-        edits: CatalogEdits.fromJson(json['edits'] as Map<String, dynamic>),
-        completedAt: json['completedAt'] == null
-            ? null
-            : DateTime.parse(json['completedAt'] as String),
-        content: json['content'] as String?,
-      );
-      final shown = result.shown;
-      if (entries.any((entry) => !shown.contains(entry.libraryId)) ||
+      final libraries = [
+        for (final library
+            in (json['libraries'] as List).cast<Map<String, dynamic>>())
+          BookLibrary(library['id'] as String, library['name'] as String),
+      ];
+      final allowed = libraries.map((library) => library.id).toSet();
+      if (version == 2) {
+        allowed.removeAll(Set<String>.from(json['hidden'] as List));
+      }
+      if (entries.any((entry) => !allowed.contains(entry.libraryId)) ||
           entries.map((entry) => entry.id).toSet().length != entries.length) {
         throw const FormatException();
       }
-      return result;
-    } catch (_) {
+      return CatalogCache(
+        scope: scope,
+        libraries: libraries,
+        entries: entries,
+        included: version == 3
+            ? Set<String>.from(json['included'] as List)
+            : version == 1
+            ? Set<String>.from(json['selected'] as List)
+            : allowed,
+        accessBlocked: json['accessBlocked'] as bool? ?? false,
+        completedAt: json['completedAt'] == null
+            ? null
+            : DateTime.parse(json['completedAt'] as String),
+        // Old digests included edits and cannot be compared with server data.
+        content: version == 3 ? json['content'] as String? : null,
+      );
+    } on Exception {
+      throw const FormatException(
+        'Saved catalog is invalid or belongs to another account.',
+      );
+    } on TypeError {
       throw const FormatException(
         'Saved catalog is invalid or belongs to another account.',
       );
@@ -159,50 +243,218 @@ class CatalogCache {
   }
 }
 
-/// Owns native catalog files and the transfer from legacy preferences. The app
-/// keeps one instance for its lifetime and calls [migrateLegacy] after restore
-/// and a frame. Browsers retain their existing preference-backed storage.
-///
-/// Each account's reads, writes and migrations execute in request order. A
-/// committed file is authoritative; legacy text is a fallback only when no file
-/// exists. Migration removes a legacy key only after a readable file exists.
-/// Failed operations release their queue position without hiding the failure.
-class LocalCatalogStore implements CatalogStore {
-  /// [files] supplies the filesystem owner. By default the native host provides
-  /// application-private files; the browser uses preferences.
-  LocalCatalogStore({CatalogFiles? files})
-    : _files = files ?? createCatalogFiles();
+/// Extracts choices even if the entries cannot be built. Cache damage still
+/// requires retention. This conversion runs off the UI isolate.
+({CatalogChoices? choices, bool damaged}) _legacyChoices(
+  ({AccountScope scope, String text}) input,
+) {
+  CatalogChoices? choices;
+  try {
+    final json = jsonDecode(input.text) as Map<String, dynamic>;
+    if (AccountScope.fromJson(json['scope'] as Map<String, dynamic>).key !=
+        input.scope.key) {
+      throw const FormatException();
+    }
+    switch (json['version']) {
+      case 1:
+      case 2:
+        choices = CatalogChoices(
+          edits: CatalogChoices._readEdits(json['edits']),
+          hidden: json['version'] == 1
+              ? {}
+              : Set<String>.from(json['hidden'] as List),
+        );
+      case 3:
+        break;
+      default:
+        throw const FormatException();
+    }
+    final cache = CatalogCache.decode(input.scope, input.text);
+    // A structurally valid legacy entry can still fail book construction. It
+    // is unreadable to the catalog too, so keep the original before replacing.
+    if (choices != null) buildBooks(cache.entries, edits: choices.edits);
+    return (choices: choices, damaged: false);
+  } on Exception {
+    return (choices: choices, damaged: true);
+  } on TypeError {
+    return (choices: choices, damaged: true);
+  }
+}
 
+/// Identifies accounts without adopting any data discovered by the scan.
+/// Every migration re-reads that account through its ordered storage owner.
+String? _catalogKey(String text) {
+  try {
+    final json = jsonDecode(text) as Map<String, dynamic>;
+    if (!json.containsKey('entries')) return null;
+    final scope = AccountScope.fromJson(json['scope'] as Map<String, dynamic>);
+    return 'bookfin.catalog.v1.${base64Url.encode(utf8.encode(scope.key))}';
+  } on Exception {
+    return null;
+  } on TypeError {
+    return null;
+  }
+}
+
+/// Owns account storage and migration. All operations for one account run in
+/// request order. Choices commit before the sole legacy representation can be
+/// removed or replaced. A committed choice file always wins, including empty
+/// choices after Reset corrections. The app keeps one store for its lifetime.
+///
+/// Invariants: each queued account has one completion future; failures release
+/// the queue; a prepared account has durable choices and its old unreadable
+/// sources have been retained. [checkInvariants] checks the in-memory boundary.
+class LocalCatalogStore implements CatalogStore {
+  factory LocalCatalogStore({CatalogFiles? files}) {
+    final native = files ?? createCatalogFiles();
+    return native == null
+        ? LocalCatalogStore.preferences()
+        : LocalCatalogStore._(native);
+  }
+
+  /// The browser fallback: separate preference records for choices and cache.
+  LocalCatalogStore.preferences() : _files = null;
+  LocalCatalogStore._(this._files);
   final CatalogFiles? _files;
   late final _preferences = SharedPreferencesAsync();
   final _pending = <String, Future<void>>{};
+  final _prepared = <String>{};
   Future<void>? _migration;
 
   @override
-  Future<String?> read(AccountScope scope) {
-    final key = _key(scope);
-    return _ordered(
-      key,
-      () async => await _files?.read(key) ?? await _preferences.getString(key),
-    );
+  Future<String?> read(AccountScope scope) =>
+      _ordered(_key(scope), () => _read(_key(scope)));
+
+  Future<String?> _read(String key) async =>
+      await _files?.read(key) ?? await _preferences.getString(key);
+
+  Future<void> _write(String key, String text) async {
+    if (_files case final files?) {
+      await files.write(key, text);
+    } else {
+      await _preferences.setString(key, text);
+    }
   }
 
   @override
-  Future<void> write(AccountScope scope, String text) {
-    final key = _key(scope);
-    return _ordered(key, () async {
-      if (_files case final files?) {
-        await files.write(key, text);
-      } else {
-        await _preferences.setString(key, text);
-      }
-    });
+  Future<void> write(AccountScope scope, String text) =>
+      _ordered(_key(scope), () async {
+        await _prepare(scope);
+        await _write(_key(scope), text);
+      });
+
+  @override
+  Future<CatalogChoices> readChoices(AccountScope scope) => _ordered(
+    _key(scope),
+    () async => await _existingChoices(scope) ?? await _prepare(scope),
+  );
+
+  @override
+  Future<void> writeChoices(AccountScope scope, CatalogChoices choices) =>
+      _ordered(_key(scope), () async {
+        final previous = await _existingChoices(scope) ?? await _prepare(scope);
+        // A correction cannot dismiss a retained-data notice.
+        final saved = CatalogChoices(
+          edits: choices.edits,
+          hidden: choices.hidden,
+          retainedUnreadable:
+              previous.retainedUnreadable || choices.retainedUnreadable,
+        );
+        await _write(
+          _choiceKey(scope),
+          await compute(_encodeChoices, (scope: scope, choices: saved)),
+        );
+      });
+
+  Future<void> _retain(String key, {String? preferenceText}) async {
+    if (_files case final files? when preferenceText == null) {
+      await files.preserve(key);
+    } else {
+      final text = preferenceText ?? await _preferences.getString(key);
+      if (text == null) return;
+      final digest = await compute(
+        (String value) => sha256.convert(utf8.encode(value)).toString(),
+        text,
+      );
+      final kept = 'bookfin.catalog.unreadable.$digest';
+      // Content-addressed copies are retry-safe and do not replace earlier damage.
+      await _write(kept, text);
+    }
   }
 
-  /// Transfers all retained legacy accounts, including inactive ones, without
-  /// interpreting their text. Concurrent calls join the owned migration. Every
-  /// account is attempted; after failures the first exception is reported to
-  /// the caller. Failed keys remain available for a later call or next launch.
+  /// Reads only the small authoritative record. Unknown or corrupt choices
+  /// are retained before a replacement records the unresolved recovery notice.
+  Future<CatalogChoices?> _existingChoices(AccountScope scope) async {
+    final key = _choiceKey(scope);
+    try {
+      final text = await _read(key);
+      return text == null
+          ? null
+          : await compute(_decodeChoices, (scope: scope, text: text));
+    } on FormatException {
+      await _retain(key);
+    }
+    final choices = CatalogChoices(retainedUnreadable: true);
+    await _write(
+      key,
+      await compute(_encodeChoices, (scope: scope, choices: choices)),
+    );
+    return choices;
+  }
+
+  Future<CatalogChoices> _prepare(AccountScope scope) async {
+    final key = _key(scope);
+    assert(_pending.containsKey(key));
+    final choiceKey = _choiceKey(scope);
+    final choices = await _existingChoices(scope);
+    if (_prepared.contains(key) && choices != null) return choices;
+    var damaged = false;
+
+    // Inspect both sources before replacing either. Native legacy choices win
+    // over preferences, but a server-only native cache has no choices to win.
+    final sources = <({String? text, bool preference})>[];
+    if (_files case final files?) {
+      try {
+        sources.add((text: await files.read(key), preference: false));
+      } on FormatException {
+        await files.preserve(key);
+        damaged = true;
+      }
+    }
+    sources.add((text: await _preferences.getString(key), preference: true));
+    CatalogChoices? legacy;
+    for (final source in sources) {
+      final text = source.text;
+      if (text == null) continue;
+      final read = await compute(_legacyChoices, (scope: scope, text: text));
+      legacy ??= read.choices;
+      if (read.damaged) {
+        await _retain(key, preferenceText: source.preference ? text : null);
+        damaged = true;
+      }
+    }
+    // A corrupt committed choice file is still newer than any retained legacy
+    // choices. Never revive those stale choices over it.
+    final known = choices ?? legacy ?? CatalogChoices();
+    final result = CatalogChoices(
+      edits: known.edits,
+      hidden: known.hidden,
+      retainedUnreadable: known.retainedUnreadable || damaged,
+    );
+    if (choices == null ||
+        result.retainedUnreadable != choices.retainedUnreadable) {
+      await _write(
+        choiceKey,
+        await compute(_encodeChoices, (scope: scope, choices: result)),
+      );
+    }
+    _prepared.add(key);
+    return result;
+  }
+
+  /// Migrates retained preference and native accounts, including inactive ones. Each
+  /// account is attempted, and the first failure is reported. Legacy bytes are
+  /// removed only after choices and their catalog or retained copy commit.
   Future<void> migrateLegacy() =>
       _migration ??= _migrateLegacy().whenComplete(() {
         _migration = null;
@@ -210,30 +462,84 @@ class LocalCatalogStore implements CatalogStore {
 
   Future<void> _migrateLegacy() async {
     final files = _files;
-    if (files == null) return;
     Object? failure;
     StackTrace? trace;
-    // SharedPreferencesAsync can filter exact keys, but not prefixes. Enumerate
-    // names only; never load values belonging to unrelated preferences.
-    final keys = await _preferences.getKeys();
-    for (final key in keys.where(
-      (key) => key.startsWith('bookfin.catalog.v1.'),
-    )) {
+    Future<Set<String>> discover(Future<Set<String>> operation) async {
       try {
+        return await operation;
+      } on Exception catch (error, stack) {
+        failure ??= error;
+        trace ??= stack;
+        return {};
+      }
+    }
+
+    final sources = await Future.wait([
+      discover(_preferences.getKeys()),
+      discover(files?.catalogKeys(_catalogKey) ?? Future.value(<String>{})),
+    ]);
+    final preferenceKeys = sources[0];
+    final keys = {
+      ...preferenceKeys.where((key) => key.startsWith('bookfin.catalog.v1.')),
+      ...sources[1],
+    };
+    for (final key in keys) {
+      try {
+        final scope = _scope(key);
         await _ordered(key, () async {
-          if (await files.read(key) == null) {
-            final text = await _preferences.getString(key);
-            if (text == null) return;
-            await files.write(key, text);
+          await _prepare(scope);
+          if (files != null) {
+            if (await files.read(key) == null) {
+              final text = await _preferences.getString(key);
+              if (text != null) await files.write(key, text);
+            }
+            if (preferenceKeys.contains(key)) await _preferences.remove(key);
           }
-          await _preferences.remove(key);
         });
       } on Exception catch (error, stack) {
         failure ??= error;
         trace ??= stack;
       }
     }
-    if (failure != null) Error.throwWithStackTrace(failure, trace!);
+    if (failure case final error?) Error.throwWithStackTrace(error, trace!);
+  }
+
+  /// Checks that every prepared account still has its committed choices.
+  /// Runs on demand only; it never migrates or repairs data.
+  Future<void> checkInvariants() async {
+    for (final key in _prepared) {
+      final scope = _scope(key);
+      final text = await _read(_choiceKey(scope));
+      if (text == null) {
+        throw StateError('Prepared accounts must have committed choices.');
+      }
+      await compute(_decodeChoices, (scope: scope, text: text));
+    }
+    for (final key in _pending.keys) {
+      _scope(key);
+    }
+  }
+
+  AccountScope _scope(String key) {
+    if (!key.startsWith('bookfin.catalog.v1.')) {
+      throw const FormatException('Invalid catalog account key.');
+    }
+    // One short account identity costs less to parse here than an isolate hop.
+    final parts = jsonDecode(
+      utf8.decode(
+        base64Url.decode(key.substring('bookfin.catalog.v1.'.length)),
+      ),
+    );
+    if (parts is! List ||
+        parts.length != 3 ||
+        parts.any((part) => part is! String)) {
+      throw const FormatException('Invalid catalog account key.');
+    }
+    return AccountScope(
+      server: parseServer(parts[0] as String),
+      serverId: parts[1] as String,
+      userId: parts[2] as String,
+    );
   }
 
   Future<T> _ordered<T>(String key, Future<T> Function() operation) async {
@@ -251,6 +557,8 @@ class LocalCatalogStore implements CatalogStore {
 
   String _key(AccountScope scope) =>
       'bookfin.catalog.v1.${base64Url.encode(utf8.encode(scope.key))}';
+  String _choiceKey(AccountScope scope) =>
+      'bookfin.catalog.choices.v1.${base64Url.encode(utf8.encode(scope.key))}';
 }
 
 class SecureCredentialStore implements CredentialStore {

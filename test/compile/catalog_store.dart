@@ -13,7 +13,9 @@ Future<void> main() async {
     serverId: 'compile',
     userId: 'compile',
   );
-  await store.write(scope, 'catalog text');
+  await store.readChoices(scope);
+  await store.writeChoices(scope, CatalogChoices(hidden: {'hidden'}));
+  await store.write(scope, CatalogCache(scope: scope).encode());
   await store.migrateLegacy();
   final text = await store.read(scope);
   runApp(Text(text ?? 'No catalog', textDirection: TextDirection.ltr));

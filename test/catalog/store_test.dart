@@ -66,6 +66,8 @@ void main() {
           entry('ebook', type: 'Book'),
         ],
         completedAt: DateTime.utc(2026, 11, 1),
+      );
+      final choices = CatalogChoices(
         edits: CatalogEdits(
           bookLinks: {'ebook:source': 'book:one'},
           details: {
@@ -79,9 +81,13 @@ void main() {
         ),
       );
       final encoded = cache.encode();
+      final savedChoices = CatalogChoices.decode(scope, choices.encode(scope));
       expect(encoded, isNot(contains('token-alice')));
       final reopened = CatalogCache.decode(scope, encoded);
-      final book = buildBooks(reopened.entries, edits: reopened.edits).single;
+      final book = buildBooks(
+        reopened.entries,
+        edits: savedChoices.edits,
+      ).single;
       expect(book.title, 'Saved title');
       expect(book.editions, hasLength(2));
       expect(reopened.completedAt, DateTime.utc(2026, 11, 1));

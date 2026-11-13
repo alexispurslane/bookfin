@@ -599,8 +599,8 @@ class _LibrarySelectorState extends State<LibrarySelector> {
 
   Future<void> _save() async {
     final catalog = widget.catalog;
-    await catalog.refresh(hidden: {..._hidden}, byUser: true);
-    if (mounted && catalog.statusNotifier.value.verified) {
+    final saved = await catalog.setHiddenLibraries({..._hidden});
+    if (mounted && saved) {
       Navigator.pop(context);
     }
   }

@@ -26,10 +26,44 @@ class DiskCatalogFiles implements CatalogFiles {
     final path = _path(key);
     return Isolate.run(() async {
       try {
-        return await File(path).readAsString();
+        return utf8.decode(await File(path).readAsBytes());
       } on PathNotFoundException {
         return null;
       }
+    });
+  }
+
+  @override
+  Future<Set<String>> catalogKeys(String? Function(String text) identify) {
+    final path = root.path;
+    return Isolate.run(() async {
+      final keys = <String>{};
+      final directory = Directory(path);
+      if (!await directory.exists()) return keys;
+      await for (final file in directory.list()) {
+        if (file is! File || !file.path.endsWith('.catalog')) continue;
+        final bytes = await file.readAsBytes();
+        try {
+          final key = identify(utf8.decode(bytes));
+          if (key != null) keys.add(key);
+        } on FormatException {
+          // Its account cannot be identified. Leave the bytes untouched;
+          // reading that account later retains and reports the damaged file.
+        }
+      }
+      return keys;
+    });
+  }
+
+  @override
+  Future<void> preserve(String key) {
+    final path = _path(key);
+    return Isolate.run(() async {
+      final bytes = await File(path).readAsBytes();
+      final kept = '$path.unreadable.${sha256.convert(bytes)}';
+      final partial = File('$kept.partial');
+      await partial.writeAsBytes(bytes, flush: true);
+      await partial.rename(kept);
     });
   }
 
@@ -70,6 +104,13 @@ class _HostCatalogFiles implements CatalogFiles {
 
   @override
   Future<String?> read(String key) async => (await _open()).read(key);
+
+  @override
+  Future<void> preserve(String key) async => (await _open()).preserve(key);
+
+  @override
+  Future<Set<String>> catalogKeys(String? Function(String) identify) async =>
+      (await _open()).catalogKeys(identify);
 
   @override
   Future<void> write(String key, String text) async =>
