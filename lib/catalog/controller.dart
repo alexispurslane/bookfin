@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import '../foundation/hop.dart';
@@ -136,6 +138,11 @@ class _Refreshing {
 /// saves it, and the library of its books. A null library reuses the current
 /// books, whose content digest must match.
 typedef _Built = ({CatalogCache cache, String text, CatalogLibrary? library});
+
+/// Account identity captured before asynchronous work starts. A request-bound
+/// operation also expires on cancellation; corrections and notice reconciliation
+/// belong to the account and may finish while a newer refresh runs.
+typedef _AccountOperation = ({AccountScope scope, int account, int? request});
 
 /// The smallest saved catalog text, in characters, and the fewest entries
 /// that the catalog builds in another isolate. A smaller catalog builds on
@@ -339,7 +346,7 @@ CatalogLibrary? _changeVisibility(
 ///   successful refresh time from its former account.
 /// - Each source belongs to exactly one edition, and a text edition has one
 ///   source.
-/// - The library view matches its books.
+/// - The library view matches its books, built from the current cache and choices.
 /// - While no operation runs, [libraryNotifier] holds the visible library.
 class CatalogController extends ChangeNotifier {
   CatalogController({
@@ -509,6 +516,32 @@ class CatalogController extends ChangeNotifier {
       }
     }
     _built.checkInvariants();
+    if (_cache != null && _choices != null) {
+      // This full derivation runs only in the on-demand checker. Compare the
+      // fields that choices can change, including grouping and file order.
+      String chosenBooks(List<Book> books) => jsonEncode([
+        for (final book in books)
+          [
+            book.id,
+            book.title,
+            book.author,
+            book.series,
+            book.seriesOrder,
+            for (final edition in book.editions)
+              [
+                edition.id,
+                edition.memberIds,
+                for (final file in edition.files) file.key,
+              ],
+          ],
+      ]);
+      if (chosenBooks(_built.books) !=
+          chosenBooks(_libraryOf(_cache!.entries, _choices!).books)) {
+        throw StateError(
+          'The library must be built from the current choices and cache.',
+        );
+      }
+    }
     if (_work == _Work.idle &&
         !_disposed &&
         !identical(_librarySignal.value, _visible)) {
@@ -532,7 +565,8 @@ class CatalogController extends ChangeNotifier {
   /// Adopts the prepared server snapshot and its derived library. A null
   /// library preserves the current books; the worker has checked that both
   /// server content and applied visibility permit that reuse.
-  void _adopt(_Built built) {
+  void _adopt(_AccountOperation operation, _Built built) {
+    if (!_owns(operation)) return;
     assert(_session?.scope.key == built.cache.scope.key);
     _cache = built.cache;
     _text = built.text;
@@ -541,13 +575,80 @@ class CatalogController extends ChangeNotifier {
     if (built.library case final library?) _built = library;
   }
 
-  /// Adopts only choices known to be committed for this account. The library
-  /// is derived from these choices and may be reused when visibility is equal.
-  void _adoptChoices(CatalogChoices choices, {CatalogLibrary? library}) {
-    assert(_session != null);
+  _AccountOperation _operation({int? request}) =>
+      (scope: _session!.scope, account: _accountGeneration, request: request);
+
+  bool _owns(_AccountOperation operation) =>
+      !_disposed &&
+      operation.account == _accountGeneration &&
+      operation.scope.key == _session?.scope.key &&
+      (operation.request == null || operation.request == _generation);
+
+  /// Installs choices and their derived view together, only for the account
+  /// and request that started the work. A supplied library was prepared from
+  /// the current cache; otherwise this owner rebuilds changed choices itself.
+  /// Notice-only reconciliation preserves the existing storage certainty.
+  Future<void> _adoptChoices(
+    _AccountOperation operation,
+    CatalogChoices choices, {
+    CatalogLibrary? library,
+    bool stored = true,
+  }) async {
+    if (!_owns(operation)) return;
+    final cache = _cache;
+    assert(cache == null || cache.scope.key == operation.scope.key);
+    if (library == null && cache != null) {
+      if (!identical(choices.edits, _choices?.edits)) {
+        library = await _build(_correctCatalog, (
+          entries: cache.entries,
+          choices: choices,
+        ), small: cache.entries.isEmpty);
+      } else if (!setEquals(choices.hidden, _choices?.hidden)) {
+        library = await _build(_changeVisibility, (
+          entries: cache.entries,
+          choices: choices,
+          previousHidden: _choices!.hidden,
+        ), small: cache.entries.isEmpty);
+      }
+    }
+    if (!_owns(operation)) return;
     _choices = choices;
-    _choicesStored = true;
+    _choicesStored = stored;
     if (library != null) _built = library;
+  }
+
+  /// Reconciles storage's recovery notice after background migration. It joins
+  /// account writes, so a notice cannot replace newer corrections or books.
+  /// Only the small choice record is read; the server catalog is untouched.
+  Future<void> reconcileChoices() {
+    if (_session == null || _disposed) return Future<void>.value();
+    final operation = _operation();
+    final next = (_cacheWrites ?? Future<void>.value()).then((_) async {
+      await _reconcileChoiceNotice(operation);
+      if (_owns(operation)) _notify();
+    });
+    _cacheWrites = next.catchError((Object _) {});
+    return next;
+  }
+
+  Future<void> _reconcileChoiceNotice(_AccountOperation operation) async {
+    if (!_owns(operation)) return;
+    final saved = await _store.readChoices(operation.scope);
+    if (!_owns(operation)) return;
+    final current = _choices;
+    if (current == null) {
+      await _adoptChoices(operation, saved);
+    } else if (saved.retainedUnreadable && !current.retainedUnreadable) {
+      await _adoptChoices(
+        operation,
+        CatalogChoices(
+          edits: current.edits,
+          hidden: current.hidden,
+          retainedUnreadable: true,
+        ),
+        stored: _choicesStored,
+      );
+    }
   }
 
   int _begin({_Work work = _Work.refresh}) {
@@ -583,42 +684,34 @@ class CatalogController extends ChangeNotifier {
   /// active cache, even if the operation that requested the write ended.
   /// Callers serialize these writes through [_cacheWrites].
   Future<void> _writeCatalog(AccountScope scope, String text) async {
+    final operation = _operation();
+    assert(operation.scope.key == scope.key);
     try {
       await _store.write(scope, text);
-      final choices = await _store.readChoices(scope);
-      if (_session?.scope.key == scope.key) {
-        // Preparing the replacement may have discovered unreadable legacy data.
-        // Only its retained-data notice changes; ordered edits remain ours.
-        if (_choices == null) {
-          _adoptChoices(choices);
-        } else if (choices.retainedUnreadable &&
-            !_choices!.retainedUnreadable) {
-          _choices = CatalogChoices(
-            edits: _choices!.edits,
-            hidden: _choices!.hidden,
-            retainedUnreadable: true,
-          );
-        }
+      await _reconcileChoiceNotice(operation);
+      if (_owns(operation)) {
         _cacheStored = identical(text, _text);
       }
     } on AssertionError {
       rethrow;
     } catch (_) {
-      if (_session?.scope.key == scope.key) _cacheStored = false;
+      if (_owns(operation)) _cacheStored = false;
       rethrow;
     }
   }
 
   Future<void> _writeChoices(AccountScope scope, CatalogChoices choices) async {
+    final operation = _operation();
+    assert(operation.scope.key == scope.key);
     try {
       await _store.writeChoices(scope, choices);
-      if (_session?.scope.key == scope.key) {
+      if (_owns(operation)) {
         _choicesStored = identical(choices, _choices);
       }
     } on AssertionError {
       rethrow;
     } catch (_) {
-      if (_session?.scope.key == scope.key) _choicesStored = false;
+      if (_owns(operation)) _choicesStored = false;
       rethrow;
     }
   }
@@ -639,15 +732,16 @@ class CatalogController extends ChangeNotifier {
     _reach = CatalogReach.unknown;
   }
 
-  /// The saved catalog of [scope], decoded and built, or null when none is
+  /// The saved catalog of [operation], decoded and built, or null when none is
   /// saved. Choices load independently even when the server cache is absent.
-  Future<_Built?> _readSaved(AccountScope scope) async {
+  Future<_Built?> _readSaved(_AccountOperation operation) async {
     // An earlier account operation can still be finishing its disk write.
     await _cacheWrites;
-    final accountGeneration = _accountGeneration;
+    if (!_owns(operation)) return null;
+    final scope = operation.scope;
     final choices = await _store.readChoices(scope);
-    if (accountGeneration != _accountGeneration || _disposed) return null;
-    _adoptChoices(choices);
+    await _adoptChoices(operation, choices);
+    if (!_owns(operation)) return null;
     final text = await _store.read(scope);
     if (text == null) return null;
     return _build(_restoreCatalog, (
@@ -671,10 +765,11 @@ class CatalogController extends ChangeNotifier {
         // The account shows at once, and its saved library when it is built.
         _session = restored;
         _notify();
-        final saved = await _readSaved(restored.scope);
+        final operation = _operation(request: generation);
+        final saved = await _readSaved(operation);
         if (!_current(generation)) return;
         if (saved != null) {
-          _adopt(saved);
+          _adopt(operation, saved);
           _libraries = saved.cache.libraries;
         }
       }
@@ -727,10 +822,11 @@ class CatalogController extends ChangeNotifier {
       await _writeCredentials(signedIn);
       if (!_current(generation)) return false;
       _session = signedIn;
+      final operation = _operation(request: generation);
       _Built? saved;
       var readable = true;
       try {
-        saved = await _readSaved(signedIn.scope);
+        saved = await _readSaved(operation);
       } on AssertionError {
         rethrow;
       } catch (_) {
@@ -741,7 +837,7 @@ class CatalogController extends ChangeNotifier {
         }
       }
       if (!_current(generation)) return false;
-      if (saved != null) _adopt(saved);
+      if (saved != null) _adopt(operation, saved);
       final views = await client.libraries(signedIn);
       if (!_current(generation)) return false;
       _libraries = views;
@@ -877,8 +973,13 @@ class CatalogController extends ChangeNotifier {
   Future<void> _refresh(_Refreshing refreshing) async {
     final currentSession = _session!;
     final generation = refreshing.generation;
+    final operation = _operation(request: generation);
     _notify();
     try {
+      if (_choices == null) {
+        await _reconcileChoiceNotice(operation);
+        if (!_owns(operation)) return;
+      }
       if (refreshing.hidden != null &&
           !setEquals(refreshing.hidden, _choices?.hidden) &&
           _cache != null &&
@@ -886,11 +987,6 @@ class CatalogController extends ChangeNotifier {
           !_accessBlocked) {
         if (await _selectLibraries(refreshing)) return;
         if (!_current(generation)) return;
-      }
-      if (_choices == null) {
-        final choices = await _store.readChoices(currentSession.scope);
-        if (!_current(generation)) return;
-        _adoptChoices(choices);
       }
       final device = await _credentials.deviceId();
       if (!_current(generation)) return;
@@ -914,6 +1010,10 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
+        // Network reads remain independent of pending writes. Reconcile the
+        // small recovery notice when this response reaches ordered adoption.
+        await _reconcileChoiceNotice(operation);
+        if (!_owns(operation)) return;
         final previous = _cache;
         final choices = _choices!.change(hidden: hidden);
         final built = await _build(_refreshCatalog, (
@@ -943,14 +1043,15 @@ class CatalogController extends ChangeNotifier {
         if (!_choicesStored || !setEquals(_choices!.hidden, choices.hidden)) {
           await _writeChoices(validated.scope, choices);
           if (!_current(generation)) return;
-          _adoptChoices(choices);
+          await _adoptChoices(operation, choices);
+          if (!_owns(operation)) return;
         }
         if (built != null) {
           if (!_cacheStored || !identical(built.text, _text)) {
             await _writeCatalog(validated.scope, built.text);
           }
           if (!_current(generation)) return;
-          _adopt(built);
+          _adopt(operation, built);
         }
         _session = validated;
         _accessBlocked = false;
@@ -986,6 +1087,7 @@ class CatalogController extends ChangeNotifier {
     var complete = false;
     final scope = _session!.scope;
     final generation = refreshing.generation;
+    final operation = _operation(request: generation);
     final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
       if (!_current(generation)) return;
       final cache = _cache!;
@@ -1005,9 +1107,11 @@ class CatalogController extends ChangeNotifier {
       if (changed || !_choicesStored) {
         await _writeChoices(scope, choices);
         if (!_current(generation)) return;
-        _adoptChoices(choices);
+        // The visibility worker returns null only when no cached entry changes
+        // visibility. That result explicitly permits reusing the current view.
+        await _adoptChoices(operation, choices, library: library ?? _built);
       }
-      if (library != null) _built = library;
+      if (!_owns(operation)) return;
       complete = cache.included.containsAll(
         _libraries
             .where((library) => !hidden.contains(library.id))
@@ -1080,6 +1184,7 @@ class CatalogController extends ChangeNotifier {
   /// the catalog cannot be saved, and then adopts nothing.
   Future<void> _saveAccess({required bool blocked, required int generation}) {
     final scope = _session!.scope;
+    final operation = _operation(request: generation);
     final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
       if (!_current(generation)) return;
       final previous = _cache;
@@ -1101,7 +1206,7 @@ class CatalogController extends ChangeNotifier {
             ));
       if (!_current(generation)) return;
       await _writeCatalog(scope, saved.text);
-      if (_current(generation)) _adopt(saved);
+      _adopt(operation, saved);
     });
     _cacheWrites = write.catchError((Object _) {});
     return write;
@@ -1150,11 +1255,9 @@ class CatalogController extends ChangeNotifier {
         _accessBlocked) {
       throw StateError('Sign in and load a book catalog before correcting it.');
     }
-    final accountGeneration = _accountGeneration;
-    bool currentAccount() =>
-        !_disposed && accountGeneration == _accountGeneration;
+    final operation = _operation();
     final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
-      if (!currentAccount()) return;
+      if (!_owns(operation)) return;
       final previous = _cache!;
       try {
         final choices = _choices!.change(edits: change(_choices!.edits));
@@ -1164,16 +1267,17 @@ class CatalogController extends ChangeNotifier {
           entries: previous.entries,
           choices: choices,
         ), small: previous.entries.isEmpty);
-        if (!currentAccount()) return;
+        if (!_owns(operation)) return;
         await _writeChoices(previous.scope, choices);
-        if (!currentAccount()) return;
-        _adoptChoices(choices, library: library);
+        if (!_owns(operation)) return;
+        await _adoptChoices(operation, choices, library: library);
+        if (!_owns(operation)) return;
         _message = null;
         _notify();
       } on AssertionError {
         rethrow;
       } catch (_) {
-        if (currentAccount()) {
+        if (_owns(operation)) {
           _message = 'Your correction was not saved. Try again.';
           _notify();
         }

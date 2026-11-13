@@ -2,6 +2,13 @@ import 'catalog_files_stub.dart'
     if (dart.library.io) 'catalog_files_io.dart'
     as platform;
 
+/// Usable account discoveries plus the first I/O failure, if any. A failed
+/// file or interrupted scan must not discard accounts already discovered.
+typedef CatalogDiscovery = ({
+  Set<String> keys,
+  ({Exception error, StackTrace stack})? failure,
+});
+
 /// Application-private catalog and choice text files. Implementations map
 /// opaque storage keys to safe filenames and preserve read errors.
 /// One LocalCatalogStore owns operations on these files for the app lifetime.
@@ -21,7 +28,7 @@ abstract interface class CatalogFiles {
   /// [identify] is a pure decoder, run with disk work off the UI isolate, so
   /// file storage need not know catalog formats or move whole catalogs back.
   /// Unidentifiable data stays untouched for recovery by its account owner.
-  Future<Set<String>> catalogKeys(String? Function(String text) identify);
+  Future<CatalogDiscovery> catalogKeys(String? Function(String text) identify);
 }
 
 /// Native platforms keep files beside the host's private media directory.

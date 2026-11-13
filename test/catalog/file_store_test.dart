@@ -520,7 +520,7 @@ class ControlledFiles implements CatalogFiles {
   final release = Completer<void>();
 
   @override
-  Future<Set<String>> catalogKeys(String? Function(String) identify) =>
+  Future<CatalogDiscovery> catalogKeys(String? Function(String) identify) =>
       disk.catalogKeys(identify);
   @override
   Future<void> preserve(String key) => disk.preserve(key);

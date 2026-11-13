@@ -25,3 +25,15 @@ boo-7z9a now retains unreadable native catalog bytes before any replacement it p
 Integration, review resolution, final verification and ticket closure remain with the assigned lead and parent as described in boo-7z9a. No separate writer or closure was started.
 
 Final implementation verification: 52 focused real-file storage/choice tests passed (`/tmp/boo-7z9a-green-io-guard.log`), 522 affected tests passed (`/tmp/boo-7z9a-affected-final.log`), and the full suite passed 3,316 tests with 26 existing skips and no failures (`/tmp/boo-7z9a-full-final.log`). The regression is fully proved for the assigned automated scope; the single fresh review and parent integration/closure remain pending. No Android or actual process-kill proof is claimed.
+
+
+## Review correction and resolution
+
+The single fresh Astra review of boo-7z9a accepted the exact-byte preservation tests but found an uncovered reporting path (R4): damaged retained preferences discovered after active restore could remain unreported until restart. Therefore the earlier pre-review statement that the full retain-and-report requirement was proved was premature. The reviewer marked fulfillment `changes-required`, not passed.
+
+The lead reproduced R4 as a meaningful red in `/tmp/boo-7z9a-review-red.log`, then fixed notice reconciliation at the catalog ownership boundary. The controller reads only the small choice record through its account write queue; the after-first-frame migration completion and unchanged server response adoption both use that boundary. The tests verify exact retained text, active reporting without restart (with and without a server refresh), unchanged library identity and no server-cache write. The four reviewed behavior regressions passed together in `/tmp/boo-7z9a-review-green.log`. The complete verification results for the final fix follow in boo-7z9a.
+
+No second review, Android test, operating-system process kill, coverage, mutation testing, integration or closure was performed by this lead.
+
+
+Final fix verification completed: 528 affected tests passed; the complete suite passed 3,322 tests with 26 existing skips and no failures (`/tmp/boo-7z9a-review-affected-final.log`, `/tmp/boo-7z9a-review-full.log`). All review findings were resolved in one fix stage. td-6hd7 is fully proved within the requested automated real-file retain-and-report scope, including R4's active notice path. The ticket remains open only for parent integration, acceptance/hardening and closure; no further implementation gap is known.

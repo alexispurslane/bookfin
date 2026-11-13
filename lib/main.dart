@@ -283,7 +283,15 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     unawaited(_catalog.refresh());
     await WidgetsBinding.instance.endOfFrame;
     try {
-      await store.migrateLegacy();
+      try {
+        await store.migrateLegacy();
+      } on Exception {
+        // Successful accounts may discover retained damage even when another
+        // account fails migration. The catalog owns ordering and reporting it.
+        await _catalog.reconcileChoices();
+        rethrow;
+      }
+      await _catalog.reconcileChoices();
     } on Exception catch (error, stack) {
       FlutterError.reportError(
         FlutterErrorDetails(

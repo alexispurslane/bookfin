@@ -464,24 +464,35 @@ class LocalCatalogStore implements CatalogStore {
     final files = _files;
     Object? failure;
     StackTrace? trace;
-    Future<Set<String>> discover(Future<Set<String>> operation) async {
+    Future<CatalogDiscovery> discover(
+      Future<CatalogDiscovery> operation,
+    ) async {
       try {
         return await operation;
       } on Exception catch (error, stack) {
-        failure ??= error;
-        trace ??= stack;
-        return {};
+        return (keys: <String>{}, failure: (error: error, stack: stack));
       }
     }
 
     final sources = await Future.wait([
-      discover(_preferences.getKeys()),
-      discover(files?.catalogKeys(_catalogKey) ?? Future.value(<String>{})),
+      discover(
+        _preferences.getKeys().then((keys) => (keys: keys, failure: null)),
+      ),
+      discover(
+        files?.catalogKeys(_catalogKey) ??
+            Future.value((keys: <String>{}, failure: null)),
+      ),
     ]);
-    final preferenceKeys = sources[0];
+    for (final source in sources) {
+      if (source.failure case final failed?) {
+        failure ??= failed.error;
+        trace ??= failed.stack;
+      }
+    }
+    final preferenceKeys = sources[0].keys;
     final keys = {
       ...preferenceKeys.where((key) => key.startsWith('bookfin.catalog.v1.')),
-      ...sources[1],
+      ...sources[1].keys,
     };
     for (final key in keys) {
       try {

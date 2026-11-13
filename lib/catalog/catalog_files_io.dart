@@ -34,24 +34,30 @@ class DiskCatalogFiles implements CatalogFiles {
   }
 
   @override
-  Future<Set<String>> catalogKeys(String? Function(String text) identify) {
+  Future<CatalogDiscovery> catalogKeys(String? Function(String text) identify) {
     final path = root.path;
     return Isolate.run(() async {
       final keys = <String>{};
+      ({Exception error, StackTrace stack})? failure;
       final directory = Directory(path);
-      if (!await directory.exists()) return keys;
-      await for (final file in directory.list()) {
-        if (file is! File || !file.path.endsWith('.catalog')) continue;
-        final bytes = await file.readAsBytes();
-        try {
-          final key = identify(utf8.decode(bytes));
-          if (key != null) keys.add(key);
-        } on FormatException {
-          // Its account cannot be identified. Leave the bytes untouched;
-          // reading that account later retains and reports the damaged file.
+      try {
+        if (!await directory.exists()) return (keys: keys, failure: null);
+        await for (final file in directory.list()) {
+          if (file is! File || !file.path.endsWith('.catalog')) continue;
+          try {
+            final key = identify(utf8.decode(await file.readAsBytes()));
+            if (key != null) keys.add(key);
+          } on FormatException {
+            // Its account cannot be identified. Leave the bytes untouched;
+            // reading that account later retains and reports the damaged file.
+          } on FileSystemException catch (error, stack) {
+            failure ??= (error: error, stack: stack);
+          }
         }
+      } on FileSystemException catch (error, stack) {
+        failure ??= (error: error, stack: stack);
       }
-      return keys;
+      return (keys: keys, failure: failure);
     });
   }
 
@@ -109,8 +115,9 @@ class _HostCatalogFiles implements CatalogFiles {
   Future<void> preserve(String key) async => (await _open()).preserve(key);
 
   @override
-  Future<Set<String>> catalogKeys(String? Function(String) identify) async =>
-      (await _open()).catalogKeys(identify);
+  Future<CatalogDiscovery> catalogKeys(
+    String? Function(String) identify,
+  ) async => (await _open()).catalogKeys(identify);
 
   @override
   Future<void> write(String key, String text) async =>

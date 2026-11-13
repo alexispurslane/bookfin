@@ -857,6 +857,197 @@ void main() {
     );
     expect(await disk.read(legacyKey('alice')), before);
   });
+
+  test('an obsolete account restore cannot adopt choices after waiting for a write', () async {
+    final controlled = CountingFiles(disk);
+    store = LocalCatalogStore(files: controlled);
+    final signalled = SignalledCredentials()..value = account('alice');
+    credentials = signalled;
+    final bob = account('bob').scope;
+    await store.writeChoices(bob, CatalogChoices(hidden: {'hidden'}));
+    final catalog = controller();
+    await catalog.restore();
+    await catalog.refresh();
+    controlled.pauseKey = choiceKey(scope);
+    final editing = catalog.correctBook(
+      'book:one',
+      const BookDetails(title: 'Alice only', author: 'Alice'),
+    );
+    await controlled.entered.future;
+    signalled.watchUser = 'alice';
+    final obsolete = catalog.connect('https://books.example', 'alice', 'pw');
+    await signalled.saved.future;
+    // Drain the sign-in continuation into its pending catalog-write wait.
+    // This is an event-queue barrier, not elapsed-time synchronization.
+    await Future<void>(() {});
+    catalog.cancel();
+    controlled.pauseReadKey = choiceKey(scope);
+    final switching = catalog.connect('https://books.example', 'bob', 'pw');
+    controlled.release.complete();
+    await switching;
+    expect(catalog.session!.scope.userId, 'bob');
+    expect(catalog.accountNotifier.value.hidden, {'hidden'});
+    controlled.releaseRead.complete();
+    await Future.wait([editing, obsolete]);
+    expect(catalog.accountNotifier.value.hidden, {'hidden'});
+    await catalog.correctBook(
+      'book:one',
+      const BookDetails(title: 'Bob only', author: 'Bob'),
+    );
+    final saved = await LocalCatalogStore(files: DiskCatalogFiles(root))
+        .readChoices(bob);
+    expect(saved.hidden, {'hidden'});
+    expect(saved.edits.details['book:one']!.title, 'Bob only');
+    catalog.checkInvariants();
+  });
+
+  test('a failed access recovery cache write keeps committed visibility coherent on retry', () async {
+    final catalog = controller();
+    await catalog.restore();
+    await catalog.refresh();
+    client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+    await catalog.refresh();
+    expect(catalog.accessBlocked, isTrue);
+    final partial = Directory(
+      '${committedFile(disk, legacyKey('alice')).path}.partial',
+    );
+    await partial.create();
+    client.failure = null;
+    await catalog.refresh(hidden: {'books'}, byUser: true);
+    expect(catalog.message, contains('not saved'));
+    expect((await store.readChoices(scope)).hidden, {'books'});
+    expect(catalog.accountNotifier.value.hidden, {'books'});
+    catalog.checkInvariants();
+    await partial.delete();
+    await catalog.refresh(hidden: {'books'}, byUser: true);
+    expect(catalog.verified, isTrue);
+    expect(catalog.accountNotifier.value.hidden, {'books'});
+    expect(catalog.books, isEmpty);
+    final reopened = controller(
+      storage: LocalCatalogStore(files: DiskCatalogFiles(root)),
+    );
+    await reopened.restore();
+    expect(reopened.books, isEmpty);
+    catalog.checkInvariants();
+  });
+
+  test(
+    'one unreadable native file cannot strand independent native choices',
+    () async {
+      final failed = committedFile(disk, legacyKey('alice'));
+      await disk.write(legacyKey('alice'), 'temporarily unreadable');
+      final bob = account('bob').scope;
+      await disk.write(
+        legacyKey('bob'),
+        legacyCatalog(
+          scope: bob,
+          libraries: client.views,
+          entries: [entry('one')],
+          edits: CatalogEdits(
+            details: {
+              'book:one': const BookDetails(title: 'Native Bob', author: 'Bob'),
+            },
+          ),
+        ),
+      );
+      // Exercise the real directory scan, including a real per-file I/O error.
+      expect((await Process.run('chmod', ['000', failed.path])).exitCode, 0);
+      try {
+        await expectLater(
+          store.migrateLegacy(),
+          throwsA(isA<FileSystemException>()),
+        );
+        final text = await disk.read(choiceKey(bob));
+        expect(text, isNotNull);
+        expect(
+          CatalogChoices.decode(bob, text!).edits.details['book:one']!.title,
+          'Native Bob',
+        );
+      } finally {
+        expect((await Process.run('chmod', ['600', failed.path])).exitCode, 0);
+      }
+      expect(await failed.readAsString(), 'temporarily unreadable');
+      await store.migrateLegacy();
+    },
+  );
+
+  for (final refresh in [false, true]) {
+    test(
+      'background legacy damage reaches the active notice ${refresh ? 'after an unchanged refresh' : 'without a server refresh'}',
+      () async {
+        final initial = controller();
+        await initial.restore();
+        await initial.refresh();
+        await preferences.setString(
+          legacyKey('alice'),
+          '{damaged retained choices',
+        );
+        final counted = CountingFiles(DiskCatalogFiles(root));
+        store = LocalCatalogStore(files: counted);
+        final catalog = controller();
+        await catalog.restore();
+        expect(catalog.message, isNull);
+        final library = catalog.libraryNotifier.value;
+        await store.migrateLegacy();
+        counted.writes.clear();
+        counted.reads.clear();
+        final requests = client.catalogReads;
+        if (refresh) {
+          await catalog.refresh();
+        } else {
+          await catalog.reconcileChoices();
+          expect(client.catalogReads, requests);
+          expect(counted.reads, [choiceKey(scope)]);
+        }
+        expect(catalog.message, contains('kept for recovery'));
+        expect(catalog.libraryNotifier.value, same(library));
+        expect(counted.writes.keys, isNot(contains(legacyKey('alice'))));
+        final files = await root
+            .list()
+            .where((file) => file is File)
+            .cast<File>()
+            .toList();
+        expect(
+          await Future.wait(files.map((file) => file.readAsString())),
+          contains('{damaged retained choices'),
+        );
+        catalog.checkInvariants();
+      },
+    );
+  }
+
+  test('native version one selected libraries migrate to no hidden libraries after reopen', () async {
+    final legacy = jsonDecode(
+      legacyCatalog(
+        scope: scope,
+        libraries: client.views,
+        entries: [entry('one')],
+        edits: CatalogEdits(
+          details: {
+            'book:one': const BookDetails(
+              title: 'Version one choice',
+              author: 'Me',
+            ),
+          },
+        ),
+      ),
+    ) as Map<String, dynamic>;
+    legacy['version'] = 1;
+    legacy['selected'] = ['books'];
+    legacy.remove('hidden');
+    await disk.write(legacyKey('alice'), jsonEncode(legacy));
+    await store.migrateLegacy();
+    await committedFile(disk, legacyKey('alice')).delete();
+    final reopened = controller(
+      storage: LocalCatalogStore(files: DiskCatalogFiles(root)),
+    );
+    await reopened.restore();
+    await reopened.refresh();
+    expect(reopened.accountNotifier.value.hidden, isEmpty);
+    expect(reopened.books.single.title, 'Version one choice');
+    expect(reopened.message, isNull);
+    reopened.checkInvariants();
+  });
 }
 
 class CountingFiles implements CatalogFiles {
@@ -868,10 +1059,14 @@ class CountingFiles implements CatalogFiles {
   bool failPreserve = false;
   bool failScan = false;
   String? failReadOnceKey;
+  String? pauseReadKey;
+  final releaseRead = Completer<void>();
   final entered = Completer<void>();
   final release = Completer<void>();
   @override
-  Future<Set<String>> catalogKeys(String? Function(String) identify) async {
+  Future<CatalogDiscovery> catalogKeys(
+    String? Function(String) identify,
+  ) async {
     if (failScan) throw const FileSystemException('discovery failed');
     return disk.catalogKeys(identify);
   }
@@ -885,6 +1080,7 @@ class CountingFiles implements CatalogFiles {
   @override
   Future<String?> read(String key) async {
     reads.add(key);
+    if (key == pauseReadKey) await releaseRead.future;
     if (key == failReadOnceKey) {
       failReadOnceKey = null;
       throw const FileSystemException('temporarily unavailable');
@@ -900,6 +1096,20 @@ class CountingFiles implements CatalogFiles {
     }
     writes[key] = text;
     await disk.write(key, text);
+  }
+}
+
+class SignalledCredentials extends MemoryCredentials {
+  String? watchUser;
+  final saved = Completer<void>();
+  @override
+  Future<void> write(JellyfinSession? session) async {
+    await super.write(session);
+    if (watchUser != null &&
+        session?.scope.userId == watchUser &&
+        !saved.isCompleted) {
+      saved.complete();
+    }
   }
 }
 
