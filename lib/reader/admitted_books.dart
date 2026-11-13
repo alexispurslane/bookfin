@@ -141,8 +141,9 @@ abstract final class AdmittedBooks {
   /// admission at the next open.
   ///
   /// It reads, decodes and encodes the record in the calling isolate, so
-  /// call it in a worker. The record moves to another isolate without a
-  /// copy.
+  /// call it in a worker while Downloads owns the read or holds the file.
+  /// The record moves to another isolate without a copy. Readers outside
+  /// download ownership use [readOnly], which leaves damaged files in place.
   static Future<(Publication, AdmittedRecord?)> read(
     File original,
     String digest,
@@ -151,7 +152,15 @@ abstract final class AdmittedBooks {
   ) async {
     final record = _recordOf(original);
     final key = _keyOf(policy, digest);
-    if (await _kept(record, key) case final kept?) return (kept, null);
+    try {
+      if (await _kept(record, key) case final kept?) return (kept, null);
+    } on FormatException {
+      try {
+        await record.rename('${record.path}.unreadable');
+      } on FileSystemException {
+        // The next write replaces the record.
+      }
+    }
     final publication = await admit();
     return (
       publication,
@@ -164,6 +173,27 @@ abstract final class AdmittedBooks {
         ]),
       ),
     );
+  }
+
+  /// Reads a kept publication or calls [admit] without changing any record.
+  /// A damaged record stays in place for the next download-owned [load] to
+  /// set aside. [admit] must also be non-mutating. This reads and decodes in
+  /// the calling isolate, so callers run it in their worker.
+  static Future<Publication> readOnly(
+    File original,
+    String digest,
+    String policy,
+    Future<Publication> Function() admit,
+  ) async {
+    try {
+      if (await _kept(_recordOf(original), _keyOf(policy, digest))
+          case final kept?) {
+        return kept;
+      }
+    } on FormatException {
+      // Only an owned load may quarantine the damaged record.
+    }
+    return admit();
   }
 
   /// Writes [record] with [DerivedBookFiles.write], so a process that dies
@@ -251,7 +281,8 @@ abstract final class AdmittedBooks {
 
   /// The publication of [record] when its key is [key], or null. A record
   /// with another key is a book that changed or an older policy, which the
-  /// next write replaces. A record that cannot be read is set aside.
+  /// next write replaces. A damaged record throws [FormatException]; the
+  /// caller decides whether its ownership permits quarantine.
   ///
   /// The publication reads its images and fonts from [record] later, while
   /// the record still begins with its key line.
@@ -285,13 +316,6 @@ abstract final class AdmittedBooks {
       } finally {
         await file.close();
       }
-    } on FormatException {
-      try {
-        await record.rename('${record.path}.unreadable');
-      } on FileSystemException {
-        // The next write replaces the record.
-      }
-      return null;
     } on FileSystemException {
       return null;
     }

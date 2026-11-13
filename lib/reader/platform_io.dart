@@ -143,15 +143,13 @@ Future<Publication> Function() _admission(VerifiedFile original) {
 /// keeps nothing, so it can run outside Downloads' read of the download
 /// (t4-3o9f). It reads in the calling isolate, which must not be the UI
 /// isolate.
-Future<Publication> _keptOrAdmittedEpub(String path, String digest) async {
-  final (publication, _) = await AdmittedBooks.read(
-    File(path),
-    digest,
-    Publication.policy,
-    () async => Publication.admit(await _archiveBytes(path), digest),
-  );
-  return publication;
-}
+Future<Publication> _keptOrAdmittedEpub(String path, String digest) =>
+    AdmittedBooks.readOnly(
+      File(path),
+      digest,
+      Publication.policy,
+      () async => Publication.admit(await _archiveBytes(path), digest),
+    );
 
 /// A reader of the words of the downloaded ebook [original] of [source],
 /// using Crossings' [outline] for the same file revision, for the worker

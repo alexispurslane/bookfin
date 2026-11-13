@@ -3,6 +3,7 @@
 // download: a removal never races with it (t4-3o9f). Only Downloads'
 // preparation, the reader and the outline measurement, under a hold of the
 // download, keep admitted books and MOBI conversions.
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -60,6 +61,47 @@ void main() {
   ]..sort();
 
   final emptyOutline = TextOutline(parts: [], entries: []);
+
+  for (final container in ['epub', 'mobi']) {
+    test(
+      'a $container speech worker leaves a corrupt admission for an owned recovery',
+      () async {
+        final bytes = container == 'epub'
+            ? navBook(['<p>Call me Ishmael.</p>'], const [])
+            : await File('tool/research/readers/fixtures/pg11-kf8.mobi')
+                  .readAsBytes();
+        final (original, source) = await download(bytes, container);
+        await prepareDownloadedBook(original, source);
+        final outline = await measureDownloadedOutline(original, source);
+        await AdmittedBooks.written(File.fromUri(original.uri));
+        final record = File('${folder.path}/.bookfin-admitted/publication');
+        final damaged = utf8.encode('damaged admitted book');
+        await record.writeAsBytes(damaged);
+        final before = <String, String>{
+          for (final file in folder.listSync(recursive: true).whereType<File>())
+            file.path: sha256.convert(file.readAsBytesSync()).toString(),
+        };
+
+        final read = (await bookWordsReader(original, source, outline))!;
+        final words = await inWorker(read);
+
+        expect(
+          words.words,
+          contains(container == 'epub' ? 'ishmael' : 'alice'),
+        );
+        expect({
+          for (final file in folder.listSync(recursive: true).whereType<File>())
+            file.path: sha256.convert(file.readAsBytesSync()).toString(),
+        }, before);
+        // A later normal load retains the damaged bytes before replacing them.
+        final recovered = await measureDownloadedOutline(original, source);
+        await AdmittedBooks.written(File.fromUri(original.uri));
+        expect(recovered.length, outline.length);
+        expect(await File('${record.path}.unreadable').readAsBytes(), damaged);
+        expect(await record.readAsBytes(), isNot(damaged));
+      },
+    );
+  }
 
   test('reads the words of an EPUB and writes nothing beside it', () async {
     final bytes = navBook(['<p>Call me Ishmael.</p>'], const []);

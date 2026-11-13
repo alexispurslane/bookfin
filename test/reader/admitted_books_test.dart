@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
@@ -465,61 +466,112 @@ void main() {
       expect(await _record(file).exists(), isTrue);
     });
 
-    test('removing a download removes its kept admitted book', () async {
-      final root = await Directory.systemTemp.createTemp('bookfin-removal-');
-      addTearDown(() => root.delete(recursive: true));
-      final policy = MediaPolicy()..network = MediaNetwork.disconnected;
-      addTearDown(policy.dispose);
-      final downloads = LocalDownloads(
-        root: root,
-        freeBytes: () async => 100000000,
-        policy: policy,
-      );
-      addTearDown(downloads.dispose);
-      final bytes = epub();
-      final source = SourceFile(
-        itemId: fixture.source.itemId,
-        mediaSourceId: fixture.source.mediaSourceId,
-        revision: fixture.source.revision,
-        displayName: 'Verified.epub',
-        container: 'epub',
-        durationMs: null,
-        sizeBytes: bytes.length,
-        isItemOriginal: true,
-      );
-      final edition = Edition(
-        id: fixture.edition.id,
-        kind: EditionKind.text,
-        label: 'EPUB',
-        files: [source],
-        memberIds: [source.key],
-      );
-      final directory = await _savedDownload(root, source, bytes);
-      await downloads.bind(account(), [
-        Book(
-          id: fixture.book.id,
-          title: 'River',
-          author: 'Writer',
-          editions: [edition],
-        ),
-      ]);
+    for (final corrupt in [false, true]) {
+      test(
+        corrupt
+            ? 'removing a download waits for corrupt admission recovery and '
+                  'removes its quarantined record'
+            : 'removing a download removes its kept admitted book',
+        () async {
+          final root = await Directory.systemTemp.createTemp(
+            'bookfin-removal-',
+          );
+          addTearDown(() => root.delete(recursive: true));
+          final policy = MediaPolicy()..network = MediaNetwork.disconnected;
+          addTearDown(policy.dispose);
+          final downloads = LocalDownloads(
+            root: root,
+            freeBytes: () async => 100000000,
+            policy: policy,
+          );
+          addTearDown(downloads.dispose);
+          final bytes = epub();
+          final source = SourceFile(
+            itemId: fixture.source.itemId,
+            mediaSourceId: fixture.source.mediaSourceId,
+            revision: fixture.source.revision,
+            displayName: 'Verified.epub',
+            container: 'epub',
+            durationMs: null,
+            sizeBytes: bytes.length,
+            isItemOriginal: true,
+          );
+          final edition = Edition(
+            id: fixture.edition.id,
+            kind: EditionKind.text,
+            label: 'EPUB',
+            files: [source],
+            memberIds: [source.key],
+          );
+          final directory = await _savedDownload(root, source, bytes);
+          await downloads.bind(account(), [
+            Book(
+              id: fixture.book.id,
+              title: 'River',
+              author: 'Writer',
+              editions: [edition],
+            ),
+          ]);
 
-      // The read ends once the book loads. Its record is written after,
-      // under a hold of the download.
-      final digest = await downloads.readLocalFile(source, (file) async {
-        await loadReadingDocument(file, source);
-        return file.digest;
-      });
-      expect(digest, _digest(bytes));
+          // The read ends once the book loads. Its record is written after,
+          // under a hold of the download.
+          final digest = await downloads.readLocalFile(source, (file) async {
+            await loadReadingDocument(file, source);
+            return file.digest;
+          });
+          expect(digest, _digest(bytes));
 
-      await downloads.remove(edition);
-      await downloads.idle;
+          final original = File('${directory.path}/complete');
+          if (corrupt) {
+            await AdmittedBooks.written(original);
+            final damaged = utf8.encode('damaged admitted book');
+            await _record(original).writeAsBytes(damaged);
+            final started = ReceivePort();
+            addTearDown(started.close);
+            final recovering = downloads.readLocalFile(
+              source,
+              (file) => AdmittedBooks.load(
+                file,
+                Publication.policy,
+                _waitingAdmission(started.sendPort, bytes),
+                (publication) => publication.originalDigest,
+              ),
+            );
+            final release = await started.first as SendPort;
+            var removed = false;
+            final removing = downloads
+                .remove(edition)
+                .then((_) => removed = true);
+            try {
+              // The worker quarantined the record before it requested admission.
+              // Removal cannot reclaim the files while that read is still active.
+              expect(
+                await File('${_record(original).path}.unreadable')
+                    .readAsBytes(),
+                damaged,
+              );
+              expect(await original.readAsBytes(), bytes);
+              expect(removed, isFalse);
+            } finally {
+              release.send(null);
+            }
+            expect(await recovering, digest);
+            await removing;
+          } else {
+            await downloads.remove(edition);
+          }
+          await downloads.idle;
+          await AdmittedBooks.written(original);
 
-      expect(
-        await Directory('${directory.path}/.bookfin-admitted').exists(),
-        isFalse,
+          expect(
+            await Directory('${directory.path}/.bookfin-admitted').exists(),
+            isFalse,
+          );
+          expect(await original.exists(), isFalse);
+          downloads.checkInvariants();
+        },
       );
-    });
+    }
   });
 
   group('the main text size', () {
@@ -1246,6 +1298,21 @@ void main() {
     });
   });
 }
+
+/// Holds admission in the real load worker until the test releases it.
+Future<Publication> Function() _waitingAdmission(
+  SendPort started,
+  Uint8List bytes,
+) => () async {
+  final release = ReceivePort();
+  try {
+    started.send(release.sendPort);
+    await release.first;
+    return Publication.admit(bytes, _digest(bytes));
+  } finally {
+    release.close();
+  }
+};
 
 /// A complete download of [bytes] for [source], saved as Downloads saves it
 /// under [root].

@@ -84,17 +84,15 @@ Future<Publication> Function() _conversion(VerifiedFile original) {
 /// read of the download (t4-3o9f). It reads in the calling isolate, which
 /// must not be the UI isolate. It throws a [FormatException] when Bookfin
 /// kept neither, because the reader did not convert the MOBI yet.
-Future<Publication> keptMobi(String path, String digest) async {
-  final (publication, _) = await AdmittedBooks.read(
-    File(path),
-    digest,
-    EpubDocument.mobiPolicy,
-    () async =>
-        await _cached(_conversionOf(File(path), digest), digest) ??
-        (throw const FormatException('This MOBI is not converted yet.')),
-  );
-  return publication;
-}
+Future<Publication> keptMobi(String path, String digest) =>
+    AdmittedBooks.readOnly(
+      File(path),
+      digest,
+      EpubDocument.mobiPolicy,
+      () async =>
+          await _cached(_conversionOf(File(path), digest), digest) ??
+          (throw const FormatException('This MOBI is not converted yet.')),
+    );
 
 /// The folder of the conversion of the MOBI [original], whose SHA-256 is
 /// [digest].
