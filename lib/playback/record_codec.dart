@@ -9,6 +9,9 @@ const _collections = {
   'reading': {'bookmarks', 'history', 'resumes'},
 };
 
+String _recordAddress(String domain, String collection, Object? id) =>
+    jsonEncode([domain, collection, id]);
+
 /// Whether this build knows the domain and the collection of [address].
 bool knownRecordAddress(List<dynamic> address) =>
     _collections[address[0]]?.contains(address[1]) ?? false;
@@ -158,7 +161,7 @@ Map<String, Map<String, dynamic>> flattenRecords(
   }
   for (final collection in ['bookmarks', 'history']) {
     for (final value in (snapshot[collection] as List? ?? []).cast<Map>()) {
-      result[jsonEncode([domain, collection, value['id']])] =
+      result[_recordAddress(domain, collection, value['id'])] =
           Map<String, dynamic>.from(value);
     }
   }
@@ -169,7 +172,7 @@ Map<String, Map<String, dynamic>> flattenRecords(
         value['source'],
         value['revision'],
       ]);
-      result[jsonEncode([domain, 'resumes', address])] =
+      result[_recordAddress(domain, 'resumes', address)] =
           Map<String, dynamic>.from(value);
     }
   } else {
@@ -189,7 +192,7 @@ Map<String, Map<String, dynamic>> flattenRecords(
             value['revision'],
           ],
         ]);
-        result[jsonEncode([domain, 'resumes', address])] = {
+        result[_recordAddress(domain, 'resumes', address)] = {
           ...value,
           'edition': entry.key,
         };
@@ -197,6 +200,60 @@ Map<String, Map<String, dynamic>> flattenRecords(
     }
   }
   return result;
+}
+
+/// The journal records changed by a writer's detached change set, including
+/// null values for deleted bookmarks and history entries. Values remain owned
+/// by [changes]. Resumes use the same current and legacy formats as snapshots.
+Map<String, Map<String, dynamic>?> recordChanges(
+  Map<String, dynamic> changes, {
+  required bool reading,
+}) {
+  final domain = reading ? 'reading' : 'audio';
+  // NOTE: Keep each writer's existing collection order: it determines the
+  // sequence of the journal actions created for one save.
+  final collections = reading
+      ? ['bookmarks', 'history']
+      : ['history', 'bookmarks'];
+  final resumes = {'resumes': changes['resumes']};
+  return {
+    for (final collection in collections)
+      for (final entry in (changes[collection] as Map).entries)
+        _recordAddress(domain, collection, entry.key):
+            entry.value as Map<String, dynamic>?,
+    ...flattenRecords(
+      reading ? {'reading': resumes} : resumes,
+      reading: reading,
+    ),
+  };
+}
+
+/// A bookmark record preserving [resume] in its [domain], keyed by its journal
+/// address. Listening bookmarks contain the position fields only; reading
+/// bookmarks retain the complete resume value.
+MapEntry<String, Map<String, dynamic>> resumeBookmarkRecord(
+  String domain,
+  Map<String, dynamic> resume, {
+  required String id,
+  required DateTime createdAt,
+  required String title,
+}) {
+  final audio = domain == 'audio';
+  return MapEntry(_recordAddress(domain, 'bookmarks', id), {
+    'id': id,
+    'position': audio
+        ? {
+            'edition': resume['edition'],
+            'source': resume['source'],
+            'revision': resume['revision'],
+            'milliseconds': resume['milliseconds'],
+          }
+        : Map<String, dynamic>.from(resume),
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'title': title,
+    if (audio) 'bookTitle': 'Saved listening place',
+    if (audio) 'editionLabel': 'Saved recording',
+  });
 }
 
 /// Each record of [combined], a snapshot in the format before the journal,
@@ -241,16 +298,15 @@ Iterable<MapEntry<String, Map<String, dynamic>>> recoverableRecords(
 /// [edition]. Replaced sources have a different address and keep old places.
 String resumeRecordAddress(Edition edition) {
   final reading = edition.kind == EditionKind.text;
-  return jsonEncode([
-    if (reading) 'reading' else 'audio',
+  return _recordAddress(
+    reading ? 'reading' : 'audio',
     'resumes',
-    if (reading)
-      jsonEncode([
-        edition.id,
-        edition.files.single.key,
-        edition.files.single.revision,
-      ])
-    else
-      jsonEncode([edition.id, editionSources(edition)]),
-  ]);
+    reading
+        ? jsonEncode([
+            edition.id,
+            edition.files.single.key,
+            edition.files.single.revision,
+          ])
+        : jsonEncode([edition.id, editionSources(edition)]),
+  );
 }

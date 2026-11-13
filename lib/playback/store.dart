@@ -649,29 +649,19 @@ class LocalResumeStore
       if (address[1] == 'resumes') {
         for (final action in versions!) {
           if (action['value'] == null) continue;
-          final value = Map<String, dynamic>.from(action['value'] as Map);
-          final mark = 'conflict.${RecordJournal.identity(action)}';
-          final audio = address[0] == 'audio';
           final now = DateTime.now();
+          final bookmark = resumeBookmarkRecord(
+            address[0] as String,
+            action['value'] as Map<String, dynamic>,
+            id: 'conflict.${RecordJournal.identity(action)}',
+            createdAt: now,
+            title:
+                bookmarkTitles[RecordJournal.identity(action)] ??
+                'Saved before sync choice',
+          );
           journal.change(
-            jsonEncode([address[0], 'bookmarks', mark]),
-            {
-              'id': mark,
-              'position': audio
-                  ? {
-                      'edition': value['edition'],
-                      'source': value['source'],
-                      'revision': value['revision'],
-                      'milliseconds': value['milliseconds'],
-                    }
-                  : value,
-              'createdAt': now.toUtc().toIso8601String(),
-              'title':
-                  bookmarkTitles[RecordJournal.identity(action)] ??
-                  'Saved before sync choice',
-              if (audio) 'bookTitle': 'Saved listening place',
-              if (audio) 'editionLabel': 'Saved recording',
-            },
+            bookmark.key,
+            bookmark.value,
             device: device,
             savedAt: now,
           );
@@ -1028,13 +1018,7 @@ class LocalResumeStore
       accountKey,
       copied['settings'] as Map<String, dynamic>,
       reading: false,
-      records: (_) => {
-        for (final collection in ['history', 'bookmarks'])
-          for (final entry in (copied[collection] as Map).entries)
-            jsonEncode(['audio', collection, entry.key]):
-                entry.value as Map<String, dynamic>?,
-        ...flattenRecords({'resumes': copied['resumes']}, reading: false),
-      },
+      records: (_) => recordChanges(copied, reading: false),
     );
   }
 
@@ -1250,15 +1234,7 @@ class ReadingRecords implements ResumeStore, ReadingStore, RecordWriterHost {
         small: _smallSettings(changes.settings),
       ),
       reading: true,
-      records: (_) => {
-        for (final collection in ['bookmarks', 'history'])
-          for (final entry in (copied[collection] as Map).entries)
-            jsonEncode(['reading', collection, entry.key]):
-                entry.value as Map<String, dynamic>?,
-        ...flattenRecords({
-          'reading': {'resumes': copied['resumes']},
-        }, reading: true),
-      },
+      records: (_) => recordChanges(copied, reading: true),
     );
   }
 
