@@ -22,3 +22,12 @@ Start from the integrated catalog migration and PDF frame fixes on main. The cur
 Reproduce cross-width contamination through a long note paragraph shared with a page and a later page-width run starting inside that paragraph. Use one explicitly owned measurement model for layout, position search, kept measures, and notes, keyed by the actual paragraph and content width. Preserve resumable work budgets, correct kept-map validation/rejection, and place continuity. Route note layout through its existing page-source ownership. No new product choice or wholesale EPUB engine redesign is intended.
 
 Required checks include meaningful failing regression(s), all EPUB tests and crossing tests, affected analysis/format, and the complete Flutter suite with concurrency at most two. Builds and tests use nix develop, one heavy command at a time. Leave coverage, mutations, device acceptance, integration and ticket closure to the parent.
+
+## Delegated task
+
+Original base: adb8c2bfc190fd7c6db9de166deecbf1baa6cba8.
+Client request ID: bookfin-boo-rcgf-astra-20261113-1
+Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rcgf-astra-20261113-1
+Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rcgf-astra-20261113-1
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rcgf-astra-20261113-1>
+Launch returned running on codex/gpt-6-astra with reasoningEffort xhigh. Stage and branch not yet reported. Completion delivery is automatic.
