@@ -1,6 +1,6 @@
 ---
 id: boo-gcu6
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -105,3 +105,38 @@ the verification record. All owned commands and the reviewer have finished.
 No product fork remains. Ready for parent integration; ticket status stays
 in progress because the parent owns integration, acceptance, hardening, and
 closure.
+
+## Parent integration and closure — 2026-11-13
+
+Verified the clean child checkout and reported branch/head. Inspected the full
+original-base diff, production callers, account migration/reconstruction,
+settings comparison and reader retry ownership, all changed tests, original
+review verdicts and saved failures/passes. All 31 compressed log hashes match.
+Integrated `9af2b943` as `9349d717` and evidence `13902357` as `992b7310`, without
+conflicts. Parent launch records remain in this ticket. No production changes
+were needed after inspection.
+
+The parent verified the combined settings and section-stylesheet implementation
+through Nix. Production and tests stayed unchanged throughout these checks:
+
+- `dart format --output=none --set-exit-if-changed` on the eight changed Dart
+  files: zero changes. Log `/tmp/boo-gcu6-integrated-format.log`.
+- `flutter analyze --no-pub lib/playback lib/reader/session.dart test/playback
+  test/reader/reading_changes_test.dart test/reader/session_native_test.dart
+  test/research/current_restore_measurement_test.dart`: no issues.
+  Log `/tmp/boo-gcu6-integrated-analysis.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded`: 3,547 passed,
+  27 existing gated skips, zero failures in 4:54. The full suite includes all
+  required affected suites and the real SQLite settings work-count regressions.
+  Log `/tmp/boo-gcu6-integrated-full.log`.
+- The sequential Nix driver exited zero; log
+  `/tmp/boo-gcu6-integrated-driver.log`. Complete integration diff check
+  `git diff --check 912c3012 HEAD` passed.
+
+The parent's full run is additional execution, not reviewer reapproval. The
+original review verdicts and limits remain unchanged. Native work counts do not
+establish Android latency; browser preferences still write a whole account.
+Android acceptance remains blocked by `t1-dth0`; coverage/mutations await user
+acceptance. Known intermittent failures remain separate tickets even though
+this parent run passed. No device/browser retry, publication or deployment
+occurred. Implementation is merged and verified; the parent closes this ticket.
