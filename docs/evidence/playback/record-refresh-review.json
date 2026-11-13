@@ -1,0 +1,201 @@
+{
+  "ticket": "boo-2bl9",
+  "base": "a72d2043804c336877d6f3ed5ef72f3fd4994cd8",
+  "reviewed_head": "85cf3c20aff62c9f52ad9edfe245ae0d3a5caa02",
+  "scope": "Complete original-base-to-head diff across all five changed paths.",
+  "review_method": {
+    "independent": "Read-only inspection of implementation, callers, tests, documentation and saved logs. Verified HEAD, clean working tree and a whitespace-clean base-to-head diff.",
+    "execution": "No tests, builds, formatting, edits or child agents.",
+    "evidence_limit": "Test results below are saved builder execution evidence, inspected by this reviewer. They are not independently executed proof."
+  },
+  "assessments": {
+    "correctness": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "check": "Refresh independence and safe adoption",
+          "references": [
+            "lib/playback/playback.dart:628",
+            "lib/foundation/serial_queue.dart:40",
+            "test/sync/playback_refresh_test.dart:166",
+            "test/sync/playback_refresh_test.dart:314"
+          ],
+          "assessment": "Refresh has no audio-command or binding wait. Existing local writes remain awaited. Account-generation, restoration, pending-write, closure and record-revision guards protect adoption. Generation is captured before waiting, protecting account A to B to A transitions."
+        },
+        {
+          "check": "Snapshot acceptance and overlapping refreshes",
+          "references": [
+            "lib/playback/playback.dart:639",
+            "lib/playback/playback.dart:667",
+            "lib/playback/store.dart:247",
+            "lib/playback/store.dart:1521",
+            "lib/sync/coordinator.dart:217",
+            "lib/main.dart:344",
+            "test/sync/playback_refresh_test.dart:360"
+          ],
+          "assessment": "Rejected Playback reads do not call acceptSnapshot. Adoption advances the existing record revision, preventing an older recovery read from replacing a snapshot already adopted by sync. Store ownership of stale signals and accepted snapshots remains intact."
+        },
+        {
+          "check": "Confirmed decoder position and command persistence",
+          "references": [
+            "lib/playback/playback.dart:1309",
+            "lib/playback/playback.dart:1428",
+            "lib/playback/playback.dart:1536",
+            "lib/playback/playback.dart:1558",
+            "lib/playback/playback.dart:1640",
+            "lib/playback/playback.dart:1668",
+            "lib/playback/playback.dart:1781",
+            "test/sync/playback_refresh_test.dart:219",
+            "test/sync/playback_refresh_test.dart:262"
+          ],
+          "assessment": "Refresh does not operate the decoder. Audited audio mutations use current live records after their waits and preserve command-owned saves. Tests check received records and unchanged decoder position before release, then command persistence before a later flush or exchange."
+        },
+        {
+          "check": "Undo, deletion, pending writes and lifecycle",
+          "references": [
+            "lib/playback/playback.dart:671",
+            "lib/playback/playback.dart:1838",
+            "lib/playback/playback.dart:1879",
+            "lib/playback/playback.dart:1897",
+            "lib/playback/playback.dart:2018",
+            "test/sync/playback_refresh_test.dart:388",
+            "test/sync/playback_refresh_test.dart:426",
+            "test/sync/playback_refresh_test.dart:466",
+            "test/sync/playback_refresh_test.dart:487",
+            "test/sync/playback_refresh_test.dart:516",
+            "test/sync/playback_refresh_test.dart:584"
+          ],
+          "assessment": "Undo refers to the adopted history object or clears after deletion. Local changes and failed writes remain protected. Account return, close, deletion during a read and successful retry have focused coverage. The independent flush contract is unchanged."
+        },
+        {
+          "check": "Failures and incomplete exchanges",
+          "references": [
+            "lib/playback/store.dart:248",
+            "lib/sync/coordinator.dart:332",
+            "lib/sync/coordinator.dart:409",
+            "test/sync/playback_refresh_test.dart:620",
+            "test/sync/unreadable_discovery_test.dart:565"
+          ],
+          "assessment": "Ordinary refresh exceptions remain reportable without stopping audio. Programming Errors propagate. Complete and rejected-upload exchanges use the same awaited refresh path; exchange failure reporting is preserved."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Runtime conclusions rely on inspected saved executions and static reasoning; independent execution was prohibited.",
+        "Native-device behavior and latency were not assessed and are outside this ticket's review gate."
+      ],
+      "material_unverified_requirements": []
+    },
+    "ticket_fulfillment": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "requirement": "Two completed sync operations receiving listening records during held load, seek and pause",
+          "references": ["test/sync/playback_refresh_test.dart:166"],
+          "assessment": "Covered for complete and rejected-upload outcomes on preferences and SQLite. Assertions occur before releasing the controlled audio command."
+        },
+        {
+          "requirement": "Durable and live preservation, confirmed position, command-owned persistence and reopen",
+          "references": [
+            "test/sync/playback_refresh_test.dart:224",
+            "test/sync/playback_refresh_test.dart:237",
+            "test/sync/playback_refresh_test.dart:262",
+            "test/sync/playback_refresh_test.dart:296",
+            "test/sync/phone.dart:43"
+          ],
+          "assessment": "Covered by live-state checks, fresh-store reads, direct observation of command saves and an actual SQLite connection close/reopen."
+        },
+        {
+          "requirement": "Binding, account return, read/write races, retry, close, Undo, deletion and overlapping recovery",
+          "references": [
+            "test/sync/playback_refresh_test.dart:314",
+            "test/sync/playback_refresh_test.dart:360",
+            "test/sync/playback_refresh_test.dart:388",
+            "test/sync/playback_refresh_test.dart:426",
+            "test/sync/playback_refresh_test.dart:487",
+            "test/sync/playback_refresh_test.dart:516",
+            "test/sync/playback_refresh_test.dart:547",
+            "test/sync/playback_refresh_test.dart:584",
+            "test/sync/owner_refresh_test.dart:89"
+          ],
+          "assessment": "New cases and retained regressions cover the specified preservation requirements."
+        },
+        {
+          "requirement": "Meaningful failure evidence and required verification",
+          "assessment": "Inspected held-command timeout failures, the separate Undo-object failure, both overlapping-refresh bookmark-loss failures, and their subsequent passing evidence. Initial compilation errors and the original close-cleanup defect remain disclosed.",
+          "saved_results": {
+            "focused-final.log": "129 passed",
+            "required-final.log": "1056 passed, 3 skipped",
+            "full-final.log": "3581 passed, 27 skipped, no failures",
+            "analysis-format-final.log": "No analysis issues; both Dart files unchanged by formatting"
+          },
+          "log_directory": ".cache/boo-2bl9/"
+        },
+        {
+          "requirement": "Settled scope and documentation",
+          "references": [
+            ".tickets/boo-2bl9.md:25",
+            "docs/playback.md:102",
+            "docs/evidence/playback/record-refresh.md:1"
+          ],
+          "assessment": "Production changes remain within Playback refresh. No new writer, pending-action inventory, queue framework, record-type rewrite or Ask-at-Play behavior. Store, coordinator, reader and integrated boo-gcu6 code are unchanged. Documentation records the contract, commands, failures and limits."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Existing opt-in live-plugin, corpus and benchmark skips remain unexecuted.",
+        "Parent-owned acceptance, hardening, integration and closure remain outstanding by explicit task boundary."
+      ],
+      "material_unverified_requirements": []
+    },
+    "software_design": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "source": "User: one coherent model and one owner per state",
+          "references": [
+            "lib/playback/playback.dart:189",
+            "lib/playback/playback.dart:628",
+            "lib/playback/store.dart:247",
+            "lib/sync/coordinator.dart:441"
+          ],
+          "assessment": "Playback retains ownership of live records and decoder position; LocalResumeStore retains durable records and snapshot acceptance; RecordSync retains exchange completion and reporting. No parallel authority or caller-owned adoption sequence was introduced."
+        },
+        {
+          "source": "Ousterhout: information hiding and deep interfaces",
+          "references": [
+            "lib/playback/playback.dart:622",
+            "lib/playback/playback.dart:667",
+            "docs/playback.md:108"
+          ],
+          "assessment": "The existing refresh interface hides account lifetime, local-write and overlapping-read coordination. Callers need no new flags or knowledge of audio scheduling. Adoption keeps history, bookmarks, resumes, Undo and revision maintenance together."
+        },
+        {
+          "source": "Muratori: reuse existing paths and avoid speculative machinery",
+          "references": [
+            "lib/playback/playback.dart:303",
+            "lib/playback/playback.dart:667",
+            "lib/playback/playback.dart:1781",
+            "lib/reader/session.dart:2004"
+          ],
+          "assessment": "The correction reuses the existing record revision and guarded owner model. It introduces no second queue or revision field. Future refresh-policy changes remain localized rather than requiring edits to each sync caller."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Whole-list decoding remains existing work tracked by boo-w6m2; no off-isolate performance claim is made.",
+        "Coverage and mutation testing were explicitly reserved for the parent."
+      ],
+      "material_unverified_requirements": []
+    }
+  },
+  "overall_verdict": "pass",
+  "readiness": "Passes the requested read-only review gate. No blocking findings or material unverified in-scope requirements.",
+  "unavailable_checks": [
+    "Independent tests, builds and formatting: prohibited for this reviewer.",
+    "Android acceptance: excluded; blocker t1-dth0 was not retried.",
+    "Browser PDF acceptance: excluded; blocker t7-3j9c was not retried.",
+    "Coverage and mutation testing: deferred to the parent after acceptance.",
+    "Known flakiness t5-rplx and tf-il7u: no failures in the saved full runs; causes remain unresolved."
+  ]
+}
