@@ -1,0 +1,158 @@
+{
+  "ticket": "t3-5o5r",
+  "checkout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+    "branch": "t3/reader-restart-test",
+    "originalBase": "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+    "implementationHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+    "matchesBrief": true,
+    "cleanBeforeAndAfterReview": true
+  },
+  "reviewBasis": {
+    "method": "Read-only source and Git inspection, complete archived-log scanning, diagnostic-patch inspection, in-memory gzip decompression and checksum verification. Execution results below belong to the retained implementation runs; I did not rerun them.",
+    "scope": "The complete 58-file original-base-to-implementation change, including ticket updates and evidence artifacts; the shared EPUB helper's 23 importing test files; relevant save, storage, admission and restoration paths; all retained current and historical execution logs.",
+    "instructions": "Read AGENTS.md, docs/plans/bookfin.md, both requested tickets, reviewer.md, software-design/SKILL.md and reviewer-brief.md. No CLAUDE.md was present in the worktree.",
+    "restrictionsObserved": "No edits, commits, builds, tests, formatting, analyzer execution, evidence/run.py execution, delegates, device/browser actions or integration actions."
+  },
+  "bugsAndRegressions": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "location": "test/reader/publication_test.dart:33",
+        "assessment": "The only final test-code change assigns a fixed modification time to every archive entry, including entries supplied through extra. Payload construction, entry order and caller arguments remain unchanged. Inspection of archive 4.0.9 confirms that ZIP encoding uses this modification time as local calendar fields with two-second resolution."
+      },
+      {
+        "location": "test/reader/session_signals_test.dart:147",
+        "assessment": "The restart test remains byte-identical to the original base. Its two sessions independently admit archives built by epub(). FailingWrites awaits MemoryResume.saveReading; MemoryResume applies the changes to its account map."
+      },
+      {
+        "location": "docs/evidence/t3-5o5r/logs/02-controlled-time-change-red.log.gz",
+        "assessment": "The controlled two-second difference produces two 1440-byte archives with matching hashes for all seven entry payloads but different archive digests. The delegated save completed, the stored location was present and saveFailed was false. Reopening rejected the different source digest, and the original assertion failed with the expected location versus null."
+      },
+      {
+        "location": "docs/evidence/t3-5o5r/logs/03-controlled-same-time-green.log.gz",
+        "assessment": "The identical diagnostic patch with a zero-second difference produces equal archive digests and publication identities. The saved location restores and the selected test passes."
+      },
+      {
+        "location": "docs/evidence/t3-5o5r/diagnostics/05-omitted-save-negative-control.patch.gz",
+        "assessment": "The bounded negative control omits only the store.saveReading call. With the fixed fixture and unchanged restart test, the same assertion fails. Subsequent source snapshots match the final fixture-only patch."
+      },
+      {
+        "location": "lib/reader/document.dart:36",
+        "assessment": "Source-digest, policy and engine compatibility checks remain unchanged. The existing changed-content test in test/reader/session_test.dart:158 still rejects the old location and retains its bookmark. Production, account guards, pending-write handling and flush semantics have no base-to-head changes."
+      }
+    ],
+    "findings": [],
+    "validationGaps": [
+      {
+        "gap": "Neither historical failure has a retained assertion and save/digest trace sufficient to establish its actual cause or ordering.",
+        "blocking": false,
+        "reason": "The settled scope requires controlled proof and explicit historical limits. The implementation makes neither an exclusive historical-cause claim nor a production-data-loss claim."
+      },
+      {
+        "gap": "The restart test uses two ReaderSession instances and MemoryResume within one process.",
+        "blocking": false,
+        "reason": "It does not establish physical-device persistence or operating-system crash recovery; neither is claimed by this correction."
+      }
+    ]
+  },
+  "ticketFulfillment": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "requirement": "Prove a cause without inferring it from passing repeats.",
+        "assessment": "Satisfied by the timestamp-only controlled contrast, completed-save observation, stored-location inspection and unchanged failing assertion."
+      },
+      {
+        "requirement": "Correct the relevant shared fixture while preserving production and test behavior.",
+        "assessment": "The final application/test diff changes only epub() in publication_test.dart. There are no new sleeps, pumps, flushes, workload changes, relaxed assertions or disabled tests."
+      },
+      {
+        "requirement": "Demonstrate missing-save sensitivity and restore production exactly.",
+        "assessment": "The negative-control log records the expected assertion failure. Independently checked session.dart and session_signals_test.dart against their original-base bytes and recorded hashes. The entire lib diff is empty."
+      },
+      {
+        "requirement": "Preserve integrated prerequisites.",
+        "assessment": "All six commits named in prerequisites-preserved.json are ancestors of the reviewed HEAD. Production, unread_records_test.dart and page_source_frames_test.dart remain unchanged."
+      },
+      {
+        "requirement": "Retain historical evidence and limitations.",
+        "assessment": "The 781-byte November 11 task output names the exact failure and reports 3017 passed, 25 skipped and 1 failed, despite its wrapper exit of zero. It contains only a tail. The five complete sy2d logs concern other runs and do not establish the missing historical assertion. November 8 remains supported by ticket history only. Search limitations are disclosed."
+      },
+      {
+        "requirement": "Keep the wider fixture work tracked.",
+        "assessment": "te-c2tc remains open and lists seven remaining builders, including damaged_chapters_test.dart and section_styles_test.dart. Source inspection confirms the separate already-fixed showcase wrappers. No other builder changed."
+      },
+      {
+        "requirement": "Retain verification and disclose failures.",
+        "assessment": "The command records, archived logs and source snapshots support the results listed below. The initial whitespace-check failure is explicitly preserved and explained; historical snapshot bytes were compressed unchanged."
+      }
+    ],
+    "findings": [],
+    "validationGaps": [
+      {
+        "gap": "The separate post-commit whitespace-check invocation reported in the brief has no distinct execution record in the retained evidence inspected.",
+        "blocking": false,
+        "reason": "The required complete original-base whitespace check is retained with exit zero in pre-review-checks.json. I inspected the committed diff, but do not claim to have independently established that additional invocation."
+      },
+      {
+        "gap": "Optional corpus, benchmark and live-plugin checks remain skipped.",
+        "blocking": false,
+        "reason": "The 24 affected-suite and 27 full-suite skips are documented, unchanged and outside this fixture correction. Boolean skips were checked against source rather than inferred from adjacent concurrent reporter output."
+      }
+    ]
+  },
+  "softwareDesign": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "source": "User, software-design sections 4 and 11",
+        "assessment": "The bug class is archive identity changing because fixture metadata depends on the clock. The existing shared builder now owns stable metadata for every entry it constructs. Both independent session loads retain the same model of source identity."
+      },
+      {
+        "source": "Ousterhout, software-design section 6: information hiding and pulling complexity downward",
+        "assessment": "Callers need no timestamp parameter, shared-publication cache or special restoration rule. The fixture absorbs the metadata requirement, while production remains the owner of source compatibility and retained records."
+      },
+      {
+        "source": "Muratori, software-design sections 5, 7 and 9",
+        "assessment": "The fix preserves the existing helper interface and adds no speculative abstraction, global counter or parallel mechanism. The diagnostic timestamp control is absent from final code. The evidence recorder is explicitly ticket-local tooling and introduces no application dependency."
+      },
+      {
+        "source": "User, software-design section 4: fixing a bug class without delaying the scoped fix",
+        "assessment": "The correction covers all callers of this shared builder. Remaining independent builders are explicitly assigned to te-c2tc, consistent with the authorized scope."
+      }
+    ],
+    "findings": [],
+    "validationGaps": []
+  },
+  "retainedExecutionResults": {
+    "originalSelectedBaseline": "1 passed; not cause proof",
+    "controlledTimestampPlusTwoSeconds": "Exact restart assertion failed; exit 1",
+    "controlledTimestampPlusZeroSeconds": "1 passed; exit 0",
+    "fixedFocusedSuites": "51 passed",
+    "omittedSaveNegativeControl": "Exact unchanged restart assertion failed; exit 1",
+    "freshRestartProcesses": "Three separate commands; 1 passed each",
+    "affectedSuites": "2332 passed, 24 skipped",
+    "singleFullFlutterRun": "3693 passed, 27 skipped",
+    "flutterAnalyze": "No issues",
+    "changedFileFormatCheck": "1 file examined, 0 changed",
+    "developmentWhitespaceFailure": "Exit 2 for trailing blank lines in two historical snapshots; retained in development-whitespace-failure.json",
+    "subsequentOriginalBaseWhitespaceCheck": "Exit 0, empty output",
+    "scheduling": "All 13 recorded commands used Nix. Every Flutter test command used concurrency 2. Recorded command intervals do not overlap, and their results show normal completion rather than cancellation."
+  },
+  "artifactIntegrity": {
+    "compressedArtifactsVerified": 40,
+    "commandRecordsVerified": 13,
+    "hashManifestEntriesVerified": 54,
+    "details": "Raw and compressed hashes and recorded sizes match. All final-state command patches match the committed lib/test diff. Extracted diagnostic observations and skip-transition contexts match the underlying complete logs."
+  },
+  "unavailableChecks": [
+    "No independent execution during this read-only review.",
+    "No recovered historical assertion or schedule for either original occurrence.",
+    "No physical-device or iOS verification; missing iOS SDK notices remain in the logs.",
+    "User acceptance, integration, general coverage/mutation hardening and ticket closure remain parent-owned."
+  ],
+  "materialBlockingGaps": [],
+  "requiredChanges": [],
+  "overallVerdict": "pass"
+}

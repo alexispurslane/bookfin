@@ -1,0 +1,190 @@
+{
+  "purpose": "Distinct retained post-commit verification of the reviewed implementation HEAD; addresses the reviewer archival gap.",
+  "originalBase": "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.050370+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.070429+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+        "--",
+        "lib"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.070459+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.086189+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+        "--",
+        "test/reader/session_signals_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.086226+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.101282+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+        "--",
+        "test/reader/unread_records_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.101345+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.117827+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "0ff376f0d27695d0ce3c10d120b718e0d52eadc0",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+        "--",
+        "test/reader/epub/page_source_frames_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.117899+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.135106+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "c6bfd50d",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.137450+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.153160+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "092f09e9",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.153224+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.167629+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "2d984b1b",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.167664+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.181070+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "311f8b60",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.181127+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.194698+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "19e53518",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.194731+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.207973+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "2a9df513",
+        "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+      "checkedHead": "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc",
+      "startedUtc": "2026-11-13T21:41:59.208009+00:00",
+      "finishedUtc": "2026-11-13T21:41:59.232557+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "thread": {
+    "threadId": "thread:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1",
+    "projectId": "a76cfc58-21b7-424e-a47b-4d38d31e2868",
+    "title": "t3-5o5r: review controlled reader restart fixture correction",
+    "link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1>",
+    "createdBy": "agent",
+    "creationSource": "mcp",
+    "status": "completed",
+    "latestRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%253Adelegate-task%253Abookfin-t3-5o5r-review-astra-high-20261113-1:ordinal:1",
+    "activeRunId": null,
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "runtimeMode": "full-access",
+    "interactionMode": "default",
+    "linkedPullRequest": null,
+    "pullRequests": [],
+    "titleRegeneration": null,
+    "branch": "t3/reader-restart-test",
+    "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-12fb3639",
+    "parentThreadId": "thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-t3-5o5r-astra-20261113-1",
+    "relationshipToParent": "subagent",
+    "runCount": 1,
+    "itemCount": 60,
+    "pendingRequestCount": 0,
+    "archived": false,
+    "settled": false,
+    "settledAt": null,
+    "snoozed": false,
+    "snoozedUntil": null,
+    "createdAt": "2026-11-13T21:33:45.794Z",
+    "updatedAt": "2026-11-13T21:39:25.265Z"
+  },
+  "recentRuns": [
+    {
+      "runId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%253Adelegate-task%253Abookfin-t3-5o5r-review-astra-high-20261113-1:ordinal:1",
+      "ordinal": 1,
+      "status": "completed",
+      "providerInstanceId": "codex",
+      "model": "gpt-6-astra",
+      "requestedAt": "2026-11-13T21:33:45.795Z",
+      "startedAt": "2026-11-13T21:33:46.179Z",
+      "completedAt": "2026-11-13T21:39:25.265Z"
+    }
+  ],
+  "itemId": "turn-item:provider:codex:native-item:msg_057358e384457c0a016af7835e5c9487d1a2d6e0c922d0a2cc",
+  "updatedAt": "2026-11-13T21:39:25.248Z",
+  "reportPreservation": "Exact UTF-8 text returned by t3_thread_read; no reformatting or appended newline.",
+  "target": {
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "options": {
+      "reasoningEffort": "high"
+    }
+  },
+  "isolation": "shared",
+  "mode": "async",
+  "role": "review",
+  "reviewStageCount": 1,
+  "launchResponse": {
+    "taskId": "node:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1",
+    "childThreadId": "thread:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1",
+    "link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1>",
+    "childRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%253Adelegate-task%253Abookfin-t3-5o5r-review-astra-high-20261113-1:ordinal:1",
+    "childNodeId": "node:delegated-task:command%3Amcp%3A7bc9a5d9-bdb9-4542-a3d5-61b77c156dc9%3Adelegate-task%3Abookfin-t3-5o5r-review-astra-high-20261113-1",
+    "status": "running",
+    "workState": "working",
+    "hasPendingChildRuns": false,
+    "latestTerminalRunId": null,
+    "latestTerminalStatus": null,
+    "latestTerminalSummary": null,
+    "latestTerminalResultContextTransferId": null,
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "options": [
+      {
+        "id": "reasoningEffort",
+        "value": "high"
+      }
+    ],
+    "summary": null,
+    "resultContextTransferId": null,
+    "hasPendingQuestion": false,
+    "pendingApproval": null,
+    "waitTimedOut": false,
+    "next": "Completion wakes this thread, so end your turn. Do not wait on it or poll it."
+  },
+  "lifecycleNote": "The launch response is the original running response; the completed thread/run metadata above and delivered original report establish completion. No task polling or second review."
+}
