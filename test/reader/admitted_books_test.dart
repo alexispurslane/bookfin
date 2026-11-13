@@ -28,6 +28,7 @@ import 'epub/book_fonts_test.dart' show face, fontBook, star, starFont;
 import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/helpers.dart';
 import 'epub/page_source_test.dart' show TestScheduler;
+import 'epub/section_styles_test.dart' show styledBook;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' as fixture;
 
@@ -120,6 +121,10 @@ Map<String, Object?> _facts(Publication publication) => {
       [entry.title, entry.href, entry.depth],
   ],
   'bookStyles': publication.bookStyles,
+  'sectionStyles': {
+    for (final path in publication.spine)
+      path: publication.stylesForSection(path),
+  },
   'imageSizes': {
     for (final MapEntry(key: path, value: (width, height))
         in publication.imageSizes.entries)
@@ -163,6 +168,124 @@ final _books = <String, (Uint8List, String)>{
 
 void main() {
   setUpAll(loadReaderFont);
+
+  test(
+    'section CSS survives a record reopen without reading the EPUB',
+    () async {
+      final bytes = styledBook();
+      final file = await _download(bytes);
+      final digest = _digest(bytes);
+      final admitted = await _openHere(
+        file,
+        digest,
+        'css',
+        () async => Publication.admit(bytes, digest),
+      );
+      await file.writeAsString('The original EPUB is unavailable.');
+      final reopened = await _openHere(
+        file,
+        digest,
+        'css',
+        () async => throw StateError('unexpected admission'),
+      );
+      expect(_facts(reopened), _facts(admitted));
+      expect(reopened.stylesForSection(reopened.spine[1]).keys, [
+        'OPS/css/two.css',
+      ]);
+      reopened.checkInvariants();
+    },
+  );
+
+  test('a revision 5 record admits again to retain section CSS', () async {
+    final bytes = styledBook();
+    final file = await _download(bytes);
+    final digest = _digest(bytes);
+    var admissions = 0;
+    Future<Publication> admit() async {
+      admissions++;
+      return Publication.admit(bytes, digest);
+    }
+
+    await _openHere(file, digest, 'css', admit);
+    final record = _record(file);
+    final kept = await record.readAsBytes();
+    await record.writeAsBytes([
+      ...utf8.encode(jsonEncode([5, 'css', digest])),
+      ...kept.sublist(kept.indexOf(0x0a)),
+    ]);
+    final reopened = await _openHere(file, digest, 'css', admit);
+    expect(admissions, 2);
+    expect(reopened.stylesForSection(reopened.spine[1]).keys, [
+      'OPS/css/two.css',
+    ]);
+  });
+
+  for (final damage in [
+    'missing',
+    'section',
+    'resource',
+    'duplicate',
+    'type',
+  ]) {
+    test(
+      'a record with $damage section CSS facts is kept aside and admitted again',
+      () async {
+        final bytes = styledBook();
+        final file = await _download(bytes);
+        final digest = _digest(bytes);
+        var admissions = 0;
+        Future<Publication> admit() async {
+          admissions++;
+          return Publication.admit(bytes, digest);
+        }
+
+        final original = await _openHere(file, digest, 'css', admit);
+        final record = _record(file);
+        final kept = await record.readAsBytes();
+        final start = kept.indexOf(0x0a) + 1;
+        final length = ByteData.sublistView(
+          kept,
+          start,
+        ).getUint32(0, Endian.little);
+        final header = jsonDecode(
+          utf8.decode(kept.sublist(start + 4, start + 4 + length)),
+        ) as Map<String, dynamic>;
+        final facts = <String, Object?>{
+          for (final path in original.spine)
+            path: original.stylesForSection(path).keys.toList(),
+        };
+        switch (damage) {
+          case 'missing':
+            facts.remove(original.spine.first);
+          case 'section':
+            facts['OPS/absent.xhtml'] = <String>[];
+          case 'resource':
+            facts[original.spine.first] = ['OPS/css/absent.css'];
+          case 'duplicate':
+            facts[original.spine.first] = [
+              'OPS/css/one.css',
+              'OPS/css/one.css',
+            ];
+          case 'type':
+            facts[original.spine.first] = 42;
+        }
+        header['sectionStyles'] = facts;
+        final changed = utf8.encode(jsonEncode(header));
+        final damaged = <int>[
+          ...kept.sublist(0, start),
+          ...Uint8List(4)
+            ..buffer.asByteData().setUint32(0, changed.length, Endian.little),
+          ...changed,
+          ...kept.sublist(start + 4 + length),
+        ];
+        await record.writeAsBytes(damaged);
+        final reopened = await _openHere(file, digest, 'css', admit);
+        expect(admissions, 2);
+        expect(await File('${record.path}.unreadable').readAsBytes(), damaged);
+        expect(_facts(reopened), _facts(original));
+      },
+    );
+  }
 
   test('the record-open guard detects a saved record read in the calling '
       'isolate', () async {

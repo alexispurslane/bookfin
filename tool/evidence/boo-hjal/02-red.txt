@@ -1,0 +1,370 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.4 (2.5.5 available)
+  shared_preferences_foundation 2.5.7 (2.6.2 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.7 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+38 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: (setUpAll)
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: a section carries only reachable CSS, including conditional and inline imports
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: a section carries only reachable CSS, including conditional and inline imports [E]
+  Expected: Set:[
+              'OPS/css/one.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/shared.css',
+              'OPS/css/end.css',
+              'OPS/css/inline.css'
+            ]
+    Actual: Set:[
+              'OPS/css/end.css',
+              'OPS/css/four.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              'OPS/css/unused16.css',
+              'OPS/css/unused17.css',
+              'OPS/css/unused18.css',
+              'OPS/css/unused19.css',
+              'OPS/css/unused2.css',
+              'OPS/css/unused20.css',
+              'OPS/css/unused21.css',
+              'OPS/css/unused22.css',
+              ...
+            ]
+     Which: larger than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/epub/section_styles_test.dart 136:5     main.<fn>
+  
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: section CSS keeps prepared styling, main text size and chapter labels across settings
+00:00 +1 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: conditional short routes retain imports hidden by a deeper first route
+00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: conditional short routes retain imports hidden by a deeper first route [E]
+  Expected: Set:[
+              'OPS/css/one.css',
+              'OPS/css/inline.css',
+              'OPS/css/a.css',
+              'OPS/css/b.css',
+              'OPS/css/c.css',
+              'OPS/css/d.css',
+              'OPS/css/e.css',
+              'OPS/css/f.css',
+              'OPS/css/g.css'
+            ]
+    Actual: Set:[
+              'OPS/css/a.css',
+              'OPS/css/b.css',
+              'OPS/css/c.css',
+              'OPS/css/d.css',
+              'OPS/css/e.css',
+              'OPS/css/end.css',
+              'OPS/css/f.css',
+              'OPS/css/four.css',
+              'OPS/css/g.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/too-deep.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              ...
+            ]
+     Which: larger than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/epub/section_styles_test.dart 171:5     main.<fn>
+  
+00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual whole worker receives only its sections CSS
+00:00 +1 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual whole worker receives only its sections CSS [E]
+  Expected: Set:[
+              'OPS/css/one.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/shared.css',
+              'OPS/css/end.css',
+              'OPS/css/inline.css'
+            ]
+    Actual: Set:[
+              'OPS/css/end.css',
+              'OPS/css/four.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              'OPS/css/unused16.css',
+              'OPS/css/unused17.css',
+              'OPS/css/unused18.css',
+              'OPS/css/unused19.css',
+              'OPS/css/unused2.css',
+              'OPS/css/unused20.css',
+              'OPS/css/unused21.css',
+              'OPS/css/unused22.css',
+              ...
+            ]
+     Which: larger than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/epub/section_styles_test.dart 219:11    main.<fn>
+  
+00:00 +1 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual partial worker receives only its sections CSS
+00:00 +1 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual partial worker receives only its sections CSS [E]
+  Expected: Set:[
+              'OPS/css/one.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/shared.css',
+              'OPS/css/end.css',
+              'OPS/css/inline.css'
+            ]
+    Actual: Set:[
+              'OPS/css/end.css',
+              'OPS/css/four.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              'OPS/css/unused16.css',
+              'OPS/css/unused17.css',
+              'OPS/css/unused18.css',
+              'OPS/css/unused19.css',
+              'OPS/css/unused2.css',
+              'OPS/css/unused20.css',
+              'OPS/css/unused21.css',
+              'OPS/css/unused22.css',
+              ...
+            ]
+     Which: larger than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/epub/section_styles_test.dart 219:11    main.<fn>
+  
+00:00 +1 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual sample worker receives only its sections CSS
+00:01 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual sample worker receives only its sections CSS [E]
+  Expected: Set:[
+              'OPS/css/one.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/shared.css',
+              'OPS/css/end.css',
+              'OPS/css/inline.css'
+            ]
+    Actual: Set:[
+              'OPS/css/end.css',
+              'OPS/css/four.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              'OPS/css/unused16.css',
+              'OPS/css/unused17.css',
+              'OPS/css/unused18.css',
+              'OPS/css/unused19.css',
+              'OPS/css/unused2.css',
+              'OPS/css/unused20.css',
+              'OPS/css/unused21.css',
+              'OPS/css/unused22.css',
+              ...
+            ]
+     Which: larger than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/epub/section_styles_test.dart 219:11    main.<fn>
+  
+00:01 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: (tearDownAll)
+00:03 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: (setUpAll)
+00:03 +1 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: section CSS survives a record reopen without reading the EPUB
+00:03 +1 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: section CSS survives a record reopen without reading the EPUB [E]
+  Expected: ['OPS/css/two.css']
+    Actual: _CompactKeysIterable<String>:[
+              'OPS/css/end.css',
+              'OPS/css/four.css',
+              'OPS/css/inline.css',
+              'OPS/css/nested/deep.css',
+              'OPS/css/one.css',
+              'OPS/css/shared.css',
+              'OPS/css/three.css',
+              'OPS/css/two.css',
+              'OPS/css/unused0.css',
+              'OPS/css/unused1.css',
+              'OPS/css/unused10.css',
+              'OPS/css/unused11.css',
+              'OPS/css/unused12.css',
+              'OPS/css/unused13.css',
+              'OPS/css/unused14.css',
+              'OPS/css/unused15.css',
+              'OPS/css/unused16.css',
+              'OPS/css/unused17.css',
+              'OPS/css/unused18.css',
+              'OPS/css/unused19.css',
+              'OPS/css/unused2.css',
+              'OPS/css/unused20.css',
+              'OPS/css/unused21.css',
+              'OPS/css/unused22.css',
+              ...
+            ]
+     Which: at location [0] is 'OPS/css/end.css' instead of 'OPS/css/two.css'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 180:5          main.<fn>
+  
+00:03 +1 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a revision 5 record admits again to retain section CSS
+00:03 +1 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a revision 5 record admits again to retain section CSS [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 201:5          main.<fn>
+  
+00:03 +1 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again
+00:03 +1 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 241:7          main.<fn>
+  
+00:03 +1 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again
+00:03 +1 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 241:7          main.<fn>
+  
+00:03 +1 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again
+00:03 +1 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 241:7          main.<fn>
+  
+00:03 +1 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again
+00:03 +1 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 241:7          main.<fn>
+  
+00:03 +1 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with type section CSS facts is kept aside and admitted again
+00:03 +1 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with type section CSS facts is kept aside and admitted again [E]
+  Expected: <2>
+    Actual: <1>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/admitted_books_test.dart 241:7          main.<fn>
+  
+00:03 +1 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: (tearDownAll)
+00:03 +1 -12: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again
+  ... and 8 more

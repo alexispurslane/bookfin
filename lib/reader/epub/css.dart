@@ -277,6 +277,25 @@ class StyleSheet {
     return StyleSheet._(output.rules, output.pseudoRules, output.fontFaces);
   }
 
+  /// The available sheets imported by [css] at [path], under any media
+  /// conditions. Uses the same import syntax, paths and depth limit as
+  /// [parse], without parsing selectors or declarations. A conditional
+  /// deeper route must not hide a later, shorter route to the same sheet.
+  static Set<String> imports(
+    String css, {
+    required String path,
+    required String? Function(String path) read,
+  }) {
+    final output = _Output(
+      0,
+      const MediaContext(),
+      read,
+      importDepths: {path: 0},
+    );
+    _SheetParser(css, path, 0, output).parseSheet();
+    return output.readPaths;
+  }
+
   /// The rules that style elements.
   final List<StyleRule> rules;
 
@@ -361,7 +380,7 @@ const maxImportDepth = 4;
 /// What every sheet of one parse adds to: the rules and font faces in
 /// cascade order, the next order, and the paths of the sheets read.
 class _Output {
-  _Output(this.order, this.media, this.textOf);
+  _Output(this.order, this.media, this.textOf, {this.importDepths});
   int order;
   final MediaContext media;
 
@@ -371,6 +390,11 @@ class _Output {
   final pseudoRules = <StyleRule>[];
   final fontFaces = <FontFaceRule>[];
   final readPaths = <String>{};
+
+  /// Non-null only while collecting imports across all media: the shortest
+  /// route to each sheet. Normal styling instead reads each path once, in
+  /// cascade order, under its actual media conditions.
+  final Map<String, int>? importDepths;
 }
 
 class _SheetParser {
@@ -414,6 +438,7 @@ class _SheetParser {
         _atRule(end, apply, nesting);
         continue;
       }
+      if (output.importDepths != null) return;
       _importsCount = false;
       final open = text.indexOf('{', index);
       if (open < 0 || open >= end) {
@@ -459,6 +484,8 @@ class _SheetParser {
       }
       return;
     }
+    // No import can count after a block, even inside that block.
+    if (output.importDepths != null) return _end();
     _importsCount = false;
     final open = boundary;
     final prelude = text.substring(index, open).trim();
@@ -488,10 +515,16 @@ class _SheetParser {
     if (_reference(prelude) case (final reference, final media)) {
       final target = _resolve(reference);
       if (target == null) return;
-      if (media.isNotEmpty && !output.media.matches(media)) return;
-      if (!output.readPaths.add(target)) return;
+      if (output.importDepths case final depths?) {
+        if (depths[target] case final seen? when seen <= depth + 1) return;
+        depths[target] = depth + 1;
+      } else {
+        if (media.isNotEmpty && !output.media.matches(media)) return;
+        if (!output.readPaths.add(target)) return;
+      }
       final css = output.textOf(target);
       if (css == null) return;
+      output.readPaths.add(target);
       _SheetParser(css, target, depth + 1, output).parseSheet();
     }
   }

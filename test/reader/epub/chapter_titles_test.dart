@@ -52,6 +52,9 @@ class _Publication extends Fake implements Publication {
   @override
   Map<String, String> get bookStyles => book.bookStyles;
   @override
+  Map<String, String> stylesForSection(String path) =>
+      book.stylesForSection(path);
+  @override
   Map<String, (int, int)> get imageSizes => book.imageSizes;
   @override
   String? get language => book.language;

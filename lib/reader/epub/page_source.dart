@@ -351,7 +351,7 @@ class PageSource {
       index,
       path,
       xhtml,
-      _publication.bookStyles,
+      _publication.stylesForSection(path),
       _publication.imageSizes,
       _publication.language,
       _publication.contents,
@@ -1621,7 +1621,7 @@ class PageSource {
         layout.index,
         path,
         _publication.textFiles[path]!,
-        _publication.bookStyles,
+        _publication.stylesForSection(path),
         _publication.imageSizes,
         _publication.language,
         _publication.contents,
@@ -1681,7 +1681,10 @@ class PageSource {
       samples,
       [for (final index in samples) spine[index]],
       [for (final index in samples) _publication.textFiles[spine[index]]!],
-      _publication.bookStyles,
+      [
+        for (final index in samples)
+          _publication.stylesForSection(spine[index]),
+      ],
       settings,
     );
   }
@@ -1695,7 +1698,7 @@ class PageSource {
     List<int> indices,
     List<String> paths,
     List<Uint8List> xhtml,
-    Map<String, String> styleSheets,
+    List<Map<String, String>> styleSheets,
     PageSettings settings,
   ) => work(
     () => shownMainTextSize([
@@ -1704,7 +1707,7 @@ class PageSource {
           index: indices[at],
           path: paths[at],
           xhtml: utf8.decode(xhtml[at], allowMalformed: true),
-          styleSheets: styleSheets,
+          styleSheets: styleSheets[at],
         ),
     ], settings),
   );

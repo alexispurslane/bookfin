@@ -34,3 +34,42 @@ Use the existing publication/admission and section-input owners. Keep one author
 This is stylesheet dependency work. Image-size pruning, persistent workers, a parsed-stylesheet cache, global caches and new indexing frameworks are separate work unless a concrete prerequisite makes a narrow change necessary. Do not adopt them from the survey's estimate. Use real-book behavior plus controlled operation/input-size counts to establish reduced irrelevant work; no timing threshold or Android speed claim. A genuinely different user-visible result or cost remains a fork for the parent.
 
 Required verification when launched: meaningful red-green tests for actual whole/partial/sample paths, linked and imported styles including conditional imports, unchanged visible styling and chapter labels, saved-record round trip/reopen and malformed records. Run affected publication/admitted-book/MOBI/EPUB tests, reader/crossings suites, affected analysis/format and full Flutter suite through Nix, concurrency two, one heavy command per owner. One Astra xhigh lead and exactly one fresh read-only Astra high reviewer; no second review, device/browser work, coverage, mutations, publication or closure. Parent integrates and closes. The boo-23ji handoff recovered on the same provider. This scope is ready for launch after parent integration commits are available.
+
+## Implementation evidence — 2026-11-13
+
+Worktree `t3-fbb08cd5`, branch `t3/section-css-dependencies`, original review
+base `eb64fe705198fba0563df0a188939f6e57e16f35`.
+
+Publication retains sorted CSS dependency paths per spine section, derived in
+admission with the existing document-link and CSS-import parser. CSS text stays
+in `bookStyles`. Whole, partial and sample workers receive detached section
+maps. Imports remain available across width and day/night changes, including
+shorter routes hidden by an earlier conditional deep route. Record revision 6
+rebuilds old admissions. Decode validates dependency list structure and the
+on-demand invariant checker compares it with the admitted documents.
+
+Evidence, caller audit, exact commands, failures and transfer-semantics sources:
+`tool/evidence/boo-hjal/README.md`. Core tests proved meaningful red before the
+implementation. Tests observe actual worker map inputs and reject a captured
+Publication. Real Alice conversion and admitted reopen preserve prepared output.
+ChapterTitles and paragraph/excerpt production lifetimes remain unchanged.
+
+The survey's 90 MB CSS-copy estimate is withdrawn: Dart shares immutable
+strings. The controlled whole input drops from 48 map entries to five, partial
+plus whole replacement from 96 to ten, and the sample worker from 48 to seven.
+The old sample map was shared across its three sections. Parsing the linked
+sheets remains unchanged. No Android or timing claim is made.
+
+The first broad focused run exposed three ChapterTitles test-wrapper failures
+after the query changed. The wrapper now forwards the query; all eight
+ChapterTitles tests pass. No production ChapterTitles changes were needed.
+
+Integration, user acceptance, hardening and ticket closure remain with the parent.
+
+Verification before review: reader/crossings passed 1,706 tests with 21 skips;
+the full rerun passed 3,535 tests with 27 skips; affected analysis reports no
+issues; eight changed Dart files pass formatting; `git diff --check` is clean.
+The first full run had one intermittent failure in the unchanged scheduled-frame
+test. The unchanged targeted frame suite and full rerun passed. Ticket `tf-il7u`
+tracks the unresolved cause. Both full logs are retained. No threshold or delay
+was changed, and no command was interrupted.

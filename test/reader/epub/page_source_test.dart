@@ -244,6 +244,9 @@ class WatchedPublication implements Publication {
   @override
   Map<String, String> get bookStyles => inner.bookStyles;
   @override
+  Map<String, String> stylesForSection(String path) =>
+      inner.stylesForSection(path);
+  @override
   Map<String, (int, int)> get imageSizes => inner.imageSizes;
   @override
   String? get language => inner.language;

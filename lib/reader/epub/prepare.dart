@@ -1235,6 +1235,47 @@ List<StyleSheet> sectionSheets(
 ) {
   final sheets = <StyleSheet>[];
   var order = 1000;
+  for (final (path, css) in _sectionCss(source, dom)) {
+    final sheet = StyleSheet.parse(
+      css,
+      path: path,
+      read: (path) => source.styleSheets[path],
+      firstOrder: order,
+      media: media,
+    );
+    sheets.add(sheet);
+    order += sheet.rules.length + sheet.pseudoRules.length + 1;
+  }
+  return sheets;
+}
+
+/// The external CSS paths reachable from [source], under any page settings,
+/// in ascending order. Inline sheets contribute their imports, but their
+/// text stays in the section. Run during admission, off the UI isolate.
+List<String> sectionStylePaths(SectionSource source) {
+  final paths = <String>{};
+  for (final (path, css) in _sectionCss(
+    source,
+    DomSection.parse(source.xhtml),
+  )) {
+    if (path != source.path) paths.add(path);
+    paths.addAll(
+      StyleSheet.imports(
+        css,
+        path: path,
+        read: (path) => source.styleSheets[path],
+      ),
+    );
+  }
+  return paths.toList()..sort();
+}
+
+/// Linked and inline CSS in document order, sharing the same link and path
+/// rules for styling and admission's dependency collection.
+Iterable<(String, String)> _sectionCss(
+  SectionSource source,
+  DomSection dom,
+) sync* {
   for (final element in elementsOf(dom.root)) {
     String? css;
     String? path;
@@ -1248,18 +1289,8 @@ List<StyleSheet> sectionSheets(
       path = source.path;
       css = element.texts.map((text) => text.text).join();
     }
-    if (css == null) continue;
-    final sheet = StyleSheet.parse(
-      css,
-      path: path,
-      read: (path) => source.styleSheets[path],
-      firstOrder: order,
-      media: media,
-    );
-    sheets.add(sheet);
-    order += sheet.rules.length + sheet.pseudoRules.length + 1;
+    if (css != null && path != null) yield (path, css);
   }
-  return sheets;
 }
 
 /// [root] and every element inside it, in document order.

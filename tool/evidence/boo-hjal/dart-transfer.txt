@@ -1,0 +1,49 @@
+/nix/store/673rqiqhlwmdpzs3spwaxlvw1yk5pn8m-flutter-wrapped-3.47.4-sdk-links/bin/dart
+Dart SDK version: 3.13.3 (stable) (Tue Sep 1 01:07:17 2026 -0700) on "macos_arm64"
+846:  /// Throws an error if [f] is not deeply immutable.
+848:  /// Throws an error if result returned by [f] is not deeply immutable.
+929:  /// Provided [callback] must be deeply immutable and will be called
+1010:  /// identified as immutable (e.g. strings) will be shared whereas all other
+1011:  /// objects will be copied.
+1013:  /// The send happens immediately and may have a linear time cost to copy the
+1242:      Isolate.exit(resultPort, _list2(e, s));
+1244:    Isolate.exit(resultPort, _list1(result));
+  ///   print(LineSplitter.split("$s").first); // Contains "eventualError"
+  /// }
+  /// ```
+  /// Any uncaught asynchronous errors will terminate the computation as well,
+  /// but will be reported as a [RemoteError] because [addErrorListener]
+  /// does not provide the original error object.
+  ///
+  /// The result is sent using [exit], which means it's sent to this
+  /// isolate without copying.
+  ///
+  /// The [computation] function and its result (or error) must be
+  /// sendable between isolates. Objects that cannot be sent include open
+  /// files and sockets (see [SendPort.send] for details).
+  ///
+  /// If [computation] is a closure then it may implicitly send unexpected
+  /// state to the isolate due to limitations in the Dart implementation. This
+  /// can cause performance issues, increased memory usage
+  /// (see http://dartbug.com/36983) or, if the state includes objects that
+  /// can't be spent between isolates, a runtime failure.
+  ///
+  /// Apart from those exceptions any object can be sent. Objects that are
+  /// identified as immutable (e.g. strings) will be shared whereas all other
+  /// objects will be copied.
+  ///
+  /// The send happens immediately and may have a linear time cost to copy the
+  /// transitive object graph. The send itself doesn't block (i.e. doesn't wait
+  /// until the receiver has received the message). The corresponding receive
+  /// port can receive the message as soon as its isolate's event loop is ready
+  /// to deliver it, independently of what the sending isolate is doing.
+  ///
+  /// Note: Due to an implementation choice the Dart VM made for how closures
+  /// represent captured state, closures can currently capture more state than
+  /// they need, which can cause the transitive closure to be larger than
+  /// needed. Open bug to address this: http://dartbug.com/36983
+  void send(Object? message);
+
+  /// Tests whether [other] is a [SendPort] pointing to the same
+  /// [ReceivePort] as this one.
+  bool operator ==(other);

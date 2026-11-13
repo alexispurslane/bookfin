@@ -28,6 +28,7 @@ class Publication {
     this.spineSteps,
     this.mainTextSize,
     this.sectionFaces,
+    this._sectionStyles,
   );
 
   static const policy = 'bookfin-passive-epub-1';
@@ -72,6 +73,22 @@ class Publication {
   /// [maxResourceBytes] long, because the archive limits every entry to that
   /// size and admission refuses a sheet that is not UTF-8.
   final Map<String, String> bookStyles;
+
+  /// The original CSS text reachable from the admitted spine section at [path],
+  /// including imports under any page settings. The returned map owns no
+  /// other publication resources and can go to a preparation worker. A path
+  /// outside the spine gives an empty map. Only stored path lookups run here;
+  /// admission already did the parsing and sorting in its worker.
+  Map<String, String> stylesForSection(String path) => {
+    for (final sheet in _sectionStyles[path] ?? const <String>[])
+      sheet: bookStyles[sheet]!,
+  };
+
+  /// Derived from admitted XHTML and [bookStyles], once in admission's
+  /// worker: one sorted, unique list of reachable CSS paths for every spine
+  /// path, including sections with no external CSS. Only [bookStyles] owns
+  /// the original CSS text. Records retain paths, never copies of that text.
+  final Map<String, List<String>> _sectionStyles;
 
   /// The pixel width and height of each admitted PNG and JPEG, by path, from
   /// the image's header, which admission checks.
@@ -120,8 +137,9 @@ class Publication {
   /// images and fonts after the other files, so that a reopen reads them
   /// only when a page draws them (boo-yjq6). Revision 5 added
   /// [sectionFaces] and keeps only the font files that they name
-  /// (boo-3huo).
-  static const revision = 5;
+  /// (boo-3huo). Revision 6 retains section CSS dependencies across all
+  /// media conditions (boo-hjal).
+  static const revision = 6;
 
   /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
   /// digest that Downloads verified, so admission does not hash the bytes
@@ -181,6 +199,7 @@ class Publication {
         'language': language,
         'mainTextSize': mainTextSize,
         'sectionFaces': sectionFaces,
+        'sectionStyles': _sectionStyles,
         'contents': [
           for (final entry in contents) [entry.title, entry.href, entry.depth],
         ],
@@ -281,6 +300,19 @@ class Publication {
       if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
         throw const FormatException('The record has no main text size.');
       }
+      final bookStyles = Map<String, String>.unmodifiable(
+        (header['bookStyles'] as Map).cast<String, String>(),
+      );
+      final sectionStyles = Map<String, List<String>>.unmodifiable({
+        for (final MapEntry(key: path as String, value: sheets)
+            in (header['sectionStyles'] as Map).entries)
+          path: strings(sheets),
+      });
+      if (!_validSectionStyles(spine, bookStyles, sectionStyles)) {
+        throw const FormatException(
+          'The record lists its section styles wrongly.',
+        );
+      }
       return Publication._(
         Map.unmodifiable(textFiles),
         _KeptFiles(path, head, Map.unmodifiable(ranges)),
@@ -292,7 +324,7 @@ class Publication {
         header['packagePath'] as String,
         spine,
         strings(header['warnings']),
-        Map.unmodifiable((header['bookStyles'] as Map).cast<String, String>()),
+        bookStyles,
         Map.unmodifiable({
           for (final MapEntry(key: path as String, value: size as List)
               in (header['imageSizes'] as Map).entries)
@@ -314,6 +346,7 @@ class Publication {
               in (header['sectionFaces'] as Map).entries)
             path: List<String>.unmodifiable(faces.cast<String>()),
         }),
+        sectionStyles,
       );
     } on FormatException {
       rethrow;
@@ -364,6 +397,8 @@ class Publication {
   /// - [textFiles] holds every admitted file but the images and fonts;
   /// - every spine path is an admitted document;
   /// - [bookStyles] holds exactly the admitted style sheets;
+  /// - section CSS paths exactly match the dependencies of each admitted
+  ///   spine document, including imports under every media condition;
   /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
   /// - every contents entry points into the spine at a depth of at most
   ///   [maxContentsDepth];
@@ -420,6 +455,25 @@ class Publication {
     if (spineSteps.length != spine.length) {
       throw StateError('Publication spine steps disagree with its spine.');
     }
+    if (!_validSectionStyles(spine, bookStyles, _sectionStyles) ||
+        spine.any((path) {
+          final expected = sectionStylePaths(
+            SectionSource(
+              index: 0,
+              path: path,
+              xhtml: utf8.decode(textFiles[path]!, allowMalformed: true),
+              styleSheets: bookStyles,
+            ),
+          );
+          final kept = _sectionStyles[path]!;
+          return expected.length != kept.length ||
+              [for (var i = 0; i < expected.length; i++) i]
+                  .any((i) => expected[i] != kept[i]);
+        })) {
+      throw StateError(
+        'Publication section styles disagree with its documents.',
+      );
+    }
     if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
       throw StateError('Publication main text size is not a type size.');
     }
@@ -443,6 +497,24 @@ class Publication {
       throw StateError('Publication identity does not name its file.');
     }
   }
+}
+
+/// Structural record validation without reparsing the book on a reopen.
+/// The on-demand invariant checker also compares the derived dependencies.
+bool _validSectionStyles(
+  List<String> spine,
+  Map<String, String> styles,
+  Map<String, List<String>> sections,
+) {
+  final paths = spine.toSet();
+  return sections.length == paths.length &&
+      paths.containsAll(sections.keys) &&
+      sections.values.every(
+        (sheets) =>
+            sheets.every(styles.containsKey) &&
+            [for (var i = 1; i < sheets.length; i++) i]
+                .every((i) => sheets[i - 1].compareTo(sheets[i]) < 0),
+      );
 }
 
 /// Whether a file of [mime] is an image or a font: a file that layout does
@@ -1012,6 +1084,19 @@ class _Admission {
       for (final path in paths)
         if (types[path] == 'text/css') path: styles[path]!,
     });
+    final sectionStyles = Map<String, List<String>>.unmodifiable({
+      for (final path in reading)
+        path: List<String>.unmodifiable(
+          sectionStylePaths(
+            SectionSource(
+              index: 0,
+              path: path,
+              xhtml: utf8.decode(output[path]!, allowMalformed: true),
+              styleSheets: styleSheets,
+            ),
+          ),
+        ),
+    });
     return Publication._(
       Map.unmodifiable({
         for (final path in paths)
@@ -1052,6 +1137,7 @@ class _Admission {
       List.unmodifiable(steps),
       _mainTextSize(reading, styleSheets),
       sectionFaces,
+      sectionStyles,
     );
   }
 

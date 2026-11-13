@@ -1,0 +1,8 @@
+Formatted lib/reader/epub/css.dart
+Formatted lib/reader/epub/prepare.dart
+Formatted lib/reader/epub/publication.dart
+Formatted lib/reader/epub/page_source.dart
+Formatted test/reader/epub/section_styles_test.dart
+Formatted test/reader/epub/page_source_test.dart
+Formatted test/reader/admitted_books_test.dart
+Formatted 7 files (7 changed) in 0.11 seconds.

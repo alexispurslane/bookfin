@@ -1,0 +1,954 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.4 (2.5.5 available)
+  shared_preferences_foundation 2.5.7 (2.6.2 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.7 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+38 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: EPUB2 keeps its admitted contents document in the package manifest
+00:01 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: publication code and active SVG cannot reach reading resources
+00:01 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: remote CSS URLs cannot leave the passive publication
+00:01 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: archive aliases cannot overwrite a local resource
+00:01 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: an admitted publication keeps its resources unchanged and its identity follows its content
+00:01 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: local styles, PNG, headings, and encoded destination fragments survive, and a font that no section needs is left out
+00:01 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: only the exact local single-JPEG SVG wrapper uses a raster fallback
+00:01 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: unsafe reference and active attribute forms never enter XHTML
+00:01 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: XML entities and encrypted books fail before rendering
+00:01 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: a chapter over the resource limit is never expanded, and shows a note instead (t5-gk30)
+00:01 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: the committed public-domain EPUB becomes a passive navigable publication
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/publication_test.dart: local CSS imports stay local and retain the imported publisher styles
+00:03 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/mobi_document_test.dart: the production importer converts mobi6-plain locally without changing original bytes
+00:03 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/mobi_document_test.dart: the production importer converts mobi6-palmdoc locally without changing original bytes
+00:03 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/mobi_document_test.dart: the production importer converts pg11-kf8 locally without changing original bytes
+00:03 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/mobi_document_test.dart: malformed MOBI never replaces its original or publishes a successful cache
+00:04 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: (setUpAll)
+00:04 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: section CSS survives a record reopen without reading the EPUB
+00:04 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a revision 5 record admits again to retain section CSS
+00:04 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with missing section CSS facts is kept aside and admitted again
+00:04 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with section section CSS facts is kept aside and admitted again
+00:04 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with resource section CSS facts is kept aside and admitted again
+00:04 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with duplicate section CSS facts is kept aside and admitted again
+00:04 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a record with type section CSS facts is kept aside and admitted again
+00:04 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the record-open guard detects a saved record read in the calling isolate
+00:04 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a second open reads the saved EPUB outside the calling isolate, without the downloaded bytes
+00:04 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB the publication loader reads the saved EPUB outside the calling isolate, without the downloaded bytes
+00:04 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB the publication keeps the digest that Downloads verified, and the open does not hash the book again
+00:04 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a book whose file changed admits again
+00:04 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a kept record that is garbage is set aside, and the book admits in full
+00:04 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a kept record that is cut short is set aside, and the book admits in full
+00:04 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a kept record that is naming a header past its end is set aside, and the book admits in full
+00:04 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a load whose use of the book fails still keeps the record of the book that it admitted
+00:04 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB a load writes its record under a hold of the download, so that a removal of the download waits for the write
+00:04 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: (setUpAll)
+00:04 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: an EPUB removing a download removes its kept admitted book
+00:04 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:04 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: a long press selects the word under the finger, and Copy reports it
+00:05 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: a place saved before the admission cache opens at the same place in showcase-frost.epub, at the first and at a later open
+00:05 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: dragging the end handle into the next paragraph extends the selection across both, and Copy reports their text with a line break between them and the book's white space as one space
+00:05 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: dragging the end handle into the next paragraph extends the selection across both, and Copy reports their text with a line break between them and the book's white space as one space
+00:05 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: dragging the end handle into the next paragraph extends the selection across both, and Copy reports their text with a line break between them and the book's white space as one space
+00:05 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:05 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:05 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:05 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/admitted_books_test.dart: the identity of policy, revision and digest (boo-yjq6) the first open after the change lays out the page map once again, and the next open reads it
+00:06 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, a mouse drag selects across paragraphs, and the copy shortcut reports the same text (variant: TargetPlatform.windows)
+00:06 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, a mouse drag selects across paragraphs, and the copy shortcut reports the same text (variant: TargetPlatform.windows)
+00:06 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, a mouse drag selects across paragraphs, and the copy shortcut reports the same text (variant: TargetPlatform.windows)
+00:06 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, a mouse drag selects across paragraphs, and the copy shortcut reports the same text (variant: TargetPlatform.windows)
+00:06 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, a mouse drag selects across paragraphs, and the copy shortcut reports the same text (variant: TargetPlatform.windows)
+00:06 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: on a desktop, the select all shortcut selects the page, and the copy shortcut reports its text (variant: TargetPlatform.macOS)
+00:06 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/selection_test.dart: (tearDownAll)
+00:07 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives plain paragraphs
+00:07 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a declaration, a doctype and comments around the root
+00:07 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives entities and character references
+00:07 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a comment between two texts keeps them apart
+00:07 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a processing instruction between two texts keeps them apart
+00:07 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives CDATA between texts is a node of its own
+00:07 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives namespaced elements and attributes
+00:07 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives self-closing elements and empty elements
+00:07 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a repeated attribute keeps its last value
+00:07 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives white space between blocks
+00:07 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a self-closing root
+00:07 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a tag that does not close is rejected with package:xml's exception
+00:07 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a closing tag that does not match is rejected with package:xml's exception
+00:07 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a closing tag with nothing open is rejected with package:xml's exception
+00:07 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives two root elements is rejected with package:xml's exception
+00:07 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives no root element is rejected with package:xml's exception
+00:07 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives text outside the root is rejected with package:xml's exception
+00:07 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives an unknown entity is rejected with package:xml's exception
+00:07 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a doctype inside an element is rejected with package:xml's exception
+00:07 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a declaration inside an element is rejected with package:xml's exception
+00:07 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: a section parses into the DOM that package:xml's tree gives a broken attribute is rejected with package:xml's exception
+00:07 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/dom_test.dart: the visible characters before a place deep in a long text node are those of the nodes before it and of the text before the place
+00:07 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: (setUpAll)
+00:07 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: a section prepared in a worker isolate lays out to the same pages
+00:07 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: an image takes its size from the section source
+00:07 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: each prepared section's places carry its spine index
+00:07 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: a run whose family the book embeds draws in the reader font, as a run in any family that the reader lacks
+00:07 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: a section with imported sheets prepares the same in a worker isolate
+00:07 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: page settings with the same values are one cache key
+00:07 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt the excerpt of an element lays out only the element's text, on a page of the given settings
+00:07 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt an excerpt has no space above its first line or below its last: the margins and padding of the page around it are left out
+00:07 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt a note's first line starts at the excerpt's left edge, without the page's side margins, the list's padding or a first-line indent
+00:07 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt a numbered note shows its number before its first word, not hanging in a margin
+00:07 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt a note's number is not book text: it is not in the text that the excerpt shows to copy and to a screen reader
+00:07 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt a later paragraph of a note keeps its first-line indent and the space above it
+00:07 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: excerpt an element that no flow item shows, such as one that the style hides, has no excerpt
+00:07 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/prepare_test.dart: (tearDownAll)
+00:07 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: (setUpAll)
+00:07 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: while an animation runs, idle layout wakes the event loop at most once a frame
+00:08 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: an excerpt cannot restore a section whose page settings were dropped
+00:08 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: urgent layout goes on while an animation runs
+00:08 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: urgent layout goes on while an animation runs
+00:08 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: disposing the page source stops an excerpt between its layout steps
+00:08 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: idle layout that waited during an animation goes on after the animation ends
+00:08 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_frames_test.dart: idle layout that waited during an animation goes on after the animation ends
+00:08 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: opening deep in a 400,000-character section gives the anchored page after the prepare, one step for the line and the steps of one page, long before the main run ends
+00:08 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: opening deep in a 400,000-character section gives the anchored page after the prepare, one step for the line and the steps of one page, long before the main run ends
+00:08 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: opening deep in a 400,000-character section gives the anchored page after the prepare, one step for the line and the steps of one page, long before the main run ends
+00:08 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section a jump deep into a large section shows its page before the whole section is prepared, and it is the whole section's page
+00:08 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section the page after a page from a part comes from the part too, and once the section is prepared, both are the whole section's pages and the shown one gets its true number
+00:08 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section the page after a page from a part comes from the part too, and once the section is prepared, both are the whole section's pages and the shown one gets its true number
+00:08 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: inline-only sections need no external CSS and duplicate links keep cascade order
+00:08 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:08 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:08 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:08 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:09 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual whole worker receives only its sections CSS
+whole CSS map entries: 5; previous worker inputs: 48
+00:09 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:09 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual partial worker receives only its sections CSS
+partial CSS map entries: 10; previous worker inputs: 96
+00:09 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section turning forward from a page of a part goes on in the part, and the page after the part waits quietly for the whole section
+00:09 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: the actual sample worker receives only its sections CSS
+sample CSS map entries: 7; previous worker inputs: 48
+00:09 +139: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section a place inside one paragraph longer than a part gets the whole section from the same worker, without waiting for another prepare
+00:09 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section a place inside one paragraph longer than a part gets the whole section from the same worker, without waiting for another prepare
+00:10 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/section_styles_test.dart: real Alice MOBI sections and its admitted reopen keep their styled output
+Alice original + admitted reopen: 38 section inputs, 74 CSS entries; full maps: 114
+00:10 +141: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section a place inside one paragraph longer than a part gets the whole section from the same worker, without waiting for another prepare
+00:11 +142: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: before the first page, the viewport paints the paper of its theme
+00:11 +143: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a part of a large section a place in a small section waits for its whole prepare, with no part
+00:11 +144: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the viewport presents its own size, text size and theme, and paints the pager's shown picture at that size
+00:11 +145: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the viewport presents its own size, text size and theme, and paints the pager's shown picture at that size
+00:11 +146: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the viewport presents its own size, text size and theme, and paints the pager's shown picture at that size
+00:11 +147: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +148: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +149: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +150: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +151: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +152: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +153: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: urgent steps run before idle steps, and idle steps wait while an animation runs
+00:12 +154: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: a resize presents the new page size, and the shown place stays
+00:12 +155: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a page dropped from the cache and asked for again is the same page
+00:12 +156: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: a text size change presents new settings, and the old page stays painted until the new one arrives
+00:12 +157: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: a text size change presents new settings, and the old page stays painted until the new one arrives
+00:13 +158: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: a text size change presents new settings, and the old page stays painted until the new one arrives
+00:13 +159: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a scripted scrub over a whole book keeps the invariants after every step
+00:13 +160: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a scripted scrub over a whole book keeps the invariants after every step
+00:13 +161: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the scrub deck keeps the viewport as its page, and opening the deck neither rebuilds it nor presents again
+00:13 +162: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a book that embeds its own font lays out in the reader font
+00:13 +163: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the kept page (boo-sy2d) while the book loads, the viewport draws the kept page
+00:13 +164: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a book whose own font only repeats letters that the reader font has reads no font file
+00:13 +165: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: a book whose own font only repeats letters that the reader font has reads no font file
+00:14 +166: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the kept page (boo-sy2d) the true page replaces the kept page without a change of one pixel
+00:14 +167: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: only the section that needs a book font waits for it, and its runs name that font
+00:14 +168: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the kept page (boo-sy2d) a tap on a link of the kept page waits for the true page, and then follows that link once
+00:14 +169: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the kept page (boo-sy2d) a tap on a link of the kept page waits for the true page, and then follows that link once
+00:14 +170: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the kept page (boo-sy2d) a tap on a link of the kept page waits for the true page, and then follows that link once
+00:14 +171: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after the shown section, the sections after it are laid out in order to the right and the sections before it in order to the left
+00:14 +172: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after the shown section, the sections after it are laid out in order to the right and the sections before it in order to the left
+00:14 +173: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after the shown section, the sections after it are laid out in order to the right and the sections before it in order to the left
+00:14 +174: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after the shown section, the sections after it are laid out in order to the right and the sections before it in order to the left
+00:14 +175: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/viewport_test.dart: the note view a long press selects a word of the note, and Copy reports it through onCopy
+00:14 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the sections after the shown one do not wait for a large section before it
+00:15 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark
+  Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run
+00:15 +176 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the sections after the shown one do not wait for a large section before it
+00:15 +177 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the two directions take turns, so the sections after the shown one do not wait for the main run of a large section before it
+00:15 +177 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus_prepare_test.dart: the corpus prepare
+  Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run
+00:15 +177 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the two directions take turns, so the sections after the shown one do not wait for the main run of a large section before it
+00:16 +178 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+00:16 +179 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-frost: 20 px page starts opened: 6 of 6
+Shell: showcase-frost: 23 px page starts opened: 7 of 7
+00:16 +180 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-frost: 20 px pages that start where epub.js: 6 of 6
+Shell: showcase-frost: 20 px of them saved as epub.js saved: 6 of 6
+Shell: showcase-frost: 23 px pages that start where epub.js: 7 of 7
+Shell: showcase-frost: 23 px of them saved as epub.js saved: 7 of 7
+00:16 +181 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-frost: contents entries on the first line: 3 of 3
+00:16 +182 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-frost: search hits opened: 2 of 2
+00:16 +183 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+00:16 +184 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-salt: 20 px page starts opened: 2 of 2
+Shell: showcase-salt: 23 px page starts opened: 3 of 3
+00:16 +185 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-salt: 20 px pages that start where epub.js: 2 of 2
+Shell: showcase-salt: 20 px of them saved as epub.js saved: 2 of 2
+Shell: showcase-salt: 23 px pages that start where epub.js: 3 of 3
+Shell: showcase-salt: 23 px of them saved as epub.js saved: 3 of 3
+00:16 +186 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-salt: contents entries on the first line: 2 of 2
+00:16 +187 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-salt: search hits opened: 1 of 1
+00:16 +188 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+00:16 +189 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-winter: 20 px page starts opened: 2 of 2
+Shell: showcase-winter: 23 px page starts opened: 2 of 2
+00:16 +190 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-winter: 20 px pages that start where epub.js: 2 of 2
+Shell: showcase-winter: 20 px of them saved as epub.js saved: 2 of 2
+Shell: showcase-winter: 23 px pages that start where epub.js: 2 of 2
+Shell: showcase-winter: 23 px of them saved as epub.js saved: 2 of 2
+00:16 +191 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-winter: contents entries on the first line: 2 of 2
+00:16 +192 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+Shell: showcase-winter: search hits opened: 1 of 1
+00:16 +193 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the whole book is laid out when the reader stays, and the sections next to the shown one stay ready for a turn
+00:16 +194 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved
+  Skip: set BOOKFIN_EPUB_TRIAL=1 to run
+00:16 +194 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page a jump into a table of a section that was laid out and let go does not measure the whole table again
+00:17 +195 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page a jump restarts the order from the jumped-to page
+00:17 +196 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/semantics_test.dart: the page has one node for each text block on it, in reading order, and each holds the text of its block's lines on this page and nothing else
+00:18 +197 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +198 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +199 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +200 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +201 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +202 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +203 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +204 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +205 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +206 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page the work waits while idle steps are held, as during an animation or in the background, and goes on after
+00:18 +207 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/semantics_test.dart: each table cell is a node, cell by cell
+00:18 +208 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page closing the reader stops the work without errors
+00:19 +209 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +210 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +211 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +212 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +213 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +214 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +215 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +216 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:19 +217 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the order of work around the shown page after a settings change the whole book is laid out for the new settings, and a change back finds the layout of the settings before
+00:20 +218 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: the host benchmark shows no step longer than the budget plus the longest paragraph
+00:20 +218 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_source_test.dart: (tearDownAll)
+00:20 +218 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: (setUpAll)
+00:20 +218 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a showcase book passes every check at both page settings
+00:20 +219 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/support_test.dart: a plain prose book passes the support check
+00:20 +220 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/support_test.dart: a plain prose book passes the support check
+00:20 +221 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only the border of an empty block after an overflowing page is not blank, as Chromium shows it too
+00:20 +222 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/support_test.dart: a table of rows passes, and a rowspan is an approximation
+00:20 +223 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +224 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +225 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +226 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +227 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +228 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +229 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +230 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a page that shows only an image is not blank
+00:20 +231 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/support_test.dart: a hyphenation style attribute follows the element language
+00:20 +232 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a smaller page with larger text cuts more pages
+00:20 +233 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a book that admission refuses is one exception and no layout
+00:20 +234 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: an exception in one section names the section and the page settings, and the other sections are still checked
+00:20 +235 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a paragraph whose layout takes longer than the threshold is listed with its section and its text
+00:20 +236 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a slow paragraph lists its text without the soft hyphens of hyphenation
+00:20 +237 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a paragraph within the threshold is not listed
+00:20 +238 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: a slow table is listed with the text of its first cell
+00:20 +239 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: the approximations of the support report are listed by section
+00:20 +240 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus/check_test.dart: (tearDownAll)
+00:21 +240 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/fidelity_test.dart: (setUpAll)
+00:21 +240 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them
+  Skip: set BOOKFIN_EPUB_TRIAL=1 to run
+00:21 +240 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/fidelity_test.dart: (tearDownAll)
+00:21 +240 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: (setUpAll)
+00:21 +240 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the page label before the book is laid out the label shows the chapter numbers
+00:21 +241 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the page label when every section is laid out the label shows whole-book numbers
+00:21 +242 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the page label when every section is laid out the label shows whole-book numbers
+00:21 +243 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the page label when every section is laid out the label shows whole-book numbers
+00:22 +244 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:23 +245 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:24 +246 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:25 +247 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:25 +248 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:26 +249 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from any true page start cuts the same pages as the main run
+00:26 +250 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:27 +251 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:27 +252 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:27 +253 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:27 +254 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:27 +255 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/whole_book_pages_test.dart: the scrub bar of a laid-out book a drag to a point of the bar lands on the page that the bar shows there
+00:30 +256 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: lineStart gives a page start whose first line holds the place
+00:31 +257 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: lineStart gives a page start whose first line holds the place
+00:31 +258 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +259 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +260 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +261 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +262 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +263 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +264 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +265 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +266 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +267 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +268 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +269 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +270 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +271 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +272 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +273 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +274 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +275 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +276 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +277 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +278 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +279 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:31 +280 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:32 +281 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:32 +282 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space opens on the line of the next character that it shows
+00:32 +283 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: the line search picks the line that shows a place after a line of only white space
+00:32 +284 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in white space before an image opens on the image
+00:32 +285 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +286 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +287 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +288 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +289 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +290 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol
+  Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.
+00:33 +291 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein
+  Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.
+00:33 +291 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland
+  Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.
+00:33 +291 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein
+  Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.
+00:33 +291 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick
+  Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.
+00:33 +291 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry
+  Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here.
+00:33 +291 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +291 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice
+  Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.
+00:33 +291 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +292 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +293 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +294 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +295 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +296 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +297 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +298 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +299 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +300 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +301 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +302 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +303 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +304 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +305 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +306 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it
+00:33 +307 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: the first line of a section starts its first page
+00:33 +308 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: published pages never change while the run goes on
+00:33 +309 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a page draws after its run and its neighbors are disposed
+00:33 +310 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: pages cover the section text once and in order
+00:33 +311 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a paragraph's lines start at each soft wrap and after each hard break, whose newline ends the line that it breaks
+00:33 +312 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a long verse paragraph lays out over several steps that stop between its hard-broken lines
+00:33 +313 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: long verse paragraphs keep the lines and pages that they had as one engine paragraph each
+00:33 +314 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: the last line of a long verse paragraph never stands alone on a page
+00:33 +315 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a run from a page start deep in a long verse paragraph that no run laid out yet cuts the same pages as the main run
+00:33 +316 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a search for a place deep in a long verse paragraph counts the lines before it in steps, and finds the line that holds the place
+00:33 +317 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: a long paragraph without hard breaks lays out over several units of work, each of a few lines
+00:34 +318 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/layout_run_test.dart: long paragraphs without hard breaks keep the lines and pages that they had as one engine paragraph each
+00:34 +319 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:34 +320 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:34 +321 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:36 +322 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:37 +323 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:37 +324 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:38 +325 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page draws the same pixels as the page that it keeps
+00:38 +326 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a delayed note rejects kept widths after its preparation left the cache
+00:38 +327 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page of a page of text takes at most 20 KB
+00:38 +328 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a second open of a book shows its true page number at once
+00:38 +329 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a second open of a book shows its true page number at once
+00:39 +330 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:40 +331 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:41 +332 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:41 +333 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:42 +334 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:42 +335 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_page_test.dart: a kept page depicts its page when a run from that page cut it, as a reopen does, at settings whose sums do not round evenly
+00:42 +336 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:42 +337 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:42 +338 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:42 +339 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:42 +340 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +340 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/step_budget_test.dart: the step budget
+  Skip: set BOOKFIN_EPUB_STEPS=1 to run
+00:43 +340 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +341 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +342 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +343 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +344 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +345 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +346 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +347 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +348 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +349 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +350 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +351 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +352 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +353 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +354 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +355 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:43 +356 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +357 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +358 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +359 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +360 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +361 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +362 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +363 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +364 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +365 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:44 +366 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:45 +367 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:45 +368 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:45 +369 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +370 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +371 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +372 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +373 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +374 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +375 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +376 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +377 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +378 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +379 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +380 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +381 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:46 +382 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +383 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +384 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +385 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +386 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +387 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +388 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +389 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +390 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +390 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus_steps_test.dart: the corpus steps
+  Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run
+00:47 +390 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map
+00:47 +391 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +392 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +393 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +394 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +395 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +396 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +397 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +398 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +399 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +400 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +401 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +402 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +403 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:48 +404 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +404 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/admission_benchmark_test.dart: the admission benchmark
+  Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run
+00:49 +404 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +405 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +406 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +407 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +408 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +409 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +410 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +411 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +412 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +413 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +414 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +415 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +416 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +417 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +418 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +419 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +420 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +421 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +422 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +423 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +424 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +425 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +426 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +427 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +428 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +429 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +430 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +431 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +432 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +433 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +434 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +435 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +436 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +437 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +438 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +439 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +440 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +441 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +442 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +443 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +444 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +445 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +446 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +447 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +448 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +449 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +450 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +451 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +452 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +453 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:49 +454 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +455 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +456 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +457 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +458 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +459 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +460 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +461 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +462 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +463 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +464 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +465 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +466 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +467 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +468 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +469 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +470 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +471 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +472 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +473 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +474 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +475 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +476 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +477 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +478 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +479 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +480 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +481 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +482 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +483 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +484 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:50 +485 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +486 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +487 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +488 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +489 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +490 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +491 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +492 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +493 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +494 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +495 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +496 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +497 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +498 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +499 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +500 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +501 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +502 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +503 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +504 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +505 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +506 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +507 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +508 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +509 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +510 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +511 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +512 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +513 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +514 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +515 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +516 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +517 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +518 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:51 +518 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives
+  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run
+00:51 +518 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +519 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +520 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +521 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +522 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +523 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +524 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +525 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +525 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_jump_test.dart: the jumps into real books
+  Skip: set BOOKFIN_EPUB_CORPUS=1
+00:52 +525 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page
+00:52 +526 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +527 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +528 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +529 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +530 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +531 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +532 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +533 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +534 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +535 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +536 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +537 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +538 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +539 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +540 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +541 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +542 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +543 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +544 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +545 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +546 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +547 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +548 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +549 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +550 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +551 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +552 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +553 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a place in a later cell of a table row split across pages opens the page that shows it
+00:53 +554 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept table does not measure the whole table
+00:53 +554 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/corpus_test.dart: the corpus run
+  Skip: set BOOKFIN_EPUB_CORPUS=1 to run
+00:53 +554 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept table does not measure the whole table
+00:53 +555 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept width that disagrees with a fresh one forgets the map
+00:54 +556 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept width that disagrees with a fresh one forgets the map
+00:54 +557 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept width that disagrees with a fresh one forgets the map
+00:54 +558 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/kept_measures_test.dart: kept table widths a run that lays out a row whose kept width disagrees with a fresh one contradicts the kept measures
+00:54 +559 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +560 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +561 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +562 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +563 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +564 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +565 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +566 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +567 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept long paragraph does not count its earlier segments' lines
+00:54 +568 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept line count that disagrees with a fresh one forgets the map
+00:55 +568 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept line count that disagrees with a fresh one forgets the map
+00:55 +568 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated page reports use section facts prepared in the worker [E]
+  This chapter could not be displayed. Use Contents or retry the download.
+  package:matcher                                   fail
+  test/reader/epub/chapter_titles_test.dart 150:33  main.<fn>.<fn>
+  package:bookfin/reader/epub/pager.dart 259:67     EpubPager.present.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                        Future.catchError
+  package:bookfin/reader/epub/pager.dart 258:20     EpubPager.present
+  test/reader/epub/chapter_titles_test.dart 157:13  main.<fn>
+  
+00:55 +569 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the scrub bar names the page under the finger in a seeded section
+00:56 +570 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a viewed page whose first place disagrees with the map forgets it
+00:56 +571 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept map with another number of sections is not used
+00:57 +572 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a kept map whose section does not start at its first visible character is not used
+00:57 +573 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: a debug build neither reads nor writes page maps
+00:58 +574 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the pager the saved place opens at the same character with and without a kept map
+00:59 +575 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the pager a page number from a kept map that a neighbor page contradicts is counted again
+01:00 +576 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the pager a second open of a book with its kept map shows whole-book page numbers at once
+01:00 +577 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: the pager a kept map that a page contradicts drops its pages from the index, and the shown page keeps its number until another page shows
+01:01 +578 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/page_map_open_test.dart: (tearDownAll)
+01:01 +578 ~18 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart
+01:02 +578 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG gives the size in its header
+01:02 +579 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused without the PNG signature
+01:02 +580 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused when it ends before its end chunk
+01:02 +581 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused when its header chunk fails its checksum
+01:02 +582 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused when its header names a bit depth that its color type does not have
+01:02 +583 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused when its header names no width
+01:02 +584 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused when it animates more than one frame
+01:02 +585 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG is refused with more than 16 million pixels
+01:02 +586 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a PNG of exactly 16 million pixels is kept
+01:02 +587 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG gives the size in its frame header
+01:02 +588 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG gives the size of a progressive frame
+01:02 +589 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG gives the size of its own frame, not of a thumbnail in its metadata
+01:02 +590 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused without the start of image
+01:02 +591 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused without a frame header
+01:02 +592 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused without a scan
+01:02 +593 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused when its only frame is lossless
+01:02 +594 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused with two frame headers
+01:02 +595 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused when its frame header is cut short
+01:02 +596 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused when a segment names a length below 2
+01:02 +597 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused when its frame has no sampling
+01:02 +598 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused when its frame names no width
+01:02 +599 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: a JPEG is refused with more than 16 million pixels
+01:02 +600 ~18 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave
+  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run
+01:02 +600 ~19 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart
+01:03 +600 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: (setUpAll)
+01:03 +600 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths columns whose widest content fits take that width
+01:03 +601 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths a table that is set wider than its content shares the extra width in proportion to what each column asks for
+01:03 +602 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths columns that do not fit take their narrowest width and a share of the rest in proportion to the width they want beyond it
+01:03 +603 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths columns that cannot fit their narrowest content shrink in proportion to it
+01:03 +604 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths a cell that spans columns widens them only by what they lack
+01:03 +605 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: column widths a row with fewer cells leaves its last columns empty
+01:03 +606 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: collapsed borders two cells that touch share the wider of their two borders, half on each side
+01:03 +607 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: collapsed borders an edge that meets several cells takes the widest of their borders
+01:03 +608 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: collapsed borders the borders of the table and of a row collapse with those of the cells at their edges
+01:03 +609 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: collapsed borders a table takes as its top and bottom border half the widest of the cells at that edge, and as its sides half those of its first row
+01:03 +610 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: row fragments a row that fits a page is one fragment, with each cell where its vertical-align puts it
+01:03 +611 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: row fragments a row taller than a page breaks each cell after its last slice that fits, and goes on with each cell at the next fragment's top
+01:03 +612 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: row fragments a slice taller than a page goes on a fragment of its own
+01:03 +613 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: row fragments the bottom padding of a cell that does not fit goes on the next fragment when another cell goes on there
+01:03 +614 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: row fragments the bottom padding of cells that have no slice left is dropped at the break, so that every fragment shows a slice
+01:03 +615 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: preparing a table with rows prepares as one table item, after its caption
+01:03 +616 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: preparing a table inside a cell prepares as blocks
+01:03 +617 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: preparing a table without rows flows as blocks
+01:03 +618 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a Project Gutenberg contents table lays out as a grid
+01:03 +619 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: every text and link of a contents table has a place on the page that shows it
+01:03 +620 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: an Etymology table lays out centered in its columns, and a cell that spans both columns is as wide as both
+01:03 +621 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: pages break only between rows
+01:03 +622 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page splits between the lines of its cells, so every line shows whole on one page
+01:03 +623 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page starts its split cells at the top of the row, draws their top borders on its first page and their bottom borders on its last
+01:03 +624 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page lays out again from every page start inside it as the main run does, and draws the same pixels
+01:03 +625 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page leaves no page that holds only the bottom padding of a row whose lines fill its last page, before another row taller than a page
+01:03 +626 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page opens a place in its second cell on the page that shows it
+01:03 +627 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row taller than a page ends each of its pages at the last character that the page shows
+01:03 +628 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a ruled cell draws its borders as tall as its row
+01:03 +629 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a cell sits at the top or the bottom of its row as its vertical-align asks
+01:03 +630 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: border-spacing and border-collapse a table spaces its columns and rows by its border-spacing
+01:03 +631 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: border-spacing and border-collapse collapsed borders leave no space between cells and draw one rule as wide as the wider border where two cells meet
+01:03 +632 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: border-spacing and border-collapse a table whose borders collapse ignores its padding and draws half of its outer border, and its cells draw the other half
+01:03 +633 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a caption lays out as a block above its table
+01:03 +634 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a table inside a cell lays out as blocks
+01:03 +635 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a cell that asks for more rows takes one
+01:03 +636 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a run from any true page start cuts the same pages with tables
+01:03 +637 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a page of a table laid out again from its start draws the same pixels
+01:04 +638 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: pages with tables cover the section text once and in order
+01:04 +639 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row of many paragraphs lays out one paragraph of its cells in each step, and the steps cut the pages of one long step
+01:04 +640 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row of many paragraphs lays out again from every page start inside it as the main run does
+01:04 +641 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a row of many paragraphs a run stopped inside a row lets go of what it laid out
+01:04 +642 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a long table lays out one row in each step that one row spends, and the steps cut the pages of one long step
+01:04 +643 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a long table finds the line of a place in it in steps of one measured row when no run measured it, and at once after
+01:04 +644 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a long table a run whose table a search measured meanwhile measures the next table by its own cells
+01:04 +645 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: a long table opens a place in any of its rows on a page that starts at that row, as the run from the section start places it
+01:04 +646 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: other layout a flex box shows its children as blocks in order
+01:04 +647 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: other layout a grid box shows its children as blocks in order
+01:04 +648 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: other layout a float shows its text as a block
+01:04 +649 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: other layout an absolutely placed box with offsets that are not negative flows as a block
+01:04 +650 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: other layout a box moved off the page by a negative offset stays out
+01:04 +651 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/table_test.dart: (tearDownAll)
+01:04 +651 ~19 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart
+01:05 +651 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: (setUpAll)
+01:05 +651 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: at 23 pixels the lines of a body paragraph start 37.95 pixels apart
+01:05 +652 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: a two-line heading at 30 pixels is 99 pixels high, as Chromium makes it
+01:05 +653 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: a line that holds a tall image grows to hold it, and the lines after it keep their exact height
+01:05 +654 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: a page holds every line that fits at the exact line height
+01:05 +655 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: each line draws on its exact baseline
+01:05 +656 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/line_position_test.dart: (tearDownAll)
+01:05 +656 ~19 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart
+01:06 +656 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: (setUpAll)
+01:06 +656 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: opening without a saved place shows the first page of the book and reports it
+01:06 +657 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a jump supersedes a page turn asked before it that has not shown: the turned page never shows, and the jump reports the only place
+01:06 +658 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: each new page reports the visible characters of the page that the person turned forward from, and any other move reports none
+01:06 +659 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a scrub deep into a large section shows the page that holds the place before the section is prepared, and a later open at the place that it saved shows the same page the same way
+01:06 +660 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: this phone's last page settings a pager that knows them prepares the section of its saved place before the reader presents its settings
+01:06 +661 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: this phone's last page settings a pager that knows them prepares the first section of a book without a saved place before the reader presents its settings
+01:06 +662 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: this phone's last page settings when the reader presents the same settings, the saved place shows without a second prepare of its section
+01:06 +663 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: this phone's last page settings when the reader presents other settings, the saved place shows on the page of the presented settings
+01:06 +664 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: this phone's last page settings a pager closed before the reader presents its settings stops without an error
+01:07 +665 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: present notifies later, never during the call, and the same settings again change nothing
+01:07 +666 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: present refuses page settings without a page area or a text size
+01:08 +667 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: opening at a saved place shows a page whose first line holds it and reports the identical address object
+01:08 +668 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a place that epub.js saved before a page's first visible character opens on that page and is reported as the identical address object, so opening never rewrites it
+01:08 +669 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a saved place with a wrong quote opens at the start with the warning and reports nothing until a move
+01:08 +670 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: turns go forward and back within a section and across sections, and do nothing at both ends of the book
+01:08 +671 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a new text size keeps the shown place and reports nothing, and the text shown over later turns covers each section in order with no text skipped
+01:11 +672 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: seek lands on the page that holds placeAt, and reports it
+01:11 +673 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: contents entries land on their destination, and unknown targets throw
+01:11 +674 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: linkAt gives the destination of the link under a point, relative to the package document, and contents follows it
+01:11 +675 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: linkAt finds a link in a table cell
+01:11 +676 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: linkAt says whether the link under a point is a note reference
+01:11 +677 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: note lays out the note of a note reference with the book's own text, at the width asked for, and moves no place
+01:11 +678 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: note finds the note of a link to an endnote even when the link is not marked as a note reference
+01:11 +679 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a superscript note reference of a showcase book with endnotes, marked as Standard Ebooks marks one, shows its endnote
+01:11 +680 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a note leaves out a back link that the book marks with the role doc-backlink
+01:11 +681 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a note leaves out a link back to its note reference, and keeps its other links
+01:11 +682 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a note leaves out a back link drawn as a superscript, and keeps the note's own superscripts
+01:11 +683 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a note leaves out a paragraph that holds only its back link
+01:11 +684 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: note has nothing for a link that is no note reference, so the link jumps
+01:11 +685 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: note has nothing for a note that the book's style hides, so the link jumps
+01:11 +686 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: display of a search hit lands on its match, and a place whose quote does not match throws
+01:11 +687 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: preview draws the true page of a place, and each previous and next place is held by exactly one page
+01:11 +688 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: preview stops when it is abandoned
+01:11 +689 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: search returns the hits of the book search in book order
+01:11 +690 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a cancel stops the search between batches, and a cancel of another request does not
+01:11 +691 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: the first page has page number 1 at once, the section's page count once its main run ends, and the book's once the whole book is laid out
+01:12 +692 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: a page deep in a section has no number until the main run passes it, and then its place among the true pages
+01:12 +693 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: the page number follows turns into the next section and a new text size
+01:13 +694 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: after a text size change and back, the place stays and the page of the first settings comes back
+01:14 +695 ~19 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: the host benchmark draws each deck page in a section in under 20 ms
+01:14 +695 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/pager_test.dart: (tearDownAll)
+01:14 +695 ~20 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart
+01:14 +695 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: (setUpAll)
+01:14 +695 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: a book that fixes its body text size keeps its design before the size buttons are used
+01:14 +696 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: after the size buttons are used, a fixed-size body is the reader's text size and grows with each larger step
+01:15 +697 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: headings keep their proportion to the body text
+01:15 +698 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: a notes section in small print stays smaller than body text
+01:15 +699 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: line heights and em lengths follow the scaled text sizes
+01:15 +700 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: a book that sets no type size of its own looks the same whether or not the size buttons were used
+01:15 +701 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the reading place stays on the same character when the book's main text starts to follow the reader's text size
+01:15 +702 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: once the size buttons are used, the book's type sizes that the book fixes grow, in every unit, and sizes relative to another follow it
+01:15 +703 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: once the size buttons are used, the book's type sizes carry their line heights: an absolute one grows, and one in em or as a factor follows the grown size
+01:15 +704 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: once the size buttons are used, the book's type sizes leave margins in absolute units as they are, and em margins follow the grown size
+01:15 +705 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: once the size buttons are used, the book's type sizes keep the proportions that the book's own body size sets
+01:15 +706 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size is the size that covers the most characters, not the most elements
+01:15 +707 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size counts the characters of every sample together
+01:15 +708 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size leaves out text that the book's style hides
+01:15 +709 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size leaves out text of size 0, which no one can read
+01:15 +710 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size is the book's own size, not the reader's text size
+01:15 +711 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size is kept with the admitted book, which the page source sizes the main text by
+01:15 +712 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size is the browser's initial size for a book with no visible text, and a sample that does not parse counts nothing
+01:15 +713 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size as a page shows it is the book's fixed size before the size buttons are used
+01:15 +714 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size as a page shows it follows the reader's text size in a book that sizes its text relative to the body
+01:15 +715 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size as a page shows it is the reader's text size once the size buttons are used
+01:15 +716 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size as a page shows it the page source gives it for pages of the shown settings
+01:15 +717 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: the main text size is measured on the three longest sections of the book
+01:15 +718 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/text_size_test.dart: (tearDownAll)
+01:15 +718 ~20 -1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart
+01:16 +718 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: the coverage of a font the reader coverage table is the character map of the bundled reader font
+01:16 +719 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: the coverage of a font a WOFF font's coverage is its character map
+01:16 +720 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: admission a book whose own font only repeats letters that the reader font has needs no font, and its record keeps no font file
+01:16 +721 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: admission a section whose text holds a character that only the book font has needs that font, and the other sections need none
+01:16 +722 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: admission a character that only the book font has needs no font where the book does not style it with that font
+01:16 +723 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: admission characters that draw nothing, such as a zero width joiner, need no book font, though the book font has them and the reader font lacks them
+01:16 +724 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: admission the record keeps only the font files that some section needs
+01:16 +725 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: drawing (setUpAll)
+01:16 +725 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: drawing a character that only the book font has draws in the book font, and the letters around it draw in the reader font
+01:16 +726 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/book_fonts_test.dart: drawing (tearDownAll)
+01:25 +726 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated page reports use section facts prepared in the worker [E]
+  TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
+  dart:isolate  _RawReceivePort._handleMessage
+  
+01:25 +726 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: a saved quote near the section end does not scan preceding text nodes
+Shell: Quote after 4000 text nodes: 14 text-list reads.
+01:25 +727 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated chapter labels reuse resolved targets and the fallback heading
+Shell: 60 title queries: 2002 href reads, 2 target lookups, 1 heading traversals.
+01:25 +728 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: chapter labels preserve URI resolution, CFI order and equal-position ties
+01:25 +729 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: a part and its note excerpt keep titles from outside the prepared flow
+01:25 +730 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: a part that must prepare the whole section resolves its contents only once
+01:25 +731 ~20 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: worker-prepared parts and their whole replacement report the same chapter
+01:25 +731 ~20 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: worker-prepared parts and their whole replacement report the same chapter [E]
+  UnimplementedError: stylesForSection
+  package:test_api                                     Fake.noSuchMethod
+  test/reader/epub/chapter_titles_test.dart 35:7       _Publication.stylesForSection
+  package:bookfin/reader/epub/page_source.dart 354:20  PageSource.findPlace
+  test/reader/epub/chapter_titles_test.dart 365:14     main.<fn>
+  
+01:25 +731 ~20 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: section titles survive eviction, settings changes and reopening
+01:25 +731 ~20 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: section titles survive eviction, settings changes and reopening [E]
+  UnimplementedError: stylesForSection
+  package:test_api                                      Fake.noSuchMethod
+  test/reader/epub/chapter_titles_test.dart 35:7        _Publication.stylesForSection
+  package:bookfin/reader/epub/page_source.dart 1624:22  PageSource._prepare
+  package:bookfin/reader/epub/page_source.dart 1106:53  PageSource._ready
+  package:bookfin/reader/epub/page_source.dart 389:49   PageSource.section.<fn>
+  package:bookfin/reader/epub/page_source.dart 890:26   PageSource._start.run
+  package:bookfin/reader/epub/page_source.dart 899:22   PageSource._start
+  package:bookfin/reader/epub/page_source.dart 874:8    PageSource._ask
+  package:bookfin/reader/epub/page_source.dart 389:12   PageSource.section
+  test/reader/epub/chapter_titles_test.dart 397:50      main.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                            Future.any
+  package:bookfin/reader/epub/page_source.dart 1964:48  _Request.wait
+  package:bookfin/reader/epub/page_source.dart 1106:21  PageSource._ready
+  package:bookfin/reader/epub/page_source.dart 389:49   PageSource.section.<fn>
+  package:bookfin/reader/epub/page_source.dart 890:26   PageSource._start.run
+  package:bookfin/reader/epub/page_source.dart 899:22   PageSource._start
+  package:bookfin/reader/epub/page_source.dart 874:8    PageSource._ask
+  package:bookfin/reader/epub/page_source.dart 389:12   PageSource.section
+  test/reader/epub/chapter_titles_test.dart 397:50      main.<fn>
+  
+01:25 +731 ~20 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: (tearDownAll)
+01:25 +731 ~20 -3: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: repeated page reports use section facts prepared in the worker
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: section titles survive eviction, settings changes and reopening
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5/test/reader/epub/chapter_titles_test.dart: worker-prepared parts and their whole replacement report the same chapter
