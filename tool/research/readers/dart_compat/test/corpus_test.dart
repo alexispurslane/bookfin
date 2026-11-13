@@ -42,7 +42,7 @@ void main() {
           final phrases = <String, bool>{
             for (final phrase in sample['expected_phrases'])
               phrase as String: text.toLowerCase().contains(
-                (phrase as String).toLowerCase(),
+                phrase.toLowerCase(),
               ),
           };
           observations[sample['id']] = {

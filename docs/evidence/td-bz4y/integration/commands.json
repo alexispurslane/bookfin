@@ -1,0 +1,371 @@
+[
+  {
+    "name": "01-compat-setup",
+    "command": [
+      "nix",
+      "develop",
+      "./tool/research/readers",
+      "--command",
+      "bash",
+      "docs/evidence/td-bz4y/diagnostic/prepare_compat.sh"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:43:41.321622+00:00",
+    "ended": "2026-11-13T22:43:45.578352+00:00",
+    "exitCode": 0,
+    "log": "01-compat-setup.log",
+    "sha256": "7d455f57d78e55d79a443f13a09039c011d204a2af7d86befa4b9921aa5b6a26",
+    "patch": "01-compat-setup.patch",
+    "patchSha256": "3f33a4ae1162ce4dcc23fd78575c6feb3bd34c9bb84a6596a6c43f848d897194",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "01-compat-setup",
+      "nix",
+      "develop",
+      "./tool/research/readers",
+      "--command",
+      "bash",
+      "docs/evidence/td-bz4y/diagnostic/prepare_compat.sh"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/01-compat-setup.log.gz",
+      "bytes": 1280,
+      "compressedSha256": "1313532f5594bc779b9a70c0f82c6bd8dbbbcdbf55d53d47819a080e48a37705"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/01-compat-setup.patch.gz",
+      "bytes": 260,
+      "compressedSha256": "a75734cc175e15924549ba02c5f36758304c27cc8cd6dd38e226224af577c9bb"
+    }
+  },
+  {
+    "name": "02-compat-analysis-before",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart analyze"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:44:12.131464+00:00",
+    "ended": "2026-11-13T22:44:17.024928+00:00",
+    "exitCode": 2,
+    "log": "02-compat-analysis-before.log",
+    "sha256": "dae63c46bd4f722c798e259ae6ea76e336d3121838c8b7ff8dc8c1bce23f0115",
+    "patch": "02-compat-analysis-before.patch",
+    "patchSha256": "3f33a4ae1162ce4dcc23fd78575c6feb3bd34c9bb84a6596a6c43f848d897194",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "02-compat-analysis-before",
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart analyze"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/02-compat-analysis-before.log.gz",
+      "bytes": 142,
+      "compressedSha256": "a24e10c9804260b90900af60710ab39302927b79715f62a1498a9f16f231bf9c"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/02-compat-analysis-before.patch.gz",
+      "bytes": 260,
+      "compressedSha256": "a75734cc175e15924549ba02c5f36758304c27cc8cd6dd38e226224af577c9bb"
+    }
+  },
+  {
+    "name": "03-compat-analysis-after",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart analyze"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:44:38.966785+00:00",
+    "ended": "2026-11-13T22:44:43.123398+00:00",
+    "exitCode": 0,
+    "log": "03-compat-analysis-after.log",
+    "sha256": "4480e7038968b173f131da8319127fe950a634c0f202dc47e7f24d5e8a3d20b2",
+    "patch": "03-compat-analysis-after.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "03-compat-analysis-after",
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart analyze"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/03-compat-analysis-after.log.gz",
+      "bytes": 42,
+      "compressedSha256": "f3cbf28174a4245fbbe174525280f0410ad442ddbafa7ea42b36a50bd295a49c"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/03-compat-analysis-after.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "04-engines-full",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/epub_engines && python3 -m unittest discover -v"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:44:53.657906+00:00",
+    "ended": "2026-11-13T22:44:57.289465+00:00",
+    "exitCode": 0,
+    "log": "04-engines-full.log",
+    "sha256": "60bd7fd4a0e760ce30de6e6a7d4be15fb85d05a36a5fa04a4526820da70b5202",
+    "patch": "04-engines-full.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "04-engines-full",
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/epub_engines && python3 -m unittest discover -v"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/04-engines-full.log.gz",
+      "bytes": 18055,
+      "compressedSha256": "97e37735ef369c014e10683117359ce54df38d1f920a46c748c638472c3b2b67"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/04-engines-full.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "05-sync-full-with-loopback",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/sync && python3 -m unittest discover -v"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:45:10.808567+00:00",
+    "ended": "2026-11-13T22:45:19.994601+00:00",
+    "exitCode": 0,
+    "log": "05-sync-full-with-loopback.log",
+    "sha256": "98f44f6ca5149d934daa2df22d8f15e5854773bbdc8f7a30b201ab7a0fdf0035",
+    "patch": "05-sync-full-with-loopback.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "05-sync-full-with-loopback",
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/sync && python3 -m unittest discover -v"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/05-sync-full-with-loopback.log.gz",
+      "bytes": 7114,
+      "compressedSha256": "d1637026d8d4d2277f37834c18df8cd8bcbd07e4441a65159333158ebeea2ec9"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/05-sync-full-with-loopback.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "06-format",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "dart",
+      "format",
+      "tool/research/readers/dart_compat/test/compat_test.dart",
+      "tool/research/readers/dart_compat/test/corpus_test.dart"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:45:33.043559+00:00",
+    "ended": "2026-11-13T22:45:35.349857+00:00",
+    "exitCode": 0,
+    "log": "06-format.log",
+    "sha256": "43a0060b01f8d00290502db016cbde393b149f5a0971989771a4fe3fddc181e7",
+    "patch": "06-format.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "06-format",
+      "nix",
+      "develop",
+      "--command",
+      "dart",
+      "format",
+      "tool/research/readers/dart_compat/test/compat_test.dart",
+      "tool/research/readers/dart_compat/test/corpus_test.dart"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/06-format.log.gz",
+      "bytes": 47,
+      "compressedSha256": "719cc9d336c25981467c75815162aed140c05fade775387f31ed152770603d62"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/06-format.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "07-compat-full",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart test --concurrency=2 --reporter=expanded"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:45:44.468470+00:00",
+    "ended": "2026-11-13T22:45:54.246126+00:00",
+    "exitCode": 0,
+    "log": "07-compat-full.log",
+    "sha256": "ea575ea96cb58ae8a9d575d1887e246f9719aa3abf81e5062f819bd09e3b3e29",
+    "patch": "07-compat-full.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "07-compat-full",
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "cd tool/research/readers/dart_compat && dart test --concurrency=2 --reporter=expanded"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/07-compat-full.log.gz",
+      "bytes": 1892,
+      "compressedSha256": "1e8b31019a57f9000b62ec71e7bb489f14b46095721440848a89c6fdda7225a0"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/07-compat-full.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "08-python-stability",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "python3",
+      "docs/evidence/td-bz4y/diagnostic/python_times.py",
+      "/tmp/bookfin-td-bz4y-integration/python-stability-observations.json"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:46:03.698128+00:00",
+    "ended": "2026-11-13T22:46:06.192547+00:00",
+    "exitCode": 0,
+    "log": "08-python-stability.log",
+    "sha256": "7b3e8bf316e496bcc349a40373617f9319f6c279ef0628604a99a88ef2362d01",
+    "patch": "08-python-stability.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "08-python-stability",
+      "nix",
+      "develop",
+      "--command",
+      "python3",
+      "docs/evidence/td-bz4y/diagnostic/python_times.py",
+      "/tmp/bookfin-td-bz4y-integration/python-stability-observations.json"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/08-python-stability.log.gz",
+      "bytes": 1027,
+      "compressedSha256": "4c1c81f39f82235549727fe1bbf6a1c4e6bfc8574f12c7d8e8455b1a99187c4b"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/08-python-stability.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  },
+  {
+    "name": "09-integration-audit",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/audit.py"
+    ],
+    "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+    "started": "2026-11-13T22:46:54.509223+00:00",
+    "ended": "2026-11-13T22:46:56.965343+00:00",
+    "exitCode": 0,
+    "log": "09-integration-audit.log",
+    "sha256": "7479bece2c21b1e258fa4998f2622384cfb13bf5b0a91fd037e4aa491c057f01",
+    "patch": "09-integration-audit.patch",
+    "patchSha256": "c66b97e8c75634446f0498741d56d95acf5a38a06f34513bdc341433f8c5ac25",
+    "cwd": "/Users/alexispurslane/Development/bookfin",
+    "captureInvocation": [
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/run.py",
+      "09-integration-audit",
+      "nix",
+      "develop",
+      "--command",
+      "python3",
+      "/tmp/bookfin-td-bz4y-integration/audit.py"
+    ],
+    "logArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/09-integration-audit.log.gz",
+      "bytes": 1035,
+      "compressedSha256": "9b51e316b96d3908480a7cdad83510150968be3b1494cee6e255a24b57d2a0ef"
+    },
+    "patchArchive": {
+      "path": "docs/evidence/td-bz4y/integration/archive/09-integration-audit.patch.gz",
+      "bytes": 906,
+      "compressedSha256": "6f2b78aa3c6a29c40f62a503a4c57f97165b2b2f10b204eff8f8e5aa10f4ae7d"
+    }
+  }
+]

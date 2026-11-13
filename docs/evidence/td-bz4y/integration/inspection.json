@@ -1,0 +1,9 @@
+{
+  "evidenceFilesVerified": 96,
+  "commandRecordsVerified": 28,
+  "compressedArtifactsVerified": 56,
+  "reviewOriginalTextMatches": true,
+  "preservedPathsUnchanged": true,
+  "reviewedSourceUnchanged": true,
+  "whitespaceClean": true
+}

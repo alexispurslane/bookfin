@@ -1,0 +1,130 @@
+{
+  "tickets": [
+    "td-bz4y",
+    "t0-bbyo"
+  ],
+  "parentBase": "8effc9496e5a5d9d45929fbc54de8f746698c1cf",
+  "delegateBase": "215273e35f986cd6682b47b1efc8eff627ddee34",
+  "delegateHead": "b9ce8260324102db3d3d6c50ede32f8c74597c13",
+  "integratedCommits": [
+    "d3ba22b9",
+    "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f"
+  ],
+  "mergeResolution": "Only appended td-bz4y ticket notes conflicted; parent launch and child implementation notes were both retained. The four reviewed source files match the child exactly.",
+  "checks": [
+    {
+      "record": "01-compat-setup",
+      "result": "Ignored package prerequisites prepared from pinned dependencies and checked-in MOBIs; dependency lockfile unchanged."
+    },
+    {
+      "record": "02-compat-analysis-before",
+      "exitCode": 2,
+      "result": "Reproduced the existing unnecessary_cast warning at corpus_test.dart:45:18."
+    },
+    {
+      "record": "03-compat-analysis-after",
+      "exitCode": 0,
+      "result": "Complete isolated dart_compat package analysis: no issues after removal of the second redundant cast."
+    },
+    {
+      "record": "04-engines-full",
+      "exitCode": 0,
+      "passed": 102,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "record": "05-sync-full-with-loopback",
+      "exitCode": 0,
+      "passed": 40,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "record": "06-format",
+      "exitCode": 0,
+      "files": 2,
+      "changed": 0
+    },
+    {
+      "record": "07-compat-full",
+      "exitCode": 0,
+      "passed": 5,
+      "skipped": 4,
+      "failed": 0
+    },
+    {
+      "record": "08-python-stability",
+      "exitCode": 0,
+      "passed": 7,
+      "skipped": 0,
+      "failed": 0,
+      "result": "Controlled archive times and changed-content controls pass on integrated Python fixture owners."
+    },
+    {
+      "record": "09-integration-audit",
+      "exitCode": 0,
+      "result": {
+        "parentBase": "8effc9496e5a5d9d45929fbc54de8f746698c1cf",
+        "childHead": "b9ce8260324102db3d3d6c50ede32f8c74597c13",
+        "head": "5df8f969ade90bd359cf9edbbb5e43f3d8c3f86f",
+        "childEvidenceFilesVerified": 96,
+        "childCommandRecordsVerified": 28,
+        "originalReviewPreserved": true,
+        "fourReviewedSourcesUnchanged": true,
+        "rootApplicationTestsAndEnvironmentUnchanged": true,
+        "whitespaceClean": true,
+        "sourceHashes": {
+          "tool/research/epub_engines/test_prepare.py": "37c92bc87f9e008584411028f8a87c419ac6426a81ef095e1ac65ee65edb6b6e",
+          "tool/research/epub_engines/test_calibrate.py": "7cf232092a9249b57a5995e2ada34b01cafbd27cb750a6583708f3f7017b5daf",
+          "tool/research/sync/fixture.py": "49d07289049c5553e868f8020cbb5706f36bf9b2866af50d8b5186e444a44468",
+          "tool/research/readers/dart_compat/test/compat_test.dart": "e7a68fd464016c09ca052585f17651ef389ab5e0f6759a044ac37be270747199",
+          "tool/research/readers/dart_compat/test/corpus_test.dart": "95ef56bbe87b3f2116eeccfacd781ca48bf0b90b9172adcd65ff69914954f173"
+        }
+      }
+    }
+  ],
+  "childReview": "Original correctness, fulfillment and design passes retained unchanged. Parent recomputed all 96 evidence-file hashes and checked all 28 records, including 56 compressed log/patch artifacts.",
+  "loopbackExclusionResolved": "The 13 child exclusions use synthetic HTTP handlers bound to 127.0.0.1 on temporary ports. Parent inspected them and ran the ordinary full suite without the skip wrapper. All 40 tests passed; no live Jellyfin service or user credentials were used.",
+  "corpusSkips": [
+    {
+      "sample": "alice-epub3",
+      "reason": "Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus"
+    },
+    {
+      "sample": "frankenstein-legacy-mobi",
+      "reason": "Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus"
+    },
+    {
+      "sample": "moby-kf8",
+      "reason": "Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus"
+    },
+    {
+      "sample": "candide-french-epub3",
+      "reason": "Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus"
+    }
+  ],
+  "failureDisposition": "Only expected parent failure was the reproduced analysis warning; the source correction is tracked in t0-bbyo. All final required checks passed. Child failures remain preserved in the original records.",
+  "scopeLimits": [
+    "Four public-corpus checks remain gated and are not passes.",
+    "No new device, browser, live Jellyfin, model, general coverage or mutation work.",
+    "Root Flutter suite and web builds were not repeated: application code, root tests and environment files are unchanged from the already-verified parent.",
+    "No cross-version, cross-time-zone or native MOBI-converter determinism claim."
+  ],
+  "previousRootVerification": {
+    "sourceHead": "266773a571a5e63cd9fe269b48d21e66aa238751",
+    "flutterPassed": 3831,
+    "flutterSkipped": 27,
+    "flutterFailed": 0,
+    "web": "Production and gallery JavaScript builds passed",
+    "evidence": "docs/evidence/boo-spco/integration/integration.json"
+  },
+  "sourceHashes": {
+    "tool/research/epub_engines/test_prepare.py": "37c92bc87f9e008584411028f8a87c419ac6426a81ef095e1ac65ee65edb6b6e",
+    "tool/research/epub_engines/test_calibrate.py": "7cf232092a9249b57a5995e2ada34b01cafbd27cb750a6583708f3f7017b5daf",
+    "tool/research/sync/fixture.py": "49d07289049c5553e868f8020cbb5706f36bf9b2866af50d8b5186e444a44468",
+    "tool/research/readers/dart_compat/test/compat_test.dart": "e7a68fd464016c09ca052585f17651ef389ab5e0f6759a044ac37be270747199",
+    "tool/research/readers/dart_compat/test/corpus_test.dart": "95ef56bbe87b3f2116eeccfacd781ca48bf0b90b9172adcd65ff69914954f173"
+  },
+  "finalCommittedHeadCheck": "Run after the closure commit; its exact command and result remain in /tmp/bookfin-td-bz4y-integration/commands.jsonl and parent tool output."
+}
