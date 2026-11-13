@@ -22,6 +22,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../book_pages.dart';
+import '../document.dart' show ContentsEntry;
 import 'dom.dart';
 import 'fonts.dart';
 import 'layout.dart';
@@ -353,6 +354,8 @@ class PageSource {
       _publication.bookStyles,
       _publication.imageSizes,
       _publication.language,
+      _publication.contents,
+      _publication.packagePath,
       _publication.mainTextSize,
       faces,
       layout.settings,
@@ -1621,6 +1624,8 @@ class PageSource {
         _publication.bookStyles,
         _publication.imageSizes,
         _publication.language,
+        _publication.contents,
+        _publication.packagePath,
         _publication.mainTextSize,
         faces,
         layout.settings,
@@ -1715,6 +1720,8 @@ class PageSource {
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
     String? language,
+    List<ContentsEntry> contents,
+    String packagePath,
     double mainTextSize,
     Map<String, String> faces,
     PageSettings settings,
@@ -1727,6 +1734,8 @@ class PageSource {
         styleSheets: styleSheets,
         imageSizes: imageSizes,
         language: language,
+        contents: contents,
+        packagePath: packagePath,
         mainTextSize: mainTextSize,
         faces: faces,
       ),
@@ -1746,6 +1755,8 @@ class PageSource {
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
     String? language,
+    List<ContentsEntry> contents,
+    String packagePath,
     double mainTextSize,
     Map<String, String> faces,
     PageSettings settings,
@@ -1759,6 +1770,8 @@ class PageSource {
         styleSheets: styleSheets,
         imageSizes: imageSizes,
         language: language,
+        contents: contents,
+        packagePath: packagePath,
         mainTextSize: mainTextSize,
         faces: faces,
       ),

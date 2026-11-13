@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
+import 'package:bookfin/reader/document.dart' show ContentsEntry;
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
@@ -248,6 +249,11 @@ class WatchedPublication implements Publication {
   String? get language => inner.language;
   @override
   double get mainTextSize => inner.mainTextSize;
+
+  @override
+  String get packagePath => inner.packagePath;
+  @override
+  List<ContentsEntry> get contents => inner.contents;
 
   @override
   Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

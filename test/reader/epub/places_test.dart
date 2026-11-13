@@ -650,8 +650,12 @@ void main() {
       ContentsEntry('Two', 'text/one.xhtml#two'),
       ContentsEntry('Elsewhere', 'text/two.xhtml'),
     ];
-    String title(DomSection section, EpubPlace place) =>
-        chapterTitle(section, place, contents, 'content.opf', 'text/one.xhtml');
+    String title(DomSection section, EpubPlace place) => ChapterTitles(
+      section,
+      contents,
+      'content.opf',
+      'text/one.xhtml',
+    ).at(place);
 
     test('a place takes the last contents entry of its section at or before '
         'it', () {
@@ -667,13 +671,12 @@ void main() {
     test('contents hrefs resolve against the package document', () {
       final section = dom('<h2 id="one">One</h2><p>First.</p>');
       expect(
-        chapterTitle(
+        ChapterTitles(
           section,
-          at(section, 'First'),
           const [ContentsEntry('One', 'one.xhtml#one')],
           'OEBPS/content.opf',
           'OEBPS/one.xhtml',
-        ),
+        ).at(at(section, 'First')),
         'One',
       );
     });
@@ -681,13 +684,12 @@ void main() {
     test('an entry without a fragment starts at the section start', () {
       final section = dom('<p>Call me Ishmael.</p>');
       expect(
-        chapterTitle(
+        ChapterTitles(
           section,
-          at(section, 'Call', 5),
           const [ContentsEntry('Loomings', 'text/one.xhtml')],
           'content.opf',
           'text/one.xhtml',
-        ),
+        ).at(at(section, 'Call', 5)),
         'Loomings',
       );
     });
@@ -732,13 +734,12 @@ void main() {
       final section = dom('<p>Call me Ishmael.</p>');
       final long = 'Loomings ' * 100;
       expect(
-        chapterTitle(
+        ChapterTitles(
           section,
-          at(section, 'Call'),
           [ContentsEntry(long, 'text/one.xhtml')],
           'content.opf',
           'text/one.xhtml',
-        ),
+        ).at(at(section, 'Call')),
         long.substring(0, 512),
       );
     });
@@ -884,13 +885,12 @@ void main() {
       );
       final cfi = saved['cfi']! as String;
       final place = placeOf(section, index, cfi)!;
-      final chapter = chapterTitle(
+      final chapter = ChapterTitles(
         section,
-        place,
         publication.contents,
         publication.packagePath,
         resource,
-      );
+      ).at(place);
       final location = switch (kind) {
         'page' => pageLocation(spine, resource, section, place, place, chapter),
         'hit' => hitLocation(spine, resource, section, place, chapter),

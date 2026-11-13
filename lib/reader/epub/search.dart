@@ -85,7 +85,7 @@ const searchBatch = 8;
 /// before and after each batch, and when it says no, the report is empty.
 ///
 /// [contents] and [packagePath] give each hit's chapter, as
-/// [chapterTitle] takes them.
+/// [ChapterTitles] takes them.
 Future<ReaderSearchReport> searchBook(
   List<SearchSection> sections,
   String query,
@@ -180,7 +180,7 @@ SectionHits _searchSection(
       return SectionHits(section.index, hits);
     }
     final text = _SearchText(dom);
-    final chapters = _entriesInto(contents, packagePath, section.path);
+    final chapters = ChapterTitles(dom, contents, packagePath, section.path);
     final starts = <int>[];
     for (
       var at = text.folded.indexOf(needle);
@@ -200,13 +200,7 @@ SectionHits _searchSection(
         dom.texts[text.nodes[at]].order,
         text.starts[at],
       );
-      final chapter = chapterTitle(
-        dom,
-        start,
-        chapters,
-        packagePath,
-        section.path,
-      );
+      final chapter = chapters.at(start);
       hits.add((
         hitLocation(section.spine, section.path, dom, start, chapter),
         _excerpt(
@@ -227,30 +221,6 @@ SectionHits _searchSection(
     );
   }
   return SectionHits(section.index, hits, incomplete: incomplete);
-}
-
-/// The entries of [contents] that can name a chapter of the section at
-/// [path]: all but those that point into another section. [chapterTitle]
-/// skips those for each hit, so leaving them out gives the same chapters
-/// with less work. A long book has hundreds of entries.
-List<ContentsEntry> _entriesInto(
-  List<ContentsEntry> contents,
-  String packagePath,
-  String path,
-) {
-  final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
-  bool elsewhere(String href) {
-    try {
-      return package.resolve(href).pathSegments.join('/') != path;
-    } on FormatException {
-      return false;
-    }
-  }
-
-  return [
-    for (final entry in contents)
-      if (!elsewhere(entry.href)) entry,
-  ];
 }
 
 /// The text of the body of [dom] from offset [start] of text node

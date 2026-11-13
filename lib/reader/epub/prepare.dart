@@ -10,10 +10,12 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../document.dart' show ContentsEntry;
 import 'css.dart';
 import 'dom.dart';
 import 'font_files.dart';
 import 'hyphenate.dart';
+import 'places.dart';
 import 'reader_coverage.dart';
 import 'table.dart';
 
@@ -120,6 +122,8 @@ class SectionSource {
     required this.index,
     required this.path,
     required this.xhtml,
+    this.contents = const [],
+    this.packagePath = '',
     this.styleSheets = const {},
     this.imageSizes = const {},
     this.language,
@@ -133,6 +137,14 @@ class SectionSource {
   /// The section's path in the publication, such as `epub/text/one.xhtml`.
   final String path;
   final String xhtml;
+
+  /// The publication's contents, whose hrefs resolve against [packagePath].
+  /// Preparation keeps only the locations that name this section.
+  final List<ContentsEntry> contents;
+
+  /// The package document's path in the publication. Needed when [contents]
+  /// is nonempty; the default resolves hrefs from the publication root.
+  final String packagePath;
 
   /// The CSS text of each style sheet that the section can reach through
   /// links and `@import`, by its publication path.
@@ -258,7 +270,8 @@ class PreparedSection {
     this.settings,
     this.dom,
     this.flow,
-    this.styles, {
+    this.styles,
+    this.chapters, {
     this.firstPrepared = 0,
     this.reachesEnd = true,
   });
@@ -267,6 +280,9 @@ class PreparedSection {
   final int index;
   final PageSettings settings;
   final DomSection dom;
+
+  /// Chapter labels derived once from [dom], shared by its excerpts.
+  final ChapterTitles chapters;
 
   /// The steps of block layout, in document order.
   final List<FlowItem> flow;
@@ -440,12 +456,19 @@ class PreparedSection {
         widows: paragraph.widows,
       );
     }
-    return PreparedSection._(index, settings, dom, [
-      ...boxes,
-      ...items,
-      for (var close = 0; close < boxes.length + depth; close++)
-        const BlockEnd(),
-    ], styles);
+    return PreparedSection._(
+      index,
+      settings,
+      dom,
+      [
+        ...boxes,
+        ...items,
+        for (var close = 0; close < boxes.length + depth; close++)
+          const BlockEnd(),
+      ],
+      styles,
+      chapters,
+    );
   }
 }
 
@@ -523,9 +546,15 @@ const _partAfter = 10000;
   if (section.whole || (lastNode != null && place.node <= lastNode)) {
     return (place: place, section: section);
   }
-  // The whole section keeps the part's styles, so that no element is
-  // styled twice.
-  final whole = _prepare(source, settings, dom: dom, styled: styles);
+  // The whole section keeps the part's styles and chapter facts: the DOM
+  // is unchanged, so neither needs to be derived twice.
+  final whole = _prepare(
+    source,
+    settings,
+    dom: dom,
+    styled: styles,
+    chapters: section.chapters,
+  );
   return (place: place, section: whole.section);
 }
 
@@ -554,7 +583,8 @@ DomElement? _blockOf(DomNode node) {
 /// [styled] the styles of its elements that an earlier prepare of it for
 /// [settings] computed. Also gives the last node of the last paragraph,
 /// image or table that it prepared, or null when it prepared none, and the
-/// styles that it computed.
+/// styles that it computed. [chapters] reuses chapter facts from that same
+/// [dom] when a part needs the whole section instead.
 ({PreparedSection section, int? lastNode, Map<DomElement, Style> styles})
 _prepare(
   SectionSource source,
@@ -563,6 +593,7 @@ _prepare(
   int? from,
   int? until,
   Map<DomElement, Style> styled = const {},
+  ChapterTitles? chapters,
 }) {
   final parsed = dom ?? DomSection.parse(source.xhtml);
   final styles = styleSection(
@@ -591,6 +622,13 @@ _prepare(
       parsed,
       flattener.flow,
       flattener.runStyles,
+      chapters ??
+          ChapterTitles(
+            parsed,
+            source.contents,
+            source.packagePath,
+            source.path,
+          ),
       firstPrepared: flattener.firstPrepared,
       reachesEnd: !builder.cut,
     ),

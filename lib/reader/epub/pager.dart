@@ -746,13 +746,7 @@ class EpubPager implements DocumentNavigator {
           dom,
           start,
           end,
-          chapterTitle(
-            dom,
-            firstVisible(dom, start, end),
-            _publication.contents,
-            _publication.packagePath,
-            path,
-          ),
+          section.chapters.at(firstVisible(dom, start, end)),
         ),
       ),
     );

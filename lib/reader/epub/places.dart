@@ -139,8 +139,24 @@ String quoteAt(DomSection dom, EpubPlace place) {
   final buffer = StringBuffer(
     text == null ? first.text : first.text.substring(place.offset),
   );
+  // Text nodes are in document order. Locate the suffix without scanning
+  // the part of the section before this page. A text outside the body
+  // keeps the old behavior: its quote continues at the body's first text.
+  var low = 0;
+  var high = dom.texts.length;
+  while (low < high) {
+    final middle = (low + high) >> 1;
+    if (dom.texts[middle].order < first.order) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+  final next = low < dom.texts.length && identical(dom.texts[low], first)
+      ? low + 1
+      : 0;
   for (
-    var index = dom.texts.indexOf(first) + 1;
+    var index = next;
     index < dom.texts.length && buffer.length < 120;
     index++
   ) {
@@ -216,48 +232,74 @@ EpubPlace? destination(DomSection dom, int section, String? fragment) {
 bool quoteMatches(DomSection dom, EpubPlace place, String quote) =>
     quote.isEmpty || quoteAt(dom, place).startsWith(quote);
 
-/// The chapter label of [place] in [dom], as reader.js `visibleLocation`
-/// gives it: the title of the last entry of [contents] that points into
-/// this section at or before [place], else the text of the section's first
-/// `h1` or `title` element in document order, else "Chapter N" for the
-/// section's spine position N. It is at most 512 characters.
-///
-/// Each entry's href is relative to the package document at [packagePath].
-/// [sectionPath] is the section's path in the book, as the spine lists it.
-/// An entry without a fragment points at the body. Entries and [place]
-/// compare as epub.js compares their CFIs, step by step (see
-/// [_compareSteps]).
-String chapterTitle(
-  DomSection dom,
-  EpubPlace place,
-  List<ContentsEntry> contents,
-  String packagePath,
-  String sectionPath,
-) {
-  var chapter = _heading(dom) ?? 'Chapter ${place.section + 1}';
-  final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
-  final at = _steps(dom, place);
-  (List<int>, int)? found;
-  for (final entry in contents) {
-    final DomElement? target;
-    try {
-      final href = package.resolve(entry.href);
-      if (href.pathSegments.join('/') != sectionPath) continue;
-      target = href.fragment.isEmpty
-          ? dom.body
-          : dom.elementById(Uri.decodeComponent(href.fragment));
-    } on FormatException {
-      continue;
+/// The chapter labels derived from one section's DOM and contents. Prepare
+/// once beside that DOM, in its worker, and keep for the same lifetime.
+/// Nothing changes the resolved locations or fallback after construction.
+class ChapterTitles {
+  /// Resolves the entries of [contents] into [dom], the section at
+  /// [sectionPath]. Each href is relative to the package at [packagePath].
+  /// Missing or malformed targets and other sections are ignored. An
+  /// entry without a fragment points at the body; fragments are decoded.
+  ChapterTitles(
+    DomSection dom,
+    List<ContentsEntry> contents,
+    String packagePath,
+    String sectionPath,
+  ) : _dom = dom,
+      _fallback = _heading(dom) {
+    final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
+    for (final (order, entry) in contents.indexed) {
+      final DomElement? target;
+      try {
+        final href = package.resolve(entry.href);
+        if (href.pathSegments.join('/') != sectionPath) continue;
+        target = href.fragment.isEmpty
+            ? dom.body
+            : dom.elementById(Uri.decodeComponent(href.fragment));
+      } on FormatException {
+        continue;
+      }
+      if (target == null) continue;
+      _entries.add((
+        steps: _steps(dom, EpubPlace(0, target.order, 0)),
+        title: entry.title,
+        order: order,
+      ));
     }
-    if (target == null) continue;
-    final candidate = _steps(dom, EpubPlace(place.section, target.order, 0));
-    if (_compareSteps(candidate, at) <= 0 &&
-        (found == null || _compareSteps(candidate, found) >= 0)) {
-      chapter = entry.title;
-      found = candidate;
-    }
+    _entries.sort((a, b) {
+      final compared = _compareSteps(a.steps, b.steps);
+      // List.sort is not stable: contents order must break equal-place ties.
+      return compared != 0 ? compared : a.order.compareTo(b.order);
+    });
   }
-  return chapter.length > 512 ? chapter.substring(0, 512) : chapter;
+
+  final DomSection _dom;
+  final String? _fallback;
+  final _entries = <({(List<int>, int) steps, String title, int order})>[];
+
+  /// The title of the last contents entry at or before [place], comparing
+  /// CFIs as epub.js does, step by step ([_compareSteps]). The last entry
+  /// in contents order wins at equal positions. Before all entries, uses
+  /// the first `h1` or `title` in document order, trimmed, or "Chapter N"
+  /// for the section's spine position N. Returns at most 512 characters.
+  /// [place] belongs to the DOM that this object was prepared from.
+  String at(EpubPlace place) {
+    final steps = _steps(_dom, place);
+    var low = 0;
+    var high = _entries.length;
+    while (low < high) {
+      final middle = (low + high) >> 1;
+      if (_compareSteps(_entries[middle].steps, steps) <= 0) {
+        low = middle + 1;
+      } else {
+        high = middle;
+      }
+    }
+    final chapter = low == 0
+        ? _fallback ?? 'Chapter ${place.section + 1}'
+        : _entries[low - 1].title;
+    return chapter.length > 512 ? chapter.substring(0, 512) : chapter;
+  }
 }
 
 /// The trimmed text of the first `h1` or `title` element of [dom] in
@@ -322,7 +364,7 @@ int _compareSteps((List<int>, int) a, (List<int>, int) b) {
 /// last visible character is at [end], in the form that reader.js
 /// `visibleLocation` writes for a shown page: the CFI, quote and progress
 /// of the page's [firstVisible] character, in the section at [sectionPath]
-/// whose spine step is [spine]. [chapter] is the [chapterTitle] of that
+/// whose spine step is [spine]. [chapter] is the [ChapterTitles.at] of that
 /// character. Its [ReadingLocation.end] is the progress of [end], and it
 /// has no page number.
 ReadingLocation pageLocation(
@@ -347,7 +389,7 @@ ReadingLocation pageLocation(
 /// The location of a search hit of [dom] whose match starts at [start], as
 /// reader.js `searchBook` writes it: the CFI and quote of [start] itself,
 /// in the section at [sectionPath] whose spine step is [spine], with
-/// [chapter], its [chapterTitle]. Like reader.js, it has no progress.
+/// [chapter], its [ChapterTitles.at]. Like reader.js, it has no progress.
 ReadingLocation hitLocation(
   String spine,
   String sectionPath,

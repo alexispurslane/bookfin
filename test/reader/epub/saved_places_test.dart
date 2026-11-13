@@ -390,13 +390,12 @@ class _Book {
 
   /// The chapter label of [place] in [dom], the section at [resource].
   String chapter(DomSection dom, EpubPlace place, String resource) =>
-      chapterTitle(
+      ChapterTitles(
         dom,
-        place,
         publication.contents,
         publication.packagePath,
         resource,
-      );
+      ).at(place);
 
   /// The spine index and decoded fragment that [href], relative to the
   /// package document as reader.js `resolveDestination` reads it, points
