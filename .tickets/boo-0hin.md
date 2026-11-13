@@ -1,7 +1,7 @@
 ---
 id: boo-0hin
 status: open
-deps: []
+deps: [boo-f9xa]
 links: [boo-f9xa, boo-p9s3]
 created: 2026-11-12T23:41:01Z
 type: task

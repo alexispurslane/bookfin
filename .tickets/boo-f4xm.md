@@ -1,6 +1,6 @@
 ---
 id: boo-f4xm
-status: open
+status: in_progress
 deps: []
 links: [boo-s11s, boo-n7no]
 created: 2026-11-12T23:41:00Z
