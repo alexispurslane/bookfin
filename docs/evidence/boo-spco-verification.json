@@ -2,7 +2,7 @@
   "ticket": "boo-spco",
   "originalBase": "c603591b313afbd8e167e83fd5e14e2e13978fad",
   "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
-  "branch": "t3/369cacef",
+  "branch": "t3/playback-notice-ownership",
   "baseline": {
     "clean": true,
     "head": "c603591b313afbd8e167e83fd5e14e2e13978fad",
@@ -569,6 +569,18 @@
       "log": "/tmp/bookfin-boo-spco-evidence/whitespace-precommit.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "archive": "docs/evidence/boo-spco/archive/whitespace-precommit.log.gz"
+    },
+    {
+      "name": "whitespace-implementation",
+      "command": "git diff --check c603591b313afbd8e167e83fd5e14e2e13978fad HEAD",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-369cacef",
+      "started": "2026-11-13T21:41:16.037412+00:00",
+      "ended": "2026-11-13T21:41:16.059298+00:00",
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-spco-evidence/whitespace-implementation.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive": "docs/evidence/boo-spco/archive/whitespace-implementation.log.gz",
+      "checkedHead": "3903711325358a4b95a9b28d9f0e19d475b74323"
     }
   ],
   "originalFailureProof": {
@@ -638,5 +650,8 @@
     },
     "analysis": "all lib and test: no issues",
     "format": "22 changed Dart files: 0 changed"
-  }
+  },
+  "initialBranch": "t3/369cacef",
+  "implementationCommit": "3903711325358a4b95a9b28d9f0e19d475b74323",
+  "branchRenameEvidence": "The worktree reflog records: c603591b Branch: renamed refs/heads/t3/369cacef to refs/heads/t3/playback-notice-ownership. The lead issued no branch-switch, reset or rename command; path and base history are unchanged."
 }
