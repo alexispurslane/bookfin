@@ -9,7 +9,7 @@ import Foundation
 #endif
 
 /// The Apple side of the `bookfin/device` channel, which Android's
-/// MainActivity also implements. Its method `name` returns the name that the
+/// HostChannels.kt also implements. Its method `name` returns the name that the
 /// owner gave this device: the computer name of the Sharing settings on
 /// macOS, and the device name on iOS. Dart's `deviceName` is its only caller.
 /// Its method `build` returns the facts behind Dart's

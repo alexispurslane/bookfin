@@ -62,7 +62,7 @@ History has no silent pruning or expiry. Bookmark deletion is local deletion, no
 
 ## Native controls and interruptions
 
-The pinned native dependencies are `audio_service 0.18.19`, `just_audio 0.10.6`, and `audio_session 0.2.4`. Android declares a media-playback foreground service, a media-button receiver, wake-lock permission, and the Android 14 media-playback service permission. MainActivity extends the plugin's `AudioServiceActivity` while retaining the existing download/network channels.
+The pinned native dependencies are `audio_service 0.18.19`, `just_audio 0.10.6`, and `audio_session 0.2.4`. Android declares a media-playback foreground service, a media-button receiver, wake-lock permission, and the Android 14 media-playback service permission. MainActivity extends the plugin's `AudioServiceActivity`. It owns no channel: the download, network, device, speech and power channels belong to the engine plugin in `HostChannels.kt`, because the cached engine outlives an Activity.
 
 The media session publishes the book title, author, recording label, known whole-edition duration, recorded-time position, and current speed. Play, pause, stop, seek, rewind, fast-forward, and system seek actions use the playback owner's commands. Stop removes the active native session without deleting the selected resume. A late paused sample cannot reactivate a stopped session. Completion explicitly clears the decoder's play intent, so a later chapter seek remains paused until Play.
 

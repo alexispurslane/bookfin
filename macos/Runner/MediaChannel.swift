@@ -8,7 +8,7 @@ import Network
 #endif
 
 /// The Apple side of Bookfin's media host contract, which Android's
-/// MainActivity also implements. Dart's `createDownloads` and
+/// HostChannels.kt also implements. Dart's `createDownloads` and
 /// `createCovers` are its only callers.
 ///
 /// Method channel `bookfin/media`:

@@ -29,7 +29,7 @@ The runner channels form one contract. A port implements the contract in its run
 | `bookfin/device` | `name` | The name that the owner gave the device, or null. |
 | `bookfin/ocr` | `recognize`, `close` | hOCR text of one BGRA page image, and the end of the worker. |
 
-Android implements the media and device channels in `android/app/src/main/kotlin/dev/bookfin/bookfin/MainActivity.kt` and the OCR channel in `OcrChannel.kt`. macOS implements the media and device channels in `macos/Runner/MediaChannel.swift` and `macos/Runner/DeviceChannel.swift`. These two Swift files use no AppKit, so the iOS runner can compile them unchanged.
+Android implements the media and device channels in `android/app/src/main/kotlin/dev/bookfin/bookfin/HostChannels.kt` and the OCR channel in `OcrChannel.kt`. Both are plugins of the Flutter engine, so their channels and listeners live as long as the engine, not as long as an Activity. macOS implements the media and device channels in `macos/Runner/MediaChannel.swift` and `macos/Runner/DeviceChannel.swift`. These two Swift files use no AppKit, so the iOS runner can compile them unchanged.
 
 ```mermaid
 flowchart LR
@@ -79,7 +79,7 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 
 | Part | State | Blocker | Fix |
 | --- | --- | --- | --- |
-| Media host, device name | Works | None | `MainActivity.kt`. Storage is `filesDir/bookfin-media`. |
+| Media host, device name | Works | None | `HostChannels.kt`. Storage is `filesDir/bookfin-media`. |
 | Records, credentials | Works | None | sqflite, EncryptedSharedPreferences. |
 | Listening and background audio | Works | None | audio_service foreground service in `AndroidManifest.xml`. |
 | PDF | Works | None | PDFium `android-arm64` from Nix, seeded by `tool/reader/native_package.py prepare`. |

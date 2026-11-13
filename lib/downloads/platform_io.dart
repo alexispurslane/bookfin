@@ -10,10 +10,11 @@ import 'local_downloads.dart';
 import 'platform_stub.dart' show UnavailableDownloads;
 
 /// The media host contract that each platform's runner implements: the
-/// Android activity, and the Apple runners' MediaChannel.swift. `storage`
-/// names the private download directory, `freeBytes` the space left on its
-/// volume, and `network` the current [MediaNetwork] by name, which
-/// `bookfin/media-network` also sends on each change.
+/// Android runner's HostChannels.kt, and the Apple runners'
+/// MediaChannel.swift. `storage` names the private download directory,
+/// `freeBytes` the space left on its volume, and `network` the current
+/// [MediaNetwork] by name, which `bookfin/media-network` also sends on each
+/// change.
 const _methods = MethodChannel('bookfin/media');
 const _events = EventChannel('bookfin/media-network');
 
