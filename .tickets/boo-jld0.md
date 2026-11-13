@@ -1,6 +1,6 @@
 ---
 id: boo-jld0
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -56,3 +56,10 @@ The reviewer inspected the source, required guidance, focused checks, analysis, 
 Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A85497df4-78bb-4d05-a8b5-6654de08598d%3Adelegate-task%3Aboo-jld0-review-astra-20261113-1>
 
 No personal-record sync, reader session, PDF or storage migration changes. Coverage and mutation testing remain with the parent after user acceptance. Integration and ticket closure remain with the parent.
+
+
+## Integrated verification, 2026-11-12
+
+Integrated on main through f84593f6. The parent ran the combined full Flutter suite through the project Nix dev shell: `flutter test --no-pub --concurrency=4 --reporter expanded`. Result: 3,196 passed, 25 skipped, zero failures, 2 minutes 30 seconds. Log: /tmp/bookfin-astra-integrated-final.log. Affected analysis found no issues: /tmp/bookfin-astra-integrated-analysis.log. The command exited successfully and git diff --check passed.
+
+This verifies the combined PDF visibility/History corrections, sync transport and writer registration, and catalog freshness changes. Existing external plugin fixtures and opt-in conditions remain skipped; this is not live plugin or Android acceptance. Coverage and mutation testing remain with the orchestrator after user acceptance. The parent closes this ticket after integration and the successful combined suite.

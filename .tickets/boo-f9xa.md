@@ -1,6 +1,6 @@
 ---
 id: boo-f9xa
-status: in_progress
+status: closed
 deps: []
 links: [boo-0hin, boo-p9s3, td-rbtc, td-ez6p, t8-dqir]
 created: 2026-11-12T23:41:01Z
@@ -129,3 +129,10 @@ F1 is resolved by the reproduced behavior and checks above. The planned PDF page
 The first combined main suite after integrating boo-f4xm and the PDF branch finished with 3176 passed, 25 skipped, and one failed assertion in `a place saved in the text view opens the word view on the screen that holds it, and a word screen's place opens the text view at that character`. The assertion observed a requested character before layout rather than the saved first character of the actual text screen. It now verifies that the displayed screen contains the requested character and that the saved address names that screen's first source character.
 
 Inspection of failure cleanup found a related gap: a raster failure could release navigation before subsequently available text appeared, dropping the jump from History. A new held-raster test failed because the chapter move was absent (`/tmp/boo-f9xa-failed-raster-red.log`). Failure releases navigation only after text has also settled without usable content. When text is usable, its frame and History report complete navigation as usual. Both complete PDF place and word-view files then passed all 93 tests (`/tmp/boo-f9xa-final-focused.log`). The final combined full suite remains pending.
+
+
+## Integrated verification, 2026-11-12
+
+Integrated on main through f84593f6. The parent ran the combined full Flutter suite through the project Nix dev shell: `flutter test --no-pub --concurrency=4 --reporter expanded`. Result: 3,196 passed, 25 skipped, zero failures, 2 minutes 30 seconds. Log: /tmp/bookfin-astra-integrated-final.log. Affected analysis found no issues: /tmp/bookfin-astra-integrated-analysis.log. The command exited successfully and git diff --check passed.
+
+This verifies the combined PDF visibility/History corrections, sync transport and writer registration, and catalog freshness changes. Existing external plugin fixtures and opt-in conditions remain skipped; this is not live plugin or Android acceptance. Coverage and mutation testing remain with the orchestrator after user acceptance. The parent closes this ticket after integration and the successful combined suite.

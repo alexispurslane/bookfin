@@ -1,6 +1,6 @@
 ---
 id: boo-f4xm
-status: in_progress
+status: closed
 deps: []
 links: [boo-s11s, boo-n7no, t4-kdc8]
 created: 2026-11-12T23:41:00Z
@@ -72,3 +72,10 @@ Live plugin compatibility and upgrade behavior remain unverified because their e
 - `nix develop --command bash -c 'flutter test --no-pub --concurrency=4 --reporter expanded'`: 3,122 passed, 25 skipped, no failures, in 3:05 (`/tmp/boo-f4xm-f1-full.log`). Skip categories are unchanged from the reviewed run.
 
 All required commands finished successfully, one heavy command at a time. Flutter test concurrency never exceeded four in these final runs. F1 is resolved with the extracted ownership and the checks above; no findings or product forks remain unresolved. The parent still owns integration, ticket closure, coverage, and mutation testing. This ticket remains in progress until the parent integrates it.
+
+
+## Integrated verification, 2026-11-12
+
+Integrated on main through f84593f6. The parent ran the combined full Flutter suite through the project Nix dev shell: `flutter test --no-pub --concurrency=4 --reporter expanded`. Result: 3,196 passed, 25 skipped, zero failures, 2 minutes 30 seconds. Log: /tmp/bookfin-astra-integrated-final.log. Affected analysis found no issues: /tmp/bookfin-astra-integrated-analysis.log. The command exited successfully and git diff --check passed.
+
+This verifies the combined PDF visibility/History corrections, sync transport and writer registration, and catalog freshness changes. Existing external plugin fixtures and opt-in conditions remain skipped; this is not live plugin or Android acceptance. Coverage and mutation testing remain with the orchestrator after user acceptance. The parent closes this ticket after integration and the successful combined suite.
