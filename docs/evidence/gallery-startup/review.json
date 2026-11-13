@@ -1,0 +1,93 @@
+{
+  "ticket": "boo-0740",
+  "reviewed_base": "a85c8789e9a14c4d978f94e64db3c6cacfafd8a0",
+  "reviewed_head": "ae45f5f9da54dcf51a32ce3fc2c729f68a9e0a65",
+  "thread_link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A19fb4c8a-937f-4ede-96b9-77d4e0a1cce5%3Adelegate-task%3Aboo-0740-review-ae45f5f9-20261113>",
+  "method": "Independent read-only review of the changes, required instructions, callers, relevant surrounding code, tests, and saved logs. All read commands completed. No files changed and no checks rerun.",
+  "assessment_weight": "Each assessment has equal authority to block acceptance.",
+  "correctness": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "location": "lib/gallery.dart:15",
+        "assessment": "Gallery startup restores appearance and constructs sample screens without invoking production startup. The actual-entry test observes preference reads and native service calls across startup, lifecycle changes, and removal."
+      },
+      {
+        "location": "lib/main.dart:70",
+        "assessment": "Catalog restoration still starts before other sources finish opening. Migration, recovery notices, cache-first refresh, and supplied catalog ownership retain their existing coordination."
+      },
+      {
+        "location": "lib/main.dart:373",
+        "assessment": "Production retains media flushes, desktop exit saves, sync scheduling, reader lifecycle, and hearing disposal. RecordSyncScope remains above the navigator at line 417."
+      },
+      {
+        "location": "lib/appearance/app.dart:50",
+        "assessment": "Shared appearance behavior preserves platform brightness, automatic appearance, reduced motion, controller replacement, and suspension."
+      },
+      {
+        "location": "lib/appearance/sheet.dart:26",
+        "assessment": "Done uses the existing glass title action, whose closing behavior is implemented in lib/catalog/glass.dart:258. The saved regression test verifies visibility and dismissal at large text size."
+      }
+    ],
+    "findings": [],
+    "gaps": [
+      "Runtime evidence comes from saved builder logs, not reviewer execution.",
+      "Native platform behavior and visual acceptance remain unverified; this review makes no new acceptance claim."
+    ]
+  },
+  "ticket_fulfillment": {
+    "verdict": "pass",
+    "evidence": [
+      "Production startup and shared appearance code contain no gallery flags or development imports. Gallery startup and fixture composition reside in the gallery entry and development code.",
+      "Existing sample screens and actions remain in lib/development/gallery.dart. Updated tests retain sample interaction coverage and add saved sample-city verification.",
+      "Production reader preparation and the boo-j7gh speech word-reader callback are unchanged.",
+      "Saved red evidence shows two behavioral failures: unnecessary gallery preference reads and an unreachable Done action. Neither failure depends on missing symbols or source-text assertions.",
+      "Saved results report focused 138 passed; affected 908 passed with 3 skips; full suite 3540 passed with 27 skips; affected analysis clean; changed-file format clean.",
+      "The full-suite log includes the final migration and failed-startup tests. The earlier focused log contains an interim test name and is not treated as proof of every final test.",
+      "The committed caller audit covers the affected production, gallery, test, and macOS integration callers. The ticket remains open for parent integration."
+    ],
+    "findings": [],
+    "gaps": [
+      "Coverage, mutation testing, user acceptance, integration, and closure remain with the parent as specified.",
+      "External plugin, corpus, and benchmark checks skipped by the saved suite remain unverified."
+    ]
+  },
+  "design": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "source": "User: one coherent model; Ousterhout: information hiding",
+        "location": "lib/appearance/app.dart:26",
+        "assessment": "One shared component owns theme and appearance lifecycle behavior. Production retains account and media coordination; gallery retains sample composition. Neither caller needs the other's startup policy."
+      },
+      {
+        "source": "Muratori: abstraction at the second real use",
+        "location": "lib/main.dart:419 and lib/gallery.dart:31",
+        "assessment": "Production and gallery are two concrete callers of AppearanceApp. Its appearance-controller and home-widget inputs serve those callers without service factories or a new application framework."
+      },
+      {
+        "source": "User: data down, actions up; Ousterhout: separate special-purpose code",
+        "location": "lib/appearance/sheet.dart:44 and lib/development/appearance.dart:7",
+        "assessment": "The shared sheet receives content and reports choices through callbacks. Development fixtures remain outside the shared component, and closing navigation uses the existing glass owner."
+      }
+    ],
+    "findings": [],
+    "gaps": []
+  },
+  "unrelated_limitations": [
+    {
+      "status": "known-failure",
+      "location": "integration_test/ocr_layout_test.dart:81 and :448",
+      "detail": "Broad analysis retains two Uint8List-versus-String errors. The file is unchanged from the review base. Follow-up tb-v0oz tracks them; broad analysis is not green."
+    },
+    {
+      "status": "unverified",
+      "detail": "Android and browser acceptance remain separate under t1-dth0 and t7-3j9c. Missing iPhone SDK messages also remain in saved logs."
+    },
+    {
+      "status": "unverified",
+      "detail": "The passing suite does not establish causes or fixes for intermittent failures t5-rplx and tf-il7u."
+    }
+  ],
+  "overall_verdict": "pass"
+}
