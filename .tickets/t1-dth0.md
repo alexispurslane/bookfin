@@ -74,3 +74,24 @@ tickets remain unaccepted until their actual requirements run.
 **2026-11-13T20:43:42Z**
 
 Fresh user-authorized retry on 2026-11-13 after merging pinned parent e23662da as e7c43399. device_open returned the original delegate session t3-bdbd965bfc55eb8afbd9f3f6, and its bound open dev.bookfin.bookfin --foreground succeeded at 20:41:32 UTC. No ownership error occurred. Two NEW device_screenshot calls failed with: Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened. Between them, the advised discovery reported local/emulator-5556 ready, booted, and already open. The single advised retry failed, so device work stopped under the current host rule. No build, install, playback, transfer, speech, setting change, or data reset ran. Evidence: docs/evidence/android-survey-20261113/acceptance.md, device-attempt.json, and agent-device-events.ndjson. Earlier evidence remains unchanged. This recurrence keeps the blocker in_progress.
+
+## Parent diagnostic inspection — 2026-11-13
+
+The user does not know how to repair device access. Parent inspected the retained
+failure and current discovery without retrying screenshots or changing a device.
+device_list still reports local/emulator-5556 booted, host ready, and required,
+installed and running device-tool versions matching (hub
+0.19.0-canary-20261023-1357114; agent-device 0.21.31).
+
+The retained error has no underlying capture diagnostics. Searches of the
+retained server trace files found no matching screenshot error/span; the
+agent-device daemon log also supplied no matching failure. The local T3 source
+checkout has a generic operation-error boundary, but its screenshot mapping
+differs from the retained runtime response, so it is not proof of this failure's
+cause. No app failure, SDK absence or version mismatch is established.
+
+Next useful infrastructure work is to recover the device hub's underlying
+capture error in the running T3 version. Do not guess a reset, alter Bookfin
+data, borrow the earlier delegate's session, or bypass the required Device panel.
+No source or runtime changes were made in T3. Acceptance remains unverified;
+the two newly settled Bookfin tasks proceed independently.
