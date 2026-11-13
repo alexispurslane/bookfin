@@ -25,3 +25,12 @@ Use controlled engine and storage waits to prove meaningful red-green behavior: 
 Primary ownership: `lib/playback/playback.dart`, relevant playback/sync tests and this ticket. Change other callers only where this behavior requires it. boo-o3cm concurrently owns download restoration and AccountBinding; boo-3y46 owns unreadable remote-object admission. Do not duplicate either task. Parent resolves integration overlap. The pending product decision in boo-56h7 does not belong here.
 
 Required checks through Nix: focused behavior tests, `test/playback test/sync test/durability test/app` plus relevant reader persistence/records tests, affected analysis and formatting, and the full Flutter suite. Flutter concurrency two; one heavy command at a time. Implementation and fixes use codex/gpt-6-astra at xhigh. Exactly one fresh read-only reviewer uses the same model at high. No second review, coverage, mutation testing, devices, browser work, push, PR, deployment or ticket closure. Parent owns integration, acceptance and hardening.
+
+## Delegated task
+
+Original base: `db45fcaa5e13cab6eb2de210d5d0403623f4a31b`.
+Client request ID: `bookfin-boo-rw9z-astra-20261113-1`.
+Task ID: `node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rw9z-astra-20261113-1`.
+Child thread ID: `thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rw9z-astra-20261113-1`.
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-rw9z-astra-20261113-1>.
+Launch returned running on codex/gpt-6-astra, reasoningEffort xhigh. Branch and precise stage are not yet reported. Build, one fresh read-only review, then direct fixes are authorized. Completion delivery is automatic; do not poll.
