@@ -1,0 +1,632 @@
+{
+  "ticket": "t5-rplx",
+  "originalBase": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+  "branch": "t3/unread-record-retry-race",
+  "initialHead": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "initialStatus": "clean; no original-base diff",
+  "diagnosis": {
+    "classification": "Insufficient test observation of asynchronous storage completion. No production defect established.",
+    "controlledOrdering": [
+      "initial record read throws",
+      "storage becomes readable",
+      "next visible place is accepted",
+      "read retry starts and completes",
+      "save begins and is held before real persistence",
+      "original pumpEventQueue returns",
+      "fresh store reads no resume",
+      "release the held save",
+      "real save completes",
+      "fresh store reads one resume; saved and reader font size remain 22"
+    ],
+    "controlledFailure": "Original hasLength(1) assertion applied to the snapshot taken while save was pending fails with Actual: []. The same run first verifies that releasing the save yields one resume and fontSize 22. No flush occurs before either snapshot.",
+    "negativeControl": "Remove only await _readAgain() from the unread branch of ReaderSession._save. The corrected test, with a five-second diagnostic timeout, fails awaiting the save-completion signal. Teardown may flush after failure; it cannot make the test pass. Restore lib/reader/session.dart byte-for-byte in finally.",
+    "historicalLimits": "The retained historical failures contain no operation trace. The controlled ordering proves an invalid completion assumption, not the exact schedule of those runs.",
+    "repeatPlan": "Six sequential independent Flutter test processes, each running the five unread-record tests at concurrency 2. This bounds effort while exercising fresh startup and real storage completion repeatedly. It is stability evidence after deterministic cause proof, not a probability or reliability claim.",
+    "retainedBehavior": [
+      "Previous font size 22 is asserted both in the fresh store and in ReaderSession.",
+      "The original five tests remain; no fixture size, timer threshold or pump count is increased.",
+      "Existing persistence tests cover rejected writes, pending old-account records, account changes, retained bookmarks and concurrent audio records. Focused and broader suite logs provide execution evidence.",
+      "tf-il7u prerequisite stays unchanged."
+    ],
+    "sources": [
+      {
+        "path": "lib/reader/session.dart",
+        "lines": "1189-1201, 639-745, 1925-1990",
+        "finding": "visible place starts an unawaited save; unread changes trigger read retry; settings merge before the pending write"
+      },
+      {
+        "path": "lib/playback/store.dart",
+        "lines": "1036-1101, 1304-1323, 1572-1631, 1677-1697",
+        "finding": "real storage uses queued futures, compute for restore/encoding, and asynchronous preference persistence"
+      },
+      {
+        "path": "test_api/lib/src/scaffolding/utils.dart",
+        "lines": "6-19",
+        "finding": "pumpEventQueue only runs the event loop a bounded number of times and excludes external work from its approximation"
+      }
+    ],
+    "excluded": [
+      "No production change; no general mutation or coverage campaign.",
+      "No device/browser/credentials, PR, push, merge, ticket close or worktree removal.",
+      "Platform acceptance, hardening and integration belong to the parent."
+    ],
+    "backendLimit": "The focused test retains the real LocalResumeStore reading path over mocked SharedPreferences. A fresh owner re-reads stored preference content; this is not an OS-process restart or physical-device crash test. SQLite and failure preservation are covered by the existing focused/affected durability tests.",
+    "skipNotes": [
+      "Affected suite: 2225 passed, 24 skipped. Full suite: 3692 passed, 27 skipped. All printed reasons are recorded verbatim under each check.",
+      "Two skipped tests use Boolean skips without printed reasons: test/reader/epub/page_source_test.dart:1215 requires BOOKFIN_PAGE_SOURCE_BENCHMARK=1; test/reader/epub/pager_test.dart:1206 requires BOOKFIN_PAGER_BENCHMARK=1.",
+      "Full-suite logs print 25 reasons for 27 skips; the two Boolean benchmark skips are identified above. Per-skip counter context is archived. No new skip was added."
+    ]
+  },
+  "checks": [
+    {
+      "name": "baseline",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/baseline.log",
+      "result": "5 passed; unchanged base test; passing retry is not causal evidence",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "controlled-cause",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart --plain-name 'the next place after a failed read opens the records again without a flush'",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:35:32.208869+00:00",
+      "seconds": 7.828,
+      "exitCode": 1,
+      "log": "/tmp/t5-rplx-logs/controlled-cause.log",
+      "sha256": "723ff29429b8eea40147189434a5e22acc3a7d1b941097fd012d996901a3abfb",
+      "bytes": 3442,
+      "summary": "00:00 +0 -1: Some tests failed.",
+      "skips": [],
+      "failureLines": [
+        "00:00 +0 -1: the next place after a failed read opens the records again without a flush [E]",
+        "  Expected: an object with length of <1>",
+        "    Actual: []"
+      ]
+    },
+    {
+      "name": "corrected-focused",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:36:04.937695+00:00",
+      "seconds": 8.116,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/corrected-focused.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "controlled-completion",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart --plain-name 'the next place after a failed read opens the records again without a flush'",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:36:48.698549+00:00",
+      "seconds": 7.921,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/controlled-completion.log",
+      "sha256": "363b51ab8f63b6cfd9b41d0543aafbc0658549973fb8115c21769d768f6c1714",
+      "bytes": 2881,
+      "summary": "00:00 +1: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "negative-control",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded --timeout=5s test/reader/unread_records_test.dart --plain-name 'the next place after a failed read opens the records again without a flush'",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:37:09.608448+00:00",
+      "seconds": 12.369,
+      "exitCode": 1,
+      "log": "/tmp/t5-rplx-logs/negative-control.log",
+      "sha256": "c6a3df875bc47ee622b084785a65b7dc45a5429dfffc27c16a77d24ad334e822",
+      "bytes": 2643,
+      "summary": "00:05 +0 -1: Some tests failed.",
+      "skips": [],
+      "failureLines": [
+        "00:05 +0 -1: the next place after a failed read opens the records again without a flush [E]",
+        "  TimeoutException after 0:00:05.000000: Test timed out after 5 seconds."
+      ]
+    },
+    {
+      "name": "production-restored",
+      "command": "git diff --exit-code 62f4fb238861fd601acb2668a9a4d646c8a28c77 -- lib",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:37:47.134029+00:00",
+      "seconds": 0.063,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/production-restored.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "format-write",
+      "command": "nix develop --command dart format test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:37:47.236738+00:00",
+      "seconds": 2.586,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/format-write.log",
+      "sha256": "7ef650f50fdd8564945f607bd9916a6f9de93fcc8b3c9035392eec0a059f29f2",
+      "bytes": 93,
+      "summary": "Formatted 1 file (1 changed) in 0.01 seconds.",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-1",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:15.351727+00:00",
+      "seconds": 8.054,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-1.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-2",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:23.452045+00:00",
+      "seconds": 7.614,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-2.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-3",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:31.104396+00:00",
+      "seconds": 7.106,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-3.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-4",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:38.246660+00:00",
+      "seconds": 7.586,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-4.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-5",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:45.875023+00:00",
+      "seconds": 7.702,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-5.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "repeat-6",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:38:53.622546+00:00",
+      "seconds": 8.359,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/repeat-6.log",
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c",
+      "bytes": 2538,
+      "summary": "00:00 +5: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "focused-reading-store",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart test/reader/persistence_test.dart test/reader/reading_changes_test.dart test/reader/records_test.dart test/reader/session_test.dart test/sync/incremental_store_test.dart test/durability/record_store_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:39:06.179072+00:00",
+      "seconds": 11.371,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/focused-reading-store.log",
+      "sha256": "909b6309085754c29d16b6304d1e83fa3eb710084f51d6c5284f978a968ed78a",
+      "bytes": 20843,
+      "summary": "00:04 +85: All tests passed!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "affected",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader test/sync test/durability test/app",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:39:31.929175+00:00",
+      "seconds": 236.699,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/affected.log",
+      "sha256": "82035d7331c138de87102f7fc60a7a6c487e258285701d6e901f67c77b07e54b",
+      "bytes": 472553,
+      "summary": "03:48 +2225 ~24: All tests passed!",
+      "skips": [
+        "  Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+        "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+        "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+        "  Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+        "  Skip: set BOOKFIN_EPUB_STEPS=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+        "  Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "  Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+        "  Skip: Run tool/plugin/prove.py in the pinned shells.",
+        "  Skip: Run with tool/plugin/prove.py in the pinned sync dev shell.",
+        "  Skip: Run tool/sync_fixture.py in the pinned shells."
+      ],
+      "failureLines": []
+    },
+    {
+      "name": "full",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:43:35.946174+00:00",
+      "seconds": 329.849,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/full.log",
+      "sha256": "86a421bf614aa386b02859d621eddcc004cf9018ae51dfe9d8c292724d0758a9",
+      "bytes": 738720,
+      "summary": "05:20 +3692 ~27: All tests passed!",
+      "skips": [
+        "  Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+        "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+        "  Skip: set BOOKFIN_EPUB_TRIAL=1 to run",
+        "  Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+        "  Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+        "  Skip: set BOOKFIN_EPUB_STEPS=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+        "  Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 to run",
+        "  Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "  Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+        "  Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement.",
+        "  Skip: set BOOKFIN_LAYOUT_CACHE=1",
+        "  Skip: Run tool/plugin/prove.py in the pinned shells.",
+        "  Skip: Run with tool/plugin/prove.py in the pinned sync dev shell.",
+        "  Skip: Run tool/sync_fixture.py in the pinned shells."
+      ],
+      "failureLines": []
+    },
+    {
+      "name": "affected-analysis",
+      "command": "nix develop --command dart analyze lib/reader lib/playback/store.dart test/reader test/sync test/durability test/app",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:49:23.909873+00:00",
+      "seconds": 10.566,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/affected-analysis.log",
+      "sha256": "a0b1a05892605838258bc57173b8dc6e1e16537c3230a289d5afd3299538396e",
+      "bytes": 80,
+      "summary": "No issues found!",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "format-check",
+      "command": "nix develop --command dart format --output=none --set-exit-if-changed test/reader/unread_records_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:49:44.998800+00:00",
+      "seconds": 2.804,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/format-check.log",
+      "sha256": "fe6375e754b87ee13a38bf0e318093f679ff3bf68fb195ef047475f2ccab3828",
+      "bytes": 46,
+      "summary": "Formatted 1 file (0 changed) in 0.00 seconds.",
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "original-base-diff-check",
+      "command": "git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:50:39.853845+00:00",
+      "seconds": 0.041,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/original-base-diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "skips": [],
+      "failureLines": []
+    },
+    {
+      "name": "production-and-tf-il7u-check",
+      "command": "git diff --exit-code 62f4fb238861fd601acb2668a9a4d646c8a28c77 -- lib test/reader/epub/page_source_frames_test.dart",
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+      "started": "2026-11-13T20:50:39.932738+00:00",
+      "seconds": 0.017,
+      "exitCode": 0,
+      "log": "/tmp/t5-rplx-logs/production-and-tf-il7u-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "skips": [],
+      "failureLines": []
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/tmp/t5-rplx-logs/affected-analysis.log",
+      "bytes": 80,
+      "sha256": "a0b1a05892605838258bc57173b8dc6e1e16537c3230a289d5afd3299538396e"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/affected-skip-context.json",
+      "bytes": 17634,
+      "sha256": "86bb43b5d52a985b3ecf43b901e6c538da52074413127f9e0a399b09fb829577"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/affected.log",
+      "bytes": 472553,
+      "sha256": "82035d7331c138de87102f7fc60a7a6c487e258285701d6e901f67c77b07e54b"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/baseline-command.json",
+      "bytes": 292,
+      "sha256": "3772f17e9f11fa878590dac38dda062b86d8f83ec651cfdde01728c40c333173"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/baseline.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/cause-proof.dart",
+      "bytes": 5474,
+      "sha256": "4c332a45394bb570d22b6d0d69ce5bed8b05af3cd52b3a3837281d79a122b949"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/cause-proof.patch",
+      "bytes": 3115,
+      "sha256": "12cff20f1463d27c0be02cbdb963d9d51cfb9835afe47c5a5656baee32f4eb0d"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/commands.jsonl",
+      "bytes": 8610,
+      "sha256": "92b6de2e83a0fbbd6d355e25383b84026b5887cbc0296fe72a61c97f4540d72f"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/controlled-cause.log",
+      "bytes": 3442,
+      "sha256": "723ff29429b8eea40147189434a5e22acc3a7d1b941097fd012d996901a3abfb"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/controlled-completion.dart",
+      "bytes": 5426,
+      "sha256": "e8c37c574c99b10c951b93e5422bcf8eb27a21375c64fece36b791ddaa229a80"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/controlled-completion.log",
+      "bytes": 2881,
+      "sha256": "363b51ab8f63b6cfd9b41d0543aafbc0658549973fb8115c21769d768f6c1714"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/controlled-completion.patch",
+      "bytes": 3067,
+      "sha256": "ab4b4db9c1b7cabba13fa5d38c19a3f69cf3a9f40ca5c2b5c0e4fddbc52123eb"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/corrected-focused.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/corrected-unread_records_test.dart",
+      "bytes": 4693,
+      "sha256": "69d5be45c596b122a9d58b493116464fae12de22eac9a034e254c13cf66118e7"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/evidence-notes.json",
+      "bytes": 3989,
+      "sha256": "e552b4d5c7a28cf847364477d07e3345dc2136e8fa07321885b25de3e9544126"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/final-unread_records_test.dart",
+      "bytes": 4682,
+      "sha256": "ab71070639181989e8a6d960e334a9a6450cfba4fb679c97efb98bd2f9f1fc66"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/focused-reading-store.log",
+      "bytes": 20843,
+      "sha256": "909b6309085754c29d16b6304d1e83fa3eb710084f51d6c5284f978a968ed78a"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/format-check.log",
+      "bytes": 46,
+      "sha256": "fe6375e754b87ee13a38bf0e318093f679ff3bf68fb195ef047475f2ccab3828"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/format-write.log",
+      "bytes": 93,
+      "sha256": "7ef650f50fdd8564945f607bd9916a6f9de93fcc8b3c9035392eec0a059f29f2"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/full-skip-context.json",
+      "bytes": 20287,
+      "sha256": "e9a762731565127ae0f3bf7892d710484e51c2ec3ae2b6883816b7dc832a6844"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/full.log",
+      "bytes": 738720,
+      "sha256": "86a421bf614aa386b02859d621eddcc004cf9018ae51dfe9d8c292724d0758a9"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/historical-boo-o3cm-full.log",
+      "bytes": 684372,
+      "sha256": "69b9ff2a6cfb82238dc3fbb095972707f6a13b3fba472c6dd7bce38b9f0fc2af"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/historical-boo-o3cm-unread-retry.log",
+      "bytes": 2538,
+      "sha256": "ba28b22696136f74f18352aa0d207588615fdbecfd7236e93e12bea90213d824"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/historical-boo-zs5i-affected-2.log",
+      "bytes": 279360,
+      "sha256": "55cd4f177ee1762563f6bfeda4529541a7e6fdc6c417565668d91044bb5fe017"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/initial-diff.patch",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/negative-control.log",
+      "bytes": 2643,
+      "sha256": "c6a3df875bc47ee622b084785a65b7dc45a5429dfffc27c16a77d24ad334e822"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/negative-control.patch",
+      "bytes": 544,
+      "sha256": "4e23876078d0918644b5e4477e71e9e22b201e6fea7755bc24ffef5482cfd99d"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/original-base-diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/original-unread_records_test.dart",
+      "bytes": 4179,
+      "sha256": "d97e135bec9d39dff173b54a6c62929a89277155d8588bcfbdd3ae70d5898d63"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/production-and-tf-il7u-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/production-restoration.json",
+      "bytes": 252,
+      "sha256": "82d4ac6d091a73fac01ec6ef67162889a23c610204bdf49742ee7ee49e00dde0"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/production-restored.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-1.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-2.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-3.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-4.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-5.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/repeat-6.log",
+      "bytes": 2538,
+      "sha256": "fee62ee84d5d985f96adfd893894083833d66db864ba2da159b38fdf08de2a2c"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/run.py",
+      "bytes": 828,
+      "sha256": "9fbdf947aa5121901440fa8402648466cde48e52e17ed71b6955c9434c442dae"
+    },
+    {
+      "path": "/tmp/t5-rplx-logs/session-before-negative.dart",
+      "bytes": 83211,
+      "sha256": "51ea2f0192090ea2aeda01a0f8cf2eb6e6b9f4a43e62b4563960348cb6a2a2d3"
+    }
+  ],
+  "failures": {
+    "expected": [
+      "controlled-cause: original premature length assertion sees no resume",
+      "negative-control: disabled automatic read retry prevents save completion and times out in five seconds"
+    ],
+    "unexpected": []
+  },
+  "historical": [
+    {
+      "source": ".tickets/t5-rplx.md",
+      "result": "Original boo-jld0 concurrency-4 failure; no schedule trace."
+    },
+    {
+      "source": "/tmp/boo-o3cm-full.log",
+      "retained": "/tmp/t5-rplx-logs/historical-boo-o3cm-full.log",
+      "result": "3374 passed, 27 skipped, one unread-record failure; unchanged focused retry passed 5."
+    },
+    {
+      "source": "docs/evidence/boo-zs5i-verification.json",
+      "retained": "/tmp/t5-rplx-logs/historical-boo-zs5i-affected-2.log",
+      "result": "1428 passed, 3 skipped, t5-rplx recurrence plus unrelated Settings fixture loading error."
+    }
+  ],
+  "environmentNotes": [
+    "Nix shell test runs emit existing missing iphoneos/iphonesimulator SDK diagnostics. Flutter host tests still run and their exit codes are retained. No Apple platform build or device acceptance is claimed."
+  ],
+  "review": {
+    "status": "pending one authorized fresh read-only reviewer",
+    "target": {
+      "providerInstanceId": "codex",
+      "model": "gpt-6-astra",
+      "options": {
+        "reasoningEffort": "high"
+      }
+    },
+    "capabilities": "Validated once in this thread; provider, model and high reasoningEffort are available."
+  }
+}

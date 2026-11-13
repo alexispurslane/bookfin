@@ -4,6 +4,8 @@
 // the records open. It never saves before the read: a save carries the
 // whole settings, so a save from unread records would replace the saved
 // text size with the default.
+import 'dart:async';
+
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
@@ -19,6 +21,9 @@ class UnreadableRecords extends ReadingStore {
   UnreadableRecords(this.records);
   final ReadingRecords records;
   bool readable = false;
+
+  /// Completes after the first successful save to the real records.
+  final saved = Completer<void>();
   @override
   Future<Map<String, dynamic>?> read(String key) async {
     if (!readable) throw Exception('Storage is unavailable');
@@ -26,8 +31,11 @@ class UnreadableRecords extends ReadingStore {
   }
 
   @override
-  Future<void> saveReading(String key, ReadingChanges changes) =>
-      records.saveReading(key, changes);
+  Future<void> saveReading(String key, ReadingChanges changes) async {
+    await records.saveReading(key, changes);
+    if (!saved.isCompleted) saved.complete();
+  }
+
   @override
   void acceptSnapshot(String key, Map<String, dynamic>? value) =>
       records.acceptSnapshot(key, value);
@@ -92,9 +100,16 @@ void main() {
       'a flush', () async {
     storage.readable = true;
     reader.acceptVisible(reader.token, visible);
-    await pumpEventQueue();
+    // A queue pump does not wait for the real store's asynchronous work.
+    // Observe its completion without asking the reader to retry via flush.
+    await storage.saved.future;
 
-    expect((await saved())!['resumes'], hasLength(1));
+    final restored = (await saved())!;
+    expect((restored['resumes'] as List).map((place) => place['anchor']), [
+      contains(visible.cfi),
+    ]);
+    expect(restored['fontSize'], 22);
+    expect(reader.fontSize, 22);
   });
 
   test('the saved text size survives places read while the records could '
@@ -115,8 +130,7 @@ void main() {
     expect((await saved())!['fontSize'], 22);
   });
 
-  test('the notice about unread records ends when the records open',
-      () async {
+  test('the notice about unread records ends when the records open', () async {
     reader.acceptVisible(reader.token, visible);
     storage.readable = true;
     await reader.flush();

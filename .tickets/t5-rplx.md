@@ -66,3 +66,53 @@ and closure. No device/browser work or general mutation campaign is in scope.
 - Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
 - Stages: build, review, then one fix stage if needed. Parent handles integration and closure.
 - Launch accepted and running. No implementation result or acceptance is claimed.
+
+## Ticket lead investigation — 2026-11-13
+
+Worktree `/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95`, branch
+`t3/unread-record-retry-race`, started clean at original base
+`62f4fb238861fd601acb2668a9a4d646c8a28c77`. The initial base-to-checkout
+diff was empty. The ticket was already in progress.
+
+The investigation establishes an insufficient test observation. In a controlled
+legal storage ordering, the next visible place retried the failed read, then
+started a save that the test held pending. The unchanged `pumpEventQueue`
+completed while that save waited. A fresh store read returned no resume.
+Releasing the save produced one resume and preserved font size 22 without a
+reader flush. Applying the original length assertion to the earlier snapshot
+failed with `Actual: []`. The controlled completion check then passed.
+
+The historical failures remain retained, with no claim to reconstruct their
+untraced schedules. No production defect was established. Only the existing
+test wrapper and test observation change: the wrapper signals completion after
+the real save succeeds; the test awaits that signal, then checks the saved
+place and font size in a fresh store and font size in the reader. The fixture
+and other behavior tests remain intact. No timer, pump count or storage
+threshold changes. Production and the integrated tf-il7u correction are
+unchanged.
+
+A bounded negative control removed only the automatic `_readAgain()` call
+from the unread branch of `ReaderSession._save`. The corrected test failed
+at its diagnostic five-second timeout because no save completed. Production
+was restored byte for byte in `finally` and checked against the original base.
+The diagnostic timeout is not part of the committed test.
+
+Six independent Flutter processes each passed all five unread-record tests.
+This bounded repetition checks stability after the controlled proof; it is
+not a reliability estimate or evidence of historical scheduling. The focused
+reader/store suite passed 85 tests. Reader, sync, durability and app suites
+passed 2,225 tests with 24 skips. The full suite passed 3,692 tests with 27
+skips. Affected analysis found no issues; changed-file format verification
+changed no files. All builds, tests, analysis and formatting used Nix, with
+Flutter concurrency two and one heavy command at a time.
+
+`docs/evidence/t5-rplx-verification.json` records exact commands, results,
+skips, diagnostic patches, complete log paths and hashes. Logs and diagnostic
+source copies are retained in `/tmp/t5-rplx-logs/`, including copies of the
+boo-o3cm and boo-zs5i failures. The preference-backed test uses mocked
+SharedPreferences and real store work; it makes no physical-device crash or
+OS-process restart claim. Existing focused and affected tests cover failed
+writes, account changes, retained records and SQLite durability.
+
+One fresh read-only Astra high reviewer follows this implementation commit.
+No product fork. Parent owns integration, acceptance, hardening and closure.
