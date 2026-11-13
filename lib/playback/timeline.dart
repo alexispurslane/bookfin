@@ -1043,6 +1043,11 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         null => same('Opened'),
       },
       HistoryAction.close => same('Closed'),
+      HistoryAction.preserve => same(
+        event.device == null
+            ? 'Kept this phone’s place'
+            : 'Kept from ${event.device}',
+      ),
     };
   }
 

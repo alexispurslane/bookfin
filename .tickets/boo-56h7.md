@@ -61,3 +61,7 @@ coverage, mutations and closure. Device work remains blocked by t1-dth0.
 - Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
 - Stages: build, review, then one fix stage if needed. Parent handles integration and closure.
 - Launch accepted and running. No implementation result or acceptance is claimed.
+
+**2026-11-13T21:05:44Z**
+
+Implementation completed in t3/preserve-external-play from original base 62f4fb238861fd601acb2668a9a4d646c8a28c77. Playback owns the pending Play choice and atomic preservation through existing History/record-store paths. CatalogHome presents the shared glass choice and follows foreground lifecycle; book-page, mini/full-player, reader-cover and media-service callbacks are covered. Original destructive behavior proved red on preferences and SQLite. Final affected suite: 1253 passed, 3 skipped. Full suite: 3745 passed, 27 skipped. Affected analysis and format checks pass. Complete command/failure/skip manifest and original red patch: docs/evidence/boo-56h7/. Complete logs: /tmp/bookfin-boo-56h7-evidence/. Exactly one authorized read-only review is next. Native acceptance remains parent-owned under t1-dth0; no coverage, mutations, merge, push or closure performed. t5-rplx remains unexplained; tf-il7u unchanged.

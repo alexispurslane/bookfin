@@ -22,6 +22,7 @@ import 'layout.dart';
 import 'library_services.dart';
 import 'library_view.dart';
 import 'book_page.dart' show openBook;
+import 'glass.dart';
 
 class CatalogHome extends StatefulWidget {
   const CatalogHome({
@@ -64,7 +65,8 @@ class _MemoryLayoutStore implements LayoutStore {
 /// The tabs of the bottom navigation, in order.
 enum _Tab { library, downloads, listening, settings }
 
-class _CatalogHomeState extends State<CatalogHome> {
+class _CatalogHomeState extends State<CatalogHome> with WidgetsBindingObserver {
+  bool _showingPlayChoice = false;
   _Tab _tab = _Tab.library;
   CatalogController get _catalog => widget.catalog;
   late final LibraryLayout _ownLayout = LibraryLayout(_MemoryLayoutStore());
@@ -89,11 +91,19 @@ class _CatalogHomeState extends State<CatalogHome> {
     _accountKey = _catalog.session?.scope.key;
     _lastAccessBlocked = _catalog.accessBlocked;
     _catalog.addListener(_accessChanged);
+    WidgetsBinding.instance.addObserver(this);
+    widget.playback?.playChoiceNotifier.addListener(_playChoiceChanged);
+    _playChoiceChanged();
   }
 
   @override
   void didUpdateWidget(CatalogHome oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.playback != widget.playback) {
+      oldWidget.playback?.playChoiceNotifier.removeListener(_playChoiceChanged);
+      widget.playback?.playChoiceNotifier.addListener(_playChoiceChanged);
+      _playChoiceChanged();
+    }
     if (oldWidget.catalog != _catalog) {
       oldWidget.catalog.removeListener(_accessChanged);
       _catalog.addListener(_accessChanged);
@@ -104,8 +114,80 @@ class _CatalogHomeState extends State<CatalogHome> {
   @override
   void dispose() {
     _catalog.removeListener(_accessChanged);
+    widget.playback?.playChoiceNotifier.removeListener(_playChoiceChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _ownLayout.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _playChoiceChanged();
+  }
+
+  bool get _foreground =>
+      WidgetsBinding.instance.lifecycleState == null ||
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+  // The shell presents requests from any Play entry point, including the
+  // media service. Only this narrow listener owns the sheet; player controls
+  // keep reporting Play and never keep a second choice or saved place.
+  void _playChoiceChanged() {
+    if (!mounted ||
+        !_foreground ||
+        _showingPlayChoice ||
+        widget.playback?.playChoiceNotifier.value == null) {
+      return;
+    }
+    _showingPlayChoice = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final playback = widget.playback;
+      final choice = playback?.playChoiceNotifier.value;
+      if (!mounted || !_foreground || playback == null || choice == null) {
+        _showingPlayChoice = false;
+        return;
+      }
+      ListeningPlace? selected;
+      try {
+        await showGlassChoices<ListeningPlace?>(
+          context,
+          title: 'Where would you like to listen?',
+          current: null,
+          choices: [
+            (
+              ListeningPlace.thisPhone,
+              'This phone · ${playback.describe(playback.position!).short}',
+            ),
+            (
+              ListeningPlace.otherDevice,
+              '${choice.device ?? 'Other device'} · ${playback.describe(choice.remote).short}',
+            ),
+          ],
+          onSelected: (value) => selected = value,
+        );
+        if (!mounted || widget.playback != playback) return;
+        if (selected case final place?) {
+          await playback.chooseListeningPlace(choice, place);
+        } else {
+          playback.cancelListeningChoice(choice);
+        }
+      } finally {
+        if (mounted &&
+            widget.playback == playback &&
+            playback.playChoiceNotifier.value == choice) {
+          // A failed answer still needs a later Play to request a fresh
+          // presentation. Keeping the consumed request would suppress it.
+          playback.cancelListeningChoice(choice);
+        }
+        _showingPlayChoice = false;
+        // A sync can replace the request while its sheet is visible. Its old
+        // answer is ignored by Playback; show the replacement after it closes.
+        if (mounted && playback.playChoiceNotifier.value != choice) {
+          _playChoiceChanged();
+        }
+      }
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   /// A new account or blocked access returns to the Library tab. Either one

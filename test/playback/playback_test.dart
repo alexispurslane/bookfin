@@ -483,6 +483,12 @@ class MemoryResume extends ResumeStore implements ListeningStore, ReadingStore {
   }
 
   @override
+  Future<ListeningResume?> listeningResume(
+    String accountKey,
+    Edition edition,
+  ) async => null;
+
+  @override
   Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
       (own: null, elsewhere: false, device: null);
 

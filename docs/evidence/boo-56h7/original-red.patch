@@ -1,0 +1,85 @@
+--- /dev/null
++++ b/test/playback/play_choice_test.dart
+@@ -0,0 +1,82 @@
++import 'package:bookfin/playback/native.dart';
++import 'package:bookfin/playback/playback.dart';
++import 'package:bookfin/playback/record_codec.dart';
++import 'package:bookfin/playback/store.dart';
++import 'package:bookfin/sync/journal.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:sqflite_common_ffi/sqflite_ffi.dart';
++
++import '../sync/phone.dart';
++import 'playback_test.dart' as audio;
++
++void main() {
++  TestWidgetsFlutterBinding.ensureInitialized();
++  sqfliteFfiInit();
++  for (final sqlite in [false, true]) {
++    group(sqlite ? 'SQLite' : 'preferences', () {
++      late LocalResumeStore store;
++      late audio.LocalFiles downloads;
++      late audio.TestEngine engine;
++      late Playback player;
++      late RecordJournal remote;
++      final account = audio.account().scope.key;
++      setUp(() async {
++        SharedPreferences.setMockInitialValues({});
++        store = sqlite
++            ? (await Phone.open('play-choice')).store
++            : LocalResumeStore();
++        downloads = audio.LocalFiles();
++        engine = audio.TestEngine();
++        player = Playback(downloads: downloads, engine: engine, store: store);
++        await player.bind(audio.account(), [audio.title]);
++        await player.open(audio.title, audio.recording, autoplay: false);
++        await player.seekEdition(11000);
++        await player.flush();
++        remote = RecordJournal(account, 'remote');
++        remote.receive(await store.pendingUploads(account));
++      });
++      tearDown(() async {
++        await player.close();
++        downloads.dispose();
++      });
++
++      Future<void> receive(int milliseconds) async {
++        remote.change(resumeRecordAddress(audio.recording), {
++          'edition': audio.recording.id,
++          'source': audio.first.key,
++          'revision': audio.first.revision,
++          'sources': editionSources(audio.recording),
++          'milliseconds': milliseconds,
++          'pendingOffline': false,
++        }, device: 'Other phone');
++        await store.receivePage(account, remote.uploads, 0);
++        await player.refreshPersonalRecords();
++      }
++
++      test('external Play keeps the only remote place in History before replacing its resume', () async {
++        await receive(40000);
++        expect(player.position!.milliseconds, 11000);
++        final handler = PlaybackHandler()..attach(player);
++        await handler.play();
++        engine.emit(0, 12000, playing: true);
++        await player.flush();
++        final saved = await store.read(account);
++        final places = (saved!['history'] as List).expand((event) => [
++          event['before']['milliseconds'], event['after']['milliseconds'],
++        ]);
++        expect(places, contains(40000), reason: 'the sole remote place must remain recoverable');
++        expect(places, contains(11000));
++        expect(player.playing, isTrue);
++        expect(player.position!.milliseconds, 12000);
++      });
++
++      test('in-app Play stays paused until this phone or the remote place is chosen', () async {
++        await receive(40000);
++        await player.play();
++        expect(engine.playCount, 0);
++        expect(player.position!.milliseconds, 11000);
++      });
++    });
++  }
++}

@@ -30,6 +30,10 @@ enum HistoryAction {
 
   /// The end of a reading visit.
   close,
+
+  /// A place retained before a listening choice can replace its resume.
+  /// It records no decoder movement and offers no Undo.
+  preserve,
 }
 
 String recordId() => List.generate(

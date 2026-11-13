@@ -329,7 +329,7 @@ class PlaybackHandler extends BaseAudioHandler {
   }
 
   @override
-  Future<void> play() async => _playback?.play();
+  Future<void> play() async => _playback?.playExternally();
   @override
   Future<void> pause() async => _playback?.pause();
   @override

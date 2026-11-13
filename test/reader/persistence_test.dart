@@ -29,6 +29,18 @@ class FailingRecords extends ResumeStore
   @override
   bool setAside(String key) => records.setAside(key);
   @override
+  Future<ListeningResume?> listeningResume(
+    String accountKey,
+    Edition edition,
+  ) async => switch (records) {
+    final ListeningStore listening => listening.listeningResume(
+      accountKey,
+      edition,
+    ),
+    _ => null,
+  };
+
+  @override
   Future<PlaceOrigin> origin(String key, Edition edition) async =>
       switch (records) {
         final ReadingStore reading => reading.origin(key, edition),

@@ -1496,6 +1496,26 @@ class LocalResumeStore
     });
   }
 
+  @override
+  Future<ListeningResume?> listeningResume(
+    String accountKey,
+    Edition edition,
+  ) => _query(accountKey, (journal) {
+    final record = resumeRecordAddress(edition);
+    final versions = journal.versionsByRecord[record] ?? const [];
+    if (versions.length != 1) return null;
+    // One resume is a few short strings. Copying this single typed view
+    // inline costs less than sending it to a worker isolate and back.
+    final views = recordConflicts({record: versions});
+    final view = views.values.firstOrNull?.single;
+    return view == null
+        ? null
+        : (
+            version: view,
+            elsewhere: versions.single['replica'] != journal.replica,
+          );
+  });
+
   /// The whole record file counts for every account when it could not be
   /// opened, because the store cannot tell which accounts it held.
   @override

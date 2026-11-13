@@ -149,6 +149,18 @@ class HeldRecords extends ResumeStore implements ListeningStore, ReadingStore {
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       delegate.acceptSnapshot(accountKey, value);
   @override
+  Future<ListeningResume?> listeningResume(
+    String accountKey,
+    Edition edition,
+  ) async => switch (delegate) {
+    final ListeningStore listening => listening.listeningResume(
+      accountKey,
+      edition,
+    ),
+    _ => null,
+  };
+
+  @override
   Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
       switch (delegate) {
         final ReadingStore reading => reading.origin(accountKey, edition),

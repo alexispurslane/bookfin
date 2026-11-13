@@ -14,6 +14,7 @@ import 'audio_outline.dart';
 import 'reporting.dart';
 import 'records.dart';
 import 'record_writer.dart';
+import 'record_codec.dart' show ConflictVersion, ResumeValue;
 
 export 'audio_outline.dart' show PlaybackChapter;
 export 'records.dart';
@@ -52,8 +53,10 @@ abstract class ResumeStore {
   bool setAside(String accountKey) => false;
 }
 
-/// The owner of each account's saved listening records, as [Playback] uses
-/// it.
+/// One current journal version and whether another installation saved it.
+typedef ListeningResume = ({ConflictVersion version, bool elsewhere});
+
+/// The owner of each account's saved listening records, as [Playback] uses it.
 abstract class ListeningStore {
   /// The saved listening snapshot of [accountKey], or null when the account
   /// has none: the settings plus `history`, `bookmarks` and `resumes`.
@@ -73,6 +76,14 @@ abstract class ListeningStore {
   /// Where the saved place of [edition] in [accountKey] came from.
   Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
       (own: null, elsewhere: false, device: null);
+
+  /// The current journal version of this recording, including deletion,
+  /// and whether another installation saved it. Null means the store has no
+  /// single known version. Views are detached and never written back.
+  Future<ListeningResume?> listeningResume(
+    String accountKey,
+    Edition edition,
+  ) async => null;
 
   /// Whether this store found the saved records of [accountKey] damaged
   /// while this app ran, kept the damaged data aside, and started the
@@ -178,6 +189,31 @@ typedef PlaybackSettings = ({double speed, int backward, int forward});
 /// The message to show about listening, if any, and whether the personal
 /// records of the bound account failed to save.
 typedef PlaybackStatus = ({String? message, bool saveFailed});
+
+/// The alternatives for the open recording. Playback owns its lifetime;
+/// screens return this exact request so a stale answer cannot move audio.
+class ListeningChoice {
+  ListeningChoice._({
+    required this.local,
+    required this.remote,
+    required this._identity,
+    required this._sources,
+    this.device,
+    this._version,
+    this._historyId,
+    this._requested = false,
+  });
+  final AudioPosition local;
+  final AudioPosition remote;
+  final String _identity;
+  final String _sources;
+  final String? device;
+  final ConflictVersion? _version;
+  String? _historyId;
+  bool _requested;
+}
+
+enum ListeningPlace { thisPhone, otherDevice }
 
 class Playback extends ChangeNotifier {
   Playback({
@@ -304,6 +340,14 @@ class Playback extends ChangeNotifier {
   int _recordRevision = 0;
   String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
+  ListeningChoice? _playChoice;
+  Map<String, dynamic>? _choiceToRestore;
+  late final _playChoiceSignal = ValueNotifier<ListeningChoice?>(null);
+
+  /// A requested choice, or null. Refresh alone never requests a dialog.
+  /// A screen controller presents this request only while in the foreground.
+  ValueListenable<ListeningChoice?> get playChoiceNotifier => _playChoiceSignal;
+
   late final _positionSignal = ValueNotifier<AudioPosition?>(_position);
   late final _selectionSignal = ValueNotifier<PlaybackSelection>(_selection);
   late final _sleepSignal = ValueNotifier<Duration?>(_sleepLeft);
@@ -385,7 +429,10 @@ class Playback extends ChangeNotifier {
     for (final event in _history) {
       // An open is no listening, so a book that opened at another device's
       // place keeps its place in the list.
-      if (event.kind == HistoryAction.open) continue;
+      if (event.kind == HistoryAction.open ||
+          event.kind == HistoryAction.preserve) {
+        continue;
+      }
       final found = _editions[event.after.editionId];
       if (found == null) continue;
       final (book, edition) = found;
@@ -638,7 +685,16 @@ class Playback extends ChangeNotifier {
       return;
     }
     final revision = _recordRevision;
-    final saved = await store.read(account);
+    final edition = _edition;
+    final savedFuture = store.read(account);
+    final originFuture = edition == null
+        ? Future<ListeningResume?>.value()
+        : store.listeningResume(account, edition);
+    // Future.wait retains the original error, which distinguishes a storage
+    // failure from a programming error for the sync coordinator.
+    final values = await Future.wait<Object?>([savedFuture, originFuture]);
+    final saved = values[0] as Map<String, dynamic>?;
+    final origin = values[1] as ListeningResume?;
     if (saved == null ||
         _closed ||
         generation != _generation ||
@@ -671,6 +727,11 @@ class Playback extends ChangeNotifier {
     _resumes = resumes;
     _undo = _history.where((event) => event.id == _undo?.id).firstOrNull;
     store.acceptSnapshot(account, saved);
+    if (edition != null &&
+        _edition != null &&
+        _sameEdition(edition, _edition!)) {
+      _adoptListeningChoice(origin);
+    }
     _notify();
   }
 
@@ -715,6 +776,7 @@ class Playback extends ChangeNotifier {
     final count = _history.length;
     _history = [..._history]..removeWhere((event) => event.id == id);
     if (_history.length != count) _changedHistory[id] = null;
+    if (_playChoice?._historyId == id) _playChoice = null;
   }
 
   Future<bool> _restorePosition(
@@ -1068,6 +1130,8 @@ class Playback extends ChangeNotifier {
     _edition = null;
     _position = null;
     _recordedDecoderAnchor = null;
+    _playChoice = null;
+    _choiceToRestore = null;
     _lastUploadPosition = null;
     _playing = false;
     _active = false;
@@ -1161,6 +1225,8 @@ class Playback extends ChangeNotifier {
         if (store.setAside(session.scope.key)) {
           _message = 'Saved listening records were damaged. Bookfin kept a copy and restored the records that it could read. The next sync restores the rest.';
         }
+        _choiceToRestore = (saved?['playChoice'] as Map?)
+            ?.cast<String, dynamic>();
         await _restoreSelected();
       } on Exception {
         if (!_restored) {
@@ -1270,7 +1336,11 @@ class Playback extends ChangeNotifier {
     if (autoplay) _start(edition);
     return _settleStart(
       _audioCommand(() async {
-        await _open(book, edition, autoplay: autoplay);
+        if (autoplay && _edition != null && _sameEdition(_edition!, edition)) {
+          await _play();
+        } else {
+          await _open(book, edition, autoplay: autoplay);
+        }
       }),
     );
   }
@@ -1395,6 +1465,9 @@ class Playback extends ChangeNotifier {
       }
       final previous = _position;
       _book = book;
+      if (target == null || _edition?.id != edition.id) {
+        _playChoice = null;
+      }
       if (target == null || _edition?.id != edition.id) _invalidateSlider();
       if (target == null) _undo = null;
       _edition = edition;
@@ -1403,6 +1476,8 @@ class Playback extends ChangeNotifier {
       _active = autoplay;
       _position = _positionForSample(confirmed);
       _decoderReady = true;
+      _restoreListeningChoice(_choiceToRestore);
+      _choiceToRestore = null;
       _replacementStart = null;
       if (action != null) {
         _record(action, previous ?? _position!, _position!);
@@ -1507,13 +1582,31 @@ class Playback extends ChangeNotifier {
     return _settleStart(_audioCommand(_play));
   }
 
-  Future<void> _play() async {
-    if (_edition == null) return;
-    if (!_decoderReady) {
-      await _open(_book!, _edition!, autoplay: true, target: _position);
-      return;
+  /// System media controls start locally and leave the question for a screen.
+  Future<void> playExternally() {
+    if (!_playing && _edition != null) _start(_edition!);
+    return _settleStart(_audioCommand(() => _play(external: true)));
+  }
+
+  Future<void> _play({bool external = false}) async {
+    if (_edition == null || _playing) return;
+    if (_playChoice != null) {
+      _playChoice!._requested = true;
+      if (!external) {
+        _notify();
+        return;
+      }
     }
     final generation = _generation;
+    if (!_decoderReady) {
+      final loaded = await _open(
+        _book!,
+        _edition!,
+        autoplay: false,
+        target: _position,
+      );
+      if (!loaded || generation != _generation) return;
+    }
     final saved = await _savedFiles(_edition!);
     if (generation != _generation) return;
     if (saved == null) {
@@ -1525,8 +1618,166 @@ class Playback extends ChangeNotifier {
         editionMilliseconds == durationMilliseconds) {
       if (!await _seekPosition(0, 0, HistoryAction.seek)) return;
     }
+    if (_playChoice != null && !external) {
+      _playChoice!._requested = true;
+      _notify();
+      return;
+    }
+    if (external && _playChoice != null) {
+      _playChoice!._requested = true;
+      _recordedDecoderAnchor = null;
+      _preserveListeningChoice();
+      _save();
+      await _writes.idle;
+      if (generation != _generation || saveFailed) return;
+    }
     _active = true;
     await engine.play();
+    _notify();
+  }
+
+  /// Cancels this presentation. The alternatives remain recoverable and a
+  /// later Play asks again. A newer request is never cancelled by an old sheet.
+  void cancelListeningChoice(ListeningChoice choice) {
+    if (!identical(choice, _playChoice)) return;
+    choice._requested = false;
+    _save();
+    _notify();
+  }
+
+  /// Accepts an answer only for the current account, recording and request.
+  /// Preservation and the chosen resume use the existing writer. Failed saves
+  /// leave the request available for retry and never start audio.
+  Future<void> chooseListeningPlace(
+    ListeningChoice choice,
+    ListeningPlace place,
+  ) => _audioCommand(() async {
+    if (!identical(choice, _playChoice)) return;
+    final generation = _generation;
+    _preserveListeningChoice();
+    _save();
+    await _writes.idle;
+    if (generation != _generation ||
+        saveFailed ||
+        !identical(choice, _playChoice)) {
+      return;
+    }
+    if (place == ListeningPlace.otherDevice) {
+      final target = choice.remote;
+      if (!await _seekPosition(
+        _edition!.files.indexWhere((file) => file.key == target.sourceKey),
+        target.milliseconds,
+        HistoryAction.open,
+        device: choice.device,
+      )) {
+        return;
+      }
+      if (!identical(choice, _playChoice) || saveFailed) return;
+    }
+    _playChoice = null;
+    // Choosing the unchanged phone place must replace the adopted remote
+    // resume too; a decoder-position comparison alone would skip this save.
+    _recordedDecoderAnchor = null;
+    _save();
+    await _writes.idle;
+    if (generation != _generation) return;
+    if (saveFailed) {
+      _playChoice = choice;
+      _playChoice!._requested = true;
+      _save();
+      await _writes.idle;
+      _notify();
+      return;
+    }
+    _notify();
+    await _play();
+  });
+
+  void _adoptListeningChoice(ListeningResume? origin) {
+    final edition = _edition;
+    final position = _position;
+    if (_playChoice?._historyId case final id?
+        when !_history.any((event) => event.id == id)) {
+      _playChoice = null;
+    }
+    if (edition == null || position == null) return;
+    if (origin == null) {
+      _playChoice = null;
+      return;
+    }
+    final value = origin.version.value;
+    if (value is! ResumeValue ||
+        value.position is! AudioPosition ||
+        !(value.position as AudioPosition).fits(edition)) {
+      _playChoice = null;
+      return;
+    }
+    if (!origin.elsewhere) return;
+    final remote = value.position as AudioPosition;
+    if (samePlace(position, remote)) {
+      _playChoice = null;
+      return;
+    }
+    if (_playChoice?._version == origin.version) return;
+    _playChoice = ListeningChoice._(
+      local: position,
+      remote: remote,
+      identity: origin.version.identity,
+      sources: editionSources(edition),
+      device: origin.version.device,
+      version: origin.version,
+      requested: _playChoice?._requested ?? false,
+    );
+  }
+
+  /// Keeps the two alternatives as ordinary History entries in the very
+  /// transaction that may replace the resume. No decoder move or Undo is
+  /// invented by preservation. The history id is the durable choice target.
+  void _preserveListeningChoice() {
+    final choice = _playChoice;
+    if (choice == null || choice._historyId != null) return;
+    _record(HistoryAction.preserve, choice.local, choice.local);
+    _record(
+      HistoryAction.preserve,
+      choice.remote,
+      choice.remote,
+      device: choice.device ?? 'Other device',
+    );
+    choice._historyId = _history.last.id;
+  }
+
+  Map<String, dynamic>? get _savedListeningChoice {
+    final choice = _playChoice;
+    if (choice == null) return _choiceToRestore;
+    if (choice._historyId == null) return null;
+    return {
+      'history': choice._historyId,
+      'identity': choice._identity,
+      'sources': choice._sources,
+      'requested': choice._requested,
+    };
+  }
+
+  void _restoreListeningChoice(dynamic saved) {
+    if (saved is! Map ||
+        _edition == null ||
+        _position == null ||
+        saved['sources'] != editionSources(_edition!)) {
+      return;
+    }
+    final event = _history
+        .where((event) => event.id == saved['history'])
+        .firstOrNull;
+    if (event == null || !event.after.fits(_edition!)) return;
+    _playChoice = ListeningChoice._(
+      local: _position!,
+      remote: event.after,
+      device: event.device,
+      identity: saved['identity'] as String,
+      sources: saved['sources'] as String,
+      historyId: event.id,
+      requested: saved['requested'] == true,
+    );
   }
 
   Future<void> pause() {
@@ -1671,6 +1922,7 @@ class Playback extends ChangeNotifier {
     int milliseconds,
     HistoryAction kind, {
     AudioPosition? before,
+    String? device,
     _SliderGesture? gesture,
     _Counterpart? counterpart,
   }) async {
@@ -1703,7 +1955,13 @@ class Playback extends ChangeNotifier {
       );
     }
     _position = _positionForSample(confirmed);
-    _record(kind, previous, _position!, counterpart: counterpart);
+    _record(
+      kind,
+      previous,
+      _position!,
+      device: device,
+      counterpart: counterpart,
+    );
     _accept(confirmed);
     _save();
     await _writes.idle;
@@ -1787,6 +2045,7 @@ class Playback extends ChangeNotifier {
     final position = _position;
     final decoderAnchor = _decoderAnchor;
     if (position != null && decoderAnchor != _recordedDecoderAnchor) {
+      _preserveListeningChoice();
       final records = _resumes.putIfAbsent(position.editionId, () => []);
       // A legacy file-relative position can be read but cannot establish
       // ownership of a whole recording. Keep it when saving a known recording.
@@ -1820,6 +2079,7 @@ class Playback extends ChangeNotifier {
         'speed': _speed,
         'backward': _backward,
         'forward': _forward,
+        'playChoice': _savedListeningChoice,
       },
       history: Map.of(_changedHistory),
       bookmarks: Map.of(_changedBookmarks),
@@ -1927,6 +2187,7 @@ class Playback extends ChangeNotifier {
     _statusSignal,
     _undoSignal,
     _startingSignal,
+    _playChoiceSignal,
   ];
 
   /// Publishes the current state to the narrow signals, then to the broad
@@ -1949,6 +2210,9 @@ class Playback extends ChangeNotifier {
     _statusSignal.value = _status;
     _undoSignal.value = _undoOffer;
     _startingSignal.value = _starting;
+    _playChoiceSignal.value = _playChoice?._requested == true
+        ? _playChoice
+        : null;
   }
 
   PlaybackSelection get _selection =>
@@ -1982,6 +2246,9 @@ class Playback extends ChangeNotifier {
   ///   and edition are the bound library's own objects.
   /// - A sleep timer, its length, its deadline and its countdown agree.
   /// - Each narrow signal shows the state that it names.
+  /// - A pending listening choice belongs to the open recording; a kept
+  ///   choice references its recoverable History entry. Its narrow signal
+  ///   exposes only requested presentations, never a refresh alone.
   /// - The personal records, the pending writes and the replacement offer
   ///   agree.
   void checkInvariants() {
@@ -2015,6 +2282,25 @@ class Playback extends ChangeNotifier {
             _statusSignal.value != _status ||
             _undoSignal.value != _undoOffer)) {
       throw StateError('Each narrow signal shows the state that it names.');
+    }
+    final choice = _playChoice;
+    if (choice != null &&
+            (_edition == null ||
+                !choice.local.fits(_edition!) ||
+                !choice.remote.fits(_edition!) ||
+                choice._sources != editionSources(_edition!) ||
+                choice._historyId != null &&
+                    !_history.any(
+                      (event) =>
+                          event.id == choice._historyId &&
+                          samePlace(event.after, choice.remote),
+                    )) ||
+        !_closed &&
+            _playChoiceSignal.value !=
+                (choice?._requested == true ? choice : null)) {
+      throw StateError(
+        'The listening choice must belong to its open recording and History.',
+      );
     }
     if (_history.map((event) => event.id).toSet().length != _history.length ||
         _bookmarks.map((bookmark) => bookmark.id).toSet().length !=

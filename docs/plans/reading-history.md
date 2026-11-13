@@ -207,6 +207,14 @@ When the app comes to the foreground, ask which place to use. Playback owns
 the choice and durable record changes. Screen controllers present the choice
 and report the answer. Existing account, source-identity and Undo rules apply.
 
+Implementation note: preservation adds stationary `preserve` entries to the
+existing History store, one for each place. It leaves the current Undo offer
+intact. Choosing the remote place records an `open` move from the phone's current
+place, with the device name and Undo. A local pending-choice marker refers to
+its retained History entry and original journal identity; restart recovers the
+question from those durable records. The catalog screen controller presents
+requests through the shared glass choice and follows the app's foreground state.
+
 ## Storage and sync
 
 The record store (`LocalResumeStore`) keeps one journal per account. Each record has an address `[domain, collection, id]`. The domain is `audio` or `reading`. Today `audio` has `bookmarks`, `history` and `resumes`, and `reading` has `bookmarks` and `resumes`.
