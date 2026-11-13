@@ -1,6 +1,6 @@
 ---
 id: boo-hjal
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:02Z
@@ -101,3 +101,28 @@ and repeated diagnostics are recorded in `18-base-diff-check.json`. Trailing
 spaces were removed without changing log lines or results; raw logs remain in
 implementation commit `513a112c9161363719a9d836be78d9173adcb435`. The complete
 diff then passed (`19-complete-diff-check.txt`). No code or test was changed.
+
+## Parent integration and verification — 2026-11-13
+
+Inspected the complete child diff, actual callers, both changed tickets, original
+review report and saved verification evidence. Integrated implementation
+`513a112c` as `e18e45f4`, review evidence `68115474` as `d1d03d9b`, and saved-log
+cleanup `8709624f` as `950ad803`, without conflicts. The child was clean at its
+reported head. The integrated `lib` and `test` trees match that head exactly.
+
+Parent execution through Nix at `950ad803`: format checked eight changed Dart
+files with no changes; analysis of EPUB, admitted-books, native platform/MOBI
+and affected tests found no issues; reader/crossings passed 1,706 tests with
+21 existing skips and no failures in 2:50. The sequential driver exited zero.
+Logs: `/tmp/boo-hjal-integrated-{format,analysis,affected,driver}.log`.
+`git diff --check 04dd18ea HEAD` passed.
+
+The child full-suite evidence remains 3,535 passed and 27 skipped in
+`tool/evidence/boo-hjal/14-full-repeat.txt`. It covers the identical integrated
+production and test trees; the parent did not repeat the full suite.
+The earlier frame-test failure remains unresolved under `tf-il7u`; passing
+parent checks do not explain its cause. Review gaps and performance limits
+above remain unchanged. Android acceptance remains blocked by `t1-dth0`.
+Coverage and mutation testing await user acceptance. No device, browser,
+publication or deployment actions were performed. Implementation is merged;
+the parent closes this ticket with this evidence.
