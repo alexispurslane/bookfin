@@ -44,3 +44,16 @@ Use Nix and Flutter concurrency two; one heavy command per owner. Coverage and
 mutation testing stay with the parent after acceptance. Android inspection is
 blocked by t1-dth0; do not retry device/browser tools for this ticket. Host
 widget tests are not device acceptance. Parent owns integration and closure.
+
+## Delegation — 2026-11-13
+
+Original base: `c603591b313afbd8e167e83fd5e14e2e13978fad`.
+Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: same model, high.
+`clientRequestId`: `bookfin-boo-spco-astra-20261113-1`.
+`taskId`: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-spco-astra-20261113-1`.
+`childThreadId`: `thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-spco-astra-20261113-1`.
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-spco-astra-20261113-1>
+
+The lead builds and fixes in its T3-owned worktree. Parent owns integration,
+device acceptance, hardening and closure. No additional product question is
+open. Concurrent Ask-at-Play work remains separate.
