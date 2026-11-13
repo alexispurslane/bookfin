@@ -68,4 +68,12 @@ Restore reads a committed file, or the current account's legacy value when no fi
 
 ## Review
 
-The implementation and evidence are committed for one fresh read-only Codex `gpt-6-astra` reviewer at high reasoning effort. Review must inspect the entire original-base-to-head diff and report correctness, fulfillment, and design independently. No second reviewer, coverage, mutation work, push, PR, deployment, integration, or ticket closure is authorized in this child.
+The single fresh read-only Codex `gpt-6-astra` reviewer at high reasoning effort completed the full diff from `2ab1a6185456761e1c4d10ff06263c17711e28e3` to implementation commit `b0a1bc3a7dd5fce8a8763c41c36cbf158b01db65`. Correctness: pass. Fulfillment: pass. Design: pass. Overall: pass. No findings, required changes, material unverified assessments, or user decisions.
+
+The reviewer inspected production callers, source, named scope documents and the supplied red-green, focused, full-suite, analysis and compile logs. It ran no builds or tests and changed no files. It confirmed that the dedicated catalog browser compile satisfies this ticket's changed import boundary; full browser application compilation remains blocked separately by `t7-3j9c`.
+
+Nonblocking evidence limits: concurrent migration joining and host-directory lookup retry were inspected statically, without direct tests of those two cases. Interruption tests use real partial files and controlled failures, not a process kill. Android latency, battery effects, device acceptance, coverage and mutations remain unverified. These are not claims made by this implementation.
+
+Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A30288610-5d9b-43db-993a-0f3afbafb856%3Adelegate-task%3Aboo-jlhy-review-astra-20261113-1>
+
+The final follow-up commit records only this review. Production code and tests remain exactly as reviewed and verified. The checkout's observed branch at handoff is `t3/atomic-catalog-files`; no checkout creation, reset or switch was performed by this child. No second reviewer, coverage, mutation work, push, PR, deployment, integration or ticket closure was performed. The parent owns combined integration verification, acceptance, hardening and closure.
