@@ -1,0 +1,322 @@
+{
+  "ticket": "boo-r8st",
+  "reviewBase": "e23662daf2e4e9b737aee4366c418f0ec5591145",
+  "reviewHead": "00fd427de585f8e180b2346a4de5b36b4583987b",
+  "implementationCommit": "92f6fc1d2432c0ccbac0483487dcb33704fae9b4",
+  "identity": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb",
+    "branch": "t3/bounded-note-previews",
+    "cleanAtStartAndEnd": true,
+    "matchesBrief": true,
+    "branchRenameConfirmedByReflog": true
+  },
+  "reviewMethod": {
+    "readOnly": true,
+    "childrenStarted": 0,
+    "checksExecuted": [],
+    "distinction": "Findings below are static conclusions from inspected source. Test results are directly inspected retained execution evidence, not reviewer executions. Command provenance comes from the execution manifest."
+  },
+  "inspectedScope": {
+    "completeOriginalBaseToHeadDiff": true,
+    "changedFiles": [
+      ".tickets/boo-r8st.md",
+      "docs/evidence/boo-r8st/commands.json",
+      "docs/plans/native-epub-reader.md",
+      "lib/reader/epub/dom.dart",
+      "lib/reader/epub/page_source.dart",
+      "lib/reader/epub/pager.dart",
+      "lib/reader/epub/places.dart",
+      "lib/reader/epub/prepare.dart",
+      "lib/reader/screen.dart",
+      "test/reader/epub/chapter_titles_test.dart",
+      "test/reader/epub/layout_run_test.dart",
+      "test/reader/epub/page_map_open_test.dart",
+      "test/reader/epub/page_source_test.dart",
+      "test/reader/epub/pager_test.dart",
+      "test/reader/epub/places_test.dart",
+      "test/reader/epub/prepare_test.dart",
+      "test/reader/epub/viewport_test.dart",
+      "test/reader/screen_test.dart"
+    ],
+    "guidance": [
+      "AGENTS.md; no repository CLAUDE.md found",
+      ".tickets/boo-r8st.md",
+      "Relevant product, ownership, reader and glass decisions in docs/plans/bookfin.md",
+      "Accepted footnote design in docs/plans/native-epub-reader.md",
+      "~/.claude/agents/reviewer.md",
+      "/Users/alexispurslane/.agents/skills/software-design/SKILL.md",
+      "/Users/alexispurslane/.agents/skills/software-design/references/reviewer-brief.md"
+    ],
+    "additionalSource": [
+      "All repository Dart callers of noteOf, PreparedSection.excerpt, PageSource.excerpt and EpubPager.note; LaidNote and ReaderNotePanel consumers",
+      "LayoutRun stepping, table-row layout, page publication and disposal",
+      "Shared measurement rejection and excerpt ownership",
+      "Image decoding and drawing",
+      "EpubNoteView, bookUnits, raised-text semantics and selectedText",
+      "Actual glass-sheet, title-row Go to note, scrolling, cancellation and reading-place tests"
+    ],
+    "history": "The two commits after the implementation change only ticket/evidence metadata. No adjacent ticket branches were inspected."
+  },
+  "executionEvidence": {
+    "directory": "/tmp/bookfin-boo-r8st-evidence/",
+    "originalFailures": {
+      "log": "01-original-red.log",
+      "observed": [
+        "Surrounding and next-note text entered the shared-paragraph preview.",
+        "Heading and next-note text entered the shared-container preview.",
+        "The oversized fixture raised StateError: Too many elements in takeExcerpt."
+      ]
+    },
+    "additionalFailuresInspected": [
+      "04-sheet-red.log: missing omission notice",
+      "07-boundary-red.log: table leakage; its backlink-as-end assumption is explicitly superseded",
+      "08-internal-anchor-red.log: premature truncation",
+      "09-focused.log: unchanged-table identity broke measurement rejection",
+      "11-image-cancel-red.log: disposed pager returned a note",
+      "19-sheet-cancel-red.log: cancellation recorded an unwanted link move",
+      "26-backlink-red.log: continuation after a backlink was omitted"
+    ],
+    "developmentEvidence": "Inspected compilation/fixture failures in 02, 06, 10, 17 and 18 and informational analysis findings in 13. These were not treated as meaningful behavior-red evidence.",
+    "finalResults": [
+      {
+        "log": "28-focused.log",
+        "observedResult": "58 passed"
+      },
+      {
+        "log": "29-affected.log",
+        "observedResult": "1733 passed, 21 skipped"
+      },
+      {
+        "log": "30-full.log",
+        "observedResult": "3711 passed, 27 skipped"
+      },
+      {
+        "log": "31-analysis.log",
+        "observedResult": "No issues found"
+      },
+      {
+        "log": "32-format-check.log",
+        "observedResult": "15 files, 0 changed"
+      },
+      {
+        "logs": [
+          "33-diff-check.log",
+          "34-head-diff-check.log"
+        ],
+        "observedResult": "Empty output; manifest records successful exit"
+      }
+    ],
+    "callerAudit": "Read callers.txt and independently searched current source. The retained audit predates some final test callers; those callers were also inspected.",
+    "limits": "Retained passing tests establish their covered behavior. They do not cover the three findings below. Manifest hashes were not independently recomputed."
+  },
+  "assessments": {
+    "correctness": {
+      "verdict": "changes_required",
+      "evidence": [
+        "Original-node selections replace ancestor-wide selection without cloning the DOM.",
+        "Worker results reconnect to the admitted document, and unchanged top-level flow items reconnect to original measurement identities.",
+        "The source releases unfinished runs and surplus pages; the pager releases returned pages and decoded images when cancellation prevents transfer.",
+        "ReaderScreen distinguishes PageRequestStopped from unreadable-note fallback.",
+        "Actual widget tests cover normal scrolling, the omission notice, title-row navigation and unchanged reading places.",
+        "Static tracing found selected-text leakage through raised placeholders, unbounded shaping within a tall table row, and incomplete backlink-image omission."
+      ],
+      "findings": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "validationGaps": [
+        "No inspected regression covers selection boundaries inside one superscript or subscript.",
+        "No inspected bounded-work assertion covers an oversized, divisible table row.",
+        "No inspected omission test covers a backlink containing a block image."
+      ]
+    },
+    "fulfillment": {
+      "verdict": "changes_required",
+      "evidence": [
+        "Marked ancestors retain priority; referenced next-note destinations delimit unmarked selections; arbitrary internal anchors and backlinks do not delimit them.",
+        "Ordinary notes scroll, and oversized paragraph-flow notes show their beginning with the settled notice and existing Go to note action.",
+        "Unreadable/null fallback remains present, without adding a broad StateError catch.",
+        "The requested focused, affected, full-suite, analysis and formatting evidence is retained and was inspected.",
+        "R1 leaves copying and screen-reader output outside the selected note in a supported text form.",
+        "R2 leaves a class of oversized notes shaping their omitted content.",
+        "R3 leaves some backlink content visible."
+      ],
+      "findings": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "validationGaps": [
+        "The lead still needs the promised whitespace check against final HEAD after evidence metadata changes.",
+        "The fixes need focused behavior regressions and affected verification. Device acceptance, coverage and mutation work remain explicit parent-owned exclusions."
+      ]
+    },
+    "design": {
+      "verdict": "changes_required",
+      "evidence": [
+        "The overall ownership remains coherent: places decides selection, preparation produces flow, the page source owns layout lifetime, the pager owns decoded note resources, and the screen owns the sheet lifetime.",
+        "Whole-element notes and empty-anchor notes use the same selection model.",
+        "The first-page limit removes the single-page assumption through normal ownership rather than exception masking.",
+        "However, clipped raised text has two competing descriptions of its content: retained runs for drawing and inferred original-DOM extent for copying and semantics. The new selection model does not carry enough information across that existing interface."
+      ],
+      "findings": [
+        "R1"
+      ],
+      "validationGaps": [
+        "Passing plain-text selection tests do not validate the shared content contract for transformed raised text."
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "P2",
+      "title": "Clipped raised text retains an unbounded original-DOM description for Copy and screen readers",
+      "assessments": [
+        "correctness",
+        "fulfillment",
+        "design"
+      ],
+      "evidenceType": "static",
+      "trigger": "Reference n and next as notes, with target markup <p><sup>Before.<a id=\"n\"/>Own.<a id=\"next\"/>Other.</sup></p>. Open n.",
+      "expected": "The preview, Copy and screen-reader output contain only Own., with locations belonging to that retained text.",
+      "actual": "Preparation clips the raised text's inner runs but preserves its original run.node, which names Before. Layout maps the whole raised placeholder to that node. bookUnits then reconstructs raised text from the original document through its parent's end, yielding Before.Own.Other. even though drawing uses the clipped inner runs.",
+      "locations": [
+        {
+          "file": "lib/reader/epub/prepare.dart",
+          "lines": "381-391",
+          "evidence": "strip rebuilds RaisedRun with run.node unchanged."
+        },
+        {
+          "file": "lib/reader/epub/prepare.dart",
+          "lines": "2145-2153",
+          "evidence": "The raised run's node is its original first text node."
+        },
+        {
+          "file": "lib/reader/epub/layout.dart",
+          "lines": "1633-1645",
+          "evidence": "Drawing uses the clipped inner text, while the placeholder map retains only node."
+        },
+        {
+          "file": "lib/reader/epub/semantics.dart",
+          "lines": "173-174,229-243",
+          "evidence": "Raised text is reconstructed from the original DOM, without the selection boundary."
+        },
+        {
+          "file": "lib/reader/epub/selection.dart",
+          "lines": "85-96",
+          "evidence": "Copy consumes the same bookUnits output."
+        }
+      ],
+      "designSource": {
+        "source": "User and Ousterhout",
+        "skill": "/Users/alexispurslane/.agents/skills/software-design/SKILL.md",
+        "sections": [
+          "4: One model for the old and the new",
+          "6: Information hiding"
+        ],
+        "concreteCost": "A clipping or omission change must understand an undocumented dependency between preparation, placeholder mapping and DOM-based reconstruction. Drawing and accessibility can disagree because the interface loses the retained content boundaries."
+      },
+      "proposedRemedy": "Carry the retained original-node content mapping through raised placeholders so drawing, copying and semantics consume the same selection, including omitted holes. Preserve the original DOM. Add the fixture above and assert both semantics and copied text.",
+      "reproductionExecuted": false
+    },
+    {
+      "id": "R2",
+      "severity": "P2",
+      "title": "A large table row still shapes its entire omitted remainder before the preview can stop",
+      "assessments": [
+        "correctness",
+        "fulfillment"
+      ],
+      "evidenceType": "static",
+      "trigger": "A marked note starts with a table whose first row contains hundreds of ordinary paragraphs in one cell and spans many 12000-pixel pages.",
+      "expected": "The preview stops shaping after enough divisible content is available for its capacity, retaining the existing exception for an indivisible tall line or image.",
+      "actual": "PageSource stops only once run.pages becomes nonempty. The table-row path fully lays out every cell before constructing row fragments and publishing pages. Consequently the omitted paragraphs are all shaped and temporarily retained before the first preview page becomes available. Disposing surplus pages afterward does not bound that work or its peak native paragraph storage.",
+      "locations": [
+        {
+          "file": "lib/reader/epub/page_source.dart",
+          "lines": "440-454",
+          "evidence": "The stopping condition is first-page availability."
+        },
+        {
+          "file": "lib/reader/epub/layout.dart",
+          "lines": "1320-1363",
+          "evidence": "Each cell is fully laid out before the row is emitted."
+        },
+        {
+          "file": "lib/reader/epub/layout.dart",
+          "lines": "1370-1427",
+          "evidence": "All row fragments are constructed from the completed cell content."
+        },
+        {
+          "file": "test/reader/epub/page_source_test.dart",
+          "lines": "384-413",
+          "evidence": "The bounded-shaping regression exercises ordinary paragraph flow only."
+        }
+      ],
+      "scopeClarification": "This is an unmet bound when composing the new preview limit with existing table layout, not a claim that this change introduced the underlying table algorithm. A divisible row is different from the documented indivisible-line/image exception. No phone-performance estimate is asserted.",
+      "proposedRemedy": "Make the preview capacity effective within table-row work under the existing layout owner. Preserve ordinary table measurements and full-document behavior. Add a tall-row regression that measures shaped units and proves the omitted tail is not fully shaped, alongside cancellation and ownership checks.",
+      "reproductionExecuted": false
+    },
+    {
+      "id": "R3",
+      "severity": "P2",
+      "title": "Backlink omission does not remove block images",
+      "assessments": [
+        "correctness",
+        "fulfillment"
+      ],
+      "evidenceType": "static",
+      "trigger": "A marked note contains <a role=\"doc-backlink\" href=\"s0.xhtml#ref\"><img src=\"back.png\" alt=\"Back\"/></a>, with img styled display:block, followed by more note text.",
+      "expected": "The backlink image is omitted and the later note text remains. A note containing only that backlink has no readable preview.",
+      "actual": "The pager supplies the backlink element in omit, but the ImageItem branch tests only selection membership. The selected block image survives even though its node lies inside an omitted backlink. It can be decoded, drawn and exposed through image semantics.",
+      "locations": [
+        {
+          "file": "lib/reader/epub/pager.dart",
+          "lines": "347-355",
+          "evidence": "Marked backlinks are supplied as omitted elements."
+        },
+        {
+          "file": "lib/reader/epub/prepare.dart",
+          "lines": "380-385,422",
+          "evidence": "Inline runs apply omitted ranges; ImageItem applies only inside(item.node)."
+        },
+        {
+          "file": "lib/reader/epub/prepare.dart",
+          "lines": "1559-1569,2026-2043",
+          "evidence": "A block-displayed image becomes ImageItem."
+        }
+      ],
+      "scopeClarification": "This omission hole also existed in the earlier excerpt implementation. The changed filtering path still fails the explicit backlink-omission requirement and does not record the gap as deferred work.",
+      "proposedRemedy": "Apply the same selected-and-not-omitted node rule to block images as to inline content, including images inside table cells. Add regressions for a backlink image followed by retained text and for a backlink-image-only note.",
+      "reproductionExecuted": false
+    }
+  ],
+  "unavailableChecks": [
+    {
+      "check": "Reviewer builds, tests, analysis, formatting and reproductions",
+      "reason": "Explicitly prohibited by the read-only brief."
+    },
+    {
+      "check": "Device/visual acceptance and phone performance",
+      "reason": "Explicit parent-owned exclusions; host widget tests do not establish hardware acceptance."
+    },
+    {
+      "check": "Coverage and mutation campaigns",
+      "reason": "Explicit parent-owned exclusions."
+    },
+    {
+      "check": "Opt-in corpus, benchmark and integration checks",
+      "reason": "Declared skips remain in the retained logs and manifest, including unavailable book fixtures."
+    },
+    {
+      "check": "iOS platform execution",
+      "reason": "Retained logs report missing iphoneos and iphonesimulator SDKs. Host tests nevertheless completed."
+    }
+  ],
+  "overallVerdict": "changes_required",
+  "handoffBlocked": true,
+  "productDecisionNeeded": false,
+  "summary": "The main selection, sheet behavior and cleanup paths are substantially implemented and supported by retained tests. Three concrete gaps remain. R1 also independently blocks the design assessment because the selected-content contract is lost between drawing and accessibility/copying. The checkout was left unchanged."
+}

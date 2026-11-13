@@ -145,12 +145,24 @@ Iterable<BookUnit> bookUnits(
 ) sync* {
   final dom = page.dom;
   EpubPlace? last;
-  for (final (line, from, to) in runs) {
-    final map = line.piece!.map;
+  Iterable<BookUnit> read(
+    Slice line,
+    TextMap map,
+    int from,
+    int to, {
+    int? placeholder,
+  }) sync* {
     // A run that starts after its paragraph's first unit, as a selection
     // can, starts after the unit before it.
     if (from > 0) last = map.textPlaceAt(from - 1) ?? last;
     for (var unit = from; unit < to; unit++) {
+      // Nested text uses its own original-character mapping and the outer
+      // placeholder's geometry. No DOM extent has to be inferred.
+      final shown = placeholder ?? unit;
+      if (map.contentAt(unit) case final content?) {
+        yield* read(line, content, 0, content.length, placeholder: shown);
+        continue;
+      }
       if (map.textPlaceAt(unit) case final place?) {
         // Layout maps a hyphen, soft hyphen or word joiner that it inserts
         // to the letter before it, and a letter that a text transform
@@ -160,20 +172,24 @@ Iterable<BookUnit> bookUnits(
         final text = dom.textAt(place)!;
         final char = text.text.codeUnitAt(place.offset);
         if (char == softHyphen) continue;
-        yield BookText(line, unit, text, String.fromCharCode(char));
+        yield BookText(line, shown, text, String.fromCharCode(char));
         continue;
       }
       final order = map.nodeAt(unit);
       if (order < 0) continue;
       switch (dom.nodeAt(order)) {
         case final DomElement image when image.name == 'img':
-          yield BookImage(line, unit, image);
+          yield BookImage(line, shown, image);
         case final DomElement element:
-          yield BookBreak(line, unit, element);
-        case final DomText raised:
-          yield BookText(line, unit, raised, _raised(dom, raised, map, unit));
+          yield BookBreak(line, shown, element);
+        case DomText():
+          break;
       }
     }
+  }
+
+  for (final (line, from, to) in runs) {
+    yield* read(line, line.piece!.map, from, to);
   }
 }
 
@@ -220,27 +236,6 @@ PageBlock? _textBlock(LaidPage page, List<Slice> lines) {
     read,
     header: start != null && _inHeading(dom.nodeAt(start.node)),
   );
-}
-
-/// The text of the raised text, such as a superscript, whose first text
-/// node is [first] and whose placeholder is code unit [unit] of [map]: the
-/// text nodes from [first] up to the paragraph's next place. At the
-/// paragraph's end, the text nodes from [first] to the end of its parent.
-String _raised(DomSection dom, DomText first, TextMap map, int unit) {
-  final end =
-      map.placeAtUnit(unit + 1)?.node ?? first.parent!.texts.last.order + 1;
-  final texts = dom.texts;
-  final text = StringBuffer();
-  for (
-    var index = texts.indexOf(first);
-    index >= 0 && index < texts.length && texts[index].order < end;
-    index++
-  ) {
-    text.write(
-      texts[index].text.replaceAll(String.fromCharCode(softHyphen), ''),
-    );
-  }
-  return text.toString();
 }
 
 /// The nearest link that holds [node], or null.

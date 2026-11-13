@@ -361,13 +361,15 @@ class PreparedSection {
       return (element.order, last.order);
     }
 
-    bool inside(int node) => selection.contains(node);
+    final omitted = [for (final element in omit) span(element)];
+    bool inside(int node) =>
+        selection.contains(node) &&
+        !omitted.any((span) => node >= span.$1 && node <= span.$2);
     bool runShows(InlineRun run) => switch (run) {
       TextRun(:final node) ||
       BreakRun(:final node) ||
       ImageRun(:final node) => inside(node),
-      RaisedRun(:final node, :final text) =>
-        inside(node) || text.runs.any(runShows),
+      RaisedRun(:final text) => text.runs.any(runShows),
     };
     bool shows(FlowItem item) => switch (item) {
       ParagraphItem(:final text) => text.runs.any(runShows),
@@ -377,21 +379,15 @@ class PreparedSection {
       ),
       BlockStart() || BlockEnd() || SkippedItem() => false,
     };
-    final omitted = [for (final element in omit) span(element)];
-    bool kept(InlineRun run) =>
-        (run is RaisedRun || inside(_nodeOf(run))) &&
-        !omitted.any(
-          (span) => _nodeOf(run) >= span.$1 && _nodeOf(run) <= span.$2,
-        );
     StyledText strip(StyledText text) => StyledText(text.style, text.align, [
       for (final run in text.runs)
-        if (kept(run))
+        if (runShows(run))
           run is RaisedRun
               ? RaisedRun(run.node, strip(run.text), run.shift)
               : run,
     ]);
     bool omits(StyledText text) => text.runs.any(
-      (run) => !kept(run) || (run is RaisedRun && omits(run.text)),
+      (run) => !runShows(run) || (run is RaisedRun && omits(run.text)),
     );
     FlowItem? without(FlowItem item) {
       if (item is TableItem) {
@@ -521,14 +517,6 @@ class PreparedSection {
     ];
   }
 }
-
-/// The [DomNode.order] of the node that [run] shows.
-int _nodeOf(InlineRun run) => switch (run) {
-  TextRun(:final node) ||
-  BreakRun(:final node) ||
-  ImageRun(:final node) ||
-  RaisedRun(:final node) => node,
-};
 
 /// Prepares each of [sources] for a page of [settings].
 List<PreparedSection> prepareSections(

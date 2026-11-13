@@ -2161,7 +2161,11 @@ class _SectionLayout {
   }
 
   LayoutRun startExcerpt(PreparedSection section, PreparedSection fragment) {
-    final run = LayoutRun(fragment, measurements: measurements);
+    final run = LayoutRun(
+      fragment,
+      measurements: measurements,
+      firstPageOnly: true,
+    );
     excerpts[run] = section;
     return run;
   }

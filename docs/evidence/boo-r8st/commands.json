@@ -242,6 +242,139 @@
       "result": "Complete original-base-to-HEAD diff has no whitespace errors; rerun after evidence-only commits too.",
       "log": "/tmp/bookfin-boo-r8st-evidence/34-head-diff-check.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/35-review-text-image-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'bounded inside|block backlink image'",
+      "exitCode": 1,
+      "result": "Compilation mistake: present returns void. Not behavior-red evidence.",
+      "sha256": "cd18261b983c164fc799b0662082504aba902430e6da16ae755beabfa51e928e"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/36-review-text-image-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'bounded inside|block backlink image'",
+      "exitCode": 1,
+      "result": "Five meaningful failures: sup/sub Copy/semantics leaked surrounding/backlink text, two block-image backlink cases remained visible, and an image-backlink-only note incorrectly returned a preview.",
+      "sha256": "252ac0bee0bf12513e6363a2cb4cb50bdf6368b528b3f682fac159d32ccc7513"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/37-review-table-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart --name 'limited excerpt stops inside'",
+      "exitCode": 1,
+      "result": "Compilation mistake: wrong full-layout helper name. Not behavior-red evidence.",
+      "sha256": "ca70ad2ec4efc94adf48476cac9e48f2e12bcac6317d8c7d22d40558e1d5b54a"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/38-review-table-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart --name 'limited excerpt stops inside'",
+      "exitCode": 1,
+      "result": "Two meaningful failures: one and two-cell previews shaped 53,240 and 107,080 units, exceeding half of their source text. Omitted row content was fully laid out.",
+      "sha256": "5a59a73f72554d2afdba0bc70c71b774208f9c6bf10f234da42b9eb52930c82f"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/39-review-raised-green.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'bounded inside'",
+      "exitCode": 0,
+      "result": "2 passed: sup/sub semantics, Copy and first original place match retained text.",
+      "sha256": "ed9bd10325b5637642e25f658ab18411d3067586032fb8499462ec2916f56a2e"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/40-review-raised-omit-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'raised note keeps'",
+      "exitCode": 1,
+      "result": "Fixture compilation mistake: local helper referenced before declaration. Not behavior-red evidence.",
+      "sha256": "1d669754a941d6d11a5b6c2fd70a450a54079d8116a4656db10d1fba95de0e4a"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/41-review-text-image-green.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'bounded inside|block backlink image|raised note keeps|back link'",
+      "exitCode": 1,
+      "result": "Same fixture compilation mistake, not a runtime result.",
+      "sha256": "1d669754a941d6d11a5b6c2fd70a450a54079d8116a4656db10d1fba95de0e4a"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/42-review-raised-omit-red.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'raised note keeps'",
+      "exitCode": 1,
+      "result": "Meaningful failure against pre-fix preparation: noteRead received null because omitting the first raised backlink discarded the later own text. The proposed preparation fix was removed before this run and restored afterward.",
+      "sha256": "419162eb2826caa0e25e72213affc7780ac7eb4bad0b5af89e945e9396af183f"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/43-review-text-image-green.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'bounded inside|block backlink image|raised note keeps|back link'",
+      "exitCode": 0,
+      "result": "12 passed, including all R1/R3 regression cases and existing backlink cases.",
+      "sha256": "483a2e705183868a79e25b3d117157ca499a825ac7830edda9f24fc7fe1e5e9c"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/44-review-table-green.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart --name 'limited excerpt stops inside|limited excerpt stops shaping|preview keeps|excerpt releases'",
+      "exitCode": 0,
+      "result": "6 passed: bounded row shaping, identical first-page content to full layout, disposal and earlier excerpt ownership checks.",
+      "sha256": "a92661b5f46462c02ea047721120de4f3fb3b17c5648ef087a961f0a176f5fb9"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/45-review-format.log",
+      "command": "nix develop --command dart format lib/reader/epub/layout.dart lib/reader/epub/semantics.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart",
+      "exitCode": 0,
+      "result": "Review-fix files formatted.",
+      "sha256": "e65930d7c10e227562647bbd0106689dc9f1961e9288f969b654f60b2ac02ea8"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/46-review-focused.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/epub/selection_test.dart test/reader/epub/semantics_test.dart test/reader/epub/table_test.dart test/reader/screen_test.dart",
+      "exitCode": 1,
+      "result": "333 passed, 2 skipped, 3 fixture-ordering failures. Two new cancellation tests waited past the now-bounded preview's completion. The existing active-note rejection test requested the other page through an extra section wait, letting the note finish first.",
+      "sha256": "cd2f642fb3e5529cb92d1b9548feb58f0fee7599377d1a2d04e2d74790d85c43"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/47-review-lifetime-green.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart test/reader/epub/page_map_open_test.dart --name 'partial table row|active note rebuilds'",
+      "exitCode": 1,
+      "result": "2 cancellation cases passed; the active-note test still rejected widths after note completion. Moving the assertion to the rejection event alone did not control ordering.",
+      "sha256": "82b746b58fea33bd93e9f2ecca598f8add6485477a76a12ac2a994bd9b2ca757"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/48-review-lifetime-controlled.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart test/reader/epub/page_map_open_test.dart --name 'partial table row|active note rebuilds'",
+      "exitCode": 1,
+      "result": "2 passed, 1 fixture-ordering failure. Holding zone microtasks did not control all future/timer continuations; that test-only approach was removed.",
+      "sha256": "1073a14730e364be34ff093c0de2c47fca82e0eaf0fd6e81bc1da6b79f16d6f7"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/49-review-lifetime-controlled.log",
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_test.dart test/reader/epub/page_map_open_test.dart --name 'partial table row|active note rebuilds'",
+      "exitCode": 0,
+      "result": "3 passed. The other page's ready scheduled steps are driven through microtasks before yielding excerpt timer turns; the rejection event proves the note is still active. No production scheduling or timing threshold changed.",
+      "sha256": "7be90c26f136868cd980d576407e5c59957f3fc4e1f938e836bffb37333a3a98"
+    },
+    {
+      "log": "/tmp/bookfin-boo-r8st-evidence/50-review-format.log",
+      "command": "nix develop --command dart format lib/reader/epub/layout.dart lib/reader/epub/semantics.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/page_map_open_test.dart",
+      "exitCode": 0,
+      "result": "Review-fix files formatted after controlled test correction.",
+      "sha256": "f36376025e5874c1ee97023428f80f3e28fb79f8e3e3dd9b0fee380d3bc45b2a"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/epub/selection_test.dart test/reader/epub/semantics_test.dart test/reader/epub/table_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "336 passed, 2 existing skips. Full affected files, including table, semantics, Copy, sheet and controlled lifetime tests. A later guard rejects an unused invalid constructor combination; the subsequent affected/full runs include it.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/51-review-focused.log",
+      "sha256": "22ac7c53ab49bd23ad70098fc4097a4ce22b329f1a6e9486c70c74ba70ab8364"
+    },
+    {
+      "command": "nix develop --command dart format lib/reader/epub/layout.dart",
+      "exitCode": 0,
+      "result": "Formatted the guard that limits first-page-only runs to the section start, their sole production caller's supported use.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/52-layout-format.log",
+      "sha256": "f03195f003271a0e98b9509a8f26feac8ea75ade8d2f85c9ce306b869d567fbf"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader test/crossings",
+      "exitCode": 0,
+      "result": "1743 passed, 21 existing skips, 0 failed on the post-review implementation.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/53-review-affected.log",
+      "sha256": "2438e1c42aae9d149b3c44e61cefe83ac640e250fd132d66bbca90a7980cc94a"
     }
   ],
   "skips": [

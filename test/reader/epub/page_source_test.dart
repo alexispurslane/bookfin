@@ -414,6 +414,95 @@ void main() {
 
   for (final dropSettings in [false, true]) {
     test(
+      'an excerpt releases a partial table row when ${dropSettings ? 'its settings drop' : 'its source closes'}',
+      () async {
+        const firstCell = 'Key';
+        open(
+          book([
+            '<aside id="n"><table><tr><td>$firstCell</td>'
+                '<td>${paragraphs(100, label: 'Other')}</td></tr></table></aside>',
+          ]),
+          budget: Duration.zero,
+        );
+        final section = await scheduler.until(source.section(0));
+        final before = LayoutRun.laidOutUnits;
+        final pending = source.excerpt(
+          section,
+          DomSelection(section.dom.elementById('n')!),
+          width: 240,
+        );
+        var ended = false;
+        final stopped = expectLater(
+          pending
+              .then((page) {
+                page?.dispose();
+                return page;
+              })
+              .whenComplete(() => ended = true),
+          throwsA(isA<PageRequestStopped>()),
+        );
+        // The short first cell is complete once shaping reaches the next
+        // cell. Cancel with both completed and unfinished content owned.
+        while (LayoutRun.laidOutUnits - before <= firstCell.length && !ended) {
+          await Future<void>.delayed(Duration.zero);
+        }
+        expect(ended, isFalse);
+        if (dropSettings) {
+          source.settings = smallPage;
+          source.settings = const PageSettings(
+            width: 500,
+            height: 700,
+            fontSize: 22,
+            night: false,
+          );
+        } else {
+          source.dispose();
+        }
+        await stopped;
+        source.checkInvariants();
+      },
+    );
+
+    test(
+      'a limited excerpt stops inside a tall table row${dropSettings ? ' with several cells' : ''}',
+      () async {
+        open(
+          book([
+            '<aside id="n"><table><tr><td>${paragraphs(100)}</td>'
+                '${dropSettings ? '<td>${paragraphs(100, label: 'Other')}</td>' : ''}'
+                '</tr></table></aside>',
+          ]),
+        );
+        final section = await scheduler.until(source.section(0));
+        final before = LayoutRun.laidOutUnits;
+        final page = (await source.excerpt(
+          section,
+          DomSelection(section.dom.elementById('n')!),
+          width: 240,
+        ))!;
+        addTearDown(page.dispose);
+        expect(page.last, isFalse);
+        expect(pageBlocks(page).first.spans.first.label, startsWith('Part 0'));
+        expect(
+          LayoutRun.laidOutUnits - before,
+          lessThan(section.dom.visibleLength ~/ 2),
+        );
+        source.checkInvariants();
+        source.dispose();
+        expect(pageBlocks(page).first.spans.first.label, startsWith('Part 0'));
+        // The bounded row prefix keeps the same first-page content as full
+        // table layout. Its unpublished paragraphs must not affect that page.
+        final fragment = (await section.excerpt(
+          DomSelection(section.dom.elementById('n')!),
+          page.settings,
+        ))!;
+        final full = layoutSection(fragment);
+        addTearDown(full.dispose);
+        expect(content(page), content(full.pages.first));
+      },
+    );
+
+    test(
       'an excerpt releases a partially shaped paragraph when ${dropSettings ? 'its settings drop' : 'its source closes'}',
       () async {
         open(

@@ -1,0 +1,99 @@
+{
+  "ticket": "boo-r8st",
+  "review": {
+    "taskId": "node:delegated-task:command%3Amcp%3A52132c13-9256-4525-9482-0a08c3c1f0ab%3Adelegate-task%3Abookfin-boo-r8st-review-20261113-1",
+    "childThreadId": "thread:delegated-task:command%3Amcp%3A52132c13-9256-4525-9482-0a08c3c1f0ab%3Adelegate-task%3Abookfin-boo-r8st-review-20261113-1",
+    "link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A52132c13-9256-4525-9482-0a08c3c1f0ab%3Adelegate-task%3Abookfin-boo-r8st-review-20261113-1>",
+    "target": {
+      "providerInstanceId": "codex",
+      "model": "gpt-6-astra",
+      "options": {
+        "reasoningEffort": "high"
+      }
+    },
+    "status": "completed",
+    "reviewBase": "e23662daf2e4e9b737aee4366c418f0ec5591145",
+    "reviewHead": "00fd427de585f8e180b2346a4de5b36b4583987b",
+    "originalReport": "docs/evidence/boo-r8st/reviewer-original.json",
+    "originalVerdicts": {
+      "correctness": "changes_required",
+      "fulfillment": "changes_required",
+      "design": "changes_required"
+    },
+    "unverifiedAssessments": [],
+    "secondReview": false
+  },
+  "resolutions": [
+    {
+      "id": "R1",
+      "status": "fixed",
+      "cause": "Raised placeholders lost the original-character mapping of the text actually retained for drawing. Semantics inferred all text through the original DOM parent instead.",
+      "change": "TextMap retains the nested mapping built with raised text. Copy and semantics walk that same mapping, retaining original characters, links and omission holes. Excerpt filtering examines the retained inner runs, so a first omitted backlink cannot discard later own text.",
+      "evidence": [
+        "36-review-text-image-red.log: sup/sub previews read Before.Own.BackContinuation.Other. instead of Own.Continuation.",
+        "39-review-raised-green.log: both boundary cases pass Copy, semantics and original first-place assertions.",
+        "42-review-raised-omit-red.log: pre-fix preparation returned null after omitting the first raised backlink.",
+        "43-review-text-image-green.log: all R1/R3 regressions and existing backlink checks pass."
+      ],
+      "designResolution": "Preparation, layout, Copy and semantics now use the same original-character mapping; the heuristic DOM-parent reconstruction was removed."
+    },
+    {
+      "id": "R2",
+      "status": "fixed",
+      "cause": "Table layout retained and shaped a complete row before publishing its first fragment, so stopping at first-page publication was too late.",
+      "change": "The existing LayoutRun supports a first-page-only run from the section start. Each cell stops after enough slices to determine the first fragment, plus the first non-fitting slice. The source still owns the run and disposal. Complete shared column-width measurements and full-document layout are preserved.",
+      "evidence": [
+        "38-review-table-red.log: one/two-cell notes shaped 53,240/107,080 units before returning.",
+        "44-review-table-green.log: both row previews stay below half their source text in shaped units and match full-layout first-page content.",
+        "49-review-lifetime-controlled.log: cancellation/settings changes release a partial row; rejection of shared measurements occurs while the note is active and the rebuilt note matches fresh geometry."
+      ],
+      "limits": [
+        "Column-width measurements can inspect and measure the complete table before row layout. The bound concerns retained row content and layout after preview capacity is reached.",
+        "An indivisible tall line or image remains whole."
+      ],
+      "testCorrection": "The faster bounded preview invalidated a test's extra readiness wait. The final fixture drives the already-ready other page's scheduled steps and microtasks before excerpt timer turns, and observes rejection while the note is active. No timing threshold or production scheduling rule changed."
+    },
+    {
+      "id": "R3",
+      "status": "fixed",
+      "cause": "Block images tested selection membership without applying omitted backlink ranges.",
+      "change": "One selected-and-not-omitted node rule now governs text, inline images and block images, including table cells. Backlink-only notes remain unreadable/null; following note text remains.",
+      "evidence": [
+        "36-review-text-image-red.log: block backlink images remained visible outside/inside tables; an image-only backlink returned a preview.",
+        "43-review-text-image-green.log: both image omissions, image-only null preview, retained continuation and existing backlink cases pass."
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "original": "No boundary-inside-raised-text regression.",
+      "resolution": "Sup/sub semantics, Copy and first original place are checked, including a backlink hole and a first omitted backlink."
+    },
+    {
+      "original": "No bounded-work assertion for a divisible tall table row.",
+      "resolution": "One/two-cell row tests check shaped units and compare first-page content against full layout."
+    },
+    {
+      "original": "No block-backlink-image omission test.",
+      "resolution": "Covered outside/inside table cells and as the only note content."
+    },
+    {
+      "original": "Final whitespace check and post-fix verification outstanding.",
+      "resolution": "Final command results are recorded in commands.json; handoff remains gated on their completion."
+    },
+    {
+      "original": "Plain-text tests alone did not establish the raised-text content contract.",
+      "resolution": "The shared nested original-character mapping is used by drawing, semantics and Copy, with the regressions above."
+    }
+  ],
+  "parentOwned": [
+    "Integration and ticket closure",
+    "Device/visual acceptance",
+    "Coverage and mutation testing"
+  ],
+  "limits": [
+    "Original reviewer report remains changes_required; these are lead resolutions with retained evidence, not a second reviewer verdict.",
+    "t5-rplx remains unexplained and tf-il7u remains unchanged.",
+    "No hardware performance claim."
+  ]
+}

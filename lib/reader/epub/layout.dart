@@ -471,12 +471,17 @@ class LaidPage implements PageDrawing {
 /// - The slices not yet published start at the top of the next page.
 /// - A table or a long paragraph in progress is the next flow item, and has
 ///   a row or a segment left.
-/// - Once the run is done, it laid out every flow item and holds no slice.
+/// - Once the run publishes the last page, it laid out every flow item and
+///   holds no slice. A first-page-only run can finish with unfinished work,
+///   which its owner releases with dispose.
 class LayoutRun {
   /// A run of [section] from [from], or from the section start. [clock]
   /// gives the time now for the step budget; it defaults to a monotonic
   /// clock. [measurements] shares prior work with other runs and searches;
   /// when omitted this run owns an independent set.
+  /// [firstPageOnly] starts at the section's beginning and stops after one
+  /// page, including within a divisible table row. It cannot be combined
+  /// with [from] or resume beyond its first page.
   ///
   /// A run measures each row of a table for its column widths, once per
   /// table item, one row in each unit of work, unless an earlier layout's
@@ -491,7 +496,9 @@ class LayoutRun {
     PageStart? from,
     Duration Function()? clock,
     LayoutMeasurements? measurements,
+    bool firstPageOnly = false,
   }) : measurements = measurements ?? LayoutMeasurements(),
+       _firstPageOnly = firstPageOnly,
        _section = section,
        _flow = section.flow,
        _reachesEnd = section.reachesEnd,
@@ -502,6 +509,11 @@ class LayoutRun {
            _textStyle(style, section.settings.ink),
        ],
        _advances = _Advances() {
+    if (firstPageOnly && from != null) {
+      throw ArgumentError(
+        'A first-page-only run cannot start inside a section.',
+      );
+    }
     final start = from ?? const PageStart(0, 0);
     if (start.item < 0 || start.item > section.flow.length) {
       throw RangeError.range(start.item, 0, section.flow.length, 'from.item');
@@ -520,6 +532,7 @@ class LayoutRun {
     double left,
     double width,
   ) : measurements = outer.measurements,
+      _firstPageOnly = outer._firstPageOnly,
       _section = outer._section,
       _flow = flow,
       _reachesEnd = true,
@@ -552,6 +565,7 @@ class LayoutRun {
   /// Measurements shared by the owner of this run and its searches.
   /// A standalone run owns a fresh set unless its caller supplies one.
   final LayoutMeasurements measurements;
+  final bool _firstPageOnly;
 
   final PreparedSection _section;
 
@@ -625,8 +639,9 @@ class LayoutRun {
   /// changes. The caller owns them and disposes each.
   late final List<LaidPage> pages = UnmodifiableListView(_pages);
 
-  /// Whether the run published the section's last page.
-  bool get done => _done;
+  /// Whether the run published the section's last page, or the one page
+  /// requested by a first-page-only run.
+  bool get done => _done || (_firstPageOnly && _pages.isNotEmpty);
 
   /// Whether the run laid out every flow item of a part of a section that
   /// ends before the section's end, so that its next page needs the whole
@@ -651,7 +666,7 @@ class LayoutRun {
     }
     final begin = _clock();
     final target = _pages.length + (want ?? 0);
-    while (!_done && !starved) {
+    while (!done && !starved) {
       _layOutItem();
       _cut();
       if (want != null && _pages.length >= target) return;
@@ -913,7 +928,7 @@ class LayoutRun {
 
   void _publishDecided() {
     final atEnd = _item == _flow.length && _reachesEnd;
-    while (!_done) {
+    while (!done) {
       final count = _pending.length;
       final limit = _pageTop + _section.settings.height + fitTolerance;
       var end = 0;
@@ -1323,6 +1338,10 @@ class LayoutRun {
   /// [_Rows.part] on: one slice, or one for each fragment of a row taller
   /// than a page. A row's fragments need the content of all its cells, so
   /// [rows] keeps the cells laid out until the row is done (tb-i6wg).
+  /// A first-page-only run needs just the first fragment: each cell stops
+  /// after enough slices to decide that fragment, including the first
+  /// slice that does not fit. Column widths still use the shared complete
+  /// measurements, so the first fragment matches normal table layout.
   void _tableRow(_Rows rows) {
     final table = rows.table;
     final number = rows.row;
@@ -1352,12 +1371,20 @@ class LayoutRun {
           math.max(0, cellWidth - start - right),
         );
       }();
-      if (run._item < run._flow.length) {
+      final crossesFirstPage =
+          _firstPageOnly &&
+          run._pending.length > 1 &&
+          run._pending.last.bottom +
+                  row[column].padding[0] +
+                  row[column].border[0] >
+              _section.settings.height + fitTolerance;
+      if (run._item < run._flow.length && !crossesFirstPage) {
         if (laid) return;
         run._layOutItem();
         laid = true;
         continue;
       }
+      rows.limited |= run._item < run._flow.length;
       rows.cells.add(_cellContent(run));
       rows.cell = null;
     }
@@ -1427,6 +1454,9 @@ class LayoutRun {
       content.release();
     }
     _y = top + down;
+    // The next cut publishes the first page. Keep the row unfinished so
+    // that this page never claims to be the end of the note.
+    if (rows.limited) return;
     rows.row++;
     rows.part = 0;
     if (rows.row >= table.rows.length) {
@@ -1490,8 +1520,9 @@ class LayoutRun {
   }
 
   /// The content of a table cell that [run], a run of the cell's flow,
-  /// laid out to its end. The content takes over the paragraphs that it
-  /// shows, and the paragraphs that show nothing are let go.
+  /// laid out, to its end or just past a preview's first page. The content
+  /// takes over the paragraphs that it shows; every other paragraph,
+  /// including a long paragraph's unpublished waiting lines, is let go.
   static _Cell _cellContent(LayoutRun run) {
     // A cell holds the margins of its content.
     run._resolveMargin();
@@ -1632,7 +1663,8 @@ class LayoutRun {
           inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
           if (!shown(whole++)) continue;
-          final raised = _build(inner, 0, width).paragraph
+          final content = _build(inner, 0, width);
+          final raised = content.paragraph
             ..layout(const ui.ParagraphConstraints(width: double.infinity));
           final lines = raised.computeLineMetrics();
           final baseline = lines.isEmpty ? 0.0 : lines.first.baseline;
@@ -1641,7 +1673,7 @@ class LayoutRun {
             raised.height,
             baseline + shift,
           );
-          map.addPlaceholder(node);
+          map.addPlaceholder(node, content: content.map);
           inlines.add(raised);
       }
     }
@@ -3327,6 +3359,7 @@ class TextMap {
   /// that no node owns.
   final nodes = <int>[];
   final offsets = <Int32List?>[];
+  final _contents = <int, TextMap>{};
   int length = 0;
 
   void addText(int node, Int32List domOffsets) {
@@ -3337,13 +3370,23 @@ class TextMap {
   }
 
   /// Adds a placeholder of one code unit, which starts at [node], or at no
-  /// place when [node] is -1.
-  void addPlaceholder(int node) {
+  /// place when [node] is -1. A raised paragraph carries its own [content]
+  /// mapping, so its places, copied text and semantics describe exactly
+  /// the original characters it draws, including clipped and omitted runs.
+  void addPlaceholder(int node, {TextMap? content}) {
+    if (node >= 0 && content != null) {
+      _contents[length] = content;
+      node = content.placeAtUnit(0)?.node ?? node;
+    }
     starts.add(length);
     nodes.add(node);
     offsets.add(null);
     length += 1;
   }
+
+  /// The original-character mapping inside the placeholder at [index],
+  /// or null for ordinary text and placeholders without text content.
+  TextMap? contentAt(int index) => _contents[index];
 
   /// The place of code unit [index], or of the next one that has a place,
   /// or null when none follows.
@@ -3357,7 +3400,8 @@ class TextMap {
       } else if (node >= 0 && local == 0) {
         // A placeholder starts at its node: an element, or the first text
         // node of raised text.
-        return EpubPlace(section, node, 0);
+        return contentAt(starts[segment])?.placeAtUnit(0) ??
+            EpubPlace(section, node, 0);
       }
     }
     return null;
@@ -3516,6 +3560,10 @@ class _Rows {
   /// next cell's content while it lays it out.
   final cells = <_Cell>[];
   LayoutRun? cell;
+
+  /// Whether at least one cell stopped after the first fragment became
+  /// decidable. The outer run must stop after publishing its first page.
+  bool limited = false;
 
   /// Lets go of what the next row laid out.
   void release() {

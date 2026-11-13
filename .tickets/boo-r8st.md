@@ -126,14 +126,46 @@ Compilation mistakes and one test-helper misuse were recorded as development
 failures, not counted as meaningful red evidence. All command logs and their
 results are indexed in `docs/evidence/boo-r8st/commands.json`.
 
-The final focused set passed 58 tests. The final affected reader and Crossings
-suites passed 1,733 tests with 21 declared skips. The final full run passed
+The pre-review focused set passed 58 tests. The pre-review affected reader and Crossings
+suites passed 1,733 tests with 21 declared skips. The pre-review full run passed
 3,711 tests with 27 declared skips. Earlier full and affected runs, including
 all development failures, remain in the command manifest. The sole review
-is pending. Affected analysis has no issues; all 15 changed Dart files pass
+requested three fixes, recorded below. Affected analysis had no issues; all 15 changed Dart files passed
 format verification. The review uses client request
 `bookfin-boo-r8st-review-20261113-1`, Codex `gpt-6-astra`, high reasoning,
 shared isolation, async mode, and read-only review role. Parent retains integration,
 acceptance, coverage, mutation testing and closure. No device/browser work,
 credentials, other-ticket changes, PR, push, merge or ticket closure was done.
 The unrelated t5-rplx cause remains uninvestigated here; tf-il7u is unchanged.
+
+## Sole review and fixes — 2026-11-13
+
+Reviewer: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A52132c13-9256-4525-9482-0a08c3c1f0ab%3Adelegate-task%3Abookfin-boo-r8st-review-20261113-1>
+
+The review inspected the complete original-base-to-`00fd427d` diff, actual
+callers and retained logs. All three assessments requested changes; none was
+unverified. `docs/evidence/boo-r8st/reviewer-original.json` preserves the
+delivered report byte for byte. `review-resolution.json` beside it records
+each lead resolution and every validation gap. No second review was started.
+
+- R1: raised text now carries the original-character mapping of the retained
+  runs into Copy and screen-reader output. Regressions reproduce surrounding
+  and backlink text leakage in superscripts/subscripts, and lost continuation
+  after a first omitted backlink. The shared mapping replaces DOM-parent
+  reconstruction; no cloned DOM is introduced.
+- R2: the existing layout owner stops a first-page-only run within a divisible
+  table row. One- and two-cell regressions reproduce the former full-row work,
+  verify bounded row shaping and compare the first page with full layout.
+  Complete shared column-width measurement remains unchanged. Cancellation
+  covers completed cell content and a cell still in progress. The kept-width
+  rejection test now controls the ordering of ready work rather than relying
+  on a long-running note; no production scheduling or timing threshold changed.
+- R3: block images obey the same selection and backlink-omission rule as
+  inline content, including table cells. Regressions cover later retained
+  text and an unreadable image-backlink-only note.
+
+Meaningful review failures are in logs 36, 38 and 42. Compilation mistakes
+and test-ordering assumptions are preserved separately in the command
+manifest, including unsuccessful fixture corrections. Targeted fixes pass;
+the expanded focused suites passed 336 tests with two existing skips.
+Post-fix affected/full checks and final evidence are being completed.

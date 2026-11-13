@@ -487,8 +487,22 @@ page, stops as soon as it is available, releases unfinished work and any
 surplus pages, and transfers only that first page. Its existing last-page flag
 says whether content was omitted. It never lays out the remainder just to
 count it. Shared measurement rejection still retries through the same owner.
+The layout run stops after its first page even within a divisible table row:
+each cell keeps only enough content to decide the first row fragment, plus
+the first slice that does not fit. Ordinary full-document table layout is
+unchanged. The table's intrinsic column widths still use complete shared
+measurements before row layout; this is not a bound on source admission,
+preparation, or column-width measurement work. Cancellation releases both
+completed cell content and the cell still being laid out.
 The sheet says “Showing the beginning. Go to note opens the full note.” when
 content remains. Go to note retains its existing title-row action.
+
+Raised text, including superscripts and subscripts, retains the same
+original-character mapping that layout used for its retained runs. Copy and
+screen-reader output consume that mapping rather than inferring the rest of
+an original DOM parent. This preserves clipped boundaries and omitted
+backlinks inside raised text. Block images use the same selected-and-not-
+omitted node rule as inline text, including images in table cells.
 
 The pager keeps a lazy note-reference index for the open publication. It is
 built off the UI isolate from admitted spine documents. Note selection also

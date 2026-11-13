@@ -19,6 +19,7 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/search.dart';
+import 'package:bookfin/reader/epub/selection.dart';
 import 'package:bookfin/reader/epub/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -881,6 +882,91 @@ void main() {
     expect(reported, isEmpty);
   });
 
+  for (final tag in ['sup', 'sub']) {
+    test(
+      'a note bounded inside $tag copies and reads only its retained text',
+      () async {
+        open(
+          book([
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a>'
+                '<a epub:type="noteref" href="s1.xhtml#next">2</a></p>',
+            '<p><$tag>Before.<a id="n"/>Own.'
+                '<a role="doc-backlink" href="s0.xhtml">Back</a>'
+                'Continuation.<a id="next"/>Other.</$tag></p>',
+          ]),
+        );
+        await present();
+        final note = (await until(
+          pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300),
+        ))!;
+        addTearDown(note.dispose);
+        expect(readOf(note.page), ['Own.Continuation.']);
+        final lines = textLines(note.page);
+        expect(
+          selectedText(
+            note.page,
+            lines,
+            PageCaret(0, lines.first.units.$1),
+            PageCaret(lines.length - 1, lines.last.units.$2),
+          ),
+          'Own.Continuation.',
+        );
+        expect(note.page.dom.textAt(note.page.startPlace!)!.text, 'Own.');
+      },
+    );
+  }
+
+  for (final inTable in [false, true]) {
+    test(
+      'a note omits a block backlink image${inTable ? ' in a table cell' : ''} and keeps later text',
+      () async {
+        final body =
+            '<a role="doc-backlink" href="s0.xhtml#ref">'
+            '<img src="../back.png" alt="Back" style="display:block"/></a>'
+            '<p>Continuation.</p>';
+        open(
+          book(
+            [
+              '<p><a id="ref" epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+              '<aside id="n" epub:type="footnote">'
+                  '${inTable ? '<table><tr><td>$body</td></tr></table>' : body}</aside>',
+            ],
+            files: {'back.png': img.encodePng(img.Image(width: 2, height: 2))},
+          ),
+        );
+        await present();
+        final note = (await until(
+          pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300),
+        ))!;
+        addTearDown(note.dispose);
+        expect(note.page.decorations.whereType<ImageDecoration>(), isEmpty);
+        expect(readOf(note.page), ['Continuation.']);
+      },
+    );
+  }
+
+  test(
+    'a note containing only a block backlink image has no readable preview',
+    () async {
+      open(
+        book(
+          [
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+            '<aside id="n" epub:type="footnote"><a role="doc-backlink" href="s0.xhtml">'
+                '<img src="../back.png" alt="Back" style="display:block"/></a></aside>',
+          ],
+          files: {'back.png': img.encodePng(img.Image(width: 2, height: 2))},
+        ),
+      );
+      await present();
+      final note = await until(
+        pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300),
+      );
+      note?.dispose();
+      expect(note, isNull);
+    },
+  );
+
   /// A book whose first section has a note reference, ref-1, to the note
   /// n in the second section, whose paragraphs are [note].
   Publication backBook(String note) => book([
@@ -888,6 +974,18 @@ void main() {
     '<p id="other">Other text.</p><aside id="n" epub:type="footnote">'
         '$note</aside>',
   ]);
+
+  test('a raised note keeps text after its first omitted backlink', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p><sup><a role="doc-backlink" href="s0.xhtml#ref-1">Back</a>'
+          'Own.</sup></p>',
+        ),
+      ),
+      ['Own.'],
+    );
+  });
 
   test(
     'a note inside a table excludes other cells and its back link',

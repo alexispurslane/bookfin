@@ -369,19 +369,35 @@ void main() {
     }
     expect(finished, isFalse);
     var dropped = 0;
-    seeded.keptMapDropped.addListener(() => dropped++);
+    var rejectedWhileActive = false;
+    seeded.keptMapDropped.addListener(() {
+      dropped++;
+      rejectedWhileActive = !finished;
+    });
     final later = kept.starts.indexWhere(
       (start) => start.item == entry.key && start.line == 1,
     );
     expect(later, greaterThanOrEqualTo(0));
-    await pageAt(seeded, kept.firsts[later]!);
+    // The section is already ready. Drive the other page's scheduled work
+    // and its microtasks before yielding to more excerpt timer turns. The
+    // old pageAt helper's extra section wait could let the bounded excerpt
+    // finish before it even requested the other page.
+    var otherFinished = false;
+    final other = seeded
+        .pageAt(kept.firsts[later]!, anchored: true, urgent: true)
+        .whenComplete(() => otherFinished = true);
+    while (dropped == 0 && !otherFinished) {
+      scheduler.runOne();
+      await Future<void>.value();
+    }
     expect(dropped, 1);
     expect(
-      finished,
-      isFalse,
+      rejectedWhileActive,
+      isTrue,
       reason: 'rejection interrupts the long first row',
     );
 
+    await scheduler.until(other);
     final page = await pending;
     // Compare the actual column geometry before the full page signature,
     // so a failure reports the small, useful difference first.
