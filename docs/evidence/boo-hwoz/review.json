@@ -1,0 +1,217 @@
+{
+  "ticket": "boo-hwoz",
+  "original_base": "0c0984d98f8d2e9b4be7f39e9a10769ddee0bf9c",
+  "reviewed_head": "5055f01314fe443e255efd14fbda49df282304dd",
+  "review_scope": {
+    "complete_base_to_head_diff": true,
+    "changed_paths_reviewed": 8,
+    "working_tree": "clean",
+    "method": "Read-only source, diff, ticket, guidance and saved-log inspection. Source-capture and recorded log hashes were checked.",
+    "tests_run_by_reviewer": false,
+    "state_changes_by_reviewer": false,
+    "children_started": 0
+  },
+  "assessments": {
+    "correctness": {
+      "verdict": "pass",
+      "scope": "Collection-query behavior and regressions attributable to this diff; this is not a claim that the full application suite passes.",
+      "evidence": [
+        {
+          "location": "lib/catalog/jellyfin.dart:556",
+          "result": "Discovery uses shown libraries and deduplicates collection IDs before reading children. Empty selections cause no collection requests."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:597",
+          "result": "Child requests admit AudioBook, Book and Audio, preserve direct membership, omit optional image/user data and never request fields=Id."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:626",
+          "result": "Count-based pagination continues beyond short and empty filtered pages. Counts, returned starts, page upper bounds and IDs are checked. Discovery separately requires complete results."
+        },
+        {
+          "location": "test/catalog/collection_queries_test.dart:201",
+          "result": "Loopback fixtures cover mixed collections, shared discovery, hidden libraries, direct versus recursive membership, the existing plain-Audio series rule, both server paging shapes and membership beyond both old limits."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:496",
+          "result": "Immediate error observation prevents an unhandled early collection rejection while the later await retains cancellation propagation. Existing transport credential checks and controller adoption guards remain intact."
+        },
+        {
+          "location": "lib/catalog/controller.dart:1127",
+          "result": "The unchanged controller supplies shown libraries and guards adoption by request generation. Saved startup, account ownership and catalog-worker behavior remain unchanged."
+        },
+        {
+          "location": "test/catalog/collection_queries_test.dart:354",
+          "result": "Tests cover changed memberships on subsequent refreshes, optional-metadata failure, account cancellation, credential rejection and malformed or inconsistent replies."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        {
+          "classification": "existing unresolved failure",
+          "detail": "The full suite failed at test/reader/epub/page_source_frames_test.dart:188. The saved focused run with original-base production code also failed identically. This supports independence from this production change, not a root-cause diagnosis. tf-il7u remains open."
+        },
+        {
+          "classification": "explicit out-of-scope evidence limit",
+          "detail": "Server compatibility rests on captured source dispatch and loopback fixtures, not execution against either actual Jellyfin server version."
+        },
+        {
+          "classification": "separate design concern",
+          "detail": "D1 identifies synchronous collection processing on the UI isolate. No frame-delay measurement establishes its runtime cost."
+        }
+      ]
+    },
+    "ticket_fulfillment": {
+      "verdict": "changes-required",
+      "evidence": [
+        {
+          "requirement": "Confirm supported server semantics",
+          "result": "Satisfied by inspection of ItemsController -> Folder -> BoxSet dispatch in both captures. The current revision derives LinkedChildAncestorIds and filters before paging; 10.11 clears the discovery parent and filters direct children after paging. All ten capture hashes match the manifests."
+        },
+        {
+          "requirement": "Narrow requests while preserving membership",
+          "result": "Implemented and covered by resulting catalog assertions. The saved fixture reports 140 membership-response bytes versus 389 with optional fields, zero non-book child records and one child request despite duplicate discovery."
+        },
+        {
+          "requirement": "Remove truncation and keep requests bounded",
+          "result": "Implemented with 200-item pages, at most four discovery requests and eight collection-child requests concurrently, stable count checks and legacy sparse-page handling. Tests reach collection 1001 and children beyond position 4000."
+        },
+        {
+          "requirement": "Preserve freshness, guards, fallback and existing ownership",
+          "result": "No retained membership cache or cadence change was introduced. Ordinary collection failures remain optional; cancellation propagates. Production callers and saved-catalog ownership are unchanged."
+        },
+        {
+          "requirement": "Meaningful failing tests and required validation",
+          "result": "Saved corrected red evidence shows three unwanted non-book records against original production code. Focused, affected, full-suite, analysis, formatting and whitespace checks were recorded, including failures and skips."
+        },
+        {
+          "requirement": "Respect touched-code engine rules",
+          "result": "Incomplete: D1 requires either a correction or an explicit follow-up ticket under AGENTS.md:39."
+        }
+      ],
+      "findings": [
+        "D1"
+      ],
+      "validation_gaps": [
+        {
+          "classification": "known validation failure",
+          "detail": "The required full-suite run occurred but did not pass. Its failure remains documented; fixing unrelated scheduling behavior is outside this ticket."
+        },
+        {
+          "classification": "explicit out-of-scope evidence limits",
+          "detail": "Live-server acceptance, device/browser checks, coverage, mutation testing and latency or universal memory-saving claims are excluded. Parent acceptance, integration and closure remain outstanding."
+        }
+      ]
+    },
+    "design": {
+      "verdict": "changes-required",
+      "evidence": [
+        {
+          "source": "User; Ousterhout",
+          "result": "Request-local membership remains owned by JellyfinClient. CatalogController retains account, generation, persistence and adoption decisions. No second membership authority or cache-invalidation mechanism was added."
+        },
+        {
+          "source": "Muratori; Ousterhout",
+          "result": "_collectionItems has two real uses and hides shared paging and response checks. Library-byte fetching remains separate because its representation and validation differ. Public callers gain no server-version switches or paging obligations."
+        },
+        {
+          "source": "User; Ousterhout",
+          "result": "One count-based walk covers both supported child-filtering orders. The comments explain the server constraint and direct-membership decision."
+        },
+        {
+          "source": "User",
+          "result": "The changed whole-list processing still runs before the controller's worker handoff. Removing the old result limits increases the possible synchronous work, as detailed in D1."
+        }
+      ],
+      "findings": [
+        "D1"
+      ],
+      "validation_gaps": [
+        {
+          "classification": "unmeasured performance",
+          "detail": "No measurement bounds the synchronous processing time of large collection results. This does not invalidate the fixture payload measurements."
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "D1",
+      "severity": "medium",
+      "category": "design and engine-rule compliance",
+      "title": "Whole collection results are processed synchronously on the UI isolate",
+      "source": "User: AGENTS.md:39-44; software-design skill sections 3-4 on ownership and section 11 on concrete structural evidence.",
+      "location": {
+        "file": "lib/catalog/jellyfin.dart",
+        "line": 604,
+        "related_locations": [
+          "lib/catalog/jellyfin.dart:576",
+          "lib/catalog/jellyfin.dart:630",
+          "lib/catalog/jellyfin.dart:657",
+          "lib/catalog/controller.dart:1127",
+          "lib/catalog/controller.dart:1137",
+          "lib/catalog/transport_io.dart:37"
+        ]
+      },
+      "trigger": "A refresh discovers many collections or reads a collection with many matching children, now permitted beyond the previous 1000-collection and 2000-child limits.",
+      "evidence_kind": "Static source inspection; no runtime reproduction or timing measurement.",
+      "evidence": {
+        "code": "        for (final (index, page) in children.indexed) {\n          for (final child in page.items) {\n            final id = child['Id'] as String;\n            result.putIfAbsent(id, () => []).add(batch[index].value);\n          }\n        }",
+        "where": {
+          "children": "Completed results for up to eight collections; each result contains every returned page.",
+          "indexed": "Pairs each result with its zero-based position.",
+          "index": "The result's position within the collection batch.",
+          "page.items": "All matching child records accumulated for that collection, not one 200-item response.",
+          "child": "One returned child record.",
+          "id": "The child's Jellyfin item identifier.",
+          "result": "The request-local map from item identifiers to collection names.",
+          "putIfAbsent": "Obtains the existing names list or creates an empty list.",
+          "add": "Appends the collection name.",
+          "batch[index].value": "The name of the collection corresponding to this result."
+        },
+        "ownership": "CatalogController calls client.catalog before its worker handoff. Transport offloads sufficiently large JSON decoding, but returns decoded maps to the caller. _collectionItems accumulates all pages, after which _collections traverses complete discovery and child lists on the UI isolate.",
+        "scale": "The accepted count limit permits up to one million records per listing. A completed eight-collection batch can therefore require millions of synchronous map operations. Network page size does not bound this final traversal.",
+        "maintenance_cost": "The apparent 200-item request bound hides a separate whole-list CPU bound. Changes to paging capacity must also account for discovery reduction and membership reduction.",
+        "ticket_search": "No dedicated follow-up recording this collection-processing issue was found. The closed ta-7oe6 ticket covers library-entry construction and explicitly retains collection names in the returned payload."
+      },
+      "impact": "Large refreshes can monopolize the isolate responsible for drawing frames and handling input. The exact delay is unmeasured. This finding does not explain tf-il7u.",
+      "remedy": "Move large collection-result reduction off the UI isolate without changing refresh cadence or retained-worker ownership. Alternatively, use the explicit allowance in AGENTS.md:39: record a dedicated follow-up ticket and link it from this ticket and its evidence before integration. A broader redesign is not required for this review resolution."
+    }
+  ],
+  "saved_validation": {
+    "reviewer_executed_tests": false,
+    "final_catalog": {
+      "passed": 56,
+      "log": "/tmp/bookfin-boo-hwoz/final-catalog.log"
+    },
+    "affected_suites": {
+      "passed": 1665,
+      "skipped": 3,
+      "log": "/tmp/bookfin-boo-hwoz/affected-final.log"
+    },
+    "full_suite": {
+      "passed": 3673,
+      "skipped": 27,
+      "failed": 1,
+      "success": false,
+      "log": "/tmp/bookfin-boo-hwoz/full-suite.log",
+      "complete_inventory": "docs/evidence/boo-hwoz/full-suite.json"
+    },
+    "frame_checks": {
+      "unchanged_focused_run": "4 passed, 1 failed",
+      "reported_original_production_run": "4 passed, 1 failed",
+      "interpretation": "The same failure occurs without this production change. Its cause remains unknown; retries are not cause proof."
+    },
+    "analysis": "Saved final affected analysis reports no issues.",
+    "formatting": "Saved changed-file check reports three files, zero changes.",
+    "whitespace": "Both saved original-base whitespace logs are empty; successful exits are reported.",
+    "other_limits": [
+      "The 27 full-suite skips remain documented and unexecuted.",
+      "t5-rplx did not fail in this run; its cause remains unresolved.",
+      "Missing iphoneos and iphonesimulator SDK warnings do not establish device coverage.",
+      "No live-server, latency, coverage or mutation result is claimed."
+    ]
+  },
+  "overall_verdict": "changes-required",
+  "overall_reason": "The query behavior satisfies the settled scope, but D1 needs correction or an explicit follow-up ticket under the project's touched-code rule. The known full-suite failure remains unresolved and separately documented."
+}

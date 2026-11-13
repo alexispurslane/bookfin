@@ -2,7 +2,7 @@
 id: boo-hwoz
 status: in_progress
 deps: []
-links: [boo-p6w1]
+links: [boo-p6w1, t9-ftlz]
 created: 2026-11-13T15:32:34Z
 type: task
 priority: 2
@@ -77,3 +77,25 @@ focused frame suite and with all production code restored to the original
 base for that check. The implemented file was restored afterward. The cause
 remains unknown; no full-suite success or timing fix is claimed. Complete
 original failure and skip inventories are saved in the evidence directory.
+
+## Review and direct resolution — 2026-11-13
+
+Exactly one fresh read-only codex/gpt-6-astra reviewer at high effort completed
+against `5055f01314fe443e255efd14fbda49df282304dd`. Its original correctness
+verdict is pass; ticket fulfillment and design are changes-required for D1.
+The unchanged original report is `docs/evidence/boo-hwoz/review.json`.
+
+D1 is resolved through the explicitly allowed follow-up-ticket route in
+AGENTS.md:39 and the review remedy. New linked ticket t9-ftlz records the
+large collection-result processing that remains on the UI isolate, its
+ownership and possible scale, the unmeasured runtime cost, and acceptance for
+moving that work away from drawing/input. No runtime fix or measurement is
+claimed by this deferral. The original reviewer verdicts remain unchanged.
+Per-finding and per-gap dispositions are in `resolutions.json`.
+
+No production or test code changed after the reviewed HEAD. The existing
+checks still apply; final whitespace checks cover the complete original-base
+diff including review evidence and the follow-up ticket. No second review
+was requested. All owned commands and the reviewer have finished. The known
+tf-il7u full-suite failure and all other review limits remain explicit; parent
+owns integration, acceptance, hardening and closure.

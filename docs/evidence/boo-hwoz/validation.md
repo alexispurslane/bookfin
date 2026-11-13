@@ -146,6 +146,36 @@ implemented production file. Detailed commands and original logs follow.
 
 Exact commands, outcomes, failures, skips and full log paths are in
 `commands.json`. Complete logs are retained under `/tmp/bookfin-boo-hwoz`.
-The original reviewer report will be preserved as `review.json` without
-rewriting its verdicts, findings or gaps. Acceptance and hardening stay with
-the parent.
+The original reviewer report is preserved as `review.json` without rewriting
+its verdicts, findings or gaps. Acceptance and hardening stay with the parent.
+
+## Review resolution
+
+Exactly one fresh codex/gpt-6-astra reviewer at high effort completed the
+read-only review of `5055f01314fe443e255efd14fbda49df282304dd` against the
+original base. Its completed thread was read before saving the report.
+
+Reviewer: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ace22c3c2-4bc0-421a-8632-9d8553a10032%3Adelegate-task%3Aboo-hwoz-review-astra-high-20261113-1>
+
+| Assessment | Original verdict | Resolution |
+| --- | --- | --- |
+| Correctness | pass | Original evidence and limits retained. |
+| Ticket fulfillment | changes-required | D1 recorded as linked follow-up t9-ftlz, as the review explicitly permits. |
+| Design | changes-required | Same D1 resolution; no second reviewer or revised verdict. |
+
+AGENTS.md:39 says to fix a touched engine-rule violation or record a ticket.
+The review explicitly allows that route for D1. The new ticket t9-ftlz records
+the whole-list collection processing that still runs on the UI isolate, where
+it happens before the controller's worker handoff, its possible scale, and
+acceptance for moving it off the UI isolate. Runtime delay remains unmeasured.
+The deferral resolves this review obligation; it does not fix the CPU work or
+establish that the work is harmless. `resolutions.json` preserves the decision
+and every review gap, including the failed full suite and excluded checks.
+
+Only tickets and evidence changed after review. Production and test files are
+identical to the reviewed HEAD, so the earlier test, analysis and formatting
+results still apply. No behavior fix required another red-green cycle.
+The complete original-base diff is whitespace-checked again with the new
+ticket and review evidence staged, and again after the final commit. Parent
+integration and acceptance must retain the known tf-il7u failure and the
+tracked collection-processing risk. No ticket was closed.

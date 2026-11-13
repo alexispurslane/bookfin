@@ -1,0 +1,70 @@
+{
+  "reviewedHead": "5055f01314fe443e255efd14fbda49df282304dd",
+  "reviewerLink": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ace22c3c2-4bc0-421a-8632-9d8553a10032%3Adelegate-task%3Aboo-hwoz-review-astra-high-20261113-1>",
+  "originalReport": "review.json",
+  "originalVerdicts": {
+    "correctness": "pass",
+    "ticket_fulfillment": "changes-required",
+    "design": "changes-required"
+  },
+  "findings": [
+    {
+      "id": "D1",
+      "disposition": "resolved by the explicitly allowed follow-up-ticket path",
+      "ticket": "t9-ftlz",
+      "evidence": [
+        "AGENTS.md:39 permits fixing touched engine violations or recording a ticket.",
+        "Reviewer D1 remedy explicitly permits a dedicated linked follow-up before integration.",
+        ".tickets/t9-ftlz.md records locations, ownership, potential scale, limits, and acceptance; tk link connects it to boo-hwoz."
+      ],
+      "remainingRisk": "Large collection-result reduction still runs on the UI isolate. Runtime delay is unmeasured. This is tracked follow-up work, not a runtime fix."
+    }
+  ],
+  "gaps": [
+    {
+      "assessment": "correctness and ticket_fulfillment",
+      "gap": "Full suite fails at the existing tf-il7u frame assertion.",
+      "disposition": "Preserved as a known out-of-scope failure; no full-suite pass claimed.",
+      "evidence": [
+        "full-suite.json: 3673 passed, 27 skipped, 1 failed",
+        "frames-repeat.log: 4 passed, 1 failed",
+        "frames-original-production.log: same failure with all production code at original base"
+      ],
+      "remaining": "Root cause remains unknown in tf-il7u."
+    },
+    {
+      "assessment": "correctness and ticket_fulfillment",
+      "gap": "Actual Jellyfin versions were not run; live-server, device/browser and hardening checks were excluded.",
+      "disposition": "Retained as explicit task-scope limits, not silently treated as passed.",
+      "evidence": [
+        "Captured-source hashes and loopback tests are documented in validation.md.",
+        "Parent owns acceptance, integration, coverage, mutation testing and closure."
+      ]
+    },
+    {
+      "assessment": "correctness and design",
+      "gap": "No runtime measurement bounds whole-list UI-isolate processing.",
+      "disposition": "Recorded in D1 follow-up t9-ftlz.",
+      "evidence": [
+        ".tickets/t9-ftlz.md names the unmeasured cost and requires meaningful off-isolate processing evidence."
+      ]
+    },
+    {
+      "assessment": "all",
+      "gap": "27 full-suite tests skipped; t5-rplx cause remains unresolved.",
+      "disposition": "Preserved in original review and full-suite inventory.",
+      "evidence": [
+        "full-suite.json lists all skipped tests and available reasons.",
+        "No changes to skips, scheduler timing or unrelated code."
+      ]
+    }
+  ],
+  "postReviewChanges": "Only tickets and evidence changed. No production or test changes; prior checks remain applicable. The complete original-base diff is checked again for whitespace.",
+  "secondReview": false,
+  "parentResponsibilities": [
+    "integration",
+    "acceptance",
+    "hardening",
+    "ticket closure"
+  ]
+}
