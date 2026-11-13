@@ -32,3 +32,12 @@ Preserve bounded native startup from boo-0931, all retained originals, its recov
 Required meaningful red-green evidence includes the rejected object between readable records, a later discovery page, the next sync, native reopen, retained raw payload equality, retry without duplicate counts, account isolation, transaction failure/rollback, local pending writes, unknown kind/version, malformed individual payload, server tombstone, and preserved causal gaps and conflicts. Exercise both legacy and batch transport paths and the quiet UI/status distinction. Update the old stop-on-malformed-remote test. Run sync, durability, playback, app and affected reader persistence tests; affected analysis/format; and the full Flutter suite at concurrency two through Nix, one heavy command at a time.
 
 Implementation/direct fixes use codex/gpt-6-astra xhigh; exactly one fresh read-only reviewer uses Astra high. Parent owns integration, acceptance, hardening and closure. No device, coverage, mutation, push, PR or deployment work.
+
+## Delegated task
+
+Original base: 374390da6e2b37415ed98807ac962b05a9f68ea0.
+Client request ID: bookfin-boo-3y46-astra-20261113-1
+Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-3y46-astra-20261113-1
+Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-3y46-astra-20261113-1
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-3y46-astra-20261113-1>
+Launch returned running on codex/gpt-6-astra with reasoningEffort xhigh. Stage and branch not yet reported. Completion delivery is automatic.
