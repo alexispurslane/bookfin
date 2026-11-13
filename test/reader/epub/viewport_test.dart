@@ -24,7 +24,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
-import 'page_source_test.dart' show TestScheduler;
+import 'page_source_test.dart' show TestScheduler, book;
 import 'pager_test.dart' show linkedBook, noteBook, showcaseBook;
 
 void main() {
@@ -691,8 +691,12 @@ void main() {
   group('the note view', () {
     /// The note of the note reference of [noteBook], laid out at [width],
     /// after the viewport shows the book's first page.
-    Future<LaidNote> laidNote(WidgetTester tester, {double width = 412}) async {
-      open(noteBook());
+    Future<LaidNote> laidNote(
+      WidgetTester tester, {
+      double width = 412,
+      Publication? publication,
+    }) async {
+      open(publication ?? noteBook());
       await show(tester);
       await settle(tester, () => pager().shown.value != null);
       LaidNote? note;
@@ -780,5 +784,41 @@ void main() {
 
       expect(copies, ['lantern']);
     });
+
+    testWidgets(
+      'a bounded note keeps selection and semantics on its original words',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        final note = await laidNote(
+          tester,
+          publication: book([
+            '<p><a epub:type="noteref" href="s1.xhtml#note-1">1</a>'
+                '<a epub:type="noteref" href="s1.xhtml#note-2">2</a></p>',
+            '<p>Before.<a id="note-1"/>The lantern shines.'
+                '<a id="note-2"/>Other note.</p>',
+          ]),
+        );
+        final copies = <String>[];
+        await tester.pumpWidget(
+          onScreen(
+            Align(
+              alignment: Alignment.topLeft,
+              child: EpubNoteView(note: note, onCopy: copies.add),
+            ),
+          ),
+        );
+        expect(find.semantics.byLabel('The lantern shines.'), findsOneWidget);
+        expect(
+          find.semantics.byLabel(RegExp('Before|Other note')),
+          findsNothing,
+        );
+        await tester.longPressAt(pointIn(note, 'lantern', 2));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Copy'));
+        await tester.pumpAndSettle();
+        expect(copies, ['lantern']);
+        semantics.dispose();
+      },
+    );
   });
 }

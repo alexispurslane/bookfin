@@ -1,0 +1,456 @@
+{
+  "ticket": "boo-r8st",
+  "originalBase": "e23662daf2e4e9b737aee4366c418f0ec5591145",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb",
+  "branch": "t3/c0996feb",
+  "logDirectory": "/tmp/bookfin-boo-r8st-evidence",
+  "commands": [
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'empty note anchor|exceptionally tall note'",
+      "exitCode": 1,
+      "result": "Three meaningful original failures: surrounding/next-note text, shared-container notes, and StateError from an oversized excerpt.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/01-original-red.log",
+      "sha256": "92006ac2fb40c428773361f7057e1d8503eafe82dc2df38f32eaa2a895dc236f"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'empty note anchor|exceptionally tall note'",
+      "exitCode": 1,
+      "result": "Development compilation mistake: nullable ancestor variable. Not red evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/02-selection-green.log",
+      "sha256": "3949d18019c635c6827ea1187bd72f5c3633876acc01d64cd079f3fa37fc2610"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'empty note anchor|exceptionally tall note'",
+      "exitCode": 0,
+      "result": "3 passed.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/03-selection-green.log",
+      "sha256": "ef60b4ff5cabf0f6f205155bc80bbb5784bfc13cd1add6b49b687b874e148a14"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/screen_test.dart --name 'a limited note'",
+      "exitCode": 1,
+      "result": "Meaningful missing limited-preview notice in actual ReaderNotePanel.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/04-sheet-red.log",
+      "sha256": "6944f774ec538e77b94f4122162f0bdfa3562df23d9232b496ac5b2c3dc4a996"
+    },
+    {
+      "command": "nix develop --command dart format lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "Format applied.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/05-format.log",
+      "sha256": "3d89bffcec1505a03dd3b66af111f6dddd210416227d79733de49a2750dafd50"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 1,
+      "result": "28 passed; three test files failed compilation during call-site migration. Not red evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/06-focused.log",
+      "sha256": "d0ee690e31c44227a54435cd7606676b656b01662bf9cbdbb980d12162d2df66"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'note inside a table|marked back link ends'",
+      "exitCode": 1,
+      "result": "Two meaningful behavior failures: other cell/backlink content; trailing unrelated text. The trailing-text test incorrectly treated a backlink as a delimiter; it was superseded by the explicit non-delimiter rule and behavioral red in 26-backlink-red.log. The table failure remains valid evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/07-boundary-red.log",
+      "sha256": "2163e5e5bc3ecdd6b07d48743448ef3a56cb7c86ad370d1ccec040be2dfb6768"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'unreferenced empty internal anchor'",
+      "exitCode": 1,
+      "result": "Meaningful premature truncation at an internal empty anchor.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/08-internal-anchor-red.log",
+      "sha256": "9ec31023db127555425b7ecbd20f18c76cf707c4af8e6cdd5f7ad62bf05c066b"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 1,
+      "result": "42 passed, 2 existing kept-table measurement tests failed. Fixed by retaining unchanged table identity.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/09-focused.log",
+      "sha256": "d76c2ebb13932fdff642fd89cbcf82b3c4f850deb30957a3e065ab581a2273d3"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 1,
+      "result": "48 passed, 1 new test misused content() geometry helper as text. Corrected to assert actual page semantics; not red evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/10-focused.log",
+      "sha256": "ea7a57ad6d0944642ec93ae7c0ef5c2025205131c64d4dd7461fc84334efc17e"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'closing the book while a note image'",
+      "exitCode": 1,
+      "result": "Meaningful failure: disposed pager returned LaidNote after image decoding.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/11-image-cancel-red.log",
+      "sha256": "73b8a65d54bc46853dc66c97801324a6c057a48f546225714068488cea448c94"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 0,
+      "result": "50 passed.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/12-focused.log",
+      "sha256": "51cfc1be23998476471b249b5799ba3e8bbc8dfde1fde16b16587fe2cb982cae"
+    },
+    {
+      "command": "nix develop --command dart analyze lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "Two informational lint findings, subsequently corrected.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/13-analysis.log",
+      "sha256": "bb18866ab0bab5d7c62ff05c3f406a33eaa6d433382297d26cb7712e9519c950"
+    },
+    {
+      "command": "nix develop --command dart format lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "Format applied.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/14-format.log",
+      "sha256": "56c52092f2d48b7a4c94e19e33baad51a94ae7f21e45a6842fbc3231c2498889"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 0,
+      "result": "54 passed.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/15-focused.log",
+      "sha256": "052626b955320711c62cf0bda1192f88489ed76e0da6511839037fe778513795"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader test/crossings",
+      "exitCode": 0,
+      "result": "1729 passed, 21 skipped; before final sheet-cancellation test/fix.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/16-affected.log",
+      "sha256": "b4353c809cdf6f5e42574ebbb79a02a25f6cae03e5a27ebe959de60bc109b957"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/screen_test.dart --name 'changing text size while a note image'",
+      "exitCode": 1,
+      "result": "Fixture wrapper lacked Publication metadata; no initial page. Not red evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/17-sheet-cancel-red.log",
+      "sha256": "5c4f30b721f90926d0fd55538b0c4bc53d9a6c42a45a309894849738cf65c2c1"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/screen_test.dart --name 'changing text size while a note image'",
+      "exitCode": 1,
+      "result": "Second incomplete Publication wrapper attempt: originalDigest still missing. No initial page; not red evidence.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/18-sheet-cancel-red.log",
+      "sha256": "5c4f30b721f90926d0fd55538b0c4bc53d9a6c42a45a309894849738cf65c2c1"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/screen_test.dart --name 'changing text size while a note image'",
+      "exitCode": 1,
+      "result": "Meaningful failure: cancellation entered ReaderScreen unreadable-note fallback and recorded a link move.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/19-sheet-cancel-red.log",
+      "sha256": "47790d60876da1aacf5fe472878514bff7bf038a8bc2ceb08dbf3080324a3f86"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/screen_test.dart --name 'changing text size while a note image'",
+      "exitCode": 0,
+      "result": "1 passed after handling PageRequestStopped as cancellation.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/20-sheet-cancel-green.log",
+      "sha256": "99bc23351dbde47857cb54d6eb239322c0cab9c8bb8c92c85c159fb67c57023f"
+    },
+    {
+      "command": "nix develop --command dart format lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "Format applied.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/21-format.log",
+      "sha256": "9ff2ed0e20f6f5f882a42ae9dd4a01cd23abcebd14bb8cf2f3443087b0029020"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt'",
+      "exitCode": 0,
+      "result": "55 passed, including actual bounded-note copy, semantics, and sheet-cancellation behavior.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/22-focused.log",
+      "sha256": "c91862a9b9f2c39d00a3ff30d44a7ea18370e86490b6e32ad92ecbb03b1c4d2e"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader test/crossings",
+      "exitCode": 0,
+      "result": "1730 passed, 21 skipped after sheet-cancellation handling and worker selection. Superseded by the backlink-boundary correction and final affected run 29.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/23-affected.log",
+      "sha256": "992d5fabe60c30f4a657e406c366fabb92ae28cc62d719a9e2309d1b7e4af637"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt|preview keeps'",
+      "exitCode": 0,
+      "result": "57 passed, including ordinary-note scrolling and survival of paragraphs shared by released surplus pages.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/24-focused.log",
+      "sha256": "c2d6f29680af2d296a19992ce53cccd1307c6629907388879360c0298716ab46"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "exitCode": 0,
+      "result": "3710 passed, 27 skipped. This pre-review full run preceded the final correction that backlinks must not delimit an unmarked note.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/25-full.log",
+      "sha256": "f2e8cba0630420d8360a953a414f733950eddcfc3975d8f2efcfe0dbe6d3841c"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/pager_test.dart --name 'back link inside an unmarked|only nested back links'",
+      "exitCode": 1,
+      "result": "1 meaningful failure: text after a backlink was missing. The nested-backlink-only unreadable case already passed (preservation test).",
+      "log": "/tmp/bookfin-boo-r8st-evidence/26-backlink-red.log",
+      "sha256": "e7da5ce4e8a1a44f5fcda15d974f934f2fe9afbef63858bdbacf43177f6deb77"
+    },
+    {
+      "command": "nix develop --command dart format lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "Format applied, including final added preservation tests.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/27-format.log",
+      "sha256": "12a436c926832d4756ddea750cc36bb9c65269c3f8cdc5dc3e93250b92c08068"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/pager_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart --name 'note|excerpt|preview keeps'",
+      "exitCode": 0,
+      "result": "58 passed after the final backlink boundary correction.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/28-focused.log",
+      "sha256": "8270876cb637dfe0785ce5ac88b1c0e11c9d056d6dcc781f57829c0e0542f45c"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader test/crossings",
+      "exitCode": 0,
+      "result": "1733 passed, 21 skipped on the final production code and tests.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/29-affected.log",
+      "sha256": "681cda28ee7470cb948b02dcac7eaceae10cc7c9090a6860ace4267eed020bc5"
+    },
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded",
+      "exitCode": 0,
+      "result": "3711 passed, 27 skipped, 0 failed on final production code and tests.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/30-full.log",
+      "sha256": "d90ecf65b23ceb4355e235ac718acad103ed15ef26c97e935d58792ab7918dbc"
+    },
+    {
+      "command": "nix develop --command dart analyze --fatal-infos lib/reader/epub lib/reader/screen.dart test/reader/epub test/reader/screen_test.dart test/crossings",
+      "exitCode": 0,
+      "result": "No issues found.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/31-analysis.log",
+      "sha256": "b6a10a7257e7173f507faafacecb8a5d50335c87742f65fa4628ede77f9ae5c5"
+    },
+    {
+      "command": "nix develop --command dart format --output=none --set-exit-if-changed lib/reader/epub/dom.dart lib/reader/epub/places.dart lib/reader/epub/prepare.dart lib/reader/epub/page_source.dart lib/reader/epub/pager.dart lib/reader/screen.dart test/reader/epub/places_test.dart test/reader/epub/prepare_test.dart test/reader/epub/page_source_test.dart test/reader/epub/layout_run_test.dart test/reader/epub/chapter_titles_test.dart test/reader/epub/page_map_open_test.dart test/reader/epub/pager_test.dart test/reader/epub/viewport_test.dart test/reader/screen_test.dart",
+      "exitCode": 0,
+      "result": "15 files checked; 0 changed.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/32-format-check.log",
+      "sha256": "22d7c3b6a5c0cf49958fdcfe97b7513b84ab29c1efb3d14a7b5e0d59f1a1790f"
+    },
+    {
+      "command": "nix develop --command git diff --check e23662daf2e4e9b737aee4366c418f0ec5591145",
+      "exitCode": 0,
+      "result": "Complete staged original-base-to-implementation diff has no whitespace errors.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/33-diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "skips": [
+    "Device/browser acceptance, coverage and mutation campaign excluded by parent; no performance claims."
+  ],
+  "notes": [
+    "Nix Flutter commands emit absent iphoneos/iphonesimulator SDK diagnostics on this host; Flutter tests still execute.",
+    "The first shared-paragraph fixture put punctuation in a separate semantics span; its fixture was made unambiguous after the original failure. The original surrounding-text failure remains meaningful.",
+    "t5-rplx cause remains unexplained here. tf-il7u was not changed.",
+    "Final note-boundary behavior follows the settled scope: backlinks are omitted but never treated as a next note or an end boundary. The early contrary test assumption is preserved in logs and explicitly superseded."
+  ],
+  "callerAudit": {
+    "command": "rg -n 'noteOf\\(|\\.excerpt\\(|LaidNote|ReaderNotePanel' --glob '*.dart'",
+    "log": "/tmp/bookfin-boo-r8st-evidence/callers.txt",
+    "scope": "All repository Dart callers checked; synchronous PreparedSection.excerpt callers migrated to awaited original-document selections."
+  },
+  "limits": [
+    "12,000 logical pixels bound retained preview layout; an indivisible tall line or image stays whole, following the existing layout rule.",
+    "Admission and the lazy note-reference index still inspect source documents. No phone latency, memory bound for source preparation, or hardware performance is claimed.",
+    "Unmarked prose without a later referenced note or structural boundary ends at its containing element; prose alone does not identify an exact note ending."
+  ],
+  "declaredSkips": {
+    "29-affected.log": [
+      {
+        "test": "02:05 +1074: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+        "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      },
+      {
+        "test": "02:06 +1074 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+        "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      },
+      {
+        "test": "02:07 +1091 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      {
+        "test": "02:12 +1138 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      {
+        "test": "02:23 +1189 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+        "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+        "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+        "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+        "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      },
+      {
+        "test": "02:23 +1189 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+        "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      },
+      {
+        "test": "02:33 +1238 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/step_budget_test.dart: the step budget",
+        "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+      },
+      {
+        "test": "02:38 +1289 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+        "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      },
+      {
+        "test": "02:39 +1302 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+        "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      },
+      {
+        "test": "02:42 +1419 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      {
+        "test": "02:43 +1427 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1"
+      },
+      {
+        "test": "02:44 +1456 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_test.dart: the corpus run",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+      },
+      {
+        "test": "02:48 +1503 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      {
+        "test": "02:56 +1615 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+        "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      }
+    ],
+    "30-full.log": [
+      {
+        "test": "02:14 +1075: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+        "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      },
+      {
+        "test": "02:14 +1075 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+        "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      },
+      {
+        "test": "02:15 +1092 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      {
+        "test": "02:20 +1138 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      {
+        "test": "02:32 +1189 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+        "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+        "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+        "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+        "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      },
+      {
+        "test": "02:32 +1189 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+        "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      },
+      {
+        "test": "02:43 +1238 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/step_budget_test.dart: the step budget",
+        "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+      },
+      {
+        "test": "02:48 +1289 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+        "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      },
+      {
+        "test": "02:50 +1302 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+        "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      },
+      {
+        "test": "02:53 +1420 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      {
+        "test": "02:54 +1429 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1"
+      },
+      {
+        "test": "02:55 +1458 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/corpus_test.dart: the corpus run",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+      },
+      {
+        "test": "02:58 +1504 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      {
+        "test": "03:06 +1615 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+        "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      },
+      {
+        "test": "03:11 +1672 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+        "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+      },
+      {
+        "test": "03:13 +1674 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/research/epub_layout_cache_test.dart: the layout cache survey",
+        "reason": "set BOOKFIN_LAYOUT_CACHE=1"
+      },
+      {
+        "test": "05:06 +3075 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+        "reason": "Run tool/plugin/prove.py in the pinned shells."
+      },
+      {
+        "test": "05:12 +3157 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+        "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+      },
+      {
+        "test": "05:19 +3230 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+        "reason": "Run tool/sync_fixture.py in the pinned shells."
+      }
+    ]
+  },
+  "finalTests": {
+    "focused": {
+      "passed": 58,
+      "failed": 0,
+      "log": "/tmp/bookfin-boo-r8st-evidence/28-focused.log"
+    },
+    "affected": {
+      "passed": 1733,
+      "skipped": 21,
+      "failed": 0,
+      "log": "/tmp/bookfin-boo-r8st-evidence/29-affected.log"
+    },
+    "full": {
+      "passed": 3711,
+      "skipped": 27,
+      "failed": 0,
+      "log": "/tmp/bookfin-boo-r8st-evidence/30-full.log"
+    }
+  }
+}

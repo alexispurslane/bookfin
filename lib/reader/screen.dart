@@ -28,7 +28,7 @@ import '../playback/timeline.dart' show openHistory;
 import 'book_map.dart';
 import 'session.dart';
 import 'document.dart';
-import 'epub/page_source.dart' show PageNumber;
+import 'epub/page_source.dart' show PageNumber, PageRequestStopped;
 import 'epub/pager.dart' show EpubLink, EpubPager, LaidNote;
 import 'epub/viewport.dart';
 import 'pdf.dart';
@@ -216,6 +216,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
     LaidNote? note;
     try {
       note = await pager.note(link, width: glassSheetTextWidth(context));
+    } on PageRequestStopped {
+      // A settings change or closing the book cancels this request. It is
+      // not an unreadable note and must not move the saved reading place.
+      return;
     } on ArgumentError {
       // The link names no section of the book.
     } on Exception {
@@ -1058,7 +1062,21 @@ class _ReaderNotePanelState extends State<ReaderNotePanel> {
             glassSheetTextBottom,
           ),
           child: Center(
-            child: EpubNoteView(note: widget.note, onCopy: widget.onCopy),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.note.limited)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      'Showing the beginning. Go to note opens the full note.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                EpubNoteView(note: widget.note, onCopy: widget.onCopy),
+              ],
+            ),
           ),
         ),
       ),

@@ -943,12 +943,12 @@ void main() {
           '</aside>',
         );
         final note = section.elementById('n');
-        expect(noteOf(note, reference: false), same(note), reason: type);
-        expect(noteOf(note, reference: true), same(note), reason: type);
+        expect(noteOf(note, reference: false)?.root, same(note), reason: type);
+        expect(noteOf(note, reference: true)?.root, same(note), reason: type);
       }
       final aria = dom('<aside id="n" role="doc-endnote"><p>Aria.</p></aside>');
       expect(
-        noteOf(aria.elementById('n'), reference: false),
+        noteOf(aria.elementById('n'), reference: false)?.root,
         same(aria.elementById('n')),
       );
     });
@@ -959,7 +959,7 @@ void main() {
         '<p id="inner">The first part.</p><p>The second part.</p></li></ol>',
       );
       expect(
-        noteOf(section.elementById('inner'), reference: false),
+        noteOf(section.elementById('inner'), reference: false)?.root,
         same(section.elementById('note-1')),
       );
     });
@@ -970,7 +970,7 @@ void main() {
       () {
         final section = dom('<p id="n">1. A note without a type.</p>');
         final target = section.elementById('n');
-        expect(noteOf(target, reference: true), same(target));
+        expect(noteOf(target, reference: true)?.root, same(target));
         expect(noteOf(target, reference: false), isNull);
       },
     );
@@ -981,7 +981,7 @@ void main() {
         '<div><p><a id="n"/>The text after an empty anchor.</p></div>',
       );
       expect(
-        noteOf(section.elementById('n'), reference: true),
+        noteOf(section.elementById('n'), reference: true)?.root,
         same(section.elementById('n')!.parent),
       );
     });
@@ -994,6 +994,67 @@ void main() {
       );
       expect(noteOf(section.elementById('notes'), reference: false), isNull);
       expect(noteOf(null, reference: true), isNull);
+    });
+
+    test('a bounded note keeps the original text nodes and CFI locations', () {
+      final section = dom(
+        '<div>Before.<a id="n"/><p>Own words.</p>'
+        '<a id="internal"/><p>More words.</p><a id="next"/><p>Other note.</p></div>',
+      );
+      final selected = noteOf(
+        section.elementById('n'),
+        reference: true,
+        noteTargets: {'n', 'next'},
+      )!;
+      expect(selected.texts.map((text) => text.text), [
+        'Own words.',
+        'More words.',
+      ]);
+      for (final text in selected.texts) {
+        expect(section.nodeAt(text.order), same(text));
+        final place = EpubPlace(0, text.order, 2);
+        expect(placeOf(section, 0, cfiOf('/6/2', section, place)), place);
+      }
+      expect(selected.root, same(section.elementById('n')!.parent));
+    });
+
+    test('note boundaries come from local note references with resolved paths and fragments', () {
+      final targets = noteReferenceTargets({
+        'text/one.xhtml': utf8.encode(
+          '<html><body>'
+          '<a role="doc-noteref" href="../notes.xhtml#note%202">2</a>'
+          '<a epub:type="noteref" href="https://elsewhere.invalid/notes.xhtml#external">E</a>'
+          '<a href="../notes.xhtml#internal">Detail</a>'
+          '<a epub:type="backlink" href="../notes.xhtml#back">Back</a>'
+          '</body></html>',
+        ),
+        'notes.xhtml': utf8.encode(
+          '<html><body><a id="note 2"/>Note.</body></html>',
+        ),
+      });
+      expect(targets, {
+        'notes.xhtml': {'note 2'},
+      });
+    });
+
+    test('a marked note keeps its complete text despite internal references and backlinks', () {
+      final section = dom(
+        '<aside epub:type="footnote" id="n"><p>Start.</p>'
+        '<a id="inner"/><p>Middle.</p><a role="doc-backlink" href="#ref">Back</a>'
+        '<p>End.</p></aside>',
+      );
+      final selected = noteOf(
+        section.elementById('inner'),
+        reference: true,
+        noteTargets: {'inner'},
+      )!;
+      expect(selected.root, same(section.elementById('n')));
+      expect(selected.texts.map((text) => text.text), [
+        'Start.',
+        'Middle.',
+        'Back',
+        'End.',
+      ]);
     });
   });
 }

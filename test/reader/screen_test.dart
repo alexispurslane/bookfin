@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
@@ -13,10 +14,12 @@ import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'epub/helpers.dart' show loadReaderFont;
-import 'epub/page_source_test.dart' show paragraphs;
+import 'epub/page_source_test.dart' show paragraphs, WatchedPublication;
+import 'epub/page_source_test.dart' as fixture show book;
 import 'native_reader.dart';
 import 'publication_test.dart' show epub;
 import 'reader_settings.dart';
@@ -601,6 +604,141 @@ void main() {
       await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
+    testWidgets(
+      'a limited note stays over the current page and Go to note opens the full note',
+      (tester) async {
+        final publication = Publication.admit(
+          navBook(
+            [
+              '<p>The harbour<a epub:type="noteref" href="s1.xhtml#n">1</a> waits.</p>',
+              '<aside id="n" epub:type="footnote">${paragraphs(90)}</aside>',
+            ],
+            [('Start', 'text/s0.xhtml'), ('Note', 'text/s1.xhtml#n')],
+          ),
+        );
+        final reader = await openNative(tester, publication: publication);
+        final before = reader.visibleAddress;
+        await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+        await settleReader(
+          tester,
+          () => find.byType(ReaderNotePanel).evaluate().isNotEmpty,
+        );
+        await tester.pumpAndSettle();
+        expect(reader.visibleAddress, before);
+        expect(
+          find.text('Showing the beginning. Go to note opens the full note.'),
+          findsOneWidget,
+        );
+        expect(
+          tester.widget<EpubNoteView>(find.byType(EpubNoteView)).note.limited,
+          isTrue,
+        );
+        await tester.tap(find.widgetWithText(TextButton, 'Go to note'));
+        await waitForPage(tester, reader, (shown) => shown.page.section == 1);
+        await tester.pumpAndSettle();
+        expect(find.byType(ReaderNotePanel), findsNothing);
+        expect(
+          (reader.visibleAddress! as EpubAddress).location.resource,
+          'OPS/text/s1.xhtml',
+        );
+        expect(
+          reader.history.where((event) => event.kind == HistoryAction.link),
+          hasLength(1),
+        );
+        await closeNative(tester, reader);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets(
+      'changing text size while a note image waits cancels the sheet without navigation',
+      (tester) async {
+        final publication = _HeldNoteImage(
+          fixture.book(
+            [
+              '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+              '<aside id="n" epub:type="footnote"><p>Note.</p><img src="../note.png"/></aside>',
+            ],
+            files: {'note.png': img.encodePng(img.Image(width: 2, height: 2))},
+          ),
+        );
+        addTearDown(() {
+          if (!publication.release.isCompleted) publication.release.complete();
+        });
+        final reader = await openNative(tester, publication: publication);
+        await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+        await settleReader(tester, () => publication.requested.isCompleted);
+        await finishReader(tester, reader.setFontSize(26));
+        await waitForPage(
+          tester,
+          reader,
+          (shown) => shown.page.settings.fontSize == 26,
+        );
+        var releasedImage = false;
+        final previousDispose = ui.Image.onDispose;
+        ui.Image.onDispose = (image) {
+          releasedImage = true;
+          previousDispose?.call(image);
+        };
+        addTearDown(() => ui.Image.onDispose = previousDispose);
+        publication.release.complete();
+        await settleReader(tester, () => releasedImage);
+        await tester.pumpAndSettle();
+        expect(find.byType(ReaderNotePanel), findsNothing);
+        expect(
+          reader.history.where((event) => event.kind == HistoryAction.link),
+          isEmpty,
+        );
+        expect(
+          (reader.visibleAddress! as EpubAddress).location.resource,
+          'OPS/text/s0.xhtml',
+        );
+        await closeNative(tester, reader);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets('an ordinary long note scrolls without omitting its ending', (
+      tester,
+    ) async {
+      final reader = await openNative(
+        tester,
+        publication: fixture.book([
+          '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+          '<aside id="n" epub:type="footnote">${paragraphs(8)}</aside>',
+        ]),
+      );
+      await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+      await settleReader(
+        tester,
+        () => find.byType(ReaderNotePanel).evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+      final note = tester.widget<EpubNoteView>(find.byType(EpubNoteView)).note;
+      expect(note.limited, isFalse);
+      final scrollable = tester.state<ScrollableState>(
+        find.descendant(
+          of: find.byType(ReaderNotePanel),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      expect(scrollable.position.maxScrollExtent, greaterThan(0));
+      await tester.dragFrom(
+        tester.getTopLeft(find.byType(ReaderNotePanel)) + const Offset(80, 120),
+        const Offset(0, -200),
+      );
+      await tester.pumpAndSettle();
+      expect(scrollable.position.pixels, greaterThan(0));
+      expect(
+        find.text('Showing the beginning. Go to note opens the full note.'),
+        findsNothing,
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Go to note'));
+      await waitForPage(tester, reader, (shown) => shown.page.section == 1);
+      await tester.pumpAndSettle();
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
     testWidgets('a tap on a link shows its destination, and the controls '
         'stay', (tester) async {
       final reader = await openNative(tester);
@@ -703,5 +841,30 @@ class ControlNavigator implements DocumentNavigator {
   ) {
     previews.add((place.part, place.progress, width));
     return Completer<PagePreview>().future;
+  }
+}
+
+/// Holds the real note image read until a settings change has completed.
+class _HeldNoteImage extends WatchedPublication {
+  _HeldNoteImage(super.inner);
+  final requested = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  List<String> get spineSteps => inner.spineSteps;
+
+  @override
+  String get originalDigest => inner.originalDigest;
+
+  @override
+  List<String> get warnings => inner.warnings;
+
+  @override
+  Future<Uint8List?> bytesOf(String path) async {
+    if (path.endsWith('note.png')) {
+      if (!requested.isCompleted) requested.complete();
+      await release.future;
+    }
+    return super.bytesOf(path);
   }
 }

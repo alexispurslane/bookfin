@@ -286,7 +286,7 @@ void main() {
     final prepared = await scheduler.until(plain.section(0));
     final expected = (await plain.excerpt(
       prepared,
-      prepared.dom.elementById('n')!,
+      DomSelection(prepared.dom.elementById('n')!),
       width: 240,
     ))!;
     addTearDown(expected.dispose);
@@ -308,7 +308,7 @@ void main() {
 
     final page = (await seeded.excerpt(
       section,
-      section.dom.elementById('n')!,
+      DomSelection(section.dom.elementById('n')!),
       width: 240,
     ))!;
     addTearDown(page.dispose);
@@ -331,7 +331,7 @@ void main() {
     final prepared = await scheduler.until(plain.section(0));
     final expected = (await plain.excerpt(
       prepared,
-      prepared.dom.elementById('n')!,
+      DomSelection(prepared.dom.elementById('n')!),
       width: 320,
     ))!;
     addTearDown(expected.dispose);
@@ -353,7 +353,11 @@ void main() {
     final before = LayoutRun.laidOutUnits;
     var finished = false;
     final pending = seeded
-        .excerpt(section, section.dom.elementById('n')!, width: 320)
+        .excerpt(
+          section,
+          DomSelection(section.dom.elementById('n')!),
+          width: 320,
+        )
         .then((page) {
           finished = true;
           addTearDown(page!.dispose);
@@ -401,7 +405,7 @@ void main() {
     final prepared = await scheduler.until(plain.section(0));
     final expected = (await plain.excerpt(
       prepared,
-      prepared.dom.elementById('n')!,
+      DomSelection(prepared.dom.elementById('n')!),
       width: 240,
     ))!;
     addTearDown(expected.dispose);
@@ -428,7 +432,7 @@ void main() {
 
     final page = (await seeded.excerpt(
       section,
-      section.dom.elementById('n')!,
+      DomSelection(section.dom.elementById('n')!),
       width: 240,
     ))!;
     addTearDown(page.dispose);

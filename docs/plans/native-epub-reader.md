@@ -462,10 +462,10 @@ What E17 decided (tc-cl77):
 
 On 2026-11-08 the user chose option B of "Product fork for the user" (tc-406m). The owners:
 
-- `places.dart` decides what a note is. `isNoteReference` reads a link's `epub:type` (`noteref`) or role (`doc-noteref`). `isBackLink` reads a link's `epub:type` (`backlink`) or role (`doc-backlink`). `noteOf` gives the note that a link to a target shows: the nearest element at or around the target whose `epub:type` has `footnote`, `endnote`, `rearnote` or `note`, or whose role is `doc-footnote` or `doc-endnote`. Without one, a note reference shows its target, or the nearest element around it with text.
+- `places.dart` decides what a note is. `isNoteReference` reads a link's `epub:type` (`noteref`) or role (`doc-noteref`). `isBackLink` reads a link's `epub:type` (`backlink`) or role (`doc-backlink`). `noteOf` gives the note that a link to a target shows: the nearest element at or around the target whose `epub:type` has `footnote`, `endnote`, `rearnote` or `note`, or whose role is `doc-footnote` or `doc-endnote`. Without one, a note reference shows its target. An empty target selects following original-document nodes inside its nearest text-bearing ancestor, ending before another referenced note, a marked note, or a sibling heading, rule or section. A lazy index of actual note references distinguishes note destinations from internal anchors. Marked ancestors keep priority.
 - `linkAt` gives an `EpubLink`: the destination and whether the link is a note reference. The viewport reports it through `onLink`.
-- `PreparedSection.excerpt` (prepare.dart) gives the flow of one element, without the runs of the elements that it is told to omit. So a note lays out with the renderer, in the book's own text and style. The excerpt is a fragment of its own: the element is its root box, without margins, and the boxes around the element are left out. The top margins that meet its top are cut, as at a page break, and layout cuts the bottom margins at its end. Its first paragraph has no first-line indent. The list number that the page draws left of the first line comes before the first word, as a label that no node owns, so copy and a screen reader leave it out (boo-8ucr).
-- `EpubPager.note` lays the excerpt out on one tall page at the width of the glass sheet's text (`glassSheetTextWidth`), in steps, and draws it without paper. It omits the note's back links: a link that `isBackLink` accepts, or a link that points at a link to the note. In the sheet a back link does nothing (boo-wokk). It moves no place and reports nothing.
+- `PreparedSection.excerpt` (prepare.dart) prepares a `DomSelection`, a contiguous selection of original document nodes, in a worker. Whole elements and bounded empty-anchor notes use this same selection. It excludes unselected runs and omitted backlinks, including inside table cells. It keeps the original DOM and unchanged flow-item identities so locations and shared measurements stay valid. So a note lays out with the renderer, in the book's own text and style. The excerpt is a fragment of its own: the element is its root box, without margins, and the boxes around the element are left out. The top margins that meet its top are cut, as at a page break, and layout cuts the bottom margins at its end. Its first paragraph has no first-line indent. The list number that the page draws left of the first line comes before the first word, as a label that no node owns, so copy and a screen reader leave it out (boo-8ucr).
+- `EpubPager.note` asks the page source for the beginning of the excerpt on one tall page at the width of the glass sheet's text (`glassSheetTextWidth`), in steps, and draws it without paper. It omits the note's back links: a link that `isBackLink` accepts, or a link that points at a link to the note. In the sheet a back link does nothing (boo-wokk). It moves no place and reports nothing.
 - `ReaderScreen` is the controller. It asks the pager for the note, shows `ReaderNotePanel` on a glass sheet with the open book, and owns the note until the sheet is gone. The sheet's title row holds the heading Note and the quiet action Go to note (boo-2td2). Go to note closes the sheet and calls `goToContents` with the link's destination. A link without a note, or a note that no flow item shows, jumps as before.
 - `EpubNoteView` draws the note. It shares the page's semantics nodes, selection and Copy.
 - Layout draws an arrow that the book's face and the reader font both lack, such as the leftwards arrow with hook (U+21A9) of a back link, with the bundled arrow font, a subset of Noto Sans Math. Without it, Android draws such an arrow with its color emoji font (boo-wokk).
@@ -476,6 +476,36 @@ note action. That action opens the full note in the book. Normal notes keep
 scrolling in the sheet. A preview makes clear when more note content follows.
 An empty note anchor must select only its own note from the original document,
 without neighboring notes or unrelated surrounding text.
+
+
+Implementation limit (boo-r8st): an excerpt has 12,000 logical pixels of
+page capacity, roughly twenty ordinary phone screens. This keeps normal notes
+scrollable while bounding retained layout for exceptionally large notes. The
+existing layout engine still keeps an indivisible line or image whole; a
+single unusually tall slice may exceed that height. The source asks for one
+page, stops as soon as it is available, releases unfinished work and any
+surplus pages, and transfers only that first page. Its existing last-page flag
+says whether content was omitted. It never lays out the remainder just to
+count it. Shared measurement rejection still retries through the same owner.
+The sheet says “Showing the beginning. Go to note opens the full note.” when
+content remains. Go to note retains its existing title-row action.
+
+The pager keeps a lazy note-reference index for the open publication. It is
+built off the UI isolate from admitted spine documents. Note selection also
+runs in a worker and resolves its result back to the original node instances.
+This does not alter
+admission, identities, or persisted reading data. Empty unreferenced anchors
+are internal document anchors, not note boundaries. Backlinks are omitted
+without ending the selection or discarding the note text after them. In unmarked markup with
+no later reference or structural boundary, the enclosing element
+is the available end boundary; arbitrary prose alone cannot identify a note's
+end. Excerpt flow preparation is off-isolate; paragraph shaping keeps the
+existing bounded steps. Cancelled image work releases its page and decoded
+images instead of returning an abandoned note. The screen treats cancellation
+as cancellation, retaining the reading place; unreadable notes keep their
+existing navigation fallback. Hardware acceptance and
+performance measurements remain with the parent.
+
 
 ### MOBI
 

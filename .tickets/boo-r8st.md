@@ -94,3 +94,45 @@ Parent owns integration, user acceptance, coverage, mutations and closure.
 - Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
 - Stages: build, review, fix if needed, then parent integration and acceptance.
 - Launch accepted. No implementation result or acceptance is claimed.
+
+
+## Implementation evidence — 2026-11-13
+
+Lead checkout: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb`,
+branch `t3/c0996feb`. It began clean at original base
+`e23662daf2e4e9b737aee4366c418f0ec5591145`; no prerequisite diff was pending.
+
+The original failures are retained in
+`/tmp/bookfin-boo-r8st-evidence/01-original-red.log`: surrounding and next-note
+text entered two previews, and 120 short paragraphs with large authored line
+spacing raised `StateError: Too many elements`. This is a bounded controlled
+reproduction, not a soak or performance measurement.
+
+Whole elements and empty-anchor notes now use one original-document selection.
+Actual note-reference destinations distinguish next notes from internal empty
+anchors. Marked ancestors retain priority. Excerpt preparation keeps the DOM
+and unchanged flow identities, including shared table measurements. Excerpt
+layout stops at its first page with 12,000 logical pixels of capacity, releases
+unfinished work and surplus pages, and reports omitted content through the
+page's existing last-page flag. The shared glass sheet retains its title-row
+Go to note and shows a short notice for a limited preview. The reading place
+and saved history stay unchanged until explicit navigation.
+
+Additional regressions reproduced and corrected during implementation include
+clipping/omission inside table cells, truncation at an internal empty anchor,
+continuation after a backlink, and cancellation during image decoding.
+Compilation mistakes and one test-helper misuse were recorded as development
+failures, not counted as meaningful red evidence. All command logs and their
+results are indexed in `docs/evidence/boo-r8st/commands.json`.
+
+The final focused set passed 58 tests. The final affected reader and Crossings
+suites passed 1,733 tests with 21 declared skips. The final full run passed
+3,711 tests with 27 declared skips. Earlier full and affected runs, including
+all development failures, remain in the command manifest. The sole review
+is pending. Affected analysis has no issues; all 15 changed Dart files pass
+format verification. The review uses client request
+`bookfin-boo-r8st-review-20261113-1`, Codex `gpt-6-astra`, high reasoning,
+shared isolation, async mode, and read-only review role. Parent retains integration,
+acceptance, coverage, mutation testing and closure. No device/browser work,
+credentials, other-ticket changes, PR, push, merge or ticket closure was done.
+The unrelated t5-rplx cause remains uninvestigated here; tf-il7u is unchanged.

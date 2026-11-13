@@ -7,6 +7,7 @@
 // UI isolate (layout.dart) turns the flow items into Flutter paragraphs and
 // pages. Every length that does not depend on a paragraph's own width is
 // already in pixels here.
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -302,11 +303,12 @@ class PreparedSection {
   /// Whether this is the whole section, not a part of it.
   bool get whole => firstPrepared == 0 && reachesEnd;
 
-  /// The flow of [element] alone, as a section to lay out on a page of
-  /// [settings], or null when no flow item shows a node of [element].
+  /// The flow of [selection], prepared off the UI isolate for [settings],
+  /// or null when no selected content remains. Keeps the original DOM and
+  /// unchanged flow identities, so existing measurements remain reusable.
   ///
   /// It holds the flow items from the first to the last that shows a node
-  /// of [element]. A paragraph that holds a node of [element] comes whole,
+  /// of the selection. Paragraphs keep only selected runs,
   /// without the runs of the elements of [omit], and a paragraph that
   /// [omit] leaves with no text but white space goes. [settings] has the
   /// text size and the theme of [this.settings]; its width and its height
@@ -314,20 +316,43 @@ class PreparedSection {
   ///
   /// The excerpt lays out as a fragment of its own, which starts at the
   /// left edge and the top of its page and ends at its last line:
-  /// - The boxes around [element] are left out, with their margins,
-  ///   padding and borders. The box of [element] is the excerpt's root, and
+  /// - The boxes around the selection's root are left out, with their margins,
+  ///   padding and borders. The root's box
   ///   has no margins.
   /// - The top margins that meet the excerpt's top are cut, as at a page
   ///   break. Layout cuts the bottom margins at its end.
   /// - The first paragraph has no first-line indent.
   /// - The list marker that the page draws left of the first line, of
-  ///   [element] or of a box around it, comes before the first word, as a
+  ///   the root or of a box around it, comes before the first word, as a
   ///   label that no node owns.
-  PreparedSection? excerpt(
-    DomElement element,
+  Future<PreparedSection?> excerpt(
+    DomSelection selection,
     PageSettings settings, {
     List<DomElement> omit = const [],
-  }) {
+  }) async {
+    final sourceFlow = flow;
+    final items = await Isolate.run(
+      () => PreparedSection._excerptFlow(sourceFlow, selection, omit),
+    );
+    if (items == null) return null;
+    return PreparedSection._(
+      index,
+      settings,
+      dom,
+      [for (final item in items) item is int ? flow[item] : item as FlowItem],
+      styles,
+      chapters,
+    );
+  }
+
+  // An unchanged item crosses the worker boundary as its index, not a copy.
+  // Measurement keys use its identity. New clipped items have new keys.
+  static List<Object>? _excerptFlow(
+    List<FlowItem> flow,
+    DomSelection selection,
+    List<DomElement> omit,
+  ) {
+    final element = selection.root;
     (int, int) span(DomElement element) {
       var last = element as DomNode;
       while (last is DomElement && last.children.isNotEmpty) {
@@ -336,8 +361,7 @@ class PreparedSection {
       return (element.order, last.order);
     }
 
-    final (from, to) = span(element);
-    bool inside(int node) => node >= from && node <= to;
+    bool inside(int node) => selection.contains(node);
     bool runShows(InlineRun run) => switch (run) {
       TextRun(:final node) ||
       BreakRun(:final node) ||
@@ -354,9 +378,11 @@ class PreparedSection {
       BlockStart() || BlockEnd() || SkippedItem() => false,
     };
     final omitted = [for (final element in omit) span(element)];
-    bool kept(InlineRun run) => !omitted.any(
-      (span) => _nodeOf(run) >= span.$1 && _nodeOf(run) <= span.$2,
-    );
+    bool kept(InlineRun run) =>
+        (run is RaisedRun || inside(_nodeOf(run))) &&
+        !omitted.any(
+          (span) => _nodeOf(run) >= span.$1 && _nodeOf(run) <= span.$2,
+        );
     StyledText strip(StyledText text) => StyledText(text.style, text.align, [
       for (final run in text.runs)
         if (kept(run))
@@ -368,6 +394,32 @@ class PreparedSection {
       (run) => !kept(run) || (run is RaisedRun && omits(run.text)),
     );
     FlowItem? without(FlowItem item) {
+      if (item is TableItem) {
+        var changed = false;
+        final rows = [
+          for (final row in item.rows)
+            [
+              for (final cell in row)
+                () {
+                  final parts = <FlowItem>[];
+                  for (final part in cell.flow) {
+                    final kept = without(part);
+                    if (!identical(kept, part)) changed = true;
+                    if (kept != null) parts.add(kept);
+                  }
+                  return TableCell(
+                    parts,
+                    colspan: cell.colspan,
+                    padding: cell.padding,
+                    border: cell.border,
+                    align: cell.align,
+                  );
+                }(),
+            ],
+        ];
+        return changed ? TableItem(rows, item.width, item.spacing) : item;
+      }
+      if (item is ImageItem) return inside(item.node) ? item : null;
       if (item is! ParagraphItem || !omits(item.text)) return item;
       final text = strip(item.text);
       if (text.runs.every((run) => run is TextRun && run.text.trim().isEmpty)) {
@@ -456,19 +508,17 @@ class PreparedSection {
         widows: paragraph.widows,
       );
     }
-    return PreparedSection._(
-      index,
-      settings,
-      dom,
-      [
+    if (!items.any(shows)) return null;
+    final original = {for (final (index, item) in flow.indexed) item: index};
+    return [
+      for (final item in <FlowItem>[
         ...boxes,
         ...items,
         for (var close = 0; close < boxes.length + depth; close++)
           const BlockEnd(),
-      ],
-      styles,
-      chapters,
-    );
+      ])
+        original[item] ?? item,
+    ];
   }
 }
 

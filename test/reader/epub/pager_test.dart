@@ -21,6 +21,7 @@ import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/search.dart';
 import 'package:bookfin/reader/epub/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 
 import '../../../tool/showcase_media.dart' as media;
 import 'helpers.dart';
@@ -822,6 +823,64 @@ void main() {
     return readOf(note.page);
   }
 
+  test(
+    'an empty note anchor in a shared paragraph excludes its neighbours',
+    () async {
+      expect(
+        await noteRead(
+          book([
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a>'
+                '<a epub:type="noteref" href="s1.xhtml#next">2</a></p>',
+            '<p>Before. <a id="n"/>First note. '
+                '<a href="#detail" id="internal">A detail.</a> '
+                '<a href="s0.xhtml" role="doc-backlink">Back</a>'
+                '<a id="next"/>Second note.</p><p>After.</p>',
+          ]),
+        ),
+        ['First note. A detail.'],
+      );
+    },
+  );
+
+  test(
+    'an empty note anchor between blocks keeps only its own paragraphs',
+    () async {
+      expect(
+        await noteRead(
+          book([
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a>'
+                '<a epub:type="noteref" href="s1.xhtml#next">2</a></p>',
+            '<div><h2>Notes</h2><a id="n"/><p>First note.</p>'
+                '<p>Its <a id="internal"/>continuation.</p>'
+                '<a id="next"/><p>Second note.</p></div><p>After.</p>',
+          ]),
+        ),
+        ['First note.', 'Its continuation.'],
+      );
+    },
+  );
+
+  test('an exceptionally tall note returns its beginning without moving the page', () async {
+    open(
+      book([
+        '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+        '<aside id="n" epub:type="footnote">'
+            '${[for (var i = 0; i < 120; i++) '<p>Note paragraph $i.</p>'].join()}'
+            '</aside>',
+      ], css: 'aside p { line-height: 10000px }'),
+    );
+    final first = await present();
+    reported.clear();
+    final note = (await until(
+      pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300),
+    ))!;
+    addTearDown(note.dispose);
+    expect(readOf(note.page).first, 'Note paragraph 0.');
+    expect(readOf(note.page).join(' '), isNot(contains('Note paragraph 119.')));
+    expect(shown().page, same(first.page));
+    expect(reported, isEmpty);
+  });
+
   /// A book whose first section has a note reference, ref-1, to the note
   /// n in the second section, whose paragraphs are [note].
   Publication backBook(String note) => book([
@@ -829,6 +888,111 @@ void main() {
     '<p id="other">Other text.</p><aside id="n" epub:type="footnote">'
         '$note</aside>',
   ]);
+
+  test(
+    'a note inside a table excludes other cells and its back link',
+    () async {
+      expect(
+        await noteRead(
+          book([
+            '<p><a id="ref" epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+            '<table><tr><td>Other cell.</td><td><aside id="n" epub:type="footnote">'
+                '<p>The note. <a href="s0.xhtml#ref" role="doc-backlink">Back</a></p>'
+                '</aside></td></tr></table>',
+          ]),
+        ),
+        ['The note.'],
+      );
+    },
+  );
+
+  test(
+    'an unreferenced empty internal anchor does not start another note',
+    () async {
+      expect(
+        await noteRead(
+          book([
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a>'
+                '<a epub:type="noteref" href="s1.xhtml#next">2</a></p>',
+            '<div><a id="n"/><p>Beginning.</p><a id="internal"/><p>Continuation.</p>'
+                '<a id="next"/><p>Second note.</p></div>',
+          ]),
+        ),
+        ['Beginning.', 'Continuation.'],
+      );
+    },
+  );
+
+  test(
+    'a back link inside an unmarked note does not cut off its continuation',
+    () async {
+      expect(
+        await noteRead(
+          book([
+            '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+            '<div><a id="n"/><p>The note. <a href="s0.xhtml" '
+                'role="doc-backlink">Back</a></p><p>Its continuation.</p>'
+                '<h2>After the notes</h2><p>Unrelated trailing text.</p></div>',
+          ]),
+        ),
+        ['The note.', 'Its continuation.'],
+      );
+    },
+  );
+
+  test(
+    'a note containing only nested back links has no readable preview',
+    () async {
+      open(
+        backBook(
+          '<p><sup><a href="s0.xhtml#ref-1" role="doc-backlink">Back</a></sup></p>',
+        ),
+      );
+      await present();
+      final note = await until(
+        pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300),
+      );
+      note?.dispose();
+      expect(note, isNull);
+    },
+  );
+
+  test('closing the book while a note image decodes releases that image and cancels the note', () async {
+    open(
+      book(
+        [
+          '<p><a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+          '<aside id="n" epub:type="footnote"><p>The note.</p><img src="../note.png"/></aside>',
+        ],
+        files: {'note.png': img.encodePng(img.Image(width: 2, height: 2))},
+      ),
+    );
+    await present();
+    final created = <ui.Image>[];
+    final disposed = <ui.Image>[];
+    final previousCreate = ui.Image.onCreate;
+    final previousDispose = ui.Image.onDispose;
+    addTearDown(() {
+      ui.Image.onCreate = previousCreate;
+      ui.Image.onDispose = previousDispose;
+    });
+    ui.Image.onCreate = (image) {
+      created.add(image);
+      pager().dispose();
+    };
+    ui.Image.onDispose = disposed.add;
+    await expectLater(
+      pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 300).then((
+        note,
+      ) {
+        note?.dispose();
+        return note;
+      }),
+      throwsA(isA<PageRequestStopped>()),
+    );
+    expect(created, hasLength(1));
+    expect(disposed, orderedEquals(created));
+  });
 
   test('a note leaves out a back link that the book marks with the role '
       'doc-backlink', () async {

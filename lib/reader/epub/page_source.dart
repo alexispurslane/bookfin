@@ -389,16 +389,19 @@ class PageSource {
     return _ask(_Rank.asked, null, (request) => _ready(layout, request));
   }
 
-  /// Lays out [element] of [section] as one scrolled fragment [width]
+  /// Lays out [selection] of [section] as one scrolled fragment [width]
   /// pixels wide, leaving out [omit] as [PreparedSection.excerpt] does.
   /// Uses the section's measurement owner, with the fragment's actual
   /// content widths. The caller owns the returned page and must dispose it.
+  /// Returns the beginning when the note exceeds preview capacity; the
+  /// page's [LaidPage.last] is false then. Unreturned pages and unfinished
+  /// layout are released by this source, without shaping the remainder.
   /// Returns null when the element has no visible flow. Stops when the
   /// source has dropped the section's page settings or is disposed, with
   /// [PageRequestStopped]. Measurement rejection rebuilds unfinished work.
   Future<LaidPage?> excerpt(
     PreparedSection section,
-    DomElement element, {
+    DomSelection selection, {
     required double width,
     List<DomElement> omit = const [],
   }) async {
@@ -410,33 +413,39 @@ class PageSource {
     if (layout == null) {
       throw const PageRequestStopped('The page settings changed.');
     }
-    final fragment = section.excerpt(
-      element,
-      PageSettings(
-        width: width,
-        height: 1e6,
-        fontSize: section.settings.fontSize,
-        night: section.settings.night,
-        sizesMainText: section.settings.sizesMainText,
-      ),
-      omit: omit,
-    );
-    if (fragment == null) return null;
     return _ask(_Rank.asked, null, (request) async {
       request.layout = layout;
+      final preparing = section.excerpt(
+        selection,
+        PageSettings(
+          width: width,
+          // About twenty phone screens: ordinary notes still scroll, while
+          // a chapter-sized note cannot retain an unbounded laid-out strip.
+          height: 12000,
+          fontSize: section.settings.fontSize,
+          night: section.settings.night,
+          sizesMainText: section.settings.sizesMainText,
+        ),
+        omit: omit,
+      );
+      await request.wait(also: preparing.then((_) {}));
+      final fragment = await preparing;
+      if (fragment == null) return null;
       while (true) {
         if (!identical(_layouts[(section.index, section.settings)], layout)) {
           _settingsChanged();
         }
         final run = layout.startExcerpt(section, fragment);
         try {
-          while (layout.excerpts.containsKey(run) && !run.done) {
-            run.step(_stepBudget);
+          while (layout.excerpts.containsKey(run) &&
+              run.pages.isEmpty &&
+              !run.done) {
+            run.step(_stepBudget, want: 1);
             if (run.contradicted) {
               _contradicted(layout);
               break;
             }
-            if (!run.done) {
+            if (run.pages.isEmpty && !run.done) {
               await request.wait(also: Future<void>.delayed(Duration.zero));
             }
           }
@@ -2157,12 +2166,15 @@ class _SectionLayout {
     return run;
   }
 
-  /// Transfers the finished page to the caller before releasing the run.
+  /// Transfers the first page, releasing unfinished work and surplus pages.
   LaidPage takeExcerpt(LayoutRun run) {
-    assert(excerpts.containsKey(run) && run.done);
-    final page = run.pages.single;
+    assert(excerpts.containsKey(run) && run.pages.isNotEmpty);
+    final page = run.pages.first;
     excerpts.remove(run);
     run.dispose();
+    for (final extra in run.pages.skip(1)) {
+      extra.dispose();
+    }
     return page;
   }
 

@@ -18,6 +18,7 @@ import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
+import 'package:bookfin/reader/epub/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -297,7 +298,11 @@ void main() {
       );
 
       await expectLater(
-        source.excerpt(section, section.dom.elementById('n')!, width: 240),
+        source.excerpt(
+          section,
+          DomSelection(section.dom.elementById('n')!),
+          width: 240,
+        ),
         throwsA(isA<PageRequestStopped>()),
       );
       source.checkInvariants();
@@ -314,7 +319,7 @@ void main() {
       final section = await scheduler.until(source.section(0));
       final pending = source.excerpt(
         section,
-        section.dom.elementById('n')!,
+        DomSelection(section.dom.elementById('n')!),
         width: 240,
       );
       // Dispose a wrongly returned page too, so the red test leaks nothing.
@@ -348,7 +353,7 @@ void main() {
       final section = await scheduler.until(source.section(0));
       final pending = source.excerpt(
         section,
-        section.dom.elementById('n')!,
+        DomSelection(section.dom.elementById('n')!),
         width: 240,
       );
       final stopped = expectLater(pending, throwsA(isA<PageRequestStopped>()));
@@ -364,7 +369,7 @@ void main() {
       final section = await scheduler.until(source.section(0));
       final page = (await source.excerpt(
         section,
-        section.dom.elementById('n')!,
+        DomSelection(section.dom.elementById('n')!),
         width: 240,
       ))!;
       addTearDown(page.dispose);
@@ -375,6 +380,100 @@ void main() {
       expect(page.startPlace, isNotNull);
     },
   );
+
+  test(
+    'a limited excerpt stops shaping before the omitted paragraphs',
+    () async {
+      open(book(['<aside id="n">${paragraphs(100)}</aside>']));
+      final section = await scheduler.until(source.section(0));
+      final before = LayoutRun.laidOutUnits;
+      final page = (await source.excerpt(
+        section,
+        DomSelection(section.dom.elementById('n')!),
+        width: 240,
+      ))!;
+      addTearDown(page.dispose);
+      expect(page.last, isFalse);
+      expect(pageBlocks(page).first.spans.first.label, startsWith('Part 0'));
+      expect(
+        pageBlocks(page)
+            .expand((block) => block.spans)
+            .map((span) => span.label)
+            .join(' '),
+        isNot(contains('Part 99')),
+      );
+      expect(
+        LayoutRun.laidOutUnits - before,
+        lessThan(section.dom.visibleLength ~/ 2),
+      );
+      source.checkInvariants();
+      source.dispose();
+      expect(pageBlocks(page).first.spans.first.label, startsWith('Part 0'));
+    },
+  );
+
+  for (final dropSettings in [false, true]) {
+    test(
+      'an excerpt releases a partially shaped paragraph when ${dropSettings ? 'its settings drop' : 'its source closes'}',
+      () async {
+        open(
+          book(['<aside id="n"><p>${prose(200)}</p></aside>']),
+          budget: Duration.zero,
+        );
+        final section = await scheduler.until(source.section(0));
+        final before = LayoutRun.laidOutUnits;
+        final pending = source.excerpt(
+          section,
+          DomSelection(section.dom.elementById('n')!),
+          width: 240,
+        );
+        var ended = false;
+        final stopped = expectLater(
+          pending.whenComplete(() => ended = true),
+          throwsA(isA<PageRequestStopped>()),
+        );
+        // Yield event-loop turns, as the excerpt does. Advance by observed
+        // shaping work, never by a sleep or a timing threshold.
+        while (LayoutRun.laidOutUnits == before && !ended) {
+          await Future<void>.delayed(Duration.zero);
+        }
+        expect(ended, isFalse);
+        if (dropSettings) {
+          source.settings = smallPage;
+          source.settings = const PageSettings(
+            width: 500,
+            height: 700,
+            fontSize: 22,
+            night: false,
+          );
+        } else {
+          source.dispose();
+        }
+        await stopped;
+        source.checkInvariants();
+      },
+    );
+  }
+
+  test('a preview keeps its shared paragraph alive after surplus pages are released', () async {
+    open(
+      book([
+        '<aside id="n"><p>${prose(8)}</p></aside>',
+      ], css: 'aside p { line-height: 10000px }'),
+    );
+    final section = await scheduler.until(source.section(0));
+    final page = (await source.excerpt(
+      section,
+      DomSelection(section.dom.elementById('n')!),
+      width: 240,
+    ))!;
+    addTearDown(page.dispose);
+    expect(page.last, isFalse);
+    source.dispose();
+    expect(page.pieces.first.paragraph.getBoxesForRange(0, 1), isNotEmpty);
+    page.dispose();
+    expect(() => page.pieces, throwsStateError);
+  });
 
   test('opening deep in a 400,000-character section gives the anchored page '
       'after the prepare, one step for the line and the steps of one page, '

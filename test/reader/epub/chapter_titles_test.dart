@@ -284,7 +284,7 @@ void main() {
 
   test(
     'a part and its note excerpt keep titles from outside the prepared flow',
-    () {
+    () async {
       var reads = 0;
       final source = SectionSource(
         index: 3,
@@ -312,7 +312,10 @@ void main() {
       expect(part.firstPrepared, greaterThan(0));
       expect(part.reachesEnd, isFalse);
       expect(part.chapters.at(result.place!), 'Earlier chapter');
-      final excerpt = part.excerpt(part.dom.elementById('note')!, smallPage)!;
+      final excerpt = (await part.excerpt(
+        DomSelection(part.dom.elementById('note')!),
+        smallPage,
+      ))!;
       expect(excerpt.chapters.at(result.place!), 'Earlier chapter');
       expect(excerpt.chapters, same(part.chapters));
       expect(reads, 1);

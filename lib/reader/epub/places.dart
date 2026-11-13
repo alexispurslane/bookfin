@@ -8,7 +8,9 @@
 // same three values, so a place that the WebView reader saved still opens,
 // and an older Bookfin opens a place that this one saves. A page saves its
 // first visible character ([firstVisible]), not epub.js's word start.
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:xml/xml.dart';
 
@@ -413,6 +415,46 @@ bool isNoteReference(DomElement link) =>
 bool isBackLink(DomElement link) =>
     _types(link).contains('backlink') || _roles(link).contains('doc-backlink');
 
+/// Note-reference destinations by admitted section path. Run in a worker;
+/// the pager keeps this immutable link index for its open publication. Only
+/// references identify unmarked notes, never an arbitrary internal anchor.
+Map<String, Set<String>> noteReferenceTargets(Map<String, Uint8List> sections) {
+  final result = <String, Set<String>>{};
+  for (final MapEntry(key: path, value: bytes) in sections.entries) {
+    final DomSection document;
+    try {
+      document = DomSection.parse(utf8.decode(bytes));
+    } on FormatException {
+      // A malformed section must not prevent notes in other sections.
+      continue;
+    }
+    for (final element in DomSelection(document.body).elements) {
+      if (element.name != 'a' || !isNoteReference(element)) continue;
+      final href = element.attributes['href'];
+      if (href == null) continue;
+      try {
+        final url = Uri(
+          scheme: 'https',
+          host: 'book',
+          path: '/$path',
+        ).resolve(href);
+        final destination = url.pathSegments.join('/');
+        if (url.scheme != 'https' ||
+            url.host != 'book' ||
+            url.hasQuery ||
+            url.fragment.isEmpty ||
+            !sections.containsKey(destination)) {
+          continue;
+        }
+        (result[destination] ??= {}).add(Uri.decodeComponent(url.fragment));
+      } on FormatException {
+        // An unreadable link has no destination.
+      }
+    }
+  }
+  return result;
+}
+
 /// The note that a link to [target] shows over the page, or null when the
 /// link jumps to [target]. [reference] is whether the link is a note
 /// reference ([isNoteReference]).
@@ -421,24 +463,52 @@ bool isBackLink(DomElement link) =>
 /// has the token `footnote`, `endnote`, `rearnote` or `note`, or whose role
 /// is `doc-footnote` or `doc-endnote`. Without one, a note reference shows
 /// [target] itself, or when [target] has no visible text, such as an empty
-/// anchor, the nearest element around it with text. A link without a
-/// target shows no note.
-DomElement? noteOf(DomElement? target, {required bool reference}) {
+/// anchor, only the following content in its nearest text-bearing ancestor.
+/// [noteTargets] names other note-reference destinations in this section.
+/// They, a marked note, a sibling heading or a rule end an unmarked selection.
+/// Internal anchors and back links do not. Marked ancestors always select
+/// their whole contents.
+DomSelection? noteOf(
+  DomElement? target, {
+  required bool reference,
+  Set<String> noteTargets = const {},
+}) {
   for (var element = target; element != null; element = element.parent) {
     if (_types(element).any(_noteTypes.contains) ||
         _roles(element).any(_noteRoles.contains)) {
-      return element;
+      return DomSelection(element);
     }
   }
-  if (!reference) return null;
-  var element = target;
+  if (!reference || target == null) return null;
+  DomElement? element = target;
   while (element != null &&
       !element.texts.any(
         (text) => visibleCount(text.text, 0, text.text.length) > 0,
       )) {
     element = element.parent;
   }
-  return element;
+  if (element == null) return null;
+  if (identical(element, target)) return DomSelection(element);
+  final following = DomSelection(element, from: target).elements.skip(1);
+  for (final node in following) {
+    if (_types(node).any(_noteTypes.contains) ||
+        _roles(node).any(_noteRoles.contains) ||
+        noteTargets.contains(node.id) ||
+        (identical(node.parent, element) &&
+            const {
+              'h1',
+              'h2',
+              'h3',
+              'h4',
+              'h5',
+              'h6',
+              'hr',
+              'section',
+            }.contains(node.name))) {
+      return DomSelection(element, from: target, before: node);
+    }
+  }
+  return DomSelection(element, from: target);
 }
 
 const _noteTypes = {'footnote', 'endnote', 'rearnote', 'note'};

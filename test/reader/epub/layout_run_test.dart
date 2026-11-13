@@ -169,7 +169,7 @@ void main() {
 
   for (final width in [240.0, readerPage.width]) {
     test('a note at width $width preserves later page cuts and place search '
-        'inside its shared nested paragraph', () {
+        'inside its shared nested paragraph', () async {
       final section = prepared(
         '<div class="outer"><aside id="note"><p>The note begins.</p>'
         '<div class="inner"><p>${prose(120)}</p></div></aside></div>',
@@ -181,10 +181,10 @@ void main() {
       final at = main.length * 3 ~/ 4;
       final place = main[at].startPlace!;
       final start = lineStart(section, place, measurements: measurements);
-      final excerpt = section.excerpt(
-        section.dom.elementById('note')!,
+      final excerpt = (await section.excerpt(
+        DomSelection(section.dom.elementById('note')!),
         PageSettings(width: width, height: 1e6, fontSize: 20, night: false),
-      )!;
+      ))!;
       expect(
         excerpt.flow.whereType<ParagraphItem>().last,
         same(section.flow.whereType<ParagraphItem>().last),

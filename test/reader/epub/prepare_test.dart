@@ -209,7 +209,10 @@ void main() {
         fontSize: 20,
         night: true,
       );
-      final excerpt = whole.excerpt(whole.dom.elementById('note-2')!, sheet)!;
+      final excerpt = (await whole.excerpt(
+        DomSelection(whole.dom.elementById('note-2')!),
+        sheet,
+      ))!;
       final chapter = layoutSection(excerpt);
       addTearDown(chapter.dispose);
 
@@ -225,18 +228,22 @@ void main() {
 
     /// The excerpt of the element [id] of [body], laid out on a sheet 300
     /// pixels wide.
-    ChapterLayout sheetOf(String body, String id, {String css = bookCss}) {
+    Future<ChapterLayout> sheetOf(
+      String body,
+      String id, {
+      String css = bookCss,
+    }) async {
       final whole = prepared(body, css: css);
       final chapter = layoutSection(
-        whole.excerpt(
-          whole.dom.elementById(id)!,
+        (await whole.excerpt(
+          DomSelection(whole.dom.elementById(id)!),
           const PageSettings(
             width: 300,
             height: 100000,
             fontSize: 20,
             night: false,
           ),
-        )!,
+        ))!,
       );
       addTearDown(chapter.dispose);
       return chapter;
@@ -262,8 +269,8 @@ void main() {
     }
 
     test('an excerpt has no space above its first line or below its last: '
-        'the margins and padding of the page around it are left out', () {
-      final chapter = sheetOf(notes, 'note-2');
+        'the margins and padding of the page around it are left out', () async {
+      final chapter = await sheetOf(notes, 'note-2');
       final page = chapter.pages.single;
 
       expect(chapter.slices.first.top, page.top);
@@ -272,8 +279,8 @@ void main() {
 
     test('a note\'s first line starts at the excerpt\'s left edge, without '
         'the page\'s side margins, the list\'s padding or a first-line '
-        'indent', () {
-      final chapter = sheetOf(
+        'indent', () async {
+      final chapter = await sheetOf(
         '<p>Before.</p><aside id="n" epub:type="footnote"><p>A note '
             'without a number.</p></aside>',
         'n',
@@ -283,8 +290,8 @@ void main() {
     });
 
     test('a numbered note shows its number before its first word, not '
-        'hanging in a margin', () {
-      final chapter = sheetOf(notes, 'note-2');
+        'hanging in a margin', () async {
+      final chapter = await sheetOf(notes, 'note-2');
       final first = chapter.slices.first.piece!;
 
       expect(chapter.decorations.whereType<MarkerDecoration>(), isEmpty);
@@ -295,8 +302,8 @@ void main() {
     });
 
     test('a note\'s number is not book text: it is not in the text that '
-        'the excerpt shows to copy and to a screen reader', () {
-      final chapter = sheetOf(notes, 'note-2');
+        'the excerpt shows to copy and to a screen reader', () async {
+      final chapter = await sheetOf(notes, 'note-2');
       final line = chapter.slices.first;
       final text = bookUnits(chapter.pages.single, [
         (line, line.units.$1, line.units.$2),
@@ -306,11 +313,11 @@ void main() {
     });
 
     test('a later paragraph of a note keeps its first-line indent and the '
-        'space above it', () {
+        'space above it', () async {
       final whole = prepared(notes, css: bookCss);
       final page = layoutSection(whole);
       addTearDown(page.dispose);
-      final chapter = sheetOf(notes, 'note-2');
+      final chapter = await sheetOf(notes, 'note-2');
 
       double gap(ChapterLayout chapter) {
         final lines = chapter.slices.where((slice) => slice.piece != null);
@@ -339,13 +346,25 @@ void main() {
     });
 
     test('an element that no flow item shows, such as one that the style '
-        'hides, has no excerpt', () {
+        'hides, has no excerpt', () async {
       final whole = prepared(
         '<p>Text.</p><aside id="n"><p>Hidden.</p></aside><aside id="e"/>',
         css: '#n { display: none }',
       );
-      expect(whole.excerpt(whole.dom.elementById('n')!, readerPage), isNull);
-      expect(whole.excerpt(whole.dom.elementById('e')!, readerPage), isNull);
+      expect(
+        (await whole.excerpt(
+          DomSelection(whole.dom.elementById('n')!),
+          readerPage,
+        )),
+        isNull,
+      );
+      expect(
+        (await whole.excerpt(
+          DomSelection(whole.dom.elementById('e')!),
+          readerPage,
+        )),
+        isNull,
+      );
     });
   });
 }

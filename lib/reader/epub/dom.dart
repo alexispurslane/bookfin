@@ -129,6 +129,56 @@ final class DomElement extends DomNode {
   }
 }
 
+/// A contiguous selection of original nodes inside [root]. No node is copied
+/// or reparented. [from] is included; [before] and everything after it are
+/// excluded. Omitting both selects the whole element.
+class DomSelection {
+  DomSelection(this.root, {DomNode? from, DomNode? before})
+    : first = (from ?? root).order,
+      end = before?.order ?? _endOf(root) {
+    if (first < root.order || end > _endOf(root) || first >= end) {
+      throw ArgumentError('The selection must lie inside its root.');
+    }
+  }
+
+  final DomElement root;
+  final int first;
+  final int end;
+
+  /// The same selection on [document]'s original node instances after a
+  /// worker hop. The document must be the same admitted section; stable
+  /// document-order numbers identify its nodes across isolates.
+  DomSelection inDocument(DomSection document) =>
+      DomSelection._(document.nodeAt(root.order) as DomElement, first, end);
+
+  DomSelection._(this.root, this.first, this.end);
+
+  bool contains(int order) => order >= first && order < end;
+
+  Iterable<DomText> get texts =>
+      root.texts.where((node) => contains(node.order));
+
+  /// Selected elements in document order, including the root when selected.
+  Iterable<DomElement> get elements sync* {
+    Iterable<DomElement> visit(DomElement element) sync* {
+      if (element.order >= end) return;
+      if (contains(element.order)) yield element;
+      for (final child in element.elements) {
+        yield* visit(child);
+      }
+    }
+
+    yield* visit(root);
+  }
+
+  static int _endOf(DomNode node) {
+    while (node is DomElement && node.children.isNotEmpty) {
+      node = node.children.last;
+    }
+    return node.order + 1;
+  }
+}
+
 /// One parsed spine section.
 class DomSection {
   DomSection._(

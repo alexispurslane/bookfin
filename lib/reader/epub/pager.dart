@@ -46,6 +46,9 @@ class LaidNote {
   final ui.Picture picture;
   final Iterable<ui.Image> _images;
 
+  /// Whether the sheet shows only the beginning; Go to note opens the rest.
+  bool get limited => !page.last;
+
   void dispose() {
     picture.dispose();
     page.dispose();
@@ -124,6 +127,14 @@ class EpubPager implements DocumentNavigator {
   final ValueChanged<int?>? _onShow;
   final PageSource _source;
   final IsolateHop _hop;
+
+  late final Future<Map<String, Set<String>>> _noteReferences = _hop(
+    noteReferenceTargets,
+    {
+      for (final path in _publication.spine)
+        path: ?_publication.textFiles[path],
+    },
+  );
 
   /// The saved place to open at, until a page for it or for the book's
   /// start is shown.
@@ -308,10 +319,25 @@ class EpubPager implements DocumentNavigator {
     if (!(width > 0 && width.isFinite)) {
       throw ArgumentError.value(width, 'width', 'must be above 0');
     }
+    final settings = _settings;
+    void checkCurrent() {
+      if (_disposed || _wanted != settings) {
+        throw const PageRequestStopped('The note is no longer current.');
+      }
+    }
+
     final (index, fragment) = _destinationOf(link.href);
     final prepared = await _source.section(index);
     final target = fragment == null ? null : prepared.dom.elementById(fragment);
-    final note = noteOf(target, reference: link.noteref);
+    final references = link.noteref
+        ? (await _noteReferences)[_publication.spine[index]] ?? const <String>{}
+        : const <String>{};
+    final selected = await _hop(
+      (input) => noteOf(input.$1, reference: input.$2, noteTargets: input.$3),
+      (target, link.noteref, references),
+    );
+    final note = selected?.inDocument(prepared.dom);
+    checkCurrent();
     final page = note == null
         ? null
         : await _source.excerpt(
@@ -319,7 +345,10 @@ class EpubPager implements DocumentNavigator {
             note,
             width: width,
             omit: [
-              for (final back in _linksIn(note))
+              for (final back in note.elements.where(
+                (element) =>
+                    element.name == 'a' && element.attributes['href'] != null,
+              ))
                 if (isBackLink(back) ||
                     await _pointsBack(back, index, (index, fragment)))
                   back,
@@ -328,16 +357,27 @@ class EpubPager implements DocumentNavigator {
     if (page == null) return null;
     final scale =
         ui.PlatformDispatcher.instance.implicitView?.devicePixelRatio ?? 1;
-    final images = await decodeImages(
-      [page],
-      _publication.bytesOf,
-      scale: scale,
-    );
-    return LaidNote._(
-      page,
-      drawPage(page, images, paper: false),
-      images.values,
-    );
+    Map<String, ui.Image>? images;
+    var transferred = false;
+    try {
+      checkCurrent();
+      images = await decodeImages([page], _publication.bytesOf, scale: scale);
+      checkCurrent();
+      final note = LaidNote._(
+        page,
+        drawPage(page, images, paper: false),
+        images.values,
+      );
+      transferred = true;
+      return note;
+    } finally {
+      if (!transferred) {
+        page.dispose();
+        for (final image in images?.values ?? const <ui.Image>[]) {
+          image.dispose();
+        }
+      }
+    }
   }
 
   /// Turns to the page after or before the shown page, and reports it. At
