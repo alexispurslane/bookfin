@@ -44,7 +44,19 @@ import 'sync/device.dart';
 
 Future<void> main() => runBookfin();
 
-Future<void> runBookfin({bool gallery = false}) async {
+/// Starts the app with local sources. Factories let host tests hold native
+/// source opening without replacing the production startup coordination.
+/// The app owns the result of [createCatalog], restores it once, and disposes
+/// it on failed startup or when the root is removed. [catalogStore] supplies
+/// both restoration and legacy migration. [recordStore] replaces native
+/// record persistence for hosts without the platform database plugin.
+Future<void> runBookfin({
+  bool gallery = false,
+  Future<BookfinSources> Function()? openOtherSources,
+  CatalogController Function(LocalCatalogStore store)? createCatalog,
+  LocalCatalogStore? catalogStore,
+  LocalResumeStore? recordStore,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(readerLicenses);
   LicenseRegistry.addLicense(() async* {
@@ -62,113 +74,147 @@ Future<void> runBookfin({bool gallery = false}) async {
   // Every native platform keeps personal records in the record database.
   // sqflite supplies it on Android, iOS and macOS. A Linux or Windows port
   // must first set sqflite's databaseFactory to the FFI one.
-  final records = LocalResumeStore(
-    openDatabase: kIsWeb ? null : () => RecordDatabase.open(),
-    deviceName: deviceName,
-  );
+  final records =
+      recordStore ??
+      LocalResumeStore(
+        openDatabase: kIsWeb ? null : () => RecordDatabase.open(),
+        deviceName: deviceName,
+      );
   final layout = LibraryLayout(LocalLayoutStore());
-  final opening = gallery ? Future<Covers?>.value() : createCovers();
-  final (:downloads, :playback, :covers) = await openSources(
-    restoreAppearance: appearance.restore,
-    restoreLayout: layout.restore,
-    // Downloads prepares each saved ebook for reading in the background, so
-    // that its first open reads the admitted book (boo-sy2d).
-    openDownloads: () async => gallery
-        ? null
-        : await createDownloads(MediaPolicy(), prepare: prepareDownloadedBook),
-    // The system media player draws the blurred cover that the covers make.
-    // Playback starts without waiting for the covers to open.
-    openPlayback: (downloads) => createPlayback(
-      downloads,
-      store: records,
-      art: (session, cover) async => (await opening)?.blurred(session, cover),
-    ),
-    openCovers: () => opening,
-  );
-  // The reading speed is derived data, so the first frame does not wait
-  // for it. Pages that count before it is read join the saved ones.
-  final speed = ReadingSpeed(LocalReadingSpeedStore());
-  unawaited(speed.restore());
-  // The last page settings only give the first open of a book a head
-  // start, so the first frame does not wait for them either.
-  final pageSettings = LastPageSettings(LocalPageSettingsStore());
-  unawaited(pageSettings.restore());
-  final reader = downloads == null
+  // Local catalog restoration overlaps every independent source opening.
+  // Until runApp hands it to the root, this function owns the controller.
+  final localStore = gallery ? null : catalogStore ?? LocalCatalogStore();
+  final catalog = localStore == null
       ? null
-      : ReaderSession(
-          downloads: downloads,
-          store: records.reading,
-          load: loadPublication,
-          loadDocument: loadReadingDocument,
-          speed: speed,
-          pageSettings: pageSettings,
-          surveyStore: SurveyFiles.new,
-          // A debug build has no text-engine fingerprint, so it keeps no
-          // pages: hot reload changes how pages draw.
-          keptPages: KeptPages(engine: textEngineFingerprint),
-        );
-  // Speech search hears windows of downloaded audiobooks (docs/plans/
-  // cross-edition-places.md, "Build design of S2"). The policy starts after
-  // the first frame, and the speech runtime loads its model at the first
-  // window, never before.
-  final hear = createHear();
-  final heard = downloads == null || hear == null
-      ? null
-      : HeardWindows(
-          hear: hear,
-          store: createDerivedStore('bookfin-heard'),
-          localPath: (file) async =>
-              (await downloads.localFile(file))?.toFilePath(),
-        );
-  final hearing = heard == null || playback == null
-      ? null
-      : HearingPolicy(
-          playback: playback,
-          heard: heard,
-          mayFill: watchFillAllowed(),
-        );
-  // Crossings measures an ebook's outline only when the History first asks
-  // for a landing in it, so no launch step waits for it.
-  final crossings = downloads == null
-      ? null
-      : Crossings(
-          store: createDerivedStore('bookfin-outlines'),
-          measure: (text) async => switch (text.files) {
-            [final file] => await downloads.readLocalFile(
-              file,
-              (original) => measureDownloadedOutline(original, file),
-            ),
-            _ => null,
-          },
-          downloads: downloads.phases,
-          speech: heard == null
-              ? null
-              : (
-                  heard: heard,
-                  words: (text) async => switch (text.files) {
-                    [final file] => await downloads.readLocalFile<ReadBook?>(
-                      file,
-                      (original) => bookWordsReader(original, file),
+      : createCatalog?.call(localStore) ??
+            CatalogController(
+              credentials: SecureCredentialStore(),
+              store: localStore,
+            );
+  final restoring = catalog?.restore();
+  try {
+    late final opening = gallery ? Future<Covers?>.value() : createCovers();
+    final (:downloads, :playback, :covers) =
+        await (openOtherSources?.call() ??
+            openSources(
+              restoreAppearance: appearance.restore,
+              restoreLayout: layout.restore,
+              // Downloads prepares each saved ebook for reading in the background, so
+              // that its first open reads the admitted book (boo-sy2d).
+              openDownloads: () async => gallery
+                  ? null
+                  : await createDownloads(
+                      MediaPolicy(),
+                      prepare: prepareDownloadedBook,
                     ),
-                    _ => null,
-                  },
-                ),
-        );
-  runApp(
-    BookfinApp(
-      appearance: appearance,
-      gallery: gallery,
-      layout: layout,
-      covers: covers,
-      downloads: downloads,
-      playback: playback,
-      reader: reader,
-      crossings: crossings,
-      hearing: hearing,
-      sync: gallery ? null : RecordSync(records: records),
-    ),
-  );
+              // The system media player draws the blurred cover that the covers make.
+              // Playback starts without waiting for the covers to open.
+              openPlayback: (downloads) => createPlayback(
+                downloads,
+                store: records,
+                art: (session, cover) async =>
+                    (await opening)?.blurred(session, cover),
+              ),
+              openCovers: () => opening,
+            ));
+    // The reading speed is derived data, so the first frame does not wait
+    // for it. Pages that count before it is read join the saved ones.
+    final speed = ReadingSpeed(LocalReadingSpeedStore());
+    unawaited(speed.restore());
+    // The last page settings only give the first open of a book a head
+    // start, so the first frame does not wait for them either.
+    final pageSettings = LastPageSettings(LocalPageSettingsStore());
+    unawaited(pageSettings.restore());
+    final reader = downloads == null
+        ? null
+        : ReaderSession(
+            downloads: downloads,
+            store: records.reading,
+            load: loadPublication,
+            loadDocument: loadReadingDocument,
+            speed: speed,
+            pageSettings: pageSettings,
+            surveyStore: SurveyFiles.new,
+            // A debug build has no text-engine fingerprint, so it keeps no
+            // pages: hot reload changes how pages draw.
+            keptPages: KeptPages(engine: textEngineFingerprint),
+          );
+    // Speech search hears windows of downloaded audiobooks (docs/plans/
+    // cross-edition-places.md, "Build design of S2"). The policy starts after
+    // the first frame, and the speech runtime loads its model at the first
+    // window, never before.
+    final hear = createHear();
+    final heard = downloads == null || hear == null
+        ? null
+        : HeardWindows(
+            hear: hear,
+            store: createDerivedStore('bookfin-heard'),
+            localPath: (file) async =>
+                (await downloads.localFile(file))?.toFilePath(),
+          );
+    final hearing = heard == null || playback == null
+        ? null
+        : HearingPolicy(
+            playback: playback,
+            heard: heard,
+            mayFill: watchFillAllowed(),
+          );
+    // Crossings measures an ebook's outline only when the History first asks
+    // for a landing in it, so no launch step waits for it.
+    final crossings = downloads == null
+        ? null
+        : Crossings(
+            store: createDerivedStore('bookfin-outlines'),
+            measure: (text) async => switch (text.files) {
+              [final file] => await downloads.readLocalFile(
+                file,
+                (original) => measureDownloadedOutline(original, file),
+              ),
+              _ => null,
+            },
+            downloads: downloads.phases,
+            speech: heard == null
+                ? null
+                : (
+                    heard: heard,
+                    words: (text) async => switch (text.files) {
+                      [final file] => await downloads.readLocalFile<ReadBook?>(
+                        file,
+                        (original) => bookWordsReader(original, file),
+                      ),
+                      _ => null,
+                    },
+                  ),
+          );
+    runApp(
+      BookfinApp._restoring(
+        restoration: restoring,
+        catalogStore: localStore,
+        catalog: catalog,
+        appearance: appearance,
+        gallery: gallery,
+        layout: layout,
+        covers: covers,
+        downloads: downloads,
+        playback: playback,
+        reader: reader,
+        crossings: crossings,
+        hearing: hearing,
+        sync: gallery ? null : RecordSync(records: records),
+      ),
+    );
+  } catch (_) {
+    catalog?.dispose();
+    rethrow;
+  }
 }
+
+/// The independently opened media sources used by the app.
+typedef BookfinSources = ({
+  Downloads? downloads,
+  Playback? playback,
+  Covers? covers,
+});
 
 /// Restores the saved state that the first frame shows, from this phone
 /// only. No step waits for the network.
@@ -176,8 +222,7 @@ Future<void> runBookfin({bool gallery = false}) async {
 /// The steps are independent, so they all start at once. Playback starts
 /// when Downloads is open, because it plays Downloads' files. Without
 /// Downloads, as in the development gallery, there is no Playback.
-Future<({Downloads? downloads, Playback? playback, Covers? covers})>
-openSources({
+Future<BookfinSources> openSources({
   required Future<void> Function() restoreAppearance,
   required Future<void> Function() restoreLayout,
   required Future<Downloads?> Function() openDownloads,
@@ -215,8 +260,29 @@ class BookfinApp extends StatefulWidget {
     this.crossings,
     this.hearing,
     this.sync,
+  }) : _restoration = null,
+       _catalogStore = null;
+
+  // Takes ownership of the controller already started by runBookfin. The
+  // public constructor's supplied controllers remain owned by their caller.
+  const BookfinApp._restoring({
+    required this._restoration,
+    required this._catalogStore,
+    required this.catalog,
+    required this.appearance,
+    this.gallery = false,
+    this.layout,
+    this.covers,
+    this.downloads,
+    this.playback,
+    this.reader,
+    this.crossings,
+    this.hearing,
+    this.sync,
   });
 
+  final Future<void>? _restoration;
+  final LocalCatalogStore? _catalogStore;
   final AppearanceController appearance;
   final LibraryLayout? layout;
   final Covers? covers;
@@ -239,6 +305,7 @@ class BookfinApp extends StatefulWidget {
 class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   AppearanceController get _appearance => widget.appearance;
   late final CatalogController _catalog;
+  late final bool _ownsCatalog;
   late AccountBinding _binding;
 
   /// Whether the app was hidden since it last returned to the screen. An
@@ -255,7 +322,10 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    final localStore = widget.catalog == null ? LocalCatalogStore() : null;
+    final localStore =
+        widget._catalogStore ??
+        (widget.catalog == null ? LocalCatalogStore() : null);
+    _ownsCatalog = widget.catalog == null || widget._catalogStore != null;
     _catalog =
         widget.catalog ??
         CatalogController(
@@ -263,7 +333,9 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
           store: localStore!,
         );
     if (localStore != null && !widget.gallery) {
-      unawaited(_restoreCatalog(localStore));
+      unawaited(
+        _restoreCatalog(localStore, widget._restoration ?? _catalog.restore()),
+      );
     }
     _binding = _bind();
     // Kept copies of damaged records are read again in the background,
@@ -276,22 +348,27 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     _showAppearance(_appearance);
   }
 
-  Future<void> _restoreCatalog(LocalCatalogStore store) async {
-    await _catalog.restore();
+  Future<void> _restoreCatalog(
+    LocalCatalogStore store,
+    Future<void> restoring,
+  ) async {
+    await restoring;
+    if (!mounted) return;
     // The saved library shows first. Refresh and legacy migration proceed
     // independently; inactive accounts never delay the restored library.
     unawaited(_catalog.refresh());
     await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
     try {
       try {
         await store.migrateLegacy();
       } on Exception {
         // Successful accounts may discover retained damage even when another
         // account fails migration. The catalog owns ordering and reporting it.
-        await _catalog.reconcileChoices();
+        if (mounted) await _catalog.reconcileChoices();
         rethrow;
       }
-      await _catalog.reconcileChoices();
+      if (mounted) await _catalog.reconcileChoices();
     } on Exception catch (error, stack) {
       FlutterError.reportError(
         FlutterErrorDetails(
@@ -385,7 +462,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     _binding.dispose();
     widget.sync?.dispose();
     widget.hearing?.dispose();
-    if (widget.catalog == null) _catalog.dispose();
+    if (_ownsCatalog) _catalog.dispose();
     _reduceMotion.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
