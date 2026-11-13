@@ -73,3 +73,24 @@ The first full run had one intermittent failure in the unchanged scheduled-frame
 test. The unchanged targeted frame suite and full rerun passed. Ticket `tf-il7u`
 tracks the unresolved cause. Both full logs are retained. No threshold or delay
 was changed, and no command was interrupted.
+
+## Sole review completed — 2026-11-13
+
+The fresh read-only reviewer inspected the complete original-base-to-head diff
+at `513a112c9161363719a9d836be78d9173adcb435`, real callers and saved evidence.
+The original correctness, ticket-fulfillment and software-design verdicts are
+all `pass`, with no findings, required changes or user decisions. The unchanged
+original report is saved in `tool/evidence/boo-hjal/review.json`; the evidence
+README links the completed review thread.
+
+The report retains its validation gaps: the frame failure's cause is still
+unverified under `tf-il7u`; skipped platform/opt-in checks and independent
+reviewer execution were not performed; the semantic invariant rejection branch
+has static evidence but no direct injected-record test. Decode performs
+structural validation, with semantic comparison on demand, as scoped.
+Performance evidence is limited to worker map entries for the measured books.
+Coverage and mutations remain with the parent after acceptance.
+
+All owned commands and the sole reviewer have finished. The final follow-up
+commit records review evidence only; it does not change implementation or tests.
+The ticket remains in progress for parent integration, acceptance and closure.

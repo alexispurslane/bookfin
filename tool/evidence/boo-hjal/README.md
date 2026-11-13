@@ -132,3 +132,43 @@ absent optional corpus-cache paths, a nonexistent `test/reader/mobi_test.dart`
 (the real suite is `mobi_document_test.dart`), and some no-match exits. One patch
 failed its context match without changing files, then succeeded with narrower
 context. None was treated as successful verification.
+
+## Sole review and handoff
+
+Exactly one fresh read-only reviewer completed on 2026-11-13. It reviewed the
+complete diff from the original base to implementation commit
+`513a112c9161363719a9d836be78d9173adcb435`, real production callers, requirements
+and saved evidence. Its original JSON report is retained without edits in
+`review.json`.
+
+Review thread:
+<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A988d462c-6f55-4cc0-9126-807635011116%3Adelegate-task%3Abookfin-boo-hjal-sole-review-20261113-1>
+
+| Assessment | Original verdict | Required changes |
+| --- | --- | --- |
+| Correctness | pass | None |
+| Ticket fulfillment | pass | None |
+| Software design | pass | None |
+
+The reviewer performed static inspection only. Runtime results are from the
+builder's saved logs. No review findings required a fix, and no second reviewer
+was launched. The original report preserves the following limits and gaps:
+
+- L1: the intermittent scheduled-frame failure's cause remains unverified.
+  Passing reruns do not explain it. Follow-up `tf-il7u` remains open.
+- L2: measured map-entry reductions do not establish CSS-string copying,
+  Android latency, total heap savings or universal improvement. Sample maps
+  can repeat common entries.
+- L3: decode checks record structure. Semantic equality with section documents
+  is checked only by the on-demand invariant checker, as scoped.
+- The new semantic invariant rejection branch has static evidence, but no new
+  direct test injects a structurally valid, semantically wrong dependency list.
+- Skipped platform and opt-in tests remain unverified. Independent reviewer
+  runtime checks were prohibited. Coverage and mutations are deferred to the
+  parent after acceptance.
+
+All owned commands and the reviewer finished. Only ticket and review evidence
+changed after the reviewed implementation commit, so suites were not repeated.
+The final evidence check is `git diff --check` (exit 0, no output), saved in
+`17-review-diff-check.txt`. Integration, acceptance, hardening and closure remain
+with the parent.

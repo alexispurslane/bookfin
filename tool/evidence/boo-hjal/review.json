@@ -1,0 +1,199 @@
+{
+  "ticket": "boo-hjal",
+  "review_type": "fresh_read_only",
+  "checkout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-fbb08cd5",
+    "branch": "t3/section-css-dependencies",
+    "base": "eb64fe705198fba0563df0a188939f6e57e16f35",
+    "head": "513a112c9161363719a9d836be78d9173adcb435",
+    "status": "clean at start and finish"
+  },
+  "review_boundary": {
+    "performed": "Static review of the complete base-to-head change, production callers, tests, ticket requirements, project instructions, design guidance and relevant saved-log ranges.",
+    "not_performed": "No edits, builds, test execution, devices, browser work, children, commits or integration.",
+    "evidence_distinction": "Executed test results below come from inspected builder-produced logs. They are not independent reviewer executions."
+  },
+  "assessments": {
+    "correctness": {
+      "original_verdict": "pass",
+      "inspected_evidence": [
+        {
+          "location": "lib/reader/epub/page_source.dart:354,1624,1686",
+          "assessment": "All three production preparation paths supply section-specific CSS. Static worker boundaries remain intact."
+        },
+        {
+          "location": "lib/reader/epub/css.dart:284,438,484,513",
+          "assessment": "Dependency collection shares import syntax and path resolution with rendering. Shortest-depth visits retain dependencies reachable through a later shorter route. Rendering retains its existing media decisions, order, cycle handling and depth limit."
+        },
+        {
+          "location": "lib/reader/epub/prepare.dart:1231,1255,1277",
+          "assessment": "Rendering and dependency collection share document-order enumeration of linked and inline sheets. Sorting dependency paths does not change rendering order."
+        },
+        {
+          "location": "lib/reader/epub/publication.dart:303,458,504; lib/reader/admitted_books.dart:257",
+          "assessment": "Decode validates list structure and resource membership. The on-demand invariant checker also compares dependencies with admitted documents. Invalid records retain the existing preservation and re-admission path."
+        },
+        {
+          "location": "test/reader/epub/section_styles_test.dart:294; tool/evidence/boo-hjal/02-red.txt:145; 03-green.txt:56",
+          "assessment": "Worker tests inspect map contents inside real isolates. The unsendable Finalizer guards against capturing the Publication. Corrected red evidence reaches whole, partial and sample paths."
+        },
+        {
+          "location": "tool/evidence/boo-hjal/08-reader-crossings.txt:1896; 14-full-repeat.txt:3783",
+          "assessment": "Builder logs report 1706 reader/crossings passes with 21 skips, followed by 3535 full-suite passes with 27 skips."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "The intermittent scheduled-frame failure remains unexplained. Neither its cause nor its relationship to execution timing is established; see nonblocking limit L1.",
+        "No independent runtime verification was permitted."
+      ]
+    },
+    "ticket_fulfillment": {
+      "original_verdict": "pass",
+      "inspected_evidence": [
+        "Reviewed all 28 changed paths, including both ticket files, four production files, four test files and saved evidence.",
+        "Audited production admission through platform_io.dart, mobi.dart and AdmittedBooks.load/prepare.",
+        "Confirmed that remaining full-map preparation inputs are admission-local probes or independent tool/corpus comparisons.",
+        "Inspected failed runs, corrective evidence, final analysis, formatting and suite results."
+      ],
+      "requirement_mapping": [
+        {
+          "requirement": "Only section CSS reaches whole, partial and sample workers.",
+          "implementation": "page_source.dart:354,1624,1686",
+          "tests": "section_styles_test.dart:294",
+          "evidence": "02-red.txt, 03-green.txt and later full-suite logs",
+          "status": "pass"
+        },
+        {
+          "requirement": "Keep CSS text under Publication ownership and derive dependencies off the UI isolate.",
+          "implementation": "publication.dart:75,82,91,1087; admitted_books.dart:67",
+          "tests": "Real-isolate input observations and the unsendable Publication wrapper",
+          "status": "pass"
+        },
+        {
+          "requirement": "Preserve conditional imports, short/deep routes, cycles and duplicates.",
+          "implementation": "css.dart:284,513",
+          "tests": "section_styles_test.dart:151,209,248; css_test.dart:254",
+          "status": "pass"
+        },
+        {
+          "requirement": "Preserve document order, inline styles and missing or invalid references.",
+          "implementation": "prepare.dart:1231,1277; existing resolvePath and import-reference parser",
+          "tests": "section_styles_test.dart:151,176,216; existing CSS path/import tests",
+          "status": "pass"
+        },
+        {
+          "requirement": "Preserve fonts and main-text semantics.",
+          "implementation": "Admission font and main-text probes retain their existing ownership and full local inputs.",
+          "tests": "section_styles_test.dart:216,294; book_fonts_test.dart and admitted-book suites",
+          "status": "pass"
+        },
+        {
+          "requirement": "Preserve original/admitted EPUB and MOBI opening.",
+          "implementation": "Existing AdmittedBooks, platform_io and MOBI conversion paths",
+          "tests": "admitted_books_test.dart:173; section_styles_test.dart:402,427",
+          "evidence": "Original-file-unavailable reopen tests and Alice conversion/reopen output comparisons",
+          "status": "pass"
+        },
+        {
+          "requirement": "Validate saved dependencies and rebuild older records.",
+          "implementation": "publication.dart revision 6, decode validation and checkInvariants",
+          "tests": "admitted_books_test.dart:199,231",
+          "evidence": "Revision rejection and five damaged-record cases in red/green evidence",
+          "status": "pass"
+        },
+        {
+          "requirement": "Preserve ChapterTitles and measurement/excerpt lifetimes.",
+          "implementation": "Production ownership is unchanged; both test Publication wrappers forward the new query.",
+          "tests": "chapter_titles_test.dart; page_source_test.dart excerpt lifetime cases",
+          "evidence": "06-focused.txt failures, 07-chapter-titles-fix.txt eight passes, subsequent broad passes",
+          "status": "pass"
+        },
+        {
+          "requirement": "Audit transfer claims and demonstrate reduced irrelevant inputs without latency claims.",
+          "implementation": "README.md transfer audit and worker input counts",
+          "tests": "Controlled worker observations and real Alice output comparisons",
+          "evidence": "dart-transfer.txt; corrected sample baseline in later logs",
+          "status": "pass"
+        },
+        {
+          "requirement": "Avoid persistent workers, parsed-CSS caches, image pruning and a new indexing framework.",
+          "implementation": "None introduced in the complete diff.",
+          "status": "pass"
+        },
+        {
+          "requirement": "Run required checks through Nix with test concurrency two.",
+          "evidence": "README.md commands; logs 08, 11, 13, 14, 15 and 16",
+          "status": "pass",
+          "qualification": "Commands and execution ownership are builder-reported; saved outcomes were inspected."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Skipped platform and opt-in tests remain unverified.",
+        "Android latency, total heap savings and universal performance improvement are neither demonstrated nor claimed."
+      ]
+    },
+    "software_design": {
+      "original_verdict": "pass",
+      "inspected_evidence": [
+        {
+          "source": "User: one authoritative representation; Ousterhout: information hiding",
+          "location": "publication.dart:75,82,91,303,1087",
+          "assessment": "Publication owns immutable CSS text and private derived path lists. Its query returns detached maps, so callers cannot alter retained dependency facts."
+        },
+        {
+          "source": "User: one model for existing and new behavior; Muratori: compression at the second real use",
+          "location": "prepare.dart:1231,1255,1277; css.dart:284,513",
+          "assessment": "Dependency discovery reuses document enumeration and the existing import parser. No second path parser or independent CSS grammar was added."
+        },
+        {
+          "source": "Ousterhout: pull complexity downward and deep interfaces",
+          "location": "publication.dart:77; page_source.dart:354,1624,1686",
+          "assessment": "PageSource requests styles by section path without knowing dependency traversal, record encoding or validation rules."
+        },
+        {
+          "source": "User: derived facts stay under their source owner",
+          "location": "publication.dart:199,303,458,1087",
+          "assessment": "Admission, record restoration and invariant checking remain within Publication. No caller coordinates updates to CSS text and dependency lists."
+        },
+        {
+          "source": "Muratori: avoid machinery for hypothetical callers",
+          "location": "Complete production diff",
+          "assessment": "The change introduces no new service, worker lifecycle or general indexing layer. Existing chapter, measurement and excerpt owners remain intact."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "The new semantic invariant rejection branch is supported by static inspection; the inspected new tests do not directly inject a structurally valid but semantically incorrect dependency list.",
+        "Coverage and mutation testing remain deferred to the parent after acceptance, as instructed."
+      ]
+    }
+  },
+  "nonblocking_limits": [
+    {
+      "id": "L1",
+      "status": "unverified",
+      "topic": "Intermittent scheduled-frame failure",
+      "location": "test/reader/epub/page_source_frames_test.dart:188",
+      "evidence": "12-full.txt:1102 records failure; 13-frames-repeat.txt:62 and 14-full-repeat.txt:3783 record passing reruns.",
+      "assessment": "The test and scheduler are unchanged, and the fixture retains the same single stylesheet. This does not establish the failure's cause. No demonstrated defect in section CSS selection was found.",
+      "tracking": "tf-il7u"
+    },
+    {
+      "id": "L2",
+      "status": "documented_limit",
+      "topic": "Performance evidence",
+      "assessment": "The evidence establishes fewer irrelevant map entries for the measured books. Immutable CSS strings are shared by Dart; it does not establish the survey's 90 MB copying claim. Sampling can repeat shared entries across selected maps, so reduction is not universal."
+    },
+    {
+      "id": "L3",
+      "status": "documented_limit",
+      "topic": "Record validation",
+      "assessment": "Ordinary decode checks structure, not semantic equality with document dependencies. Semantic equality remains an on-demand invariant check, matching the settled scope."
+    }
+  ],
+  "required_changes": [],
+  "user_decisions_needed": [],
+  "overall_verdict": "pass"
+}
