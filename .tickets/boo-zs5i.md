@@ -1,6 +1,6 @@
 ---
 id: boo-zs5i
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -154,3 +154,40 @@ Only ticket and evidence files changed after the reviewed commit. No second
 review or repeated test run is needed for those evidence-only changes.
 There are no user-visible forks. Integration, acceptance, hardening and ticket
 closure remain with the parent; this ticket remains in progress.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated child implementation `45033b1b65124889a58505a8c0bde8a1c2e058c5`
+as `6c35eb5e`, then evidence commit
+`b3e3ba4f8c1af81eced19cd926c4b9720facd7b9` as `c81a4226`.
+The only conflict was the ticket's appended history; both the parent launch
+record and child evidence were retained. All 31 changed Dart files match
+the reviewed child. No implementation or test adaptation was required.
+
+The parent inspected the full diff, actual callers, tests and original
+review, and verified all 19 child log hashes and lengths. The original
+review remains unchanged. No second review or reapproval is claimed.
+
+Parent verification through the Nix dev shell, one command at a time:
+
+- `dart format --output=none --set-exit-if-changed` on the 31 paths listed
+  in the child verification manifest: exit 0, zero changes.
+- `dart analyze lib test integration_test tool/showcase_fixture.dart`:
+  exit 0, no issues.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded`:
+  exit 0, 3,635 passed, 27 existing skips, zero failures. This includes the
+  integrated playback-refresh, catalog-retention and admission-ownership
+  changes, alongside all required affected suites.
+- `git diff --check e6b40685453dc3d72c31f22b41b63dd813a8f2ca HEAD`:
+  exit 0. Rechecked after the closure evidence was added.
+
+Exact argument lists, results, commit mapping and parent log hashes are in
+`docs/evidence/boo-zs5i-integration.json`. Raw logs are in
+`/tmp/bookfin-boo-zs5i-integration/`. Two unrelated boo-p6w1 ticket-only source
+audits were committed while checks ran; production and tests did not change.
+
+The ticket is closed after integration and host verification. The 27 skipped
+checks remain unverified. Device/browser acceptance, external-fixture proof,
+coverage and mutations are not claimed. No latency or memory measurement
+was added. Neither known intermittent failure occurred in this run; t5-rplx
+and tf-il7u remain unresolved. No push, PR, deployment or worktree removal.

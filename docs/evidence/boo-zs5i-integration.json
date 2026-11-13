@@ -1,0 +1,141 @@
+{
+  "ticket": "boo-zs5i",
+  "integrationBase": "e6b40685453dc3d72c31f22b41b63dd813a8f2ca",
+  "testedImplementationHead": "c81a4226a6a9ca0329759e344e0cfa6018ca0224",
+  "headAtChecksCompletion": "868f59a0f52d87216c1427b8605ddabb557c618f",
+  "commitMapping": [
+    {
+      "child": "45033b1b65124889a58505a8c0bde8a1c2e058c5",
+      "main": "6c35eb5e21907c2e8769b1a9c6b5c39c9be1502f"
+    },
+    {
+      "child": "b3e3ba4f8c1af81eced19cd926c4b9720facd7b9",
+      "main": "c81a4226a6a9ca0329759e344e0cfa6018ca0224"
+    }
+  ],
+  "inspection": [
+    "Inspected the complete implementation diff, actual callers, new and migrated tests, original review, and saved verification evidence.",
+    "Verified all 19 child log hashes and byte lengths.",
+    "Resolved only a ticket-history merge conflict by retaining parent launch and child evidence.",
+    "All 31 changed Dart files match the reviewed child exactly; no integration code changes were needed.",
+    "Two boo-p6w1 source-audit ticket commits were made during checks; they change no production or tests."
+  ],
+  "checks": [
+    {
+      "stage": "format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/playback/record_codec.dart",
+        "lib/playback/records.dart",
+        "lib/playback/store.dart",
+        "lib/reader/place_words.dart",
+        "lib/sync/alert.dart",
+        "lib/sync/choice.dart",
+        "lib/sync/coordinator.dart",
+        "lib/sync/journal.dart",
+        "lib/sync/labels.dart",
+        "lib/sync/record_address.dart",
+        "lib/sync/screen.dart",
+        "test/durability/record_store_test.dart",
+        "test/playback/incremental_save_test.dart",
+        "test/sync/conflict_views_test.dart",
+        "test/sync/conflicts.dart",
+        "test/sync/coordinator_test.dart",
+        "test/sync/device_records_test.dart",
+        "test/sync/event_upload_test.dart",
+        "test/sync/incremental_store_test.dart",
+        "test/sync/labels_test.dart",
+        "test/sync/plugin_integration_test.dart",
+        "test/sync/plugin_upgrade_integration_test.dart",
+        "test/sync/reading_history_test.dart",
+        "test/sync/record_address_test.dart",
+        "test/sync/refresh_after_sync_test.dart",
+        "test/sync/schedule_test.dart",
+        "test/sync/screen_test.dart",
+        "test/sync/stale_domains_test.dart",
+        "test/sync/status_test.dart",
+        "tool/showcase_fixture.dart",
+        "test/settings/screen_test.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-zs5i-integration/format.log",
+      "elapsedSeconds": 2.81,
+      "sha256": "8ef0408d971df4239a525528feebe19f13744ae28693aff7a3ba4ad901d157ed",
+      "bytes": 48,
+      "result": "31 files; zero changes"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "analyze",
+        "lib",
+        "test",
+        "integration_test",
+        "tool/showcase_fixture.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-zs5i-integration/analysis.log",
+      "elapsedSeconds": 6.54,
+      "sha256": "717f4ce78ef5b801d81b3878a2d0e323686b32492ca116d3f12980377db5e207",
+      "bytes": 81,
+      "result": "No issues found"
+    },
+    {
+      "stage": "full",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-zs5i-integration/full.log",
+      "elapsedSeconds": 292.92,
+      "sha256": "e725214ca80a9ba4957f25b58dfb96b2f21e052735dfe895267e59ba0ada6fa6",
+      "bytes": 675605,
+      "result": {
+        "passed": 3635,
+        "skipped": 27,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "e6b40685453dc3d72c31f22b41b63dd813a8f2ca",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-boo-zs5i-integration/diff.log",
+      "elapsedSeconds": 0.02,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "result": "No whitespace errors"
+    }
+  ],
+  "limits": [
+    "The 27 full-suite skips remain existing optional fixture, corpus and measurement gates. They do not count as passes.",
+    "No device, browser, live external-plugin, coverage or mutation execution was added.",
+    "Acceptance and hardening remain separate. No device latency or heap-size improvement is claimed.",
+    "Known t5-rplx and tf-il7u causes remain unresolved; neither occurred in this parent run.",
+    "The original single-reviewer verdicts, gaps and provenance are unchanged; no second review or reapproval is claimed.",
+    "Raw parent logs remain at the machine-local paths with hashes recorded here."
+  ]
+}
