@@ -1182,7 +1182,7 @@ class LocalResumeStore
       _forgetViews(account);
       try {
         await database.replaceDamaged(
-          restored.commit!,
+          _stageCommit(restored.commit!),
           keptAt: DateTime.now().millisecondsSinceEpoch,
         );
         stored.journal.persisted(retainedOnDisk: true);
@@ -1234,23 +1234,23 @@ class LocalResumeStore
     if (database != null) {
       try {
         await database.writeCommit(
-          commit ??
-              RecordDatabase.encodeCommitWithMetadataText(
-                account,
-                await _derive(
-                  _encodeMetadata,
-                  metadata,
-                  small: _smallSettings(metadata, domains: true),
+          _stageCommit(
+            commit ??
+                RecordDatabase.encodeCommitWithMetadataText(
+                  account,
+                  await _derive(
+                    _encodeMetadata,
+                    metadata,
+                    small: _smallSettings(metadata, domains: true),
+                  ),
+                  journal,
+                  initialize: !_accounts.containsKey(account),
+                  objects: _objectWrites[account] ?? const [],
                 ),
-                journal,
-                initialize: !_accounts.containsKey(account),
-                objects: _objectWrites[account] ?? const [],
-              ),
+          ),
         );
         journal.persisted(retainedOnDisk: true);
-        final count =
-            (_objectWrites[account]?.isNotEmpty ?? false) ||
-                (commit?.objects.isNotEmpty ?? false)
+        final count = (_objectWrites[account]?.isNotEmpty ?? false)
             ? await database.objectCount(account)
             : _accounts[account]?.objectCount ?? 0;
         _objectWrites.remove(account);
@@ -1288,6 +1288,14 @@ class LocalResumeStore
         );
       }
     }
+  }
+
+  /// The exact originals about to be written also belong to file recovery
+  /// until that write commits. Normal saves, prepared migrations and account
+  /// repairs all stage their commit here before they can need reconstruction.
+  RecordCommit _stageCommit(RecordCommit commit) {
+    _objectWrites[commit.account] = commit.objects;
+    return commit;
   }
 
   /// Writes every cached account whole into the new file that replaced a

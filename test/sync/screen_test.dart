@@ -358,6 +358,44 @@ void main() {
       },
     );
 
+    for (final hadSuccess in [false, true]) {
+      testWidgets(
+        'a rejected upload reports incomplete sync with prior success $hadSuccess',
+        (tester) async {
+          if (!hadSuccess) {
+            controlled.dispose();
+            controlled = RecordSync(
+              records: records,
+              transport: records.transport,
+              now: () => clock,
+            )..suspend();
+            controlled.bind(account());
+          }
+          final previous = controlled.lastSyncNotifier.value?.synced;
+          clock = clock.add(const Duration(minutes: 5));
+          records.error = const CatalogFailure(
+            CatalogFailureKind.unavailable,
+            status: 410,
+          );
+          await showPage(tester);
+          await backgroundSync(tester);
+          expect(
+            find.textContaining('match your Jellyfin server'),
+            findsNothing,
+          );
+          expect(find.text('Synced'), findsNothing);
+          expect(find.text('Not syncing'), findsOneWidget);
+          expect(
+            find.text('Some records could not be uploaded'),
+            findsOneWidget,
+          );
+          expect(find.text('Bookfin Storage plugin missing'), findsNothing);
+          expect(roundSync(tester).tooltip, 'Retry');
+          expect(controlled.lastSyncNotifier.value?.synced, previous);
+        },
+      );
+    }
+
     testWidgets('a background sync shows no busy state on the page', (
       tester,
     ) async {

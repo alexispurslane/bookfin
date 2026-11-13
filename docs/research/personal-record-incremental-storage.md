@@ -353,6 +353,10 @@ originals in its existing atomic account value. Migration moves them into SQLite
 
 The existing kept-copy and authoritative-file recovery paths also carry these
 originals. Cached native accounts remember how many wire events they retained.
+Before a normal save, migration or account repair writes a prepared commit, the
+store stages that commit's original objects for file reconstruction. Migration
+cannot leave those objects only in a prepared commit while reconstruction reads
+another input. The staged objects remain available until the write succeeds.
 Reconstruction must recover at least those originals as well as reproduce current
 versions and coverage. Missing original pages fail reconstruction; the cached
 records and damaged file stay available for retry. Normal account repair copies
@@ -362,9 +366,14 @@ objects never replace a live original with the same identity and server sequence
 Unreadable remote records have their own outcome. A completed exchange still
 records its completion time. If an upload finds that its immutable identity was
 retired on the server (HTTP 410), the action stays pending and discovery continues
-before the upload failure is reported. That failed exchange does not advance the
-last successful sync time or schedule an immediate retry. Other upload failures
-keep their existing behavior. Missing plugin routes, malformed whole replies,
+before the upload failure is reported as `uploadRejected`. That failed exchange
+does not advance the last successful sync time or schedule an immediate retry.
+Live Playback and reader sessions still refresh the committed records, through
+the same refresh operation used after a completed exchange. The Sync page keeps
+the quiet unreadable count and shows the incomplete upload without claiming
+that the phone matches Jellyfin. `remoteUnreadable` means a completed exchange
+with unreadable remote objects. Other upload failures keep their existing
+transport behavior. Missing plugin routes, malformed whole replies,
 unsafe cursors, local storage failures and contract failures remain distinct;
 contract failures are never caught as recoverable object formats.
 

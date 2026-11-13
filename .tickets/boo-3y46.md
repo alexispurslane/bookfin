@@ -65,7 +65,7 @@ kinds still enter the journal; invalid envelopes/values do not grant coverage.
 Missing preserved originals wait for end-of-discovery retry. Malformed preserved
 references do not stop independent records. Local pending actions survive every
 retention and rollback path. A pending action whose server identity was retired
-stays pending while discovery continues, then reports `remoteUnreadable`; it never
+stays pending while discovery continues, then reports `uploadRejected`; it never
 becomes `pluginMissing` or schedules an immediate retry loop. All other upload
 failures preserve their previous behavior and grouped acknowledgments.
 
@@ -152,3 +152,72 @@ original base above. No reviewer has been reused.
 
 Parent owns integration, acceptance, hardening and ticket closure. No device or
 browser work, coverage, mutations, deployment, push or PR work was performed.
+
+### One fresh review and direct resolutions
+
+Review task `node:delegated-task:command%3Amcp%3Ace4ea467-8189-428c-9b4f-fa5850e90a60%3Adelegate-task%3Aboo-3y46-review-astra-20261113-1`
+completed on `codex/gpt-6-astra`, `reasoningEffort: high`. It reviewed the complete
+diff from `374390da6e2b37415ed98807ac962b05a9f68ea0` to
+`876a478646de87892adc8c5c43064ad9cddf0a3f`. Its separate correctness,
+ticket-fulfillment and design assessments were all `changes-required`; none was
+`unverified`. The reviewer ran no builds or tests, edited nothing and started no
+children. There was no second review or claimed reviewer re-approval. The ticket
+lead fixed all findings directly at the authorized Astra xhigh setting.
+
+| Finding | Original evidence and severity | Resolution and executed evidence |
+| --- | --- | --- |
+| R1 | High. Preference migration supplied originals in `RecordCommit.objects`, while file reconstruction used `_objectWrites`; a damaged first commit could reconstruct an advanced cursor with zero retained originals. User/Ousterhout: callers had to coordinate two representations. | Normal saves, prepared migrations and account repairs now stage the exact prepared commit's originals through one `_stageCommit` transition before attempting SQLite writes. Recovery consumes that same staged input. The regression damages the real `record_objects` table after preference restoration, before the first commit. Both protocol variants failed with count zero before the fix and now preserve count, cursor and exact original body through reconstruction and reopen, with invariants checked. |
+| R2 | Medium. HTTP 410 continued discovery but then threw before `refreshWriters`, leaving actual Playback and reader sessions stale. | The coordinator performs the same stale-writer refresh after completed and incomplete exchanges, while keeping exchange failure, pending writes and the previous successful-sync time. Both protocol regressions failed because the live player lacked the received bookmark. They now check live Playback and reader bookmarks over two successive rejected-upload exchanges after startup recovery has finished. |
+| R3 | Medium. HTTP 410 used `remoteUnreadable`, so the Sync page hid the failure and falsely claimed the phone matched Jellyfin. User/Ousterhout: one outcome meant both completed exchange and rejected upload across several consumers. | `uploadRejected` now means an incomplete upload; `remoteUnreadable` retains its meaning of a completed exchange with unreadable objects. The existing quiet count remains independent. The page reports “Not syncing” and an upload failure with Retry; it keeps the previous success time without claiming current success. UI regressions before the first successful exchange and after an earlier success both failed on the false match claim and now pass. The original tombstone test now expects `uploadRejected`. |
+
+The first attempted regression command had a fixture compile error: it called
+`ReadingLocation.encode`, which does not exist. `/tmp/boo-3y46-review-red.log`
+records that setup error; it is not red evidence. The fixture now supplies the
+existing anchor format. The corrected command used `--name` for the regex filter,
+not `--plain-name`.
+
+```sh
+nix develop --command flutter test --no-pub --concurrency=2 test/sync/unreadable_discovery_test.dart test/sync/screen_test.dart --name 'file damage during preference migration|a rejected upload' --reporter expanded
+```
+
+This produced six meaningful failures in
+`/tmp/boo-3y46-review-behavior-red.log`. After fixes, the same command passed all
+six in `/tmp/boo-3y46-review-green.log`. R1 also passed separately with
+`--plain-name 'file damage during preference migration'` in
+`/tmp/boo-3y46-review-r1-green.log`. The migration fixture was then reduced to a
+small payload; its existing worker boundary still permits damage at the same
+point. No production fault switch or test-only policy was added.
+
+```sh
+nix develop --command bash -c 'dart format lib/playback/store.dart lib/sync/coordinator.dart lib/sync/screen.dart test/sync/unreadable_discovery_test.dart test/sync/screen_test.dart > /tmp/boo-3y46-review-format.log 2>&1 && flutter test --no-pub --concurrency=2 test/sync test/durability --reporter expanded > /tmp/boo-3y46-review-focused.log 2>&1'
+```
+
+The broader run passed 424 tests with three existing opt-in skips and no failures.
+The Nix shell reports unavailable iPhone SDKs; these host tests need neither SDK.
+No device validation was attempted or claimed.
+
+The review's nonblocking cost note remains explicit: counting retained wire
+events scans their index, and explicit retry reads retained wire originals,
+including ones already interpreted. Ordinary current-state restore does not
+decode their bodies or the complete action history. No constant-time or Android
+latency claim is made. No user-visible design forks remain.
+
+### Required verification after review fixes
+
+`nix develop --command bash /tmp/boo-3y46-post-review-checks.sh` runs the same four
+sequential required commands recorded above. It uses separate
+`/tmp/boo-3y46-post-review-*-final.log` files, preserving the pre-review evidence.
+
+| Check | Result | Final log |
+| --- | --- | --- |
+| Changed-file formatting | 16 files, zero changes | `/tmp/boo-3y46-post-review-format-final.log` |
+| Affected analysis | No issues | `/tmp/boo-3y46-post-review-analysis-final.log` |
+| Required affected suites | 1,000 passed, 3 existing opt-in skips, zero failures; 1m09s | `/tmp/boo-3y46-post-review-affected-final.log` |
+| Full Flutter suite | 3,376 passed, 27 existing opt-in/external-fixture skips, zero failures; 5m03s | `/tmp/boo-3y46-post-review-full-final.log` |
+
+The complete sequential command exited zero. `git diff --check` is clean.
+All commands and the sole reviewer finished before the integration report.
+R1, R2 and R3 have recorded resolutions with executed red-green evidence and
+passing required checks. No findings, material unverified assessments or design
+forks remain unresolved. The final report gives the ordered implementation and
+fix commit SHAs. Parent alone integrates, accepts, hardens and closes the ticket.

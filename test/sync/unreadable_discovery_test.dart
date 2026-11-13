@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -6,6 +7,9 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/sync/journal.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/playback/database.dart';
+import 'package:bookfin/playback/playback.dart';
+import 'package:bookfin/reader/epub/publication.dart';
+import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,7 +20,10 @@ import 'batch_api_test.dart' show BatchApi, ConnectedTransport;
 import 'phone.dart';
 import '../support/record_reads.dart';
 import '../playback/playback_test.dart' show recording;
-import 'restore_current_test.dart' show Disk, damageActions;
+import '../playback/playback_test.dart' as audio;
+import '../reader/session_test.dart' as reading;
+import '../reader/publication_test.dart' show epub;
+import 'restore_current_test.dart' show Disk, damageActions, isolated;
 
 Map<String, dynamic> bookmark(String id) => {
   'id': id,
@@ -127,6 +134,49 @@ void main() {
           );
         },
       );
+
+      test('file damage during preference migration keeps every unreadable original', () async {
+        final object = publish('bad', 'bad')..['Payload'] = ' original {broken';
+        final preferences = LocalResumeStore();
+        await preferences.receiveObjects(account, [object], 1);
+        final saved = (await SharedPreferences.getInstance()).getString(
+          'bookfin.playback.v1.$account',
+        )!;
+        final original = ((jsonDecode(saved) as Map)['retainedObjects'] as List)
+            .single['body'];
+        var damaged = false;
+        Future<R> hop<M, R>(FutureOr<R> Function(M) work, M input) async {
+          final result = await isolated(work, input);
+          if (!damaged &&
+              input is ({String account, String text, bool database}) &&
+              input.database) {
+            damaged = true;
+            await damageActions(
+              Disk(phone.path, phone.database),
+              index: 'record_objects',
+            );
+          }
+          return result;
+        }
+
+        phone.store = LocalResumeStore(
+          openDatabase: () async => phone.database,
+          hop: hop,
+        );
+        await phone.store.read(account);
+        expect(damaged, isTrue);
+        expect(phone.database.keptFile, isNotNull);
+        expect(await phone.store.unreadableCount(account), 1);
+        expect(await phone.store.discoveryCursor(account), 1);
+        await phone.restart();
+        expect(await phone.store.unreadableCount(account), 1);
+        expect(await phone.store.discoveryCursor(account), 1);
+        expect(
+          (await phone.database.retainedObjects(account)).single['body'],
+          original,
+        );
+        await phone.store.checkInvariants();
+      });
 
       test('a readable replacement cannot overwrite a retained unreadable identity', () async {
         final object = publish('bad', 'bad');
@@ -499,10 +549,7 @@ void main() {
             (await phone.store.read(account))!['bookmarks'],
             hasLength(10),
           );
-          expect(
-            sync.lastSyncNotifier.value?.failure?.name,
-            'remoteUnreadable',
-          );
+          expect(sync.lastSyncNotifier.value?.failure?.name, 'uploadRejected');
           expect(sync.lastSyncNotifier.value?.synced, isNull);
           expect(await phone.store.pendingUploads(account), [pending]);
           await phone.restart();
@@ -514,6 +561,80 @@ void main() {
           expect(await phone.store.pendingUploads(account), [pending]);
         },
       );
+
+      test('a rejected upload still delivers later records to live Playback and reader sessions', () async {
+        final downloads = audio.LocalFiles()
+          ..files[reading.source.key] = Uri.file('/verified.epub');
+        final player = Playback(
+          downloads: downloads,
+          engine: audio.TestEngine(),
+          store: phone.store,
+        );
+        final reader = ReaderSession(
+          downloads: downloads,
+          store: phone.store.reading,
+          load: (_) async => Publication.admit(epub()),
+        );
+        addTearDown(() async {
+          await player.close();
+          reader.dispose();
+          downloads.dispose();
+        });
+        await player.bind(session, [audio.title]);
+        await reader.bind(session, [reading.book]);
+        await reader.open(reading.book, reading.edition);
+        final sync = RecordSync(
+          records: phone.store,
+          transport: ConnectedTransport(phone.store, client),
+        )..suspend();
+        addTearDown(sync.dispose);
+        sync.bind(session);
+        await sync.synchronize();
+        await sync.recoverKept();
+        final completed = sync.lastSyncNotifier.value!.synced;
+        expect(completed, isNotNull);
+        await phone.store.write(account, {
+          'version': 3,
+          'bookmarks': [bookmark('local')],
+        });
+        final pending = (await phone.store.pendingUploads(account)).single;
+        final id = RecordJournal.identity(pending);
+        api.put(id, jsonEncode(pending))['Deleted'] = true;
+        api.reject = id;
+        api.rejectedStatus = 410;
+        final text = RecordJournal(account, 'reader');
+        for (var pass = 1; pass <= 2; pass++) {
+          publish('later$pass', 'later$pass');
+          text.change(jsonEncode(['reading', 'bookmarks', 'text$pass']), {
+            'id': 'text$pass',
+            'position': {
+              'edition': reading.edition.id,
+              'source': reading.source.key,
+              'revision': reading.source.revision,
+              'anchor': jsonEncode({
+                'version': 1,
+                'quote': 'A river',
+                'cfi': 'epubcfi(/6/2!/4/2/1:0)',
+              }),
+            },
+            'createdAt': '2026-01-01T00:00:00Z',
+          });
+          final action = text.uploads.last;
+          api.put(RecordJournal.identity(action), jsonEncode(action));
+          await sync.synchronize();
+          expect(
+            player.bookmarks.map((mark) => mark.id),
+            contains('later$pass'),
+          );
+          expect(
+            reader.bookmarks.map((mark) => mark.id),
+            contains('text$pass'),
+          );
+          expect(sync.lastSyncNotifier.value?.synced, completed);
+          expect(sync.lastSyncNotifier.value?.failure?.name, 'uploadRejected');
+          expect(await phone.store.pendingUploads(account), [pending]);
+        }
+      });
 
       for (final fault in [
         'whole page',

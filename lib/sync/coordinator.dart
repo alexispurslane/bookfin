@@ -22,13 +22,16 @@ enum RecordSyncFailure {
   unreachable,
 
   /// Jellyfin answered, but it has no Bookfin Storage plugin that this app
-  /// can use: the plugin's routes are not found, or its answers do not
-  /// follow the storage contract.
+  /// can use: the plugin's routes are not found.
   pluginMissing,
 
   /// The exchange finished, but some retained server objects cannot be
   /// interpreted by this build. Later pages still arrived.
   remoteUnreadable,
+
+  /// Jellyfin declined a pending local action. The action stays on this
+  /// phone and discovery can continue, but the exchange is incomplete.
+  uploadRejected,
 
   /// The server answered outside the discovery or upload contract.
   invalidResponse,
@@ -408,6 +411,8 @@ class RecordSync {
     final client = _client;
     if (_disposed || session == null) return null;
     final generation = _generation;
+    SyncReport? report;
+    Exception? exchangeFailure;
     try {
       await records.flushWriters();
       if (!_current(generation)) return null;
@@ -415,15 +420,24 @@ class RecordSync {
         final pending = await records.hasPendingUploads(session.scope.key);
         if (!_current(generation) || !pending) return null;
       }
-      SyncReport? report;
       if (_serverReady && client != null) {
         _periodStart = now();
         report = await transport.synchronize(session, client);
       }
-      if (!_current(generation)) return null;
+    } on Exception catch (error) {
+      if (error is CatalogFailure &&
+          error.kind == CatalogFailureKind.unauthorized) {
+        session.rejectCredential();
+      }
+      exchangeFailure = error;
+    }
+    if (!_current(generation)) return null;
+    try {
       final unreadable = await records.unreadableCount(session.scope.key);
       if (!_current(generation)) return null;
       _unreadable.value = unreadable;
+      // An incomplete exchange can still commit discovery pages. Refresh
+      // their live readers through the same path as a completed exchange.
       final refreshed = await records.refreshWriters(session.scope.key);
       if (!_current(generation)) return null;
       final conflicts = await records.conflicts(session.scope.key);
@@ -431,41 +445,30 @@ class RecordSync {
       _publish(conflicts);
       // Local choices and restored conflicts remain usable without claiming
       // that the server accepted anything.
-      if (report == null) return null;
+      if (report == null && exchangeFailure == null) return null;
       // The transport sent a snapshot. Actions saved during the exchange
       // need a later pass; a failed exchange never schedules this retry.
-      final pending = await records.hasPendingUploads(session.scope.key);
-      if (!_current(generation)) return null;
-      if (pending) _requestUpload(session.scope.key);
-      // The sync itself succeeded. A refresh that failed after it changes
-      // only the failure, to its own kind.
+      if (report != null) {
+        final pending = await records.hasPendingUploads(session.scope.key);
+        if (!_current(generation)) return null;
+        if (pending) _requestUpload(session.scope.key);
+      }
+      // Keep an exchange failure even if refresh also fails. A completed
+      // exchange can instead report refresh failure or retained unreadability.
       return _ended(
-        failure: !refreshed
+        failure: exchangeFailure != null
+            ? _cause(exchangeFailure)
+            : !refreshed
             ? RecordSyncFailure.refreshFailed
             : unreadable > 0
             ? RecordSyncFailure.remoteUnreadable
             : null,
-        replaced: report.replaced,
-        exchanged: true,
+        replaced: report?.replaced ?? 0,
+        exchanged: report != null,
       );
-    } on Exception catch (error) {
-      if (error is CatalogFailure &&
-          error.kind == CatalogFailureKind.unauthorized) {
-        session.rejectCredential();
-      }
+    } on Exception {
       if (!_current(generation)) return null;
-      try {
-        final unreadable = await records.unreadableCount(session.scope.key);
-        if (!_current(generation)) return null;
-        _unreadable.value = unreadable;
-        final conflicts = await records.conflicts(session.scope.key);
-        if (!_current(generation)) return null;
-        _publish(conflicts);
-      } on Exception {
-        if (!_current(generation)) return null;
-        return _ended(failure: RecordSyncFailure.unreadable);
-      }
-      return _ended(failure: _cause(error));
+      return _ended(failure: RecordSyncFailure.unreadable);
     }
   }
 
@@ -477,7 +480,7 @@ class RecordSync {
     CatalogFailure(kind: CatalogFailureKind.unavailable, status: 404) =>
       RecordSyncFailure.pluginMissing,
     CatalogFailure(kind: CatalogFailureKind.unavailable, status: 410) =>
-      RecordSyncFailure.remoteUnreadable,
+      RecordSyncFailure.uploadRejected,
     RecordProtocolFailure() ||
     CatalogFailure(
       kind: CatalogFailureKind.invalidResponse,

@@ -208,6 +208,13 @@ class RecordSyncView extends StatelessWidget {
 
   Widget _failureBanner(RecordSyncFailure failure) => switch (failure) {
     RecordSyncFailure.remoteUnreadable => const SizedBox.shrink(),
+    RecordSyncFailure.uploadRejected => SyncBanner(
+      icon: Icons.sync_problem_rounded,
+      title: 'Some records could not be uploaded',
+      text: 'Jellyfin did not accept some saved records. They stay on this phone while other records keep arriving.',
+      action: 'Retry',
+      onAction: onSync,
+    ),
     RecordSyncFailure.invalidResponse => SyncBanner(
       icon: Icons.sync_problem_rounded,
       title: 'The sync reply could not be read',
@@ -299,6 +306,7 @@ class SyncStatusStrip extends StatelessWidget {
                 'Records stay on this phone',
                 'Check again',
               ),
+              RecordSyncFailure.uploadRejected ||
               RecordSyncFailure.invalidResponse ||
               RecordSyncFailure.unreachable ||
               RecordSyncFailure.unreadable ||
