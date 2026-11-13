@@ -1,0 +1,156 @@
+[
+  {
+    "command": "nix develop --command dart format test/catalog/collection_queries_test.dart > /tmp/bookfin-boo-hwoz/format-tests.log 2>&1",
+    "exitCode": 0,
+    "result": "Formatted; flutter_lints unresolved before dependency resolution.",
+    "log": "/tmp/bookfin-boo-hwoz/format-tests.log",
+    "sha256": "1b02635e7b4b800b330dae08808f43884557582793f0d5401d3eba9468c0ae74"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart > /tmp/bookfin-boo-hwoz/red.log 2>&1",
+    "exitCode": 1,
+    "result": "8 passed, 10 failed against original production code; mixed behavior and one incorrect Audio-track expectation.",
+    "log": "/tmp/bookfin-boo-hwoz/red.log",
+    "sha256": "2abe921d51d618681176b07cf09ff8c48bbc7739316de5173de67f585622271c"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'shown libraries keep|older global discovery|empty shown-library' > /tmp/bookfin-boo-hwoz/green-narrowing.log 2>&1",
+    "exitCode": 1,
+    "result": "2 passed, 1 failed: incorrect Audio-track expectation.",
+    "log": "/tmp/bookfin-boo-hwoz/green-narrowing.log",
+    "sha256": "258c00502d7606e0b23305b6cf705c9b921af8d557ee23cc3aa6028eb45eeb1b"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'shown libraries keep' > /tmp/bookfin-boo-hwoz/red-narrowing-corrected.log 2>&1",
+    "exitCode": 1,
+    "result": "Meaningful red against original production: non-book child count expected 0, actual 3.",
+    "log": "/tmp/bookfin-boo-hwoz/red-narrowing-corrected.log",
+    "sha256": "9e69db13c46663a0bc0930663dd73b5db6a73679f3b3be2ffd1bf5535445bd24"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'shown libraries keep|older global discovery|empty shown-library' > /tmp/bookfin-boo-hwoz/green-narrowing-corrected.log 2>&1",
+    "exitCode": 0,
+    "result": "3 passed.",
+    "log": "/tmp/bookfin-boo-hwoz/green-narrowing-corrected.log",
+    "sha256": "93a79039aa0ed9e9ed624afba40cf09cbe0aa4b85bdda16c3f85881f2abf8bad"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'collections beyond' > /tmp/bookfin-boo-hwoz/green-collection-pages.log 2>&1",
+    "exitCode": 0,
+    "result": "1 passed; membership beyond collection 1000.",
+    "log": "/tmp/bookfin-boo-hwoz/green-collection-pages.log",
+    "sha256": "67c06ba9c1f1dcb4278a89e7655a5ceac0186ab06c089bfc2e55b4a01f92daf6"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'current child paging|older child paging|count discards|wrong start' > /tmp/bookfin-boo-hwoz/green-child-pages.log 2>&1",
+    "exitCode": 0,
+    "result": "7 passed.",
+    "log": "/tmp/bookfin-boo-hwoz/green-child-pages.log",
+    "sha256": "7df07c95f6b39ab7cefd252791247d139a3446db2636531d3629bfbee15004a6"
+  },
+  {
+    "command": "nix develop --command dart format lib/catalog/jellyfin.dart test/catalog/collection_queries_test.dart > /tmp/bookfin-boo-hwoz/format.log 2>&1",
+    "exitCode": 0,
+    "result": "2 files formatted.",
+    "log": "/tmp/bookfin-boo-hwoz/format.log",
+    "sha256": "5e04c98d83e10f6b8d5bb884c60b4a93deae95b7f2e9416da7d250b2721288a9"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart test/catalog/jellyfin_test.dart > /tmp/bookfin-boo-hwoz/focused.log 2>&1",
+    "exitCode": 1,
+    "result": "48 passed, 1 failed: uncaught cancellation during account transition.",
+    "log": "/tmp/bookfin-boo-hwoz/focused.log",
+    "sha256": "63ae0ff5e8f504e5f2577bf5876c39702ddc86dd287344f651a554f3b74d61a9"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart --name 'closing the old account' > /tmp/bookfin-boo-hwoz/green-cancellation.log 2>&1",
+    "exitCode": 0,
+    "result": "1 passed after immediate observation of the collection future.",
+    "log": "/tmp/bookfin-boo-hwoz/green-cancellation.log",
+    "sha256": "d1fbbaa5bf1aa6f806905f16054028ed0f186a1d8f41cddf7691aed32d5d6667"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart test/catalog/jellyfin_test.dart > /tmp/bookfin-boo-hwoz/focused-final.log 2>&1",
+    "exitCode": 0,
+    "result": "49 passed.",
+    "log": "/tmp/bookfin-boo-hwoz/focused-final.log",
+    "sha256": "a8de0be23bca024c7ef913a19b0840373bbdc7b8b9e75089cc092bad9e52ab6a"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog test/settings test/app test/downloads test/playback test/sync > /tmp/bookfin-boo-hwoz/affected.log 2>&1",
+    "exitCode": 1,
+    "result": "1664 passed, 3 skipped, 1 failed: library-visibility fixture answered scoped collection queries with books.",
+    "log": "/tmp/bookfin-boo-hwoz/affected.log",
+    "sha256": "ab22cb426b732c96ee4956cccbc879f51e6791d1abe9fa642f35db4febab9874"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog test/settings test/app test/downloads test/playback test/sync > /tmp/bookfin-boo-hwoz/affected-final.log 2>&1",
+    "exitCode": 0,
+    "result": "1665 passed, 3 existing plugin-integration skips.",
+    "log": "/tmp/bookfin-boo-hwoz/affected-final.log",
+    "sha256": "a242cea1e39d54d6b285bf560aeb674d4e9a6c079a8ce77e95b77a28b56e2d43"
+  },
+  {
+    "command": "nix develop --command dart format lib/catalog/jellyfin.dart test/catalog/collection_queries_test.dart test/catalog/library_visibility_test.dart > /tmp/bookfin-boo-hwoz/format-final.log 2>&1",
+    "exitCode": 0,
+    "result": "3 files, 0 formatting changes.",
+    "log": "/tmp/bookfin-boo-hwoz/format-final.log",
+    "sha256": "45677745de22edb703c8d6f33aa97667c853d61fd53a4d91027d6116d8b5d32f"
+  },
+  {
+    "command": "nix develop --command flutter analyze lib/catalog lib/settings lib/app lib/downloads lib/playback lib/sync test/catalog test/settings test/app test/downloads test/playback test/sync > /tmp/bookfin-boo-hwoz/analyze.log 2>&1",
+    "exitCode": 1,
+    "result": "One unnecessary non-null assertion in jellyfin.dart; removed without behavior change.",
+    "log": "/tmp/bookfin-boo-hwoz/analyze.log",
+    "sha256": "4e660da7084fd70a4cc92b07739092d3c3113508683276ed5c2b52a4d98acc71"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --machine > /tmp/bookfin-boo-hwoz/full-suite.log 2>&1",
+    "exitCode": 1,
+    "result": "See full-suite.json for completion and complete skip/error inventory.",
+    "log": "/tmp/bookfin-boo-hwoz/full-suite.log",
+    "sha256": "7e095499984513598b6f283137f5ec7e828d157db1991e7a5bf616a1921ff8ac"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_frames_test.dart > /tmp/bookfin-boo-hwoz/frames-repeat.log 2>&1",
+    "exitCode": 1,
+    "result": "4 passed, 1 failed: tf-il7u repeated unchanged.",
+    "log": "/tmp/bookfin-boo-hwoz/frames-repeat.log",
+    "sha256": "0c7579ea59ed3ebad29a219de42d6634481460d23c2f119bbc9d5204c34e08f4"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/epub/page_source_frames_test.dart > /tmp/bookfin-boo-hwoz/frames-original-production.log 2>&1",
+    "exitCode": 1,
+    "result": "4 passed, 1 failed with the original-base Jellyfin implementation temporarily restored; implementation restored afterward. Same tf-il7u assertion; root cause remains unknown.",
+    "log": "/tmp/bookfin-boo-hwoz/frames-original-production.log",
+    "sha256": "0c7579ea59ed3ebad29a219de42d6634481460d23c2f119bbc9d5204c34e08f4"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_queries_test.dart test/catalog/jellyfin_test.dart test/catalog/library_visibility_test.dart > /tmp/bookfin-boo-hwoz/final-catalog.log 2>&1",
+    "exitCode": 0,
+    "result": "56 passed after restoring the implemented production file.",
+    "log": "/tmp/bookfin-boo-hwoz/final-catalog.log",
+    "sha256": "6fde18941957d4cba87a724374914f6b84c4fa5a14024ffc879942e4533e2498"
+  },
+  {
+    "command": "nix develop --command flutter analyze lib/catalog lib/settings lib/app lib/downloads lib/playback lib/sync test/catalog test/settings test/app test/downloads test/playback test/sync > /tmp/bookfin-boo-hwoz/analyze-final.log 2>&1",
+    "exitCode": 0,
+    "result": "Final affected analysis.",
+    "log": "/tmp/bookfin-boo-hwoz/analyze-final.log",
+    "sha256": "ed6a0ec44c87110416b39825d87adca56edd95f5bcaaa6280e876ca00a5cf2c5"
+  },
+  {
+    "command": "nix develop --command dart format --output=none --set-exit-if-changed lib/catalog/jellyfin.dart test/catalog/collection_queries_test.dart test/catalog/library_visibility_test.dart > /tmp/bookfin-boo-hwoz/format-check.log 2>&1",
+    "exitCode": 0,
+    "result": "Final changed-file formatting check.",
+    "log": "/tmp/bookfin-boo-hwoz/format-check.log",
+    "sha256": "45677745de22edb703c8d6f33aa97667c853d61fd53a4d91027d6116d8b5d32f"
+  },
+  {
+    "command": "nix develop --command git diff --check 0c0984d98f8d2e9b4be7f39e9a10769ddee0bf9c > /tmp/bookfin-boo-hwoz/whitespace.log 2>&1",
+    "exitCode": 0,
+    "result": "Complete original-base diff, including staged evidence.",
+    "log": "/tmp/bookfin-boo-hwoz/whitespace.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

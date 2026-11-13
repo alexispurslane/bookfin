@@ -1,0 +1,10 @@
+ea5c492f96dd9ca90e8b0723f76d188a90a26b6c645266eed284db18f8c68419 https://github.com/jellyfin/jellyfin/blob/83d0d0e7f76e23e2e085c8ff67d28b772d35967d/Jellyfin.Api/Controllers/ItemsController.cs
+35ef0d1e5cecfddfa613a521b72170168c465597f4f15c415605e45f0ba46d29 https://github.com/jellyfin/jellyfin/blob/83d0d0e7f76e23e2e085c8ff67d28b772d35967d/MediaBrowser.Model/Querying/ItemFields.cs
+d00b1e73b167dc3068e619d52dbc394ea2f7187c1c87524d0e6b094d1cab5b55 https://github.com/jellyfin/jellyfin/blob/83d0d0e7f76e23e2e085c8ff67d28b772d35967d/Emby.Server.Implementations/Dto/DtoService.cs
+7f3caa6b32b267736ac5a62eb2d147baa76a14870619f172668513657b575920 https://github.com/jellyfin/jellyfin/blob/83d0d0e7f76e23e2e085c8ff67d28b772d35967d/MediaBrowser.Controller/Entities/Folder.cs
+c7777732f29cf43b7470ece2b17eda5d67f6e43f4bbd9f4192bafd5891738df6 https://github.com/jellyfin/jellyfin/blob/83d0d0e7f76e23e2e085c8ff67d28b772d35967d/MediaBrowser.Controller/Entities/Movies/BoxSet.cs
+6f9b9ceacf888502f2aa6b751ceca77ca1f61bde49a90f708160260d02dda0e9 https://github.com/jellyfin/jellyfin/blob/v10.11.0/Jellyfin.Api/Controllers/ItemsController.cs
+35ef0d1e5cecfddfa613a521b72170168c465597f4f15c415605e45f0ba46d29 https://github.com/jellyfin/jellyfin/blob/v10.11.0/MediaBrowser.Model/Querying/ItemFields.cs
+e21c9791193997c4c8c18f6422385f46afae0f6cdd586ed586a326e1c46c7386 https://github.com/jellyfin/jellyfin/blob/v10.11.0/Emby.Server.Implementations/Dto/DtoService.cs
+e021e2e5ce333ccd53f0ed73eae87668baef4e8db831b1b4cbbcf5c233b01ad2 https://github.com/jellyfin/jellyfin/blob/v10.11.0/MediaBrowser.Controller/Entities/Movies/BoxSet.cs
+c9c1bef0b0d1489b014c36f1c340cd38d084f3ead167ee438a17a178db1f9949 https://github.com/jellyfin/jellyfin/blob/v10.11.0/MediaBrowser.Controller/Entities/Folder.cs

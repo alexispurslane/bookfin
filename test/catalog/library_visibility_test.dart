@@ -56,6 +56,9 @@ class _ServerTransport implements JsonTransport {
     Map<String, dynamic>? body,
   }) async {
     if (uri.pathSegments.last == 'UserViews') return {'Items': views};
+    if (uri.queryParameters['includeItemTypes'] == 'BoxSet') {
+      return {'Items': <Object>[], 'TotalRecordCount': 0};
+    }
     final parent = uri.queryParameters['parentId'];
     if (parent == null) return {'Items': <Object>[]};
     asked.add(parent);

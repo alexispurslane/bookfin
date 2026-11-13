@@ -1,0 +1,251 @@
+{
+  "counts": {
+    "success": 3673,
+    "error": 1,
+    "skipped": 27
+  },
+  "completion": {
+    "success": false,
+    "type": "done",
+    "time": 292706
+  },
+  "skipped": [
+    {
+      "name": "the part open benchmark",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/part_open_benchmark_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+    },
+    {
+      "name": "the corpus prepare",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/corpus_prepare_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+    },
+    {
+      "name": "the downloaded books open the places that epub.js saved",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/saved_places_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/page_source_test.dart",
+      "messages": [],
+      "reason": null,
+      "sourceCondition": "BOOKFIN_PAGE_SOURCE_BENCHMARK != '1' (test/reader/epub/page_source_test.dart:1215)",
+      "sourceConditionEvidence": "Unchanged source condition recorded in docs/evidence/t5-6lnm/full-suite.json"
+    },
+    {
+      "name": "body text breaks lines and pages where epub.js broke them",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/fidelity_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-frankenstein",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-moby-dick",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-poetry",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_test.dart",
+      "messages": [
+        "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      ],
+      "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+    },
+    {
+      "name": "the step budget",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/step_budget_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_STEPS=1 to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+    },
+    {
+      "name": "the corpus steps",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/corpus_steps_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+    },
+    {
+      "name": "the admission benchmark",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/admission_benchmark_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      ],
+      "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+    },
+    {
+      "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/zip_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "name": "the jumps into real books",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/page_map_jump_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS=1"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS=1"
+    },
+    {
+      "name": "the corpus run",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/corpus_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS=1 to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+    },
+    {
+      "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/image_size_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      ],
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "name": "the open of a PDF",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/pdf_open_benchmark_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      ],
+      "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+    },
+    {
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/pager_test.dart",
+      "messages": [],
+      "reason": null,
+      "sourceCondition": "BOOKFIN_PAGER_BENCHMARK != '1' (test/reader/epub/pager_test.dart:1206)",
+      "sourceConditionEvidence": "Unchanged source condition recorded in docs/evidence/t5-6lnm/full-suite.json"
+    },
+    {
+      "name": "measure incremental saves and acknowledgments while retaining every original action",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/research/journal_growth_measurement_test.dart",
+      "messages": [
+        "Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+      ],
+      "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+    },
+    {
+      "name": "measure current restoration against complete retained replay on this host",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/research/current_restore_measurement_test.dart",
+      "messages": [],
+      "reason": null,
+      "sourceCondition": "BOOKFIN_CURRENT_RESTORE_EVIDENCE is unset (test/research/current_restore_measurement_test.dart:129,254)",
+      "sourceConditionEvidence": "Unchanged source condition recorded in docs/evidence/t5-6lnm/full-suite.json"
+    },
+    {
+      "name": "the layout cache survey",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/research/epub_layout_cache_test.dart",
+      "messages": [
+        "Skip: set BOOKFIN_LAYOUT_CACHE=1"
+      ],
+      "reason": "set BOOKFIN_LAYOUT_CACHE=1"
+    },
+    {
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/sync/plugin_upgrade_integration_test.dart",
+      "messages": [
+        "Skip: Run tool/plugin/prove.py in the pinned shells."
+      ],
+      "reason": "Run tool/plugin/prove.py in the pinned shells."
+    },
+    {
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/sync/plugin_batch_integration_test.dart",
+      "messages": [
+        "Skip: Run with tool/plugin/prove.py in the pinned sync dev shell."
+      ],
+      "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+    },
+    {
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/sync/plugin_integration_test.dart",
+      "messages": [
+        "Skip: Run tool/sync_fixture.py in the pinned shells."
+      ],
+      "reason": "Run tool/sync_fixture.py in the pinned shells."
+    }
+  ],
+  "failures": [
+    {
+      "name": "idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled",
+      "suite": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/page_source_frames_test.dart",
+      "messages": [
+        "\u2550\u2550\u2561 EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK \u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\nThe following TestFailure was thrown running a test:\nExpected: false\n  Actual: <true>\nidle steps ran in a row between frames\n\nWhen the exception was thrown, this was the stack:\n#4      main.<anonymous closure> (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/page_source_frames_test.dart:188:5)\n<asynchronous suspension>\n#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)\n<asynchronous suspension>\n#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)\n<asynchronous suspension>\n<asynchronous suspension>\n(elided one frame from package:stack_trace)\n\nThis was caught by the test expectation on the following line:\n  file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-92207740/test/reader/epub/page_source_frames_test.dart line 188\nThe test description was:\n  idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+      ],
+      "reason": null
+    }
+  ],
+  "errors": [
+    {
+      "testID": 1419,
+      "error": "Test failed. See exception logs above.\nThe test description was: idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 113398
+    }
+  ],
+  "log": "/tmp/bookfin-boo-hwoz/full-suite.log"
+}

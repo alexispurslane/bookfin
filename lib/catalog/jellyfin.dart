@@ -491,17 +491,13 @@ class JellyfinClient {
     if (!available.containsAll(shown)) {
       throw const CatalogFailure(CatalogFailureKind.incomplete);
     }
-    final collections = _collections(session);
-    final List<LibraryPages> pages;
-    try {
-      pages = [
-        for (final library in shown.toList()..sort())
-          await _libraryPages(session, library),
-      ];
-    } catch (_) {
-      collections.ignore();
-      rethrow;
-    }
+    // Cancellation can finish the collection read before the library read.
+    // Observe its error now; the await below still propagates it to the caller.
+    final collections = _collections(session, shown)..ignore();
+    final pages = [
+      for (final library in shown.toList()..sort())
+        await _libraryPages(session, library),
+    ];
     return CatalogPages(libraries: pages, collections: await collections);
   }
 
@@ -559,44 +555,56 @@ class JellyfinClient {
   /// be read only removes series names, so it never fails the catalog.
   Future<Map<String, List<String>>> _collections(
     JellyfinSession session,
+    Set<String> shown,
   ) async {
     try {
-      final sets =
-          ((await _send(
-                    ['Items'],
-                    session: session,
-                    query: {
-                      'userId': session.scope.userId,
-                      'includeItemTypes': 'BoxSet',
-                      'recursive': 'true',
-                      'limit': '1000',
-                    },
-                  ))['Items']
-                  as List)
-              .whereType<Map<String, dynamic>>()
-              .where((set) => set['Id'] is String && set['Name'] is String)
-              .toList();
+      final byId = <String, String>{};
+      final libraries = shown.toList();
+      for (var start = 0; start < libraries.length; start += _pageRequests) {
+        final discovered = await Future.wait([
+          for (final library in libraries.skip(start).take(_pageRequests))
+            _collectionItems(session, {
+              'parentId': library,
+              'includeItemTypes': 'BoxSet',
+              'recursive': 'true',
+            }),
+        ]);
+        for (final result in discovered) {
+          if (result.items.length != result.total) {
+            throw const CatalogFailure(CatalogFailureKind.incomplete);
+          }
+          for (final set in result.items) {
+            final id = set['Id'] as String;
+            final name = set['Name'];
+            if (name is! String || name.isEmpty) {
+              throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+            }
+            if (byId.containsKey(id) && byId[id] != name) {
+              throw const CatalogFailure(CatalogFailureKind.incomplete);
+            }
+            // 12.4 scopes this query by linked-child ancestors. 10.11 ignores
+            // the parent, so both may discover a set in several libraries.
+            byId[id] = name;
+          }
+        }
+      }
+      final sets = byId.entries.toList();
       final result = <String, List<String>>{};
       for (var start = 0; start < sets.length; start += 8) {
         final batch = sets.skip(start).take(8).toList();
         final children = await Future.wait([
           for (final set in batch)
-            _send(
-              ['Items'],
-              session: session,
-              query: {
-                'userId': session.scope.userId,
-                'parentId': set['Id'] as String,
-                'limit': '2000',
-              },
-            ),
+            _collectionItems(session, {
+              'parentId': set.key,
+              'includeItemTypes': 'AudioBook,Book,Audio',
+              // Keep direct membership: recursive lookup also admits books
+              // inside a linked folder, which is a different series rule.
+            }),
         ]);
         for (final (index, page) in children.indexed) {
-          for (final child in (page['Items'] as List? ?? []).whereType<Map>()) {
-            final id = child['Id'];
-            if (id is String) {
-              result.putIfAbsent(id, () => []).add(batch[index]['Name']);
-            }
+          for (final child in page.items) {
+            final id = child['Id'] as String;
+            result.putIfAbsent(id, () => []).add(batch[index].value);
           }
         }
       }
@@ -607,6 +615,65 @@ class JellyfinClient {
     } catch (_) {
       return const {};
     }
+  }
+
+  /// Reads one collection listing in bounded pages, keeping its source count.
+  /// 10.11 filters direct children AFTER paging and counts unfiltered children;
+  /// even an empty page must advance by the requested size, not its item count.
+  /// 12.4 filters before paging. The same count-based walk handles both.
+  /// Collection discovery checks density separately because it has no such
+  /// post-page filter. No membership survives beyond the current catalog read.
+  Future<({List<Map<String, dynamic>> items, int total})> _collectionItems(
+    JellyfinSession session,
+    Map<String, String> query,
+  ) async {
+    final items = <Map<String, dynamic>>[];
+    final seen = <String>{};
+    int? total;
+    for (
+      var start = 0;
+      total == null || start < total;
+      start += catalogPageSize
+    ) {
+      final response = await _send(
+        ['Items'],
+        session: session,
+        query: {
+          ...query,
+          'userId': session.scope.userId,
+          'startIndex': '$start',
+          'limit': '$catalogPageSize',
+          'enableTotalRecordCount': 'true',
+          'enableImages': 'false',
+          'enableUserData': 'false',
+        },
+      );
+      final count = response['TotalRecordCount'];
+      final page = response['Items'];
+      if (count is! int || page is! List) {
+        throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+      }
+      if (count < 0 ||
+          count > 1000000 ||
+          (total != null && count != total) ||
+          (response['StartIndex'] != null && response['StartIndex'] != start) ||
+          page.length > min(catalogPageSize, count - start)) {
+        throw const CatalogFailure(CatalogFailureKind.incomplete);
+      }
+      total = count;
+      for (final value in page) {
+        if (value is! Map<String, dynamic> ||
+            value['Id'] is! String ||
+            (value['Id'] as String).isEmpty) {
+          throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+        }
+        if (!seen.add(value['Id'] as String)) {
+          throw const CatalogFailure(CatalogFailureKind.incomplete);
+        }
+        items.add(value);
+      }
+    }
+    return (items: items, total: total);
   }
 
   void _guard(JellyfinSession session) {
