@@ -20,3 +20,7 @@ Found in the code survey of November 12 (main at f9f26500). Nothing was run for 
 **2026-11-13T01:09:38Z**
 
 User decision, 2026-11-12: a return to the foreground refreshes the catalog only when the last successful refresh is older than 1 hour. Launch, a refresh by hand, and a return after an unreachable result refresh as before. Skip the build and the write when the content digest is unchanged. test/app/resume_refresh_test.dart changes with this ticket.
+
+**2026-11-13T03:10:37Z**
+
+Astra ticket lead started from 8caf18ebcfcaa02df67c49767cdee11d5109f2eb. Task node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-jld0-astra-20261112-1; child thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-jld0-astra-20261112-1; clientRequestId bookfin-boo-jld0-astra-20261112-1. Builder uses codex/gpt-6-astra reasoningEffort xhigh; fresh reviewer uses the same model at high. User-approved one-hour freshness rule and unchanged-content write avoidance only. Verification and integration pending.
