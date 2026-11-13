@@ -20,3 +20,7 @@ Found in the code survey of November 12 (main at f9f26500). Nothing was run for 
 **2026-11-13T01:09:37Z**
 
 User decision, 2026-11-12: Ask at Play. The paused edition stays at its place after a sync, so the rule in docs/plans/reading-history.md:194 holds. When the user taps Play and a newer place from another device exists, a glass choice (showGlassChoices) offers the place of this phone or the newer place. Play must never replace the newer resume silently. Open point that the user did not decide: Play from the notification, a headset or the lock screen cannot show a choice. Proposed default by the orchestrator: play from the place of this phone, keep the newer place as its own History entry so that both moves stay, and show the choice when the app next comes to the front. Confirm this default with the user before the build.
+
+## Pending product choice, 2026-11-13
+
+The parent has asked what headset and lock-screen Play should do when a newer remote place exists: play from this phone's place while preserving both places in History and defer the question to the foreground, or remain paused until an in-app choice. No reply has arrived yet. Do not infer a choice from elapsed time or launch dependent implementation. Independent download-restoration work can proceed.
