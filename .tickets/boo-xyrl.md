@@ -47,3 +47,9 @@ Lead: codex/gpt-6-astra xhigh. Stages: build, one read-only review
 (codex/gpt-6-astra high), fixes if needed, then parent integration.
 Launch reports running; branch and current stage have not yet been reported.
 Parent retains integration, acceptance, hardening and closure.
+
+**2026-11-13T23:23:14Z**
+
+Implemented current-account Clear data in this bound worktree. New Downloads.clearAccount uses public remove/removeRetained and a beforeRemoval callback to recheck required record saves/uploads after file holds end. Initial required failure removes nothing; later failure stops further removal and never reports completion. Parent must integrate boo-39cu without bypassing this callback or the awaited public removal future. No playing-audio pending mechanism was duplicated. Catalog refresh retirement, scoped cover cleanup, atomic cache deletion, and account/credential guards are covered by real-store tests. Detailed logs and all failed attempts are in docs/evidence/boo-xyrl. Follow-up t5-23yk records pre-existing engine-rule issues; td-tswb records the acceptance fixture interface addition. Full suite and JS build verification are in progress; no ticket closure.
+
+Implementation verification complete: focused 62 passed; final affected 777 passed/3 external skips; full Flutter 3900 passed/27 existing optional skips at concurrency 2; all 28 changed Dart files formatted and analyzed cleanly; production and gallery JavaScript release builds passed. Exact commands, complete logs including failures, source manifests, skip inventory and build hashes are retained in docs/evidence/boo-xyrl. Single independent review remains before readiness.

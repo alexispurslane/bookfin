@@ -26,6 +26,10 @@ abstract interface class CatalogStore {
   /// Replaces the saved catalog text of [scope] with [text].
   Future<void> write(AccountScope scope, String text);
 
+  /// Removes only the server snapshot of [scope]. User choices and retained
+  /// unreadable originals survive; a failed removal throws.
+  Future<void> clearCache(AccountScope scope);
+
   /// Loads durable choices, extracting legacy choices before a cache can
   /// replace them. A retained-data notice must be shown to the person.
   Future<CatalogChoices> readChoices(AccountScope scope);
@@ -324,6 +328,15 @@ class LocalCatalogStore implements CatalogStore {
   @override
   Future<String?> read(AccountScope scope) =>
       _ordered(_key(scope), () => _read(_key(scope)));
+
+  @override
+  Future<void> clearCache(AccountScope scope) =>
+      _ordered(_key(scope), () async {
+        // Legacy catalogs can still hold the only copy of user corrections.
+        await _prepare(scope);
+        await _preferences.remove(_key(scope));
+        await _files?.remove(_key(scope));
+      });
 
   Future<String?> _read(String key) async =>
       await _files?.read(key) ?? await _preferences.getString(key);

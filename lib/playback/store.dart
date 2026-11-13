@@ -234,11 +234,14 @@ class LocalResumeStore
 
   /// Flushes each live writer before sync or a choice. Writers retain their
   /// own retry and save-error policies. All flushes finish before a failure
-  /// is handed to the caller; no storage operation holds the queue while
+  /// is handed to the caller. With [account], only its writers flush.
+  /// No storage operation holds the queue while
   /// awaiting a writer that can itself save.
-  Future<void> flushWriters() async {
+  Future<void> flushWriters({String? account}) async {
     await Future.wait([
-      for (final writer in _writers.toList()) Future<void>.sync(writer.flush),
+      for (final writer in _writers.toList())
+        if (account == null || writer.account() == account)
+          Future<void>.sync(writer.flush),
     ]);
   }
 

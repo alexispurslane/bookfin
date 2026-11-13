@@ -861,5 +861,5 @@ class _NoCovers implements Covers {
   @override
   Future<Uri?> blurred(JellyfinSession session, CoverRef cover) async => null;
   @override
-  Future<void> clear() async {}
+  Future<void> clear(AccountScope account) async {}
 }

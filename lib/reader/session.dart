@@ -248,7 +248,17 @@ class ReaderSession extends ChangeNotifier {
     if (store case final RecordWriterHost host) {
       _unregisterWriter = host.registerWriter(
         account: () => _account,
-        flush: flush,
+        flush: () async {
+          final account = _account;
+          await _flushRecords();
+          if (account != null &&
+              (_pendingWrites.containsKey(account) ||
+                  _unreadChanges.containsKey(account))) {
+            throw Exception(
+              'Reading changes could not be saved. Free device storage and retry.',
+            );
+          }
+        },
         refresh: refreshPersonalRecords,
       );
     }
@@ -1990,18 +2000,25 @@ class ReaderSession extends ChangeNotifier {
     return _writes;
   }
 
-  Future<void> flush() async {
+  /// Saves only personal records. Sync can run while Downloads authorizes a
+  /// removal, so it must never enqueue a derived-page read behind that removal.
+  /// Ordinary flush still keeps the drawn page after this durable save.
+  Future<void> _flushRecords() async {
     _navigator?.reportPendingPlace();
     await _binding;
     if (!_recordsReady) await _readAgain();
     await _retryPending();
+  }
+
+  Future<void> flush() async {
+    await _flushRecords();
     // The place is saved first. The kept page is derived from it.
     _keepShown();
     await _keeping;
   }
 
   Future<void> refreshPersonalRecords() async {
-    await flush();
+    await _flushRecords();
     final account = _account;
     if (account == null ||
         !_recordsReady ||

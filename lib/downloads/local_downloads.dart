@@ -89,6 +89,15 @@ class LocalDownloads extends Downloads {
   Future<void>? _leftoverReads;
   bool _leftoversStale = false;
 
+  // The bulk removal uses remove/removeRetained and their existing file-use
+  // protection. This token only rejects new requests and changed bindings.
+  ({
+    JellyfinSession session,
+    int generation,
+    Future<void> Function()? beforeRemoval,
+  })?
+  _clearing;
+
   @override
   bool get supported => true;
 
@@ -725,9 +734,18 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<void> request(Edition edition) => _command(() => _request(edition));
+  Future<void> request(Edition edition) {
+    if (_clearing?.session.credentialIdentity == _session?.credentialIdentity &&
+        _clearing != null) {
+      return Future.error(
+        Exception('Wait for Clear data to finish before downloading.'),
+      );
+    }
+    return _command(() => _request(edition));
+  }
 
   Future<void> _request(Edition edition) async {
+    if (_clearing != null) return;
     final generation = _generation;
     final ids = _current(edition);
     if (_storageError != null) {
@@ -777,6 +795,66 @@ class LocalDownloads extends Downloads {
   }
 
   @override
+  Future<void> clearAccount(
+    JellyfinSession confirmed, {
+    Future<void> Function()? beforeRemoval,
+  }) async {
+    final catalog = await _settled;
+    if (_clearing != null) throw Exception('Clear data is already running.');
+    final clearing = (
+      session: confirmed,
+      generation: catalog.generation,
+      beforeRemoval: beforeRemoval,
+    );
+    _clearing = clearing;
+    try {
+      _guardClear();
+      await _binding;
+      _guardClear();
+      final editions = _editions.values.toList();
+      for (final edition in editions) {
+        _guardClear();
+        await remove(edition);
+        _guardClear();
+      }
+      final retained = await _retainedStorage(includeEmpty: true);
+      _guardClear();
+      for (final download in retained) {
+        if (!download.removable) {
+          throw Exception(
+            'Some leftover files cannot be verified. Review Leftover files in Downloads and retry.',
+          );
+        }
+        await removeRetained(download);
+        _guardClear();
+      }
+      final remaining = await _retainedStorage(includeEmpty: true);
+      _guardClear();
+      if (remaining.isNotEmpty) {
+        throw Exception(
+          'Some files remain. Review Downloads and retry Clear data.',
+        );
+      }
+    } finally {
+      if (_clearing == clearing) _clearing = null;
+    }
+  }
+
+  void _guardClear() {
+    final clearing = _clearing;
+    if (clearing != null &&
+        (_disposed ||
+            clearing.generation != _generation ||
+            _session?.scope.key != clearing.session.scope.key ||
+            _session?.credentialIdentity !=
+                clearing.session.credentialIdentity)) {
+      throw Exception(
+        'The download account or sources changed. Confirm Clear data again.',
+      );
+    }
+  }
+
+  @override
   Future<void> remove(Edition edition) {
     try {
       _current(edition).forEach(_beginRemoval);
@@ -814,6 +892,7 @@ class LocalDownloads extends Downloads {
     final records = [for (final id in ids) _records[id]!];
     await _cancel(edition);
     void guard() {
+      _guardClear();
       if (_disposed || generation != _generation) {
         throw StateError('The active download catalog changed.');
       }
@@ -823,6 +902,8 @@ class LocalDownloads extends Downloads {
     for (final id in ids) {
       await _heldEnded(id);
     }
+    guard();
+    await _clearing?.beforeRemoval?.call();
     guard();
     try {
       for (final record in records) {
@@ -906,7 +987,11 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<List<RetainedDownload>> retainedStorage() async {
+  Future<List<RetainedDownload>> retainedStorage() => _retainedStorage();
+
+  Future<List<RetainedDownload>> _retainedStorage({
+    bool includeEmpty = false,
+  }) async {
     final (:generation, account: _) = await _settled;
     await _binding;
     final session = _session;
@@ -920,7 +1005,9 @@ class LocalDownloads extends Downloads {
       // A bound source owns its directory, so it is never left over.
       if (_sources.containsKey(_name(directory))) continue;
       final saved = await _storedDownload(directory, session, _retainedBinding);
-      if (saved != null && saved.bytes > 0 && !_sources.containsKey(saved.id)) {
+      if (saved != null &&
+          (includeEmpty || saved.bytes > 0) &&
+          !_sources.containsKey(saved.id)) {
         retained.add(saved);
       }
     }
@@ -990,6 +1077,7 @@ class LocalDownloads extends Downloads {
   Future<void> _removeRetained(RetainedDownload download) async {
     final generation = _generation;
     void guard() {
+      _guardClear();
       if (_disposed ||
           generation != _generation ||
           _session?.scope.key != download.accountKey ||
@@ -1015,6 +1103,8 @@ class LocalDownloads extends Downloads {
       throw StateError('The saved download identity cannot be verified.');
     }
     await _heldEnded(download.id);
+    guard();
+    await _clearing?.beforeRemoval?.call();
     guard();
     try {
       await _deleteOwnedFiles(directory, guard);

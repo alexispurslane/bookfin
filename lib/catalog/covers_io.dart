@@ -27,15 +27,22 @@ class DiskCovers implements Covers {
   final _loading = <String, ({Object credential, Future<Uint8List?> done})>{};
   final _blurring = <String, ({Object credential, Future<Uri?> done})>{};
   final _missing = <(String, Object)>{};
+  final _versions = <String, int>{};
+  final _clearing = <String, Future<void>>{};
+
+  String _directory(AccountScope scope) {
+    // One short account key costs less to hash than an isolate hop.
+    return '${root.path}/${sha256.convert(utf8.encode(scope.key))}';
+  }
+
+  bool _current(String directory, int version) =>
+      (_versions[directory] ?? 0) == version &&
+      !_clearing.containsKey(directory);
 
   /// The kept cover file of [cover] in [session]'s account directory.
   File _file(JellyfinSession session, CoverRef cover) {
-    // NOTE: Engine rule 1. This hashes one account key of a few dozen
-    // bytes. Measured in AOT on an M-series Mac, that takes about 2 µs, and
-    // a hop to another isolate about 33 µs.
-    final account = sha256.convert(utf8.encode(session.scope.key));
     return File(
-      '${root.path}/$account/${_safe(cover.itemId)}@${_safe(cover.tag)}',
+      '${_directory(session.scope)}/${_safe(cover.itemId)}@${_safe(cover.tag)}',
     );
   }
 
@@ -43,6 +50,9 @@ class DiskCovers implements Covers {
   Future<Uint8List?> load(JellyfinSession session, CoverRef cover) {
     final file = _file(session, cover);
     final directory = file.parent;
+    final version = _versions[directory.path] ?? 0;
+    bool current() => _current(directory.path, version);
+    if (!current()) return Future.value();
     final item = _safe(cover.itemId);
     final key = file.path;
     final missingKey = (key, session.credentialIdentity);
@@ -53,31 +63,37 @@ class DiskCovers implements Covers {
       // result, but retries its own credential after an obsolete failure.
       return loading.credential == session.credentialIdentity
           ? loading.done
-          : loading.done.then((_) => load(session, cover));
+          : loading.done.then((_) => current() ? load(session, cover) : null);
     }
     final done = () async {
       try {
-        if (await file.exists()) return await file.readAsBytes();
+        if (await file.exists()) {
+          final bytes = await file.readAsBytes();
+          return current() ? bytes : null;
+        }
         if (session.needsSignIn) return null;
         final Uint8List? bytes;
         try {
           bytes = await _fetch(coverUri(session, cover), {
             'X-Emby-Token': session.token,
           });
-        } catch (error) {
+        } on Exception catch (error) {
           if (error is CatalogFailure &&
               error.kind == CatalogFailureKind.unauthorized) {
             session.rejectCredential();
           }
           return null;
         }
+        if (!current()) return null;
         if (bytes == null || bytes.isEmpty) {
           _missing.add(missingKey);
           return null;
         }
         await directory.create(recursive: true);
+        if (!current()) return null;
         final partial = File('${file.path}.partial');
         await partial.writeAsBytes(bytes, flush: true);
+        if (!current()) return null;
         await partial.rename(file.path);
         // Removes the files of older versions of the item's cover, and
         // keeps those of this version, such as its blurred copy.
@@ -90,7 +106,7 @@ class DiskCovers implements Covers {
             await old.delete();
           }
         }
-        return bytes;
+        return current() ? bytes : null;
       } finally {
         _loading.remove(key);
       }
@@ -105,23 +121,30 @@ class DiskCovers implements Covers {
   @override
   Future<Uri?> blurred(JellyfinSession session, CoverRef cover) {
     final blurred = File('${_file(session, cover).path}.blur.png');
+    final directory = blurred.parent.path;
+    final version = _versions[directory] ?? 0;
+    bool current() => _current(directory, version);
+    if (!current()) return Future.value();
     final blurring = _blurring[blurred.path];
     if (blurring != null) {
       return blurring.credential == session.credentialIdentity
           ? blurring.done
-          : blurring.done.then((_) => this.blurred(session, cover));
+          : blurring.done.then(
+              (_) => current() ? this.blurred(session, cover) : null,
+            );
     }
     final done = () async {
       try {
-        if (await blurred.exists()) return blurred.uri;
+        if (await blurred.exists()) return current() ? blurred.uri : null;
         final bytes = await load(session, cover);
-        if (bytes == null) return null;
+        if (bytes == null || !current()) return null;
         final art = await _blurElsewhere(bytes);
-        if (art == null) return null;
+        if (art == null || !current()) return null;
         final partial = File('${blurred.path}.partial');
         await partial.writeAsBytes(art, flush: true);
+        if (!current()) return null;
         await partial.rename(blurred.path);
-        return blurred.uri;
+        return current() ? blurred.uri : null;
       } on FileSystemException {
         return null;
       } finally {
@@ -136,9 +159,34 @@ class DiskCovers implements Covers {
   }
 
   @override
-  Future<void> clear() async {
-    _missing.clear();
-    if (await root.exists()) await root.delete(recursive: true);
+  Future<void> clear(AccountScope account) {
+    final directory = _directory(account);
+    if (_clearing[directory] case final clearing?) return clearing;
+    _versions[directory] = (_versions[directory] ?? 0) + 1;
+    _missing.removeWhere((entry) => entry.$1.startsWith('$directory/'));
+    final pending = <Future<Object?>>[
+      for (final entry in _loading.entries)
+        if (entry.key.startsWith('$directory/')) entry.value.done,
+      for (final entry in _blurring.entries)
+        if (entry.key.startsWith('$directory/')) entry.value.done,
+    ];
+    final done = () async {
+      // Older writers settle before deletion; new loads cannot start while
+      // this future owns the account. Neither path can recreate its files.
+      await Future.wait(pending);
+      final type = await FileSystemEntity.type(directory, followLinks: false);
+      if (type == FileSystemEntityType.notFound) return;
+      if (type != FileSystemEntityType.directory ||
+          await FileSystemEntity.type(root.path, followLinks: false) !=
+              FileSystemEntityType.directory) {
+        throw const FileSystemException(
+          'Cover storage is not a private directory.',
+        );
+      }
+      await Directory(directory).delete(recursive: true);
+    }();
+    _clearing[directory] = done;
+    return done.whenComplete(() => _clearing.remove(directory));
   }
 }
 

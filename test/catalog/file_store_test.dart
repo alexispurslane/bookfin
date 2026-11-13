@@ -507,6 +507,8 @@ base class LegacyPreferences extends InMemorySharedPreferencesAsync {
 }
 
 class ControlledFiles implements CatalogFiles {
+  @override
+  Future<void> remove(String key) => disk.remove(key);
   ControlledFiles(this.disk);
   final DiskCatalogFiles disk;
   bool failWrite = false;

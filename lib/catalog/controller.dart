@@ -122,7 +122,7 @@ List<String> _libraryNames(List<BookLibrary> libraries) => [
 ];
 
 /// What the catalog is doing.
-enum _Work { idle, restore, signIn, refresh }
+enum _Work { idle, restore, signIn, refresh, clear }
 
 /// A refresh that runs: its [generation], the [hidden] libraries that it
 /// was asked to save, or null to keep the saved ones, when it is [done],
@@ -444,6 +444,11 @@ class CatalogController extends ChangeNotifier {
   late final _librarySignal = ValueNotifier(_visible);
   late final _accountSignal = ValueNotifier(_account);
   late final _statusSignal = ValueNotifier(_status);
+  final _clearingSignal = ValueNotifier(false);
+
+  /// Whether confirmed local-data removal is still pending, including saves,
+  /// uploads and files held by a reader or player. Only its Settings row listens.
+  ValueListenable<bool> get clearingNotifier => _clearingSignal;
 
   /// The visible library: the books of the signed-in account, with their
   /// shelves and indexes. It is empty while signed out or while access is
@@ -726,6 +731,7 @@ class CatalogController extends ChangeNotifier {
     _librarySignal.value = _visible;
     _accountSignal.value = _account;
     _statusSignal.value = _status;
+    _clearingSignal.value = _work == _Work.clear;
     notifyListeners();
   }
 
@@ -1066,7 +1072,9 @@ class CatalogController extends ChangeNotifier {
     if (_work == _Work.restore) {
       return _restoring!.then((_) => refresh(hidden: hidden, byUser: byUser));
     }
-    if (_work == _Work.signIn || _session?.needsSignIn == true) {
+    if (_work == _Work.clear ||
+        _work == _Work.signIn ||
+        _session?.needsSignIn == true) {
       return Future<void>.value();
     }
     final running = _refreshing;
@@ -1328,6 +1336,63 @@ class CatalogController extends ChangeNotifier {
     return write;
   }
 
+  /// Retires outstanding refreshes, runs the screen's preservation and file
+  /// removal work, then removes [confirmed]'s saved catalog. [beforeClear]
+  /// calls its guard between asynchronous steps; a superseding operation or
+  /// account replacement throws instead of authorizing further removal.
+  /// Refreshes cannot recreate the cache while this operation runs. Login,
+  /// corrections and every other account remain intact. Failure propagates.
+  Future<void> clearSavedLibrary(
+    JellyfinSession confirmed, {
+    required Future<void> Function(void Function() guard) beforeClear,
+  }) async {
+    if (_disposed ||
+        _work == _Work.clear ||
+        _session?.scope.key != confirmed.scope.key ||
+        _session?.credentialIdentity != confirmed.credentialIdentity) {
+      throw Exception(
+        'The account changed or a clear is already running. Review Settings and try again.',
+      );
+    }
+    final generation = _begin(work: _Work.clear);
+    void guard() {
+      if (!_current(generation) ||
+          _session?.scope.key != confirmed.scope.key ||
+          _session?.credentialIdentity != confirmed.credentialIdentity) {
+        throw Exception(
+          'The account changed. Return to Settings and confirm Clear data again.',
+        );
+      }
+    }
+
+    _notify();
+    try {
+      await _cacheWrites;
+      guard();
+      await beforeClear(guard);
+      guard();
+      final clearing = (_cacheWrites ?? Future<void>.value()).then((_) async {
+        guard();
+        await _store.clearCache(confirmed.scope);
+        guard();
+        _facts = null;
+        _text = null;
+        _cacheStored = false;
+        _lastSuccessfulRefresh = null;
+        _built = CatalogLibrary.empty;
+        _libraries = [];
+        _reach = CatalogReach.unknown;
+      });
+      _cacheWrites = clearing.catchError((Object _) {});
+      await clearing;
+    } finally {
+      if (_current(generation)) {
+        _work = _Work.idle;
+        _notify();
+      }
+    }
+  }
+
   Future<void> signOut() async {
     _begin();
     _clearVisible();
@@ -1374,6 +1439,11 @@ class CatalogController extends ChangeNotifier {
       ));
 
   Future<void> _edit(CatalogEdits Function(CatalogEdits) change) {
+    if (_work == _Work.clear) {
+      return Future.error(
+        Exception('Wait for Clear data to finish before editing the library.'),
+      );
+    }
     if (_session == null ||
         _facts == null ||
         _choices == null ||
@@ -1575,6 +1645,7 @@ class CatalogController extends ChangeNotifier {
     _librarySignal.dispose();
     _accountSignal.dispose();
     _statusSignal.dispose();
+    _clearingSignal.dispose();
     super.dispose();
   }
 }

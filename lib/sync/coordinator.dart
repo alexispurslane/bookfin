@@ -325,6 +325,51 @@ class RecordSync {
   /// A sync that the user started. It shows busy, then its result.
   Future<void> syncNow() => _act(_sync);
 
+  /// Saves live changes and uploads every pending record of [confirmed].
+  /// Completes only after durable acknowledgments leave no pending upload.
+  /// A save, upload, or account/credential replacement failure throws an
+  /// Exception. Programming errors propagate unchanged. An account with no
+  /// pending changes needs no server connection. Uses the existing exchange
+  /// queue, so a concurrent sync cannot stand in for this required check.
+  Future<void> requireUploaded(JellyfinSession confirmed) async {
+    final generation = _generation;
+    void guard() {
+      if (!_current(generation) ||
+          _session?.scope.key != confirmed.scope.key ||
+          _session?.credentialIdentity != confirmed.credentialIdentity) {
+        throw Exception(
+          'The account changed. Return to Settings and confirm Clear data again.',
+        );
+      }
+    }
+
+    guard();
+    var completed = false;
+    await _exclusive(() async {
+      guard();
+      await records.flushWriters(account: confirmed.scope.key);
+      guard();
+      while (await records.hasPendingUploads(confirmed.scope.key)) {
+        guard();
+        final client = _client;
+        if (!_serverReady || client == null) {
+          throw Exception(
+            'Sign in again to upload your saved places before clearing data.',
+          );
+        }
+        await transport.synchronize(confirmed, client);
+        guard();
+      }
+      guard();
+      completed = true;
+      return (message: null);
+    });
+    guard();
+    if (!completed) {
+      throw Exception('Records were not uploaded. Retry Clear data.');
+    }
+  }
+
   /// Keeps the saved version [identity] of [record], then syncs. It shows
   /// busy until the sync ends, then the result. The other saved places stay
   /// as bookmarks with the titles of [bookmarkTitles], as

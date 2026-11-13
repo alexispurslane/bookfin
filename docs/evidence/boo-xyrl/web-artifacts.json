@@ -1,0 +1,718 @@
+{
+  "production": {
+    ".last_build_id": {
+      "bytes": 32,
+      "sha256": "06f968b28ef6c8d4a20ccffa564bac6001cd51f3f203c730e514293f0646c309"
+    },
+    "assets/AssetManifest.bin": {
+      "bytes": 5111,
+      "sha256": "6ced2d5dd329bce86b35f3202c0da1d71b5d16390e391c31cfcc2919064299d5"
+    },
+    "assets/AssetManifest.bin.json": {
+      "bytes": 6818,
+      "sha256": "28df6955a1ae55c69522b3f9cce938a405fe8e45ec169bd2145cd1b6baf7badb"
+    },
+    "assets/FontManifest.json": {
+      "bytes": 322,
+      "sha256": "83254adb378f19f24efcb2c2e468fb1269e3a268442b7a0bc90ca0c43c528eeb"
+    },
+    "assets/NOTICES": {
+      "bytes": 1380980,
+      "sha256": "89bb2d61a143ae52909ba6f1bd53ad4514eb59fcb070fa58de80a1cd19db6024"
+    },
+    "assets/assets/cities/CC-BY-4.0.txt": {
+      "bytes": 18656,
+      "sha256": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    "assets/assets/cities/NOTICE.txt": {
+      "bytes": 1632,
+      "sha256": "4b9cb768e3298211dc9fb262068f5e121957e44bb59bcf24f5d8e65bfc1548a7"
+    },
+    "assets/assets/cities/cities.tsv": {
+      "bytes": 2395206,
+      "sha256": "16460f410475fb086a426597e33d326bdf9ad20fea965c4b93fc02e0db3df769"
+    },
+    "assets/assets/fonts/NotoSansMath-Arrows.ttf": {
+      "bytes": 31416,
+      "sha256": "7025135adc0d51f2de2d456f27c0dbca5f742f33efd8c0d86d5a32e21c1765e9"
+    },
+    "assets/assets/fonts/OFL-Noto-Sans-Math.txt": {
+      "bytes": 4380,
+      "sha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21"
+    },
+    "assets/assets/fonts/OFL-Outfit.txt": {
+      "bytes": 4388,
+      "sha256": "e2a6bbb2589b85bac1690ec8f220b22a9c3af9bfda56df6391f7ab491c7a039f"
+    },
+    "assets/assets/fonts/OFL-Source-Serif-4.txt": {
+      "bytes": 4399,
+      "sha256": "0fd8b796c1c6220a559a5682cfd00d1c8488b428369f7cb70deb671888cef85f"
+    },
+    "assets/assets/fonts/Outfit.ttf": {
+      "bytes": 110884,
+      "sha256": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade"
+    },
+    "assets/assets/fonts/SourceSerif4.ttf": {
+      "bytes": 1209508,
+      "sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+    },
+    "assets/assets/licenses/ocr/Bookfin-OCR-NOTICE.txt": {
+      "bytes": 383,
+      "sha256": "5a3b74c82cf0e79362db8940261c7d3348019d622d31d6fa6d4475c520c7bd16"
+    },
+    "assets/assets/licenses/ocr/English-fast.txt": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "assets/assets/licenses/ocr/Leptonica.txt": {
+      "bytes": 1521,
+      "sha256": "87829abb5bbb00b55a107365da89e9a33f86c4250169e5a1e5588505be7d5806"
+    },
+    "assets/assets/licenses/ocr/Tesseract.txt": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "assets/assets/licenses/ocr/Tesseract4Android.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "assets/assets/licenses/ocr/libjpeg.txt": {
+      "bytes": 18719,
+      "sha256": "7c25493a9f64fed34d01445467341bda77bc1cdbeccbe33558659ef173fb9ff2"
+    },
+    "assets/assets/licenses/ocr/libpng.txt": {
+      "bytes": 5345,
+      "sha256": "16d9daaafbf63a31a5bdc91d4600972548fef5aaa1244202393288dbd079c49a"
+    },
+    "assets/assets/licenses/ocr/manifest.json": {
+      "bytes": 1136,
+      "sha256": "5b20bf4ca13667a67309a51e8081777cddc0f9f3c7c06fa17c7afe263ce0b846"
+    },
+    "assets/assets/licenses/reader/Bookfin-native-NOTICE.txt": {
+      "bytes": 938,
+      "sha256": "25c38bef14eb96eab243c0b857fa38dffb63015dd8c272e5914ce6f48e11ec96"
+    },
+    "assets/assets/licenses/reader/GPL-3.0.txt": {
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "assets/assets/licenses/reader/LGPL-3.0.txt": {
+      "bytes": 7651,
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+    },
+    "assets/assets/licenses/reader/PDFium-LICENSE.txt": {
+      "bytes": 1177,
+      "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93"
+    },
+    "assets/assets/licenses/reader/PDFium-abseil.txt": {
+      "bytes": 11361,
+      "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747"
+    },
+    "assets/assets/licenses/reader/PDFium-agg23.txt": {
+      "bytes": 725,
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
+    },
+    "assets/assets/licenses/reader/PDFium-catapult.txt": {
+      "bytes": 1483,
+      "sha256": "f0df289ba9d03d857ad1c2f5918861376b1510b71588ffc60eff5c7a7bfedb09"
+    },
+    "assets/assets/licenses/reader/PDFium-cpu_features.txt": {
+      "bytes": 12876,
+      "sha256": "af272c1b4dd08dd61d43e001d3134119d03ca7a2b057a64f7355fdf27fbea3dd"
+    },
+    "assets/assets/licenses/reader/PDFium-dragonbox-Apache2-LLVM.txt": {
+      "bytes": 12262,
+      "sha256": "9e45e856bedccee9f67254082ca11851d954de2fed7448c4bed19ad9aab99a91"
+    },
+    "assets/assets/licenses/reader/PDFium-dragonbox-Boost.txt": {
+      "bytes": 1338,
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+    },
+    "assets/assets/licenses/reader/PDFium-fast_float.txt": {
+      "bytes": 1079,
+      "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6"
+    },
+    "assets/assets/licenses/reader/PDFium-freetype.txt": {
+      "bytes": 6741,
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
+    },
+    "assets/assets/licenses/reader/PDFium-harfbuzz.txt": {
+      "bytes": 1971,
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64"
+    },
+    "assets/assets/licenses/reader/PDFium-highway.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "assets/assets/licenses/reader/PDFium-icu.txt": {
+      "bytes": 27718,
+      "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af"
+    },
+    "assets/assets/licenses/reader/PDFium-lcms.txt": {
+      "bytes": 1353,
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
+    },
+    "assets/assets/licenses/reader/PDFium-libjpeg_turbo.ijg": {
+      "bytes": 12799,
+      "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6"
+    },
+    "assets/assets/licenses/reader/PDFium-libjpeg_turbo.md": {
+      "bytes": 5620,
+      "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430"
+    },
+    "assets/assets/licenses/reader/PDFium-libopenjpeg.txt": {
+      "bytes": 1794,
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
+    },
+    "assets/assets/licenses/reader/PDFium-libpng.txt": {
+      "bytes": 5345,
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+    },
+    "assets/assets/licenses/reader/PDFium-libunwind.txt": {
+      "bytes": 16706,
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d"
+    },
+    "assets/assets/licenses/reader/PDFium-llvm-libc.txt": {
+      "bytes": 15140,
+      "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47"
+    },
+    "assets/assets/licenses/reader/PDFium-pdfium.txt": {
+      "bytes": 12818,
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
+    },
+    "assets/assets/licenses/reader/PDFium-simdutf.txt": {
+      "bytes": 1059,
+      "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f"
+    },
+    "assets/assets/licenses/reader/PDFium-zlib.txt": {
+      "bytes": 1332,
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
+    },
+    "assets/assets/licenses/reader/hyphenation-en-notice.txt": {
+      "bytes": 2018,
+      "sha256": "ab6b5c2dc3966a2d7fbf72603f355714e8df3660d72f504bd3f188d647ba0581"
+    },
+    "assets/assets/licenses/reader/manifest.json": {
+      "bytes": 5052,
+      "sha256": "1ea666ffe64438ff0651d1bf7aae90f210938acbe118a48ef87cc557264bb7e3"
+    },
+    "assets/assets/licenses/reader/miniz-notice.txt": {
+      "bytes": 1242,
+      "sha256": "90cc6607cdfd1b37be04d69012d0764e8943a63b37f17aea2cc30f37c7748a7a"
+    },
+    "assets/assets/licenses/reader/src-xmlwriter.c-notice.txt": {
+      "bytes": 310,
+      "sha256": "9fcfda26b15758e9c7917093a30866bd2419b0b19fa127a2d842031489fa7cc7"
+    },
+    "assets/assets/licenses/reader/tools-common.c-notice.txt": {
+      "bytes": 284,
+      "sha256": "7457652db1000bd6afe6ee63a479b49159cbcc58a15eda389d2f89fc8803cbf2"
+    },
+    "assets/assets/licenses/reader/tools-mobitool.c-notice.txt": {
+      "bytes": 283,
+      "sha256": "45e8a90cc5cb08790b0dc044bf1b5e6d5919fa1af78fb93d376d99cec940903d"
+    },
+    "assets/assets/licenses/speech/Bookfin-speech-NOTICE.txt": {
+      "bytes": 283,
+      "sha256": "30ff077c3e9027580b1540332cff2a193adfa7097d6408ff0e3331ec7eff13e6"
+    },
+    "assets/assets/licenses/speech/manifest.json": {
+      "bytes": 332,
+      "sha256": "61cd8ef2d648ee0b89f03d99dc5520a23a209889f853b4a2546b3880d33d2a46"
+    },
+    "assets/assets/licenses/speech/whisper.cpp.txt": {
+      "bytes": 1078,
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+    },
+    "assets/fonts/MaterialIcons-Regular.otf": {
+      "bytes": 16860,
+      "sha256": "93f3c535f9562046bddb56ad88cac70134744722713cf19ebaa4fa3fb3e7960c"
+    },
+    "assets/packages/material_ui/shaders/ink_sparkle.frag": {
+      "bytes": 8890,
+      "sha256": "2dca5ab93d4ec29e963f996f3916320ba60825e9537dfb149a68008c7a16b026"
+    },
+    "assets/packages/pdfrx/assets/pdfium.wasm": {
+      "bytes": 5231809,
+      "sha256": "5b2cbb18e9dc361dae375e971c7e75f7306d39b7749ad4fced475579e6a549df"
+    },
+    "assets/packages/pdfrx/assets/pdfium_client.js": {
+      "bytes": 1856,
+      "sha256": "1ac8729c01dd67d03008f410fda7e2f9928d695c0a81e65ebd65bdf622ae5e65"
+    },
+    "assets/packages/pdfrx/assets/pdfium_worker.js": {
+      "bytes": 108268,
+      "sha256": "658241afadf942bf51bdceb869ddcba0a6a0d23d443fce3971eb91088ad8e156"
+    },
+    "assets/shaders/ink_sparkle.frag": {
+      "bytes": 8890,
+      "sha256": "2dca5ab93d4ec29e963f996f3916320ba60825e9537dfb149a68008c7a16b026"
+    },
+    "assets/shaders/stretch_effect.frag": {
+      "bytes": 6737,
+      "sha256": "ab412f07a5b9b50b67a885b24dbe16929738ae28630407d6490c924caf0a3220"
+    },
+    "bookfin.svg": {
+      "bytes": 180,
+      "sha256": "3a67b703006d24994afbe86fecc27f68a4d85570db9f74cc463db9ba6a85d84f"
+    },
+    "canvaskit/canvaskit.js": {
+      "bytes": 86987,
+      "sha256": "bb559f6080c7d312ac2a912b4abec9f68ff3d3022d4a603c7796b9b31460642b"
+    },
+    "canvaskit/canvaskit.js.symbols": {
+      "bytes": 1356926,
+      "sha256": "384f80b392972c83fd4f262527e3d06215a297d33ed59732c726721e9d9311bd"
+    },
+    "canvaskit/canvaskit.wasm": {
+      "bytes": 7284602,
+      "sha256": "fbed517a43e82452404446683f00f2e876d835aed84410695759e67b6bb01cd3"
+    },
+    "canvaskit/chromium/canvaskit.js": {
+      "bytes": 86226,
+      "sha256": "6018b12bd8ed37e6952eee72d59c1cf7ad707ccdb74a0a45190010f77edd9068"
+    },
+    "canvaskit/chromium/canvaskit.js.symbols": {
+      "bytes": 1235870,
+      "sha256": "31c86fac6042dd8b756150832c1d15495d0d07742e2718f75dbdde5a5a91455e"
+    },
+    "canvaskit/chromium/canvaskit.wasm": {
+      "bytes": 5428806,
+      "sha256": "ae8ff1d858140f7b1300ced3fa89fb8c9dce0a400a0f4f1e11f6dcfb3315fdcf"
+    },
+    "canvaskit/skwasm.js": {
+      "bytes": 63537,
+      "sha256": "71d7d3e34bf71b52bdba3b588b103bba8148ba28de5754083e01b3398e7a6e1c"
+    },
+    "canvaskit/skwasm.js.symbols": {
+      "bytes": 1540006,
+      "sha256": "9137f1a3ae744dea575043abfc6e063a047e910e6dab1ee53e496c975d1c033e"
+    },
+    "canvaskit/skwasm.wasm": {
+      "bytes": 3593715,
+      "sha256": "e540fd5e8303b7b68ec2718cb49e9c421f8ade3075b15e02a7059a62654df9a1"
+    },
+    "canvaskit/skwasm_heavy.js": {
+      "bytes": 63650,
+      "sha256": "cec554b46ddcf4c0e63d799e0556d546f42d2c3f69316fb4f67ed776f6104558"
+    },
+    "canvaskit/skwasm_heavy.js.symbols": {
+      "bytes": 1672152,
+      "sha256": "b6b79ed497e11d4cd13cc46724f9e289eacc744d2d185e31c72d595cdf62772b"
+    },
+    "canvaskit/skwasm_heavy.wasm": {
+      "bytes": 5216217,
+      "sha256": "565f5cc1cca6ab120f11934b105f01fec4b58b480c82e0889dca93af8e6f8635"
+    },
+    "canvaskit/webparagraph/canvaskit.js": {
+      "bytes": 76114,
+      "sha256": "3110e3e4d9b7b5657d336f253aaca8acca5777cde9319fb69ac302d6ff5a8b23"
+    },
+    "canvaskit/webparagraph/canvaskit.js.symbols": {
+      "bytes": 963641,
+      "sha256": "44d6c47919106235cf32252252490cdf798d907ee874ba343ab53dc94bc2a9dc"
+    },
+    "canvaskit/webparagraph/canvaskit.wasm": {
+      "bytes": 3729129,
+      "sha256": "0ce1b05082efdc8529550e8a01f6ff0593972d55525035010e26f5600aa9f254"
+    },
+    "canvaskit/wimp.js": {
+      "bytes": 59127,
+      "sha256": "8fd8a47480c6eb0a374d159912d0b3fb15661b41f5c113ecdd39c2f01f2bee46"
+    },
+    "canvaskit/wimp.js.symbols": {
+      "bytes": 1813030,
+      "sha256": "b4907ebd33131302a8cd99f7c55f52357bdfde04f421b605a616ba8764ae1de4"
+    },
+    "canvaskit/wimp.wasm": {
+      "bytes": 3581677,
+      "sha256": "e924eaafd801d41e017d178f3fd5cf8a417f641fe35c9ed34a4e1d7582283e0c"
+    },
+    "flutter.js": {
+      "bytes": 12136,
+      "sha256": "2beb1ce6b159c71540aa66030af1d7964b6a92377cc78473745e02f97b74effe"
+    },
+    "flutter_bootstrap.js": {
+      "bytes": 13091,
+      "sha256": "a58215793bc6eba827b94db88225fbf27a9f25d1b916c223b3939e3f28668ce0"
+    },
+    "flutter_service_worker.js": {
+      "bytes": 784,
+      "sha256": "a131df5ca46154cc4eb79044f7f5a14029c2f8bfccf8cef34e3ec3b5a9f5a88c"
+    },
+    "index.html": {
+      "bytes": 428,
+      "sha256": "8326340854146276021cd580b257dd30ed602bff79665fd89924d18b764f426d"
+    },
+    "main.dart.js": {
+      "bytes": 4290880,
+      "sha256": "6a0b7a302d0581adb239f104f36e08ff41ea3b97bc94f2d32c422fb963f8fe59"
+    },
+    "manifest.json": {
+      "bytes": 409,
+      "sha256": "4602890870a239838f2cbcd3c1aacbc402cfddb10ba2415ef40d6d67218569e1"
+    },
+    "version.json": {
+      "bytes": 84,
+      "sha256": "19234c8283505a3355792b3fa05fbf5e05bf02dd0af1df0128bae9b190df4615"
+    }
+  },
+  "gallery": {
+    ".last_build_id": {
+      "bytes": 32,
+      "sha256": "1c8adc632b33a7ed29d87e60492d6a3048d6f1b8e804e23ce12472956ed5cfee"
+    },
+    "assets/AssetManifest.bin": {
+      "bytes": 5111,
+      "sha256": "6ced2d5dd329bce86b35f3202c0da1d71b5d16390e391c31cfcc2919064299d5"
+    },
+    "assets/AssetManifest.bin.json": {
+      "bytes": 6818,
+      "sha256": "28df6955a1ae55c69522b3f9cce938a405fe8e45ec169bd2145cd1b6baf7badb"
+    },
+    "assets/FontManifest.json": {
+      "bytes": 322,
+      "sha256": "83254adb378f19f24efcb2c2e468fb1269e3a268442b7a0bc90ca0c43c528eeb"
+    },
+    "assets/NOTICES": {
+      "bytes": 1380980,
+      "sha256": "89bb2d61a143ae52909ba6f1bd53ad4514eb59fcb070fa58de80a1cd19db6024"
+    },
+    "assets/assets/cities/CC-BY-4.0.txt": {
+      "bytes": 18656,
+      "sha256": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94"
+    },
+    "assets/assets/cities/NOTICE.txt": {
+      "bytes": 1632,
+      "sha256": "4b9cb768e3298211dc9fb262068f5e121957e44bb59bcf24f5d8e65bfc1548a7"
+    },
+    "assets/assets/cities/cities.tsv": {
+      "bytes": 2395206,
+      "sha256": "16460f410475fb086a426597e33d326bdf9ad20fea965c4b93fc02e0db3df769"
+    },
+    "assets/assets/fonts/NotoSansMath-Arrows.ttf": {
+      "bytes": 31416,
+      "sha256": "7025135adc0d51f2de2d456f27c0dbca5f742f33efd8c0d86d5a32e21c1765e9"
+    },
+    "assets/assets/fonts/OFL-Noto-Sans-Math.txt": {
+      "bytes": 4380,
+      "sha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21"
+    },
+    "assets/assets/fonts/OFL-Outfit.txt": {
+      "bytes": 4388,
+      "sha256": "e2a6bbb2589b85bac1690ec8f220b22a9c3af9bfda56df6391f7ab491c7a039f"
+    },
+    "assets/assets/fonts/OFL-Source-Serif-4.txt": {
+      "bytes": 4399,
+      "sha256": "0fd8b796c1c6220a559a5682cfd00d1c8488b428369f7cb70deb671888cef85f"
+    },
+    "assets/assets/fonts/Outfit.ttf": {
+      "bytes": 110884,
+      "sha256": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade"
+    },
+    "assets/assets/fonts/SourceSerif4.ttf": {
+      "bytes": 1209508,
+      "sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+    },
+    "assets/assets/licenses/ocr/Bookfin-OCR-NOTICE.txt": {
+      "bytes": 383,
+      "sha256": "5a3b74c82cf0e79362db8940261c7d3348019d622d31d6fa6d4475c520c7bd16"
+    },
+    "assets/assets/licenses/ocr/English-fast.txt": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "assets/assets/licenses/ocr/Leptonica.txt": {
+      "bytes": 1521,
+      "sha256": "87829abb5bbb00b55a107365da89e9a33f86c4250169e5a1e5588505be7d5806"
+    },
+    "assets/assets/licenses/ocr/Tesseract.txt": {
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "assets/assets/licenses/ocr/Tesseract4Android.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "assets/assets/licenses/ocr/libjpeg.txt": {
+      "bytes": 18719,
+      "sha256": "7c25493a9f64fed34d01445467341bda77bc1cdbeccbe33558659ef173fb9ff2"
+    },
+    "assets/assets/licenses/ocr/libpng.txt": {
+      "bytes": 5345,
+      "sha256": "16d9daaafbf63a31a5bdc91d4600972548fef5aaa1244202393288dbd079c49a"
+    },
+    "assets/assets/licenses/ocr/manifest.json": {
+      "bytes": 1136,
+      "sha256": "5b20bf4ca13667a67309a51e8081777cddc0f9f3c7c06fa17c7afe263ce0b846"
+    },
+    "assets/assets/licenses/reader/Bookfin-native-NOTICE.txt": {
+      "bytes": 938,
+      "sha256": "25c38bef14eb96eab243c0b857fa38dffb63015dd8c272e5914ce6f48e11ec96"
+    },
+    "assets/assets/licenses/reader/GPL-3.0.txt": {
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "assets/assets/licenses/reader/LGPL-3.0.txt": {
+      "bytes": 7651,
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+    },
+    "assets/assets/licenses/reader/PDFium-LICENSE.txt": {
+      "bytes": 1177,
+      "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93"
+    },
+    "assets/assets/licenses/reader/PDFium-abseil.txt": {
+      "bytes": 11361,
+      "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747"
+    },
+    "assets/assets/licenses/reader/PDFium-agg23.txt": {
+      "bytes": 725,
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
+    },
+    "assets/assets/licenses/reader/PDFium-catapult.txt": {
+      "bytes": 1483,
+      "sha256": "f0df289ba9d03d857ad1c2f5918861376b1510b71588ffc60eff5c7a7bfedb09"
+    },
+    "assets/assets/licenses/reader/PDFium-cpu_features.txt": {
+      "bytes": 12876,
+      "sha256": "af272c1b4dd08dd61d43e001d3134119d03ca7a2b057a64f7355fdf27fbea3dd"
+    },
+    "assets/assets/licenses/reader/PDFium-dragonbox-Apache2-LLVM.txt": {
+      "bytes": 12262,
+      "sha256": "9e45e856bedccee9f67254082ca11851d954de2fed7448c4bed19ad9aab99a91"
+    },
+    "assets/assets/licenses/reader/PDFium-dragonbox-Boost.txt": {
+      "bytes": 1338,
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+    },
+    "assets/assets/licenses/reader/PDFium-fast_float.txt": {
+      "bytes": 1079,
+      "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6"
+    },
+    "assets/assets/licenses/reader/PDFium-freetype.txt": {
+      "bytes": 6741,
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
+    },
+    "assets/assets/licenses/reader/PDFium-harfbuzz.txt": {
+      "bytes": 1971,
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64"
+    },
+    "assets/assets/licenses/reader/PDFium-highway.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "assets/assets/licenses/reader/PDFium-icu.txt": {
+      "bytes": 27718,
+      "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af"
+    },
+    "assets/assets/licenses/reader/PDFium-lcms.txt": {
+      "bytes": 1353,
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
+    },
+    "assets/assets/licenses/reader/PDFium-libjpeg_turbo.ijg": {
+      "bytes": 12799,
+      "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6"
+    },
+    "assets/assets/licenses/reader/PDFium-libjpeg_turbo.md": {
+      "bytes": 5620,
+      "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430"
+    },
+    "assets/assets/licenses/reader/PDFium-libopenjpeg.txt": {
+      "bytes": 1794,
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
+    },
+    "assets/assets/licenses/reader/PDFium-libpng.txt": {
+      "bytes": 5345,
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+    },
+    "assets/assets/licenses/reader/PDFium-libunwind.txt": {
+      "bytes": 16706,
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d"
+    },
+    "assets/assets/licenses/reader/PDFium-llvm-libc.txt": {
+      "bytes": 15140,
+      "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47"
+    },
+    "assets/assets/licenses/reader/PDFium-pdfium.txt": {
+      "bytes": 12818,
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
+    },
+    "assets/assets/licenses/reader/PDFium-simdutf.txt": {
+      "bytes": 1059,
+      "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f"
+    },
+    "assets/assets/licenses/reader/PDFium-zlib.txt": {
+      "bytes": 1332,
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
+    },
+    "assets/assets/licenses/reader/hyphenation-en-notice.txt": {
+      "bytes": 2018,
+      "sha256": "ab6b5c2dc3966a2d7fbf72603f355714e8df3660d72f504bd3f188d647ba0581"
+    },
+    "assets/assets/licenses/reader/manifest.json": {
+      "bytes": 5052,
+      "sha256": "1ea666ffe64438ff0651d1bf7aae90f210938acbe118a48ef87cc557264bb7e3"
+    },
+    "assets/assets/licenses/reader/miniz-notice.txt": {
+      "bytes": 1242,
+      "sha256": "90cc6607cdfd1b37be04d69012d0764e8943a63b37f17aea2cc30f37c7748a7a"
+    },
+    "assets/assets/licenses/reader/src-xmlwriter.c-notice.txt": {
+      "bytes": 310,
+      "sha256": "9fcfda26b15758e9c7917093a30866bd2419b0b19fa127a2d842031489fa7cc7"
+    },
+    "assets/assets/licenses/reader/tools-common.c-notice.txt": {
+      "bytes": 284,
+      "sha256": "7457652db1000bd6afe6ee63a479b49159cbcc58a15eda389d2f89fc8803cbf2"
+    },
+    "assets/assets/licenses/reader/tools-mobitool.c-notice.txt": {
+      "bytes": 283,
+      "sha256": "45e8a90cc5cb08790b0dc044bf1b5e6d5919fa1af78fb93d376d99cec940903d"
+    },
+    "assets/assets/licenses/speech/Bookfin-speech-NOTICE.txt": {
+      "bytes": 283,
+      "sha256": "30ff077c3e9027580b1540332cff2a193adfa7097d6408ff0e3331ec7eff13e6"
+    },
+    "assets/assets/licenses/speech/manifest.json": {
+      "bytes": 332,
+      "sha256": "61cd8ef2d648ee0b89f03d99dc5520a23a209889f853b4a2546b3880d33d2a46"
+    },
+    "assets/assets/licenses/speech/whisper.cpp.txt": {
+      "bytes": 1078,
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+    },
+    "assets/fonts/MaterialIcons-Regular.otf": {
+      "bytes": 16860,
+      "sha256": "93f3c535f9562046bddb56ad88cac70134744722713cf19ebaa4fa3fb3e7960c"
+    },
+    "assets/packages/material_ui/shaders/ink_sparkle.frag": {
+      "bytes": 8890,
+      "sha256": "2dca5ab93d4ec29e963f996f3916320ba60825e9537dfb149a68008c7a16b026"
+    },
+    "assets/packages/pdfrx/assets/pdfium.wasm": {
+      "bytes": 5231809,
+      "sha256": "5b2cbb18e9dc361dae375e971c7e75f7306d39b7749ad4fced475579e6a549df"
+    },
+    "assets/packages/pdfrx/assets/pdfium_client.js": {
+      "bytes": 1856,
+      "sha256": "1ac8729c01dd67d03008f410fda7e2f9928d695c0a81e65ebd65bdf622ae5e65"
+    },
+    "assets/packages/pdfrx/assets/pdfium_worker.js": {
+      "bytes": 108268,
+      "sha256": "658241afadf942bf51bdceb869ddcba0a6a0d23d443fce3971eb91088ad8e156"
+    },
+    "assets/shaders/ink_sparkle.frag": {
+      "bytes": 8890,
+      "sha256": "2dca5ab93d4ec29e963f996f3916320ba60825e9537dfb149a68008c7a16b026"
+    },
+    "assets/shaders/stretch_effect.frag": {
+      "bytes": 6737,
+      "sha256": "ab412f07a5b9b50b67a885b24dbe16929738ae28630407d6490c924caf0a3220"
+    },
+    "bookfin.svg": {
+      "bytes": 180,
+      "sha256": "3a67b703006d24994afbe86fecc27f68a4d85570db9f74cc463db9ba6a85d84f"
+    },
+    "canvaskit/canvaskit.js": {
+      "bytes": 86987,
+      "sha256": "bb559f6080c7d312ac2a912b4abec9f68ff3d3022d4a603c7796b9b31460642b"
+    },
+    "canvaskit/canvaskit.js.symbols": {
+      "bytes": 1356926,
+      "sha256": "384f80b392972c83fd4f262527e3d06215a297d33ed59732c726721e9d9311bd"
+    },
+    "canvaskit/canvaskit.wasm": {
+      "bytes": 7284602,
+      "sha256": "fbed517a43e82452404446683f00f2e876d835aed84410695759e67b6bb01cd3"
+    },
+    "canvaskit/chromium/canvaskit.js": {
+      "bytes": 86226,
+      "sha256": "6018b12bd8ed37e6952eee72d59c1cf7ad707ccdb74a0a45190010f77edd9068"
+    },
+    "canvaskit/chromium/canvaskit.js.symbols": {
+      "bytes": 1235870,
+      "sha256": "31c86fac6042dd8b756150832c1d15495d0d07742e2718f75dbdde5a5a91455e"
+    },
+    "canvaskit/chromium/canvaskit.wasm": {
+      "bytes": 5428806,
+      "sha256": "ae8ff1d858140f7b1300ced3fa89fb8c9dce0a400a0f4f1e11f6dcfb3315fdcf"
+    },
+    "canvaskit/skwasm.js": {
+      "bytes": 63537,
+      "sha256": "71d7d3e34bf71b52bdba3b588b103bba8148ba28de5754083e01b3398e7a6e1c"
+    },
+    "canvaskit/skwasm.js.symbols": {
+      "bytes": 1540006,
+      "sha256": "9137f1a3ae744dea575043abfc6e063a047e910e6dab1ee53e496c975d1c033e"
+    },
+    "canvaskit/skwasm.wasm": {
+      "bytes": 3593715,
+      "sha256": "e540fd5e8303b7b68ec2718cb49e9c421f8ade3075b15e02a7059a62654df9a1"
+    },
+    "canvaskit/skwasm_heavy.js": {
+      "bytes": 63650,
+      "sha256": "cec554b46ddcf4c0e63d799e0556d546f42d2c3f69316fb4f67ed776f6104558"
+    },
+    "canvaskit/skwasm_heavy.js.symbols": {
+      "bytes": 1672152,
+      "sha256": "b6b79ed497e11d4cd13cc46724f9e289eacc744d2d185e31c72d595cdf62772b"
+    },
+    "canvaskit/skwasm_heavy.wasm": {
+      "bytes": 5216217,
+      "sha256": "565f5cc1cca6ab120f11934b105f01fec4b58b480c82e0889dca93af8e6f8635"
+    },
+    "canvaskit/webparagraph/canvaskit.js": {
+      "bytes": 76114,
+      "sha256": "3110e3e4d9b7b5657d336f253aaca8acca5777cde9319fb69ac302d6ff5a8b23"
+    },
+    "canvaskit/webparagraph/canvaskit.js.symbols": {
+      "bytes": 963641,
+      "sha256": "44d6c47919106235cf32252252490cdf798d907ee874ba343ab53dc94bc2a9dc"
+    },
+    "canvaskit/webparagraph/canvaskit.wasm": {
+      "bytes": 3729129,
+      "sha256": "0ce1b05082efdc8529550e8a01f6ff0593972d55525035010e26f5600aa9f254"
+    },
+    "canvaskit/wimp.js": {
+      "bytes": 59127,
+      "sha256": "8fd8a47480c6eb0a374d159912d0b3fb15661b41f5c113ecdd39c2f01f2bee46"
+    },
+    "canvaskit/wimp.js.symbols": {
+      "bytes": 1813030,
+      "sha256": "b4907ebd33131302a8cd99f7c55f52357bdfde04f421b605a616ba8764ae1de4"
+    },
+    "canvaskit/wimp.wasm": {
+      "bytes": 3581677,
+      "sha256": "e924eaafd801d41e017d178f3fd5cf8a417f641fe35c9ed34a4e1d7582283e0c"
+    },
+    "flutter.js": {
+      "bytes": 12136,
+      "sha256": "2beb1ce6b159c71540aa66030af1d7964b6a92377cc78473745e02f97b74effe"
+    },
+    "flutter_bootstrap.js": {
+      "bytes": 13091,
+      "sha256": "829fbe3866c51523f9d41aa320bc55d12176bdfc985ab0df275791a02def005f"
+    },
+    "flutter_service_worker.js": {
+      "bytes": 784,
+      "sha256": "a131df5ca46154cc4eb79044f7f5a14029c2f8bfccf8cef34e3ec3b5a9f5a88c"
+    },
+    "index.html": {
+      "bytes": 428,
+      "sha256": "8326340854146276021cd580b257dd30ed602bff79665fd89924d18b764f426d"
+    },
+    "main.dart.js": {
+      "bytes": 2797030,
+      "sha256": "f69ad3c2ec1dea570bd1f8a60a79cd8e4b42c8422db17990d48b79742ed8b1e6"
+    },
+    "manifest.json": {
+      "bytes": 409,
+      "sha256": "4602890870a239838f2cbcd3c1aacbc402cfddb10ba2415ef40d6d67218569e1"
+    },
+    "version.json": {
+      "bytes": 84,
+      "sha256": "19234c8283505a3355792b3fa05fbf5e05bf02dd0af1df0128bae9b190df4615"
+    }
+  }
+}

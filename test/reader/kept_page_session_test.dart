@@ -8,6 +8,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/playback/store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/epub/kept_page.dart';
@@ -153,6 +155,67 @@ void main() {
     expect(second.keptPage, isNull);
     expect(shown.startPlace, page.startPlace);
   });
+
+  for (final refresh in [false, true]) {
+    test(
+      'record ${refresh ? 'refresh' : 'flush'} finishes while a derived page write is held',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final records = LocalResumeStore();
+        final entered = Completer<void>();
+        final release = Completer<void>();
+        var hold = false;
+        final reader = ReaderSession(
+          downloads: downloads,
+          store: records.reading,
+          load: (_) => throw UnimplementedError(),
+          loadDocument: loadReadingDocument,
+          keptPages: KeptPages(
+            engine: () async {
+              if (hold) {
+                if (!entered.isCompleted) entered.complete();
+                await release.future;
+              }
+              return 'engine-one';
+            },
+          ),
+        );
+        sessions.add(reader);
+        await reader.bind(account(), [bookOf(epubEdition)]);
+        await reader.open(bookOf(epubEdition), epubEdition);
+        await present(reader);
+        await reader.addBookmark(title: 'Durable');
+        hold = true;
+        final keeping = reader.flush();
+        await entered.future;
+        var finished = false;
+        final saving =
+            (refresh ? reader.refreshPersonalRecords() : records.flushWriters())
+                .then((_) => finished = true);
+        try {
+          await Future.any([
+            saving,
+            Future<void>.delayed(const Duration(seconds: 2)),
+          ]);
+          expect(
+            finished,
+            isTrue,
+            reason: 'personal records must not wait on a download-owned derived file',
+          );
+          expect(
+            (await LocalResumeStore().reading.read(
+              accountKey,
+            ))!['bookmarks'].single['title'],
+            'Durable',
+          );
+        } finally {
+          release.complete();
+          await keeping;
+          await saving;
+        }
+      },
+    );
+  }
 
   test('the shown page is kept with each saved place', () async {
     final reader = await readTo(3);

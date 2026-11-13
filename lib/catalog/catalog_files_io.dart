@@ -62,6 +62,20 @@ class DiskCatalogFiles implements CatalogFiles {
   }
 
   @override
+  Future<void> remove(String key) {
+    final path = _path(key);
+    return Isolate.run(() async {
+      for (final name in [path, '$path.partial']) {
+        try {
+          await File(name).delete();
+        } on PathNotFoundException {
+          // An absent cache is already clear.
+        }
+      }
+    });
+  }
+
+  @override
   Future<void> preserve(String key) {
     final path = _path(key);
     return Isolate.run(() async {
@@ -110,6 +124,9 @@ class _HostCatalogFiles implements CatalogFiles {
 
   @override
   Future<String?> read(String key) async => (await _open()).read(key);
+
+  @override
+  Future<void> remove(String key) async => (await _open()).remove(key);
 
   @override
   Future<void> preserve(String key) async => (await _open()).preserve(key);

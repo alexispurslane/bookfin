@@ -20,6 +20,10 @@ abstract interface class CatalogFiles {
   /// A failed write leaves the previous committed file intact.
   Future<void> write(String key, String text);
 
+  /// Removes this key's committed text and incomplete replacement, if any.
+  /// Retained unreadable originals remain available for recovery.
+  Future<void> remove(String key);
+
   /// Retains the exact committed bytes under a separate, content-addressed
   /// name. Failure must prevent replacement of the damaged original.
   Future<void> preserve(String key);

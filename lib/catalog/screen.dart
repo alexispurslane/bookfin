@@ -351,6 +351,8 @@ class _CatalogHomeState extends State<CatalogHome> with WidgetsBindingObserver {
                   layout: _layout,
                   onAppearance: widget.onAppearance,
                   sync: widget.sync,
+                  downloads: widget.downloads,
+                  covers: widget.covers,
                 ),
               ),
             ),

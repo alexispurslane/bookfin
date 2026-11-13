@@ -52,6 +52,8 @@ class MemoryCredentials implements CredentialStore {
 }
 
 class MemoryCatalogStore implements CatalogStore {
+  @override
+  Future<void> clearCache(AccountScope scope) async => values.remove(scope.key);
   final choices = <String, CatalogChoices>{};
   @override
   Future<CatalogChoices> readChoices(AccountScope scope) async {

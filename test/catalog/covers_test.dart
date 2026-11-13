@@ -179,9 +179,57 @@ void main() {
     expect(requests, hasLength(1));
   });
 
+  test('clearing one account keeps every other account cover', () async {
+    final bob = JellyfinSession(
+      scope: AccountScope(
+        server: session.scope.server,
+        serverId: 'server',
+        userId: 'bob',
+      ),
+      token: 'token',
+      username: 'bob',
+      canDownload: true,
+    );
+    await covers.load(session, const CoverRef('graft', 'v1'));
+    await covers.load(bob, const CoverRef('graft', 'v1'));
+    await covers.clear(session.scope);
+    online = false;
+    expect(await covers.load(bob, const CoverRef('graft', 'v1')), [1, 2, 3]);
+    expect(await covers.load(session, const CoverRef('graft', 'v1')), isNull);
+  });
+
+  for (final blurred in [false, true]) {
+    test(
+      'a late ${blurred ? 'blurred' : 'plain'} cover cannot repopulate a cleared account',
+      () async {
+        final entered = Completer<void>();
+        final release = Completer<Uint8List?>();
+        covers = DiskCovers(
+          root: root,
+          fetch: (_, _) {
+            if (!entered.isCompleted) entered.complete();
+            return release.future;
+          },
+        );
+        final loading = blurred
+            ? covers.blurred(session, const CoverRef('graft', 'v1'))
+            : covers.load(session, const CoverRef('graft', 'v1'));
+        await entered.future;
+        final clearing = covers.clear(session.scope);
+        release.complete(img.encodePng(img.Image(width: 8, height: 12)));
+        await clearing;
+        await loading;
+        final files = await root.exists()
+            ? await root.list(recursive: true).where((f) => f is File).toList()
+            : [];
+        expect(files, isEmpty);
+      },
+    );
+  }
+
   test('clearing removes every kept cover', () async {
     await covers.load(session, const CoverRef('graft', 'v1'));
-    await covers.clear();
+    await covers.clear(session.scope);
     online = false;
     expect(await covers.load(session, const CoverRef('graft', 'v1')), isNull);
   });

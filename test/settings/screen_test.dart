@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/downloads/platform_stub.dart';
+
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -74,6 +77,7 @@ void main() {
     Future<void> showTab(
       WidgetTester tester, {
       RecordSync? sync,
+      Downloads? downloads,
       double scale = 1,
     }) => tester.pumpWidget(
       MaterialApp(
@@ -89,9 +93,90 @@ void main() {
             layout: layout,
             onAppearance: () {},
             sync: sync,
+            downloads: downloads,
           ),
         ),
       ),
+    );
+
+    testWidgets('Clear data asks before changing the current account', (
+      tester,
+    ) async {
+      await signIn(tester);
+      await showTab(tester);
+      expect(find.text('Clear data'), findsOneWidget);
+      await tester.ensureVisible(find.widgetWithText(ListTile, 'Clear data'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear data'));
+      await tester.pumpAndSettle();
+      expect(find.text('Clear data for alice?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(catalog.books, isNotEmpty);
+      expect(catalog.session?.username, 'alice');
+    });
+
+    testWidgets(
+      'confirming after an account change leaves the new account intact',
+      (tester) async {
+        await signIn(tester);
+        final records = ControlledRecords();
+        final sync = RecordSync(records: records)
+          ..suspend()
+          ..bind(catalog.session);
+        final downloads = UnavailableDownloads(MediaPolicy());
+        addTearDown(sync.dispose);
+        addTearDown(downloads.dispose);
+        await showTab(tester, sync: sync, downloads: downloads);
+        await tester.ensureVisible(find.widgetWithText(ListTile, 'Clear data'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Clear data'));
+        await tester.pumpAndSettle();
+        await tester.runAsync(
+          () => catalog.connect('https://books.example', 'bob', 'password'),
+        );
+        sync.bind(catalog.session);
+        await tester.tap(find.widgetWithText(FilledButton, 'Clear data'));
+        await tester.pumpAndSettle();
+        expect(catalog.session?.username, 'bob');
+        expect(catalog.books, isNotEmpty);
+        expect(
+          find.textContaining('Clear data did not finish.'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Local data cleared.'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'a failed required save shows recovery instructions and keeps the library',
+      (tester) async {
+        await signIn(tester);
+        final records = ControlledRecords();
+        records.registerWriter(
+          account: () => catalog.session?.scope.key,
+          flush: () async => throw Exception('storage full'),
+          refresh: () async {},
+        );
+        final sync = RecordSync(records: records)
+          ..suspend()
+          ..bind(catalog.session);
+        final downloads = UnavailableDownloads(MediaPolicy());
+        addTearDown(sync.dispose);
+        addTearDown(downloads.dispose);
+        await showTab(tester, sync: sync, downloads: downloads);
+        await tester.ensureVisible(find.widgetWithText(ListTile, 'Clear data'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Clear data'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Clear data'));
+        await tester.pumpAndSettle();
+        expect(catalog.books, isNotEmpty);
+        await runUntil(tester, () => !catalog.clearingNotifier.value);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Check device storage'), findsOneWidget);
+        expect(find.textContaining('Local data cleared.'), findsNothing);
+      },
     );
 
     testWidgets('choosing Compact saves it in the layout', (tester) async {

@@ -1051,6 +1051,8 @@ void main() {
 }
 
 class CountingFiles implements CatalogFiles {
+  @override
+  Future<void> remove(String key) => disk.remove(key);
   CountingFiles(this.disk);
   final DiskCatalogFiles disk;
   final writes = <String, String>{};

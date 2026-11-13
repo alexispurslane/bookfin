@@ -230,6 +230,20 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> cancel(Edition edition);
   Future<void> remove(Edition edition);
 
+  /// Removes the confirmed account's current and retained downloads through
+  /// the normal removal boundary. Waits for file users and active transfers;
+  /// completes only after removal. A changed account/source or failed removal
+  /// throws. [beforeRemoval] rechecks required record saves/uploads after
+  /// file users finish, before each removal. A failure preserves those files.
+  /// It must not request another download read. Other accounts are untouched.
+  /// Platforms without storage do nothing.
+  Future<void> clearAccount(
+    JellyfinSession confirmed, {
+    Future<void> Function()? beforeRemoval,
+  }) async {
+    if (supported) throw UnsupportedError('Account removal is unavailable.');
+  }
+
   /// Notifies when a download starts, finishes, fails, stops or waits, or
   /// when saved files change. This object notifies its own listeners at the
   /// same times. Byte progress notifies only [watch].

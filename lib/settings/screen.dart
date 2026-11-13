@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/glass.dart'
-    show confirmAction, showGlassSheet, GlassSheetAction;
+    show confirmAction, showGlassSheet, GlassSheetAction, showGlassMessage;
 import '../catalog/controller.dart';
+import '../catalog/covers.dart';
+import '../catalog/jellyfin.dart';
+import '../downloads/downloads.dart';
+import 'clear_data.dart';
 import '../catalog/layout.dart';
 import '../catalog/screen.dart' show LibrarySelector, SignInForm;
 import '../foundation/listenable_selector.dart';
@@ -26,11 +30,15 @@ class SettingsTab extends StatelessWidget {
     required this.layout,
     required this.onAppearance,
     this.sync,
+    this.downloads,
+    this.covers,
   });
   final CatalogController catalog;
   final LibraryLayout layout;
   final VoidCallback onAppearance;
   final RecordSync? sync;
+  final Downloads? downloads;
+  final Covers? covers;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder(
@@ -162,6 +170,19 @@ class SettingsTab extends StatelessWidget {
                   onTap: () => _resetCorrections(context, session.scope.key),
                 ),
               ),
+              ValueListenableBuilder(
+                valueListenable: catalog.clearingNotifier,
+                builder: (context, clearing, _) => ListTile(
+                  title: Text(clearing ? 'Clearing data…' : 'Clear data'),
+                  subtitle: Text(
+                    clearing
+                        ? 'Saving records, uploading, and waiting for files in use'
+                        : 'Downloads, covers, and the saved library for this account',
+                  ),
+                  enabled: !clearing,
+                  onTap: () => _clearData(context, session),
+                ),
+              ),
               ListTile(
                 title: const Text('Software licenses'),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -176,6 +197,49 @@ class SettingsTab extends StatelessWidget {
       );
     },
   );
+
+  Future<void> _clearData(
+    BuildContext context,
+    JellyfinSession confirmed,
+  ) async {
+    if (!await confirmAction(
+      context,
+      title: 'Clear data for ${confirmed.username}?',
+      message: 'Upload unsynced records, then remove this account’s downloads, covers, and saved library from this device. Your places, history, bookmarks, sign-in, and other accounts stay. Files in use wait until they are released; playing audio waits until pause or a book switch.',
+      action: 'Clear data',
+    )) {
+      return;
+    }
+    final sync = this.sync;
+    final downloads = this.downloads;
+    try {
+      if (sync == null || downloads == null) {
+        throw Exception(
+          'Local storage and personal-record sync must be available. Restart Bookfin and retry Clear data.',
+        );
+      }
+      await clearAccountData(
+        confirmed: confirmed,
+        catalog: catalog,
+        sync: sync,
+        downloads: downloads,
+        covers: covers,
+      );
+      if (context.mounted) {
+        showGlassMessage(
+          context,
+          'Local data cleared. Your personal records were kept.',
+        );
+      }
+    } on Exception catch (error) {
+      if (context.mounted) {
+        showGlassMessage(
+          context,
+          'Clear data did not finish. ${error.toString().replaceFirst('Exception: ', '')}',
+        );
+      }
+    }
+  }
 
   /// Opens the Personal records page with the covers of the tab.
   void _openRecords(BuildContext context, RecordSync sync) {

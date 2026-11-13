@@ -286,7 +286,15 @@ class Playback extends ChangeNotifier {
     if (store case final RecordWriterHost host) {
       _unregisterWriter = host.registerWriter(
         account: () => _session?.scope.key,
-        flush: flush,
+        flush: () async {
+          final account = _session?.scope.key;
+          await flush();
+          if (account != null && _pendingWrites.containsKey(account)) {
+            throw Exception(
+              'Listening changes could not be saved. Free device storage and retry.',
+            );
+          }
+        },
         refresh: refreshPersonalRecords,
         uploadRequests: _uploadRequests,
       );

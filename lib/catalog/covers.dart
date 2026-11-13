@@ -14,8 +14,10 @@ abstract class Covers {
   /// system media player. Null when [load] gives no readable cover image.
   Future<Uri?> blurred(JellyfinSession session, CoverRef cover);
 
-  /// Removes every kept cover.
-  Future<void> clear();
+  /// Removes only [account]'s kept covers, including blurred copies. Waits
+  /// for older loads to stop writing so they cannot recreate cleared files.
+  /// Loads started during removal return no image. Failures propagate.
+  Future<void> clear(AccountScope account);
 }
 
 /// Null where the platform keeps no covers. Screens then draw generated covers.
