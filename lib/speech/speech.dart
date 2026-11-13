@@ -53,6 +53,12 @@ Future<SpeechModel?> findSpeechModel() async {
 /// priority, so the UI isolate and playback never wait for it (engine rule
 /// 1). The worker starts at the first window, never before, and stops after
 /// [idle] without a window, which frees the model.
+///
+/// A model that the worker cannot load counts as no model for the rest of
+/// this run: the worker stops, and no later window loads the model again.
+/// The native library gives no model when it cannot read the file, and on
+/// an Android phone whose CPU lacks an instruction that the library needs
+/// (native/speech/bookfin_speech.c).
 class Speech {
   Speech({required this._locate, this._idle = const Duration(minutes: 2)});
 
@@ -66,6 +72,9 @@ class Speech {
   }();
   KeptWorker<_Model?>? _kept;
 
+  /// Whether the worker could not load the model.
+  var _unloadable = false;
+
   // NOTE: The worker's closures come from static functions, so that they
   // capture only plain data and never this object, which cannot travel to
   // the worker.
@@ -77,13 +86,18 @@ class Speech {
         end: (model) => model?.close(),
       );
 
-  static Heard? Function(_Model?) _hearing(
+  /// The job of one window: whether the worker holds the model, and what
+  /// the model heard.
+  static ({bool loaded, Heard? heard}) Function(_Model?) _hearing(
     String path,
     int startMs,
     int lengthMs,
     int threads,
   ) =>
-      (model) => model?.hear(path, startMs, lengthMs, threads: threads);
+      (model) => (
+        loaded: model != null,
+        heard: model?.hear(path, startMs, lengthMs, threads: threads),
+      );
 
   /// Whether the worker runs now and keeps the model in memory.
   bool get loaded => _kept?.running ?? false;
@@ -98,8 +112,8 @@ class Speech {
   /// The heard words of [lengthMs] of the downloaded audio file at [path]
   /// from [startMs]. Null when the window holds no words: it lies past the
   /// file's end, it holds silence or music, the file cannot be decoded, or
-  /// this build has no speech model. [urgent] gives the window more threads,
-  /// for a person who waits for it.
+  /// this build has no speech model that this phone can load. [urgent]
+  /// gives the window more threads, for a person who waits for it.
   Future<Heard?> hear(
     String path,
     int startMs,
@@ -107,10 +121,17 @@ class Speech {
     bool urgent = false,
   }) async {
     final worker = await _worker;
-    if (worker == null) return null;
-    final heard = await worker.run(
+    if (worker == null || _unloadable) return null;
+    final (:loaded, :heard) = await worker.run(
       _hearing(path, startMs, lengthMs, _threads(urgent: urgent)),
     );
+    if (!loaded) {
+      // The cause does not change while the app runs, so a new worker for
+      // each later window would only try the same load again.
+      _unloadable = true;
+      unawaited(worker.close());
+      return null;
+    }
     return heard == null || heard.words.isEmpty ? null : heard;
   }
 

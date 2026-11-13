@@ -188,6 +188,20 @@ void main() {
       expect(charactersOf(found), closeTo(3000, 1));
     });
 
+    test('on a phone where speech hears nothing keeps the landing of '
+        'matched chapters', () async {
+      // The speech runtime hears nothing in every window when the phone has
+      // no model, or cannot load it.
+      hearing.answer = (_, _) => null;
+      final found = await crossings().landing(
+        place,
+        from: audio,
+        into: ebookEdition(),
+      );
+      expect((found as TextLanding).matchedBy, MatchedBy.chapters);
+      expect(charactersOf(found), closeTo(3000, 1));
+    });
+
     test('of an audiobook that this phone streams keeps the landing of '
         'matched chapters', () async {
       downloaded = false;

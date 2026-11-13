@@ -47,9 +47,72 @@ static void range_close(void *context) {
   (void)context;
 }
 
+// The CPU features that the Android arm64 build of ggml needs, as bits of
+// AT_HWCAP. CMakeLists.txt builds ggml's CPU code there with
+// -march=armv8.2-a+dotprod+fp16, and clang can then use each of these
+// anywhere in that code:
+// - armv8.2-a holds what ARMv8.1 made mandatory: the CRC32 instructions,
+//   the atomic instructions (LSE), which ggml's thread pool uses in place
+//   of the ARMv8.0 loops, and the rounding multiply instructions (RDM).
+// - dotprod is the dot product instructions (SDOT and UDOT).
+// - fp16 is half float arithmetic. The kernel reports it as two bits: one
+//   for scalar code (FPHP) and one for vector code (ASIMDHP).
+// The other parts of armv8.2-a need no bit: FP and Advanced SIMD are part
+// of every arm64 Android, and the rest adds no instruction that an older
+// CPU refuses in the code of an app.
+//
+// The numbers are the Linux kernel's for arm64 (asm/hwcap.h), and they
+// never change. They are written here so that a host test can ask
+// bs_cpu_runs_speech. The Android build compares them with the NDK's.
+enum {
+  CPU_CRC32 = 1 << 7,
+  CPU_ATOMICS = 1 << 8,
+  CPU_FPHP = 1 << 9,
+  CPU_ASIMDHP = 1 << 10,
+  CPU_ASIMDRDM = 1 << 12,
+  CPU_ASIMDDP = 1 << 20,
+  CPU_NEEDED =
+      CPU_CRC32 | CPU_ATOMICS | CPU_FPHP | CPU_ASIMDHP | CPU_ASIMDRDM | CPU_ASIMDDP,
+};
+
+// Whether an arm64 CPU that reports the features [hwcap] in AT_HWCAP has
+// every instruction that the Android arm64 build of ggml can hold: 1 or 0.
+int bs_cpu_runs_speech(unsigned long hwcap) { return (hwcap & CPU_NEEDED) == CPU_NEEDED; }
+
+#if defined(__ANDROID__) && defined(__aarch64__)
+#include <android/log.h>
+#include <asm/hwcap.h>
+#include <sys/auxv.h>
+
+_Static_assert(CPU_NEEDED == (HWCAP_CRC32 | HWCAP_ATOMICS | HWCAP_FPHP | HWCAP_ASIMDHP |
+                              HWCAP_ASIMDRDM | HWCAP_ASIMDDP),
+               "The feature bits are the kernel's.");
+
+// Whether the CPU of this phone runs ggml. This file is built without
+// ggml's -march, so it runs on every arm64 CPU.
+static bool cpu_runs_speech(void) {
+  unsigned long hwcap = getauxval(AT_HWCAP);
+  if (bs_cpu_runs_speech(hwcap)) return true;
+  __android_log_print(ANDROID_LOG_WARN, "bookfin_speech",
+                      "This CPU lacks an instruction that speech needs (AT_HWCAP %#lx).", hwcap);
+  return false;
+}
+#else
+// The host builds make ggml for the CPU that builds them, and the x86_64
+// Android build uses the base instructions of its platform.
+// NOTE: The 32-bit ARM Android build gets the same -march and has no test
+// of the CPU yet. Its kernel reports the features with other bits
+// (td-k7fj).
+static bool cpu_runs_speech(void) { return true; }
+#endif
+
 // The model in the [length] bytes at [offset] of the file at [path], on
-// the CPU, or NULL when the file or the model cannot be read.
+// the CPU, or NULL when the file or the model cannot be read, or when the
+// CPU of this phone lacks an instruction that ggml needs. The test of the
+// CPU comes before every call into whisper and ggml: a call there can
+// stop the whole app with an illegal instruction.
 void *bs_open(const char *path, long long offset, long long length) {
+  if (!cpu_runs_speech()) return NULL;
   whisper_log_set(quiet, NULL);
   FILE *file = fopen(path, "rb");
   if (file == NULL) return NULL;

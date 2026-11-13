@@ -26,7 +26,10 @@ set(GGML_BLAS OFF CACHE BOOL "" FORCE)
 set(GGML_OPENMP OFF CACHE BOOL "" FORCE)
 if(ANDROID)
   # ARMv8.2 with dot products and half floats: the Pixel 8's Tensor G3 and
-  # the Mac cores under the arm64 emulator both have them.
+  # the Mac cores under the arm64 emulator both have them. An older CPU
+  # does not, so bs_open tests the CPU first (CPU_NEEDED in
+  # bookfin_speech.c). Change that test together with this arch. The arch
+  # goes to ggml's CPU code only, so bookfin_speech.c runs on every CPU.
   set(GGML_NATIVE OFF CACHE BOOL "" FORCE)
   set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+fp16" CACHE STRING "" FORCE)
 endif()

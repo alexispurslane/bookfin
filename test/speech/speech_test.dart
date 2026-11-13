@@ -52,6 +52,33 @@ void main() {
     expect(await without.hear(mp3, 0, 8000), isNull);
   });
 
+  group('a phone that cannot load the speech model', () {
+    // The native library gives no model for a file that it cannot open. It
+    // gives the same answer on a phone whose CPU lacks an instruction that
+    // the speech library needs.
+    late Speech unloadable;
+    setUp(() {
+      unloadable = Speech(
+        locate: () async =>
+            (path: 'test/speech/fixtures/no_model.ggml', offset: 0, length: 0),
+      );
+      addTearDown(unloadable.close);
+    });
+
+    test('hears nothing, as a build without the speech model', () async {
+      expect(await unloadable.hear(mp3, 0, 8000), isNull);
+    });
+
+    test('keeps no worker, so it does not load the model again for a later '
+        'window', () async {
+      expect(await unloadable.hear(mp3, 0, 8000), isNull);
+      // Only a start of the worker loads the model.
+      expect(unloadable.loaded, isFalse);
+      expect(await unloadable.hear(mp3, 8000, 8000), isNull);
+      expect(unloadable.loaded, isFalse);
+    });
+  });
+
   test('the calling isolate keeps running while a window is heard', () async {
     var ticks = 0;
     final timer = Timer.periodic(
