@@ -2,7 +2,7 @@
 id: boo-j7gh
 status: in_progress
 deps: []
-links: []
+links: [t7-vq21]
 created: 2026-11-12T23:41:02Z
 type: task
 priority: 2
@@ -189,3 +189,75 @@ The complete original-base-to-working-tree diff passes
 The staged diff is checked again before the implementation commit. There are
 no open forks. Implementation and required checks are complete; the one fresh
 read-only reviewer remains the next stage.
+
+## Completed review and lead disposition — 2026-11-13
+
+Exactly one fresh read-only reviewer ran with shared isolation, async mode,
+review role, provider `codex`, model `gpt-6-astra`,
+`reasoningEffort: high`. The capabilities call ran once before launch. The
+reviewer completed without edits, builds, tests, commits or children.
+
+- Original base: `a85c8789e9a14c4d978f94e64db3c6cacfafd8a0`.
+- Reviewed HEAD: `40a6a233207a52838f28d6d01a8d14df45e4221a`.
+- Client request: `boo-j7gh-review-astra-high-20261113-1`.
+- Reviewer: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A8a42383f-5217-41ba-be80-17babda17863%3Adelegate-task%3Aboo-j7gh-review-astra-high-20261113-1>.
+- Original report, including all verdicts, evidence, gaps and D1:
+  `docs/evidence/boo-j7gh-review.json`.
+
+| Assessment | Original verdict | Evidence | Gaps |
+| --- | --- | --- | --- |
+| Correctness | pass | Shared traversal semantics, transferable worker closure, caller wiring, real-worker red/green evidence and final passing suites | Reviewer inspected saved logs instead of rerunning checks. Crossings integration injects hearing and an in-memory outline store; it does not exercise Android audio or the full Downloads lifecycle. Healthy-record no-write proof excludes D1. |
+| Ticket fulfillment | pass | One shared counter, existing outline supplied through every caller, broad offsets, EPUB/MOBI reopen, cache/revision behavior, unchanged admission revision 6 and CSS dependencies | Raw logs are ignored workspace files. Work counts are not Android latency. Parent owns integration and closure. |
+| Design | pass | One owner for traversal and one existing owner for outlines; explicit callback dependency and unchanged revision keys | Existing admission behavior is preserved, including D1. No new blocking ownership, information-leakage or change-amplification defect was found. |
+
+Overall original verdict: pass. No material assessment was unverified and no
+blocking finding was reported. There was no second review or reapproval.
+
+D1 is a medium, nonblocking inherited design finding, sourced to User and
+Ousterhout. Trigger: speech opens a corrupt saved admitted record.
+`AdmittedBooks._kept` at `lib/reader/admitted_books.dart:290` renames it to
+`publication.unreadable`, reached through the EPUB and MOBI speech readers
+after the factory's download read ends. The worker excludes the download hold,
+so an unconditional claim that the worker never changes files is false.
+The healthy-record tests establish only healthy-record behavior.
+
+Lead disposition: accept the finding and track the reviewer-requested separate
+admission-ownership follow-up as `t7-vq21`, linked to this ticket. It is not
+fixed or rejected here. That ticket requires corrupt-record worker proof,
+non-mutating speech reads, owner-held quarantine, and removal/read coordination
+while retaining corrupt data. No existing ticket specifically covered the gap.
+This disposition preserves the settled extraction scope and the reviewer's
+nonblocking classification.
+
+Static confirmation commands:
+
+- `git diff a85c8789e9a14c4d978f94e64db3c6cacfafd8a0 40a6a233207a52838f28d6d01a8d14df45e4221a -- lib/reader/admitted_books.dart lib/reader/mobi.dart`: exit 0, empty.
+- `git show a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/reader/admitted_books.dart`: inspected the same FormatException rename at the original base.
+- `git show a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/reader/platform_io.dart`: inspected the same admission functions used by the later speech worker at the original base.
+
+These are static evidence, not a corrupt-record runtime reproduction. Related
+closed tickets `t4-3o9f`, `t7-rcyp`, `t2-v4eq` and `boo-5ivg` were inspected.
+Their general no-write descriptions do not erase the observed inherited path.
+
+After review, only the original report and ticket evidence changed. Production
+and test files remain identical to the tested/reviewed implementation commit;
+therefore the full Flutter suite was not repeated for these documentation
+changes. The complete original-base diff and staged evidence are checked for
+whitespace errors, and the saved JSON report is parsed before commit.
+
+Final evidence checks (final exit 0 for each):
+
+- `nix develop --command python3 -c 'import json; from pathlib import Path; report = json.loads(Path("docs/evidence/boo-j7gh-review.json").read_text()); assert report["head"] == "40a6a233207a52838f28d6d01a8d14df45e4221a"; assert all(report[key]["verdict"] == "pass" for key in ("correctness", "ticket_fulfillment", "design")); print("Original review JSON parses; reviewed HEAD and three verdicts preserved.")'`: valid original report; `.cache/boo-j7gh/review-json-check.log`.
+- `git diff --exit-code 40a6a233207a52838f28d6d01a8d14df45e4221a -- lib test`: empty; `.cache/boo-j7gh/reviewed-code-unchanged.log`.
+- `git diff --check a85c8789e9a14c4d978f94e64db3c6cacfafd8a0`: no whitespace errors; `.cache/boo-j7gh/final-diff-check.log`.
+- `git diff --cached --check`: no whitespace errors, including the new evidence and follow-up ticket; `.cache/boo-j7gh/staged-diff-check.log`.
+
+The first staged whitespace check exited 2 because `tk create` added a blank
+line at the end of `.tickets/t7-vq21.md`. Removed that blank line before the
+final check. The original failure is retained in
+`.cache/boo-j7gh/staged-diff-initial.log`.
+
+All owned test commands and the reviewer have finished. No forks remain.
+The prohibited checks and existing skips recorded above remain limitations;
+no Android/browser, coverage/mutation, integration, acceptance, hardening or
+closure claim is made. Parent integration and ticket closure remain pending.

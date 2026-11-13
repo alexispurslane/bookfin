@@ -1,0 +1,168 @@
+{
+  "ticket": "boo-j7gh",
+  "base": "a85c8789e9a14c4d978f94e64db3c6cacfafd8a0",
+  "head": "40a6a233207a52838f28d6d01a8d14df45e4221a",
+  "overall_verdict": "pass",
+  "summary": "No blocking defect found in the complete diff. One unchanged admission-reader ownership issue is recorded below as a separate follow-up.",
+  "review_method": "Read-only inspection of the complete diff, callers, ownership paths, instructions, plans, ticket and bounded saved logs. No checks were run, files changed or children started. The inspected HEAD matches the requested commit and the working tree is clean.",
+  "assessment_weighting": "Correctness, ticket fulfillment and design have equal authority to block acceptance.",
+  "correctness": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "type": "static",
+        "references": [
+          "lib/reader/section_text.dart:30",
+          "lib/reader/book_map.dart:510",
+          "lib/speech/book_words.dart:129"
+        ],
+        "assessment": "The shared traversal preserves non-whitespace UTF-16 counts, first-ID offsets, text and CDATA handling, and text after the body's end. Speech retains inline joining, block separation, punctuation splitting and normalization. Both callers discard partial section results after parse exceptions."
+      },
+      {
+        "type": "static",
+        "references": [
+          "lib/crossings/speech_places.dart:65",
+          "lib/crossings/speech_places.dart:74",
+          "lib/crossings/speech_places.dart:107",
+          "lib/main.dart:180",
+          "lib/reader/platform_io.dart:181"
+        ],
+        "assessment": "All three speech entry points pass the pair's outline. The existing Downloads callback remains in place. The worker closure captures the path, digest, outline and admission function, without capturing the lent download. Both platform signatures agree."
+      },
+      {
+        "type": "executed_saved_evidence",
+        "references": [
+          ".cache/boo-j7gh/red-worker.log",
+          ".cache/boo-j7gh/baseline-offsets.log",
+          ".cache/boo-j7gh/green-core.log",
+          ".cache/boo-j7gh/focused-final.log"
+        ],
+        "assessment": "The saved red test failed meaningfully with expected section reads [1,1] and actual [2,2]. The baseline reports 16 passes, the initial green run 24, and final focused run 88. Inspection confirms that the work-count test uses the production parser inside the real BookSearch worker."
+      },
+      {
+        "type": "executed_saved_evidence",
+        "references": [
+          ".cache/boo-j7gh/full.log",
+          ".cache/boo-j7gh/playback-callback.log",
+          ".cache/boo-j7gh/full-final.log"
+        ],
+        "assessment": "The first full run had 3538 passes, 27 skips and an implementation-caused compile failure from the missed playback callback. The corrected fixture passed all 12 tests. The final full run reports 3550 passes and 27 skips, with all tests passing."
+      }
+    ],
+    "gaps": [
+      "Execution evidence was inspected from saved logs, not reproduced by this reviewer.",
+      "The Crossings integration test uses injected hearing and an in-memory outline store; it exercises the real factory and BookSearch but not Android audio or the full Downloads lifecycle.",
+      "The no-write proof covers healthy admitted records. The unchanged corrupt-record exception is documented in D1."
+    ],
+    "findings": []
+  },
+  "ticket_fulfillment": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "type": "static",
+        "assessment": "countSection serves BookMap ID measurement and outline measurement through walkSection; speech uses the same traversal. The whitespace predicate has one implementation and remains re-exported for PDF and existing tests. Production bookWordsOf has one caller, the platform worker factory, and no longer measures an outline."
+      },
+      {
+        "type": "static",
+        "assessment": "The caller audit across lib, test, integration_test and tool agrees with the changed signatures, including the playback History fixture. Crossings outline ownership, outline keys, file-revision identity and BookSearch cache policy are unchanged."
+      },
+      {
+        "type": "static_and_executed_saved_evidence",
+        "references": [
+          "test/speech/book_words_test.dart:54",
+          "test/speech/book_search_test.dart:43",
+          "test/reader/book_words_reader_test.dart:64",
+          "test/crossings/speech_landings_test.dart:119",
+          ".cache/boo-j7gh/focused-final.log"
+        ],
+        "assessment": "Tests cover hand-counted Unicode and boundary cases, missing resources, malformed-section rollback, EPUB and prepared/reader-converted MOBI worker reads, supplied back-matter boundaries, an unsendable download hold, unchanged file bytes on healthy reopen, owned-outline identity, cached-word reuse, changed-revision offsets and retained-outline reopen."
+      },
+      {
+        "type": "static",
+        "assessment": "Admission revision remains 6 and section stylesheet dependencies remain intact. Admission, conversion, download ownership, anchor persistence, place-map design, typed records, gallery startup and timing thresholds were not changed."
+      },
+      {
+        "type": "executed_saved_evidence",
+        "references": [
+          ".cache/boo-j7gh/affected.log",
+          ".cache/boo-j7gh/analyze-final.log",
+          ".cache/boo-j7gh/format-check.log"
+        ],
+        "assessment": "Saved results show 1893 affected-suite passes with 21 skips, final analysis with no issues, and 15 formatted files with zero changes. The ticket records Nix commands, exit statuses and diff checks. The initial lint and full-suite failure remain disclosed."
+      }
+    ],
+    "gaps": [
+      "Saved logs are ignored workspace artifacts; the committed ticket preserves commands and results.",
+      "Work-count evidence establishes avoided section reads, not Android latency.",
+      "Integration and ticket closure remain the parent's responsibility."
+    ],
+    "findings": []
+  },
+  "design": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "type": "static",
+        "source": [
+          "User",
+          "Muratori"
+        ],
+        "assessment": "The extraction serves two real production callers. One traversal owns body-event and visible-character rules, while speech owns word normalization. A change to character visibility now has one implementation instead of two independent counters."
+      },
+      {
+        "type": "static",
+        "source": [
+          "User",
+          "Ousterhout"
+        ],
+        "assessment": "Crossings remains the outline authority. Speech receives its existing immutable outline without adding measurement, persistence or another outline cache. Existing revision keys continue to determine reuse."
+      },
+      {
+        "type": "static",
+        "source": [
+          "Ousterhout",
+          "Muratori"
+        ],
+        "assessment": "The single ReadEditionWords signature makes the dependency explicit. The platform factory retains responsibility for file-format selection and transferable closure construction. The shared walker documents offset units, pre-body element events, post-body text and rollback obligations without absorbing speech-specific policy."
+      }
+    ],
+    "gaps": [
+      "The extraction preserves existing admission behavior; it does not establish an unconditional absence of filesystem mutations in the worker. D1 describes the inherited exception.",
+      "No new blocking ownership, information-leakage or change-amplification defect was found."
+    ],
+    "findings": [
+      {
+        "id": "D1",
+        "severity": "medium",
+        "blocking": false,
+        "introduced_by_change": false,
+        "source": [
+          "User",
+          "Ousterhout"
+        ],
+        "evidence_type": "static",
+        "file_line": "lib/reader/admitted_books.dart:290",
+        "related_locations": [
+          "lib/reader/platform_io.dart:146",
+          "lib/reader/platform_io.dart:187",
+          "lib/reader/mobi.dart:87"
+        ],
+        "trigger": "A speech worker opens a corrupt saved admitted record.",
+        "expected_result": "Under the stated no-write ownership rule, the worker reads without changing files; any quarantine operation belongs to a Downloads-owned read or hold.",
+        "actual_or_predicted_result": "AdmittedBooks._kept renames the corrupt record to publication.unreadable. Both speech admission readers reach this path after the factory's Downloads read has ended. The same behavior exists at the original base.",
+        "ownership_evidence": "The admission read combines data access with a filesystem mutation, while the speech factory intentionally excludes the download hold. This prevents an unconditional read-only guarantee.",
+        "proposed_remedy": "Track a separate admission-ownership follow-up. Keep worker reads non-mutating and perform corrupt-record quarantine through the download owner. Add a corrupt-record worker test. Do not expand this extraction into an admission redesign.",
+        "scope_disposition": "Nonblocking for boo-j7gh: this diff preserves the existing path and introduces no new persistence operation."
+      }
+    ]
+  },
+  "unavailable_checks": [
+    "Reviewer execution of tests, analysis, formatting and builds was prohibited.",
+    "Android and browser checks were outside scope; t1-dth0 and t7-3j9c were not retried.",
+    "Coverage and mutation testing were outside scope.",
+    "The final suite retained 27 existing skips for optional corpora, trial books, benchmarks, research and live-plugin integration.",
+    "Missing iphoneos and iphonesimulator SDK warnings did not prevent the saved host tests from passing.",
+    "Passing runs do not explain the known intermittents t5-rplx and tf-il7u."
+  ]
+}
