@@ -1,6 +1,6 @@
 ---
 id: td-bz4y
-status: open
+status: in_progress
 deps: []
 links: [te-c2tc]
 created: 2026-11-13T21:58:52Z
@@ -16,3 +16,15 @@ Discovered by the te-c2tc repository-wide archive audit. The settled seven-build
 ## Acceptance Criteria
 
 Inventory each research creator; preserve payloads/order and fixture interfaces; prove controlled byte stability and changed-content sensitivity for genuine EPUB builders; run the corresponding isolated research checks. Do not change the SVG-only resource-serving security probes merely because they use ZIP.
+
+## Parent scope and launch — 2026-11-13
+
+Continue the settled fixture-owner correction from te-c2tc in the four isolated
+research owners named above. No production feature, generated corpus rewrite,
+live-server action or device/browser action is authorized by this ticket.
+Inspect every caller and preserve fixture content/order and source-change
+sensitivity. Use controlled time changes, never sleeps or timing tolerances.
+Run the corresponding focused and complete isolated package suites through Nix;
+record pre-existing unavailable corpus/model/server checks as exclusions. Parent
+owns integration and closure. Lead: codex/gpt-6-astra xhigh; exactly one fresh
+read-only reviewer: codex/gpt-6-astra high. No second review stage.

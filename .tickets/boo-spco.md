@@ -2,7 +2,7 @@
 id: boo-spco
 status: in_progress
 deps: []
-links: []
+links: [boo-hxmd]
 created: 2026-11-08T03:16:28Z
 type: bug
 priority: 1
