@@ -23,3 +23,12 @@ Provide a usable sign-in-again action through the existing account UI and reuse 
 Required meaningful red-green evidence covers a background 401 during active local playback and reading, subsequent local saves, restart from the retained account, no automatic server work with the rejected credential, failed/cancelled/successful reauthentication, explicit sign-out, a changed account, and obsolete request completion. Exercise real controllers and bindings as well as the sign-in UI. Update tests that require automatic sign-out after 401. Run catalog, app, downloads, playback, reader persistence and sync checks, affected analysis/format, and the full Flutter suite at concurrency two through Nix, one heavy command at a time.
 
 Implementation and direct fixes use codex/gpt-6-astra with reasoningEffort xhigh. Exactly one fresh read-only reviewer uses the same model at high. Parent owns integration, acceptance, hardening and closure. No device work, coverage, mutations, push, PR or live deployment.
+
+## Delegated task
+
+Original base: 025937e5d768b6bb69030f030e20e8a809d729ea.
+Client request ID: bookfin-boo-721h-astra-20261113-1
+Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-721h-astra-20261113-1
+Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-721h-astra-20261113-1
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-721h-astra-20261113-1>
+Launch returned running on codex/gpt-6-astra with reasoningEffort xhigh. Stage and branch not yet reported. Completion delivery is automatic.
