@@ -79,4 +79,18 @@ Final full-suite command:
 
 Result: 3,222 passed, 25 skipped, no failures, 4:27. Log: `/tmp/boo-hmrp-full.log`. This is the given 3,196-pass baseline plus 26 new tests. Skips remain the existing opt-in EPUB/PDF benchmarks and corpus runs, seven unavailable downloaded trial books, journal-growth/layout measurements, and two external plugin fixtures. The runner exited successfully. No test process from this lead remains running.
 
-The review is to use exactly one fresh shared-worktree agent, role review, async mode, `codex/gpt-6-astra` with `reasoningEffort: high`, client request ID `boo-hmrp-review-astra-20261113-1`. `orchestrator_capabilities` was checked once in this lead's thread and confirmed that exact target. The reviewer must inspect the full original-base-to-HEAD diff, production callers, and the logs above, without editing or running builds/tests. Review results and any direct fixes will be recorded after delivery.
+### Independent review, 2026-11-13
+
+Exactly one fresh shared-worktree agent completed the review, role review, async mode, `codex/gpt-6-astra` with `reasoningEffort: high`, client request ID `boo-hmrp-review-astra-20261113-1`. `orchestrator_capabilities` was checked once in this lead's thread and confirmed that exact target. The reviewer inspected the complete nine-file diff from original base `3e345a1737fd0312e3fb6b5575eddf7de9ea2df1` to implementation HEAD `a40f99de1f3ca53fb1c61faca6eabcaa31a1099c`, real production callers, and the saved verification logs. It made no edits and ran no builds or tests.
+
+Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A70432dee-dc80-4d30-ac97-4037d21816dd%3Adelegate-task%3Aboo-hmrp-review-astra-20261113-1>
+
+| Assessment | Verdict | Evidence |
+| --- | --- | --- |
+| Correctness | pass | Traced playback events, the app lifecycle, AccountBinding, writer teardown, and transport/store operations. Local flush precedes the durable pending check; generation checks prevent obsolete exchanges; overlapping events and new actions survive; failures preserve pending actions without idle background retries. Saved logs confirm 874 affected passes, 3,222 full-suite passes, clean analysis, and unchanged formatting. |
+| Fulfillment | pass | Pause, stop, book change, app hide, and the existing playback cadence supply upload opportunities. Tests cover debounce, delayed persistence, overlap, failures, resume/manual retry, quiet status, account changes, disposal, writer registration, and the real lifecycle callback. ReaderSession/PDF behavior and account/domain refresh boundaries remain unchanged. |
+| Design | pass | Under the user's single-owner rule, LocalResumeStore owns durable pending actions and acknowledgments; RecordSync owns scheduling. Under Ousterhout information hiding, registration owns account tagging/listener removal and transport owns protocol validation. Under Muratori scope/compression, the existing writer boundary is extended without speculative writer abstractions or a second pending inventory. |
+
+Findings: none. No fixes, rejected findings, or unresolved product forks remain. The final review-record commit changes only this ticket; production and test files remain exactly at the reviewed implementation HEAD.
+
+Review limitations: execution evidence came from saved logs, not reviewer reruns. The event tests use controlled transport and preference-backed persistence; existing transport and durability tests cover those boundaries separately. Android background execution and live plugin behavior remain unverified, and existing opt-in/external-fixture skips remain. The pass verdicts cover this implementation ticket; release acceptance, integration checks, coverage, and mutation testing remain with the parent. The ticket stays in progress until the parent integrates and closes it.
