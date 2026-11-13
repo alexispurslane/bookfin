@@ -1,6 +1,6 @@
 ---
 id: t9-ftlz
-status: in_progress
+status: closed
 deps: [boo-hwoz]
 links: [boo-hwoz]
 created: 2026-11-13T16:04:25Z
@@ -158,3 +158,38 @@ owned commands and the reviewer have finished. Parent still must verify the
 combined collection change with its integrated tf-il7u test correction; the
 recorded full suite here remains failing. Parent owns integration, acceptance,
 hardening and closure. Status remains `in_progress`.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated 563f1f3d as 08b083c5 and 6aa1594b as 1bf2d597. The only conflict
+was appended ticket history; parent launch/coordination and child evidence
+were both retained. The reviewed collection code and tests are unchanged.
+The integrated lib/test tree differs from the child's tree only by the
+separately reviewed tf-il7u frame-test correction already on main.
+
+Parent inspection verified all 18 archive/raw-log hash pairs, 18 command-log
+hashes, four source hashes, the red-seam patch and original review hash.
+The child's final affected pass and failing full suite were independently
+counted from their structured events. Both old-frame failures remain recorded.
+
+Combined verification at 1bf2d597 passed through Nix: 3,692 full-suite passes,
+27 existing skips, zero failures and structured completion success. This
+includes all 16 collection-worker tests and seven corrected frame tests.
+Analysis of lib, test, integration_test and tool/showcase_fixture.dart found
+no issues; three-file formatting changed nothing; the complete integration
+diff passed its whitespace check. No runtime suites were repeated after this
+successful combined run. Only ticket and integration evidence changed next.
+
+Commands, commit mapping, counts, limits and hashes are in
+`docs/evidence/t9-ftlz/integration.json`; all four parent logs are archived
+under `integration-logs/`, with the full failure/skip inventory in
+`integration-full-suite.json`. The original review remains unchanged.
+Its combined-verification condition is now satisfied by this parent run.
+
+Closed after integration and verification. This addresses boo-hwoz D1's
+execution-location issue; it does not establish device latency or heap savings.
+Browser execution, live Jellyfin, million-record stress and device acceptance
+remain unverified. Native input copies and request-local compact pages remain.
+The 27 skips remain explicit; t5-rplx remains unexplained. General coverage
+and mutation testing remain after user acceptance. No newly unblocked tickets.
+boo-p6w1 still waits for the freshness choice; every-refresh fetching remains.

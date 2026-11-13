@@ -141,3 +141,18 @@ Every-refresh membership fetching remains. Parent boo-p6w1 still waits
 for the user's freshness choice. Existing skips, live-server compatibility,
 device/browser acceptance, coverage/mutations and performance evidence remain
 unverified. No push, PR, deployment or worktree removal.
+
+## Linked follow-ups integrated — 2026-11-13
+
+t9-ftlz is now integrated as 08b083c5 and 1bf2d597 and closed. Native collection
+parsing, validation and complete-list reductions use the existing compute
+mechanism. Real-isolate tests establish the execution boundary and preserve
+cancellation/account guards. This addresses D1's execution-location issue;
+latency and total-memory effects remain unmeasured. The original review and
+the earlier allowed deferral remain preserved as historical evidence.
+
+tf-il7u's test-only correction is also integrated and closed. Parent combined
+verification of both changes passed 3,692 tests with 27 existing skips and no
+failures. Evidence: `docs/evidence/t9-ftlz/integration.json`. This new passing
+run does not relabel any earlier failed run. t5-rplx remains unexplained.
+boo-p6w1's freshness question and device/browser acceptance remain pending.

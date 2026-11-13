@@ -1,0 +1,164 @@
+{
+  "ticket": "t9-ftlz",
+  "integrationBase": "8ff2b242052ab0d361acc87ae4da11b1daad97d3",
+  "testedHead": "1bf2d5975f5ebf58d0a48640c4bc0e260f265f24",
+  "childBase": "0f1b55762aef7ea17c2460242203cd972d767014",
+  "childHead": "6aa1594b984063cd54082a1d01117a9d9ce877ad",
+  "commitMapping": [
+    {
+      "child": "563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+      "main": "08b083c5de131d23467212a6cc6fbf21add10ce1"
+    },
+    {
+      "child": "6aa1594b984063cd54082a1d01117a9d9ce877ad",
+      "main": "1bf2d5975f5ebf58d0a48640c4bc0e260f265f24"
+    }
+  ],
+  "inspection": [
+    "Inspected complete original-base production/test/evidence diff, transport and controller callers, real native-isolate regression tests, original review and saved red/green logs.",
+    "Verified all 18 archive/raw-log hash pairs, 18 command-log hashes, four source hashes, red-seam patch hash and the preserved original review hash.",
+    "Independently counted final child affected run: 1681 passed, 3 skipped, done.success=true.",
+    "Independently counted final child full run: 3689 passed, 27 skipped, one old tf-il7u assertion failure, done.success=false. That failure remains recorded.",
+    "Cherry-pick conflict affected only ticket history. Both parent launch/coordination records and child investigation/review records were preserved.",
+    "Integrated collection production and test files match the child exactly. The only lib/test difference from the child is the separately integrated tf-il7u test correction."
+  ],
+  "review": {
+    "original": "docs/evidence/t9-ftlz/review-original.json",
+    "originalSHA256": "dd0bd0cab8b21d7d4a2295a41a84228ddf7341d8d152caafe9787e0da711bbe2",
+    "correctnessAndRegressions": "pass",
+    "ticketFulfillment": "pass",
+    "softwareDesign": "pass",
+    "findings": [],
+    "preservation": "Original verdicts, evidence and limits remain unchanged. Parent verification is separate; no second review."
+  },
+  "scope": {
+    "implementation": "Collection page parsing/validation and discovery/membership reductions use existing native compute. JellyfinClient owns requests, cancellation, credentials and result adoption.",
+    "preserved": "Direct membership, source-backed dense/sparse pagination, deduplication, optional-metadata fallback, every-refresh fetching and existing catalog retention.",
+    "proof": "Real native-isolate tests establish execution boundaries and delayed-worker cancellation/account rejection behavior. Error classification has meaningful red/green evidence.",
+    "counts": "Fixture of two libraries sharing one collection with 601 children uses six page worker calls plus two reductions. Counts establish work/transfer boundaries only."
+  },
+  "limits": [
+    "Browser compute executes on the browser event loop; browser execution was not performed.",
+    "Native input copying and request-local compact-page retention remain.",
+    "No device, live-server, million-record stress, latency, frame-budget or total-heap measurement.",
+    "Existing plugin, corpus, trial and measurement skips remain unverified.",
+    "Coverage and general mutation testing remain deferred until user acceptance.",
+    "t5-rplx remains unexplained; the passing combined run does not establish its cause or correction.",
+    "Collection freshness choice in boo-p6w1 remains pending. Current every-refresh behavior remains."
+  ],
+  "checks": [
+    {
+      "stage": "format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/catalog/jellyfin.dart",
+        "test/catalog/collection_worker_test.dart",
+        "test/reader/epub/page_source_frames_test.dart"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.33,
+      "log": "/tmp/bookfin-t9-ftlz-integration/format.log",
+      "bytes": 47,
+      "sha256": "45677745de22edb703c8d6f33aa97667c853d61fd53a4d91027d6116d8b5d32f",
+      "retainedPath": "docs/evidence/t9-ftlz/integration-logs/format.log.gz",
+      "retainedSHA256": "3408eadbb407863f8d50323f78f2c642ea02c8779b826f03ab6589d292055b5b",
+      "retainedBytes": 67,
+      "result": "Three files checked; zero changes"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "analyze",
+        "lib",
+        "test",
+        "integration_test",
+        "tool/showcase_fixture.dart"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 6.5,
+      "log": "/tmp/bookfin-t9-ftlz-integration/analysis.log",
+      "bytes": 81,
+      "sha256": "717f4ce78ef5b801d81b3878a2d0e323686b32492ca116d3f12980377db5e207",
+      "retainedPath": "docs/evidence/t9-ftlz/integration-logs/analysis.log.gz",
+      "retainedSHA256": "486638d9b5a492ec4d92e4c6c083cc6bf237d3f42a42b721f7ea741e3f5616ef",
+      "retainedBytes": 95,
+      "result": "No issues in lib, test, integration_test or tool/showcase_fixture.dart"
+    },
+    {
+      "stage": "full",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 298.88,
+      "log": "/tmp/bookfin-t9-ftlz-integration/full.log",
+      "bytes": 2033553,
+      "sha256": "cda0a1c33dd8ec805eb8fcb8971e21172a258fda23c8a0ea41badf00842c4971",
+      "results": {
+        "success": 3692,
+        "skipped": 27
+      },
+      "completion": [
+        {
+          "success": true,
+          "type": "done",
+          "time": 292784
+        }
+      ],
+      "inventory": "/tmp/bookfin-t9-ftlz-integration/full-suite.json",
+      "retainedPath": "docs/evidence/t9-ftlz/integration-logs/full.log.gz",
+      "retainedSHA256": "9a2e0b0c3735fdf3792b57f3e5b3f1b580af99ee98fdd6ed7848ffa03e82c6fc",
+      "retainedBytes": 204712,
+      "retainedInventory": "docs/evidence/t9-ftlz/integration-full-suite.json",
+      "result": "3692 passed, 27 existing skips, zero failures, structured completion success"
+    },
+    {
+      "stage": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "8ff2b242052ab0d361acc87ae4da11b1daad97d3",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.02,
+      "log": "/tmp/bookfin-t9-ftlz-integration/diff.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retainedPath": "docs/evidence/t9-ftlz/integration-logs/diff.log.gz",
+      "retainedSHA256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837",
+      "retainedBytes": 20,
+      "result": "Complete integration-base-to-tested-HEAD diff has no whitespace errors"
+    }
+  ],
+  "combinedIntegrationCondition": {
+    "status": "satisfied",
+    "includedFrameCorrection": "2a9df513d398ba86f0a6142abe1c7240e43e570e",
+    "testedHead": "1bf2d5975f5ebf58d0a48640c4bc0e260f265f24",
+    "results": {
+      "page_source_frames_test.dart:success": 7,
+      "collection_worker_test.dart:success": 16
+    },
+    "inventory": "docs/evidence/t9-ftlz/integration-full-suite.json",
+    "statement": "The parent full suite tests the reviewed collection implementation together with the separately reviewed and integrated frame-test correction. Earlier child full-suite failures remain preserved as failures."
+  },
+  "closure": "Ticket closed after integration and passing combined verification. No dependent tickets were newly unblocked. All leads in this current batch have completed; outstanding product decisions and acceptance limits remain separate."
+}

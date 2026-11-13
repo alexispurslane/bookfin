@@ -124,3 +124,15 @@ checks: 1,665 passed, 3 skipped. Its child full suite retained tf-il7u.
 The shared query improvement is complete; the freshness question remains
 pending. No answer has been inferred and no retained membership cache was
 added. Follow-up t9-ftlz owns collection CPU work independently of freshness.
+
+## Collection processing follow-up integrated — 2026-11-13
+
+t9-ftlz is integrated as 08b083c5 and 1bf2d597 and closed after combined
+verification with the tf-il7u test correction: 3,692 passed, 27 existing skips,
+zero failures. Native collection parsing and reductions now run through the
+existing worker mechanism. Evidence: `docs/evidence/t9-ftlz/integration.json`.
+
+Both shared improvements are complete. This ticket remains open for the
+unanswered freshness choice. Every-refresh membership fetching remains; no
+retained membership cache or inferred approval has been introduced. Device
+latency, total-memory effects and live-server acceptance remain unverified.
