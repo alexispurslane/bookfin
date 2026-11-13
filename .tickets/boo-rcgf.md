@@ -1,6 +1,6 @@
 ---
 id: boo-rcgf
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:01Z
@@ -79,3 +79,16 @@ Final reader/crossing check after direct fixes: `nix develop --command flutter t
 Final full check after direct fixes: `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded` — 3,262 passed, 25 configured skips, no failures, 4m49s (`/tmp/boo-rcgf-review-full.log`). Final affected analysis: `nix develop --command flutter analyze --no-pub lib/reader/epub test/reader/epub test/research/epub_layout_cache_test.dart tool/reader/layout_cache_probe.dart` — no issues (`/tmp/boo-rcgf-review-analysis.log`). Nix continues to print the existing missing iOS SDK warnings; the host checks completed successfully. No pre-existing test failure is claimed, and all intentional red reproductions and intermediate implementation failures are recorded above.
 
 Final formatting repeated the exact 13-path `nix develop --command dart format --output=none --set-exit-if-changed` command recorded before review: 13 files, zero changes (`/tmp/boo-rcgf-review-format-check.log`). `git diff --check adb8c2bfc190fd7c6db9de166deecbf1baa6cba8` and `git diff --check` passed (`/tmp/boo-rcgf-review-diff-check.log`). C1, C2 and D1 are resolved with the evidence above; no product forks or material unverified review assessments remain. The single reviewer and all verification commands have finished. No second review, coverage, mutations, devices, package installation, checkout changes, push, PR or ticket closure were performed.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated implementation `74bd228c94f7a806cf987487921542f118a91f88` as `00a91bc8` and direct review fixes `4e59d18a864df8488fd8813e19a0813f37de76ab` as `a0f23625c8a4aad1f83c272ef0e72041d029f09a`, on combined main after `5fea3b49ff9b998793e955376500c4c869907c94`. The only cherry-pick conflict was this ticket; both launch notes and child evidence were retained. All affected source, test and probe files match the completed child exactly. The parent inspected the complete implementation, the review and the documented direct fixes; no additional integration blocker was found. All three review findings have recorded resolutions with evidence. No redundant second review was launched.
+
+Combined verification at `a0f23625c8a4aad1f83c272ef0e72041d029f09a`:
+
+- `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded`: 3,294 passed, 26 existing/opt-in skips, zero failures, 4m43s. Log: `/tmp/boo-rcgf-integrated-full.log`.
+- `nix develop --command flutter analyze --no-pub lib/reader/epub test/reader/epub test/research/epub_layout_cache_test.dart tool/reader/layout_cache_probe.dart`: no issues, 3.0s. Log: `/tmp/boo-rcgf-integrated-analysis.log`.
+- The exact 13-file format-check command recorded above: 13 files, zero changes. Log: `/tmp/boo-rcgf-integrated-format.log`.
+- `git diff --check 5fea3b49ff9b998793e955376500c4c869907c94 HEAD`, working-tree diff check, and equality with the completed child's affected files all passed.
+
+Closed after local integration. Parent commands finished. Device acceptance remains blocked by the existing Device panel failure; coverage and mutation testing await user acceptance. No device, push, PR, publication or live deployment was performed.
