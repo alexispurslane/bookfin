@@ -1,6 +1,6 @@
 ---
 id: te-c2tc
-status: open
+status: in_progress
 deps: []
 links: [t3-5o5r]
 created: 2026-11-09T23:25:19Z
@@ -41,3 +41,29 @@ This inventory comes from searching `ArchiveFile` and `lastModTime` under
 override the encoder's modification time; those paths are fixed. These seven
 remaining builders were not changed by t3-5o5r. This wider ticket remains open; the parent owns integration and
 closure.
+
+## Settled follow-up scope — 2026-11-13
+
+t3-5o5r is integrated as 8cbc5ec3 and bcf02ea6. Its controlled evidence
+establishes that equal EPUB entry payloads with different ZIP timestamps can
+produce different publication identities after a successful save. Extend its
+fixture correction to the seven builders inventoried above. Inspect remaining
+ArchiveFile/ZipEncoder creation sites for this same class and record the
+complete inventory. Keep fixture contents, ordering, source-change cases and
+production identity rules intact. Do not rebuild checked-in corpus assets or
+change production code. Use the existing fixture owners and fixed-time pattern;
+add no generic builder framework merely for this cleanup.
+
+Use controlled evidence for identical-input archive stability across encode
+times, and retain sensitivity to changed content. Do not wait for wall-clock
+boundaries, add sleeps, inflate fixtures, relax assertions or change timing
+thresholds. Reuse t3-5o5r's cause proof where it applies; any new test must cover
+behavior, not merely mirror a timestamp constant. Run focused fixture/caller
+tests, one appropriate affected suite, the required full suite, affected
+analysis, formatting and original-base-to-final whitespace checks. Retain all
+results and skips with complete compressed logs and hashes.
+
+One ticket lead builds/fixes; exactly one fresh read-only reviewer assesses the
+complete diff and evidence for correctness, fulfillment and design. Parent owns
+integration, acceptance, coverage, mutation testing and closure. No device or
+browser interaction, PR, push, deployment or worktree removal.
