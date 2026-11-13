@@ -1,6 +1,6 @@
 ---
 id: boo-hwoz
-status: open
+status: in_progress
 deps: []
 links: [boo-p6w1]
 created: 2026-11-13T15:32:34Z
