@@ -1,0 +1,187 @@
+{
+  "ticket": "t5-rplx",
+  "overall_verdict": "pass",
+  "summary": "The change corrects an insufficient test observation. Controlled evidence shows that the old assertion can fail during a legal pending save, and the corrected test detects removal of automatic retry. No production defect or material review finding was established.",
+  "reviewed_base": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "reviewed_head": "6ca08dabb20c847ddf9e557aaca9cf522a27f47b",
+  "checkout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30d0db95",
+    "branch": "t3/unread-record-retry-race",
+    "matches_brief": true,
+    "initial_status": "clean",
+    "final_status": "clean",
+    "head_unchanged": true
+  },
+  "assessments": {
+    "correctness_and_regressions": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "kind": "static_inspection",
+          "location": "test/reader/unread_records_test.dart:33",
+          "code": "    await records.saveReading(key, changes);\n    if (!saved.isCompleted) saved.complete();",
+          "where": {
+            "records.saveReading": "The real reading store operation that persists the supplied account changes.",
+            "key": "The account identifier.",
+            "changes": "The reading records and settings submitted for persistence.",
+            "saved": "A completion signal owned by this test wrapper."
+          },
+          "assessment": "The signal follows successful completion of the real save. A thrown save error cannot complete it. Later saves cannot complete it twice."
+        },
+        {
+          "kind": "static_inspection",
+          "locations": [
+            "test/reader/unread_records_test.dart:44",
+            "test/reader/unread_records_test.dart:99",
+            "lib/reader/session.dart:639",
+            "lib/reader/session.dart:1189",
+            "lib/reader/session.dart:1925"
+          ],
+          "assessment": "Each setup creates a new wrapper after saving the earlier font size through a separate store. The target test reports one visible place and awaits the wrapper's successful save without flushing. Its fresh-store assertion requires exactly one anchor containing the expected EPUB location identifier, and both stored and reader font sizes must equal 22. Teardown occurs after the test body and cannot turn an assertion failure or timeout into a pass."
+        },
+        {
+          "kind": "static_inspection",
+          "locations": [
+            "lib/playback/store.dart:1036",
+            "lib/playback/store.dart:1304",
+            "lib/playback/store.dart:1572",
+            "lib/playback/store.dart:1677"
+          ],
+          "assessment": "The wrapper reaches the existing queued reading-store operation, asynchronous restoration and encoding, and awaited preference write. The fresh LocalResumeStore derives its reading snapshot from stored preference content. The signal therefore observes persistence completion rather than merely an accepted reader update."
+        },
+        {
+          "kind": "inspected_execution_logs",
+          "locations": [
+            "/tmp/t5-rplx-logs/controlled-cause.log",
+            "/tmp/t5-rplx-logs/controlled-completion.log",
+            "/tmp/t5-rplx-logs/negative-control.log"
+          ],
+          "assessment": "The cause experiment records a failed initial read, successful automatic retry, a held save, an empty early snapshot, and a successful snapshot after release. The old length assertion fails against the early snapshot. The completion experiment passes without flush. Removing only automatic read retry makes the corrected test time out after five seconds."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "The target test uses mocked SharedPreferences. It proves completion through the real store path, not physical-device persistence or an operating-system process restart.",
+        "Execution results were inspected from retained logs; the reviewer ran no tests."
+      ]
+    },
+    "ticket_fulfillment": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "requirement": "Establish an observation defect rather than infer cause from passing retries.",
+          "locations": [
+            "/tmp/t5-rplx-logs/cause-proof.dart",
+            "/tmp/t5-rplx-logs/cause-proof.patch",
+            "/tmp/t5-rplx-logs/controlled-cause.log",
+            "/Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/test_api-0.7.12/lib/src/scaffolding/utils.dart:9"
+          ],
+          "assessment": "The controlled ordering demonstrates that a bounded event-loop pump can finish before asynchronous storage work. Releasing the pending operation produces the expected record before the original assertion deliberately fails against its earlier snapshot. This establishes the invalid observation assumption without claiming the exact historical schedule."
+        },
+        {
+          "requirement": "Preserve automatic retry and prove the corrected test detects its removal.",
+          "locations": [
+            "/tmp/t5-rplx-logs/negative-control.patch",
+            "/tmp/t5-rplx-logs/negative-control.log",
+            "/tmp/t5-rplx-logs/corrected-unread_records_test.dart",
+            "/tmp/t5-rplx-logs/production-restoration.json"
+          ],
+          "assessment": "The negative control removes only the automatic retry call from the unread branch. The five-second command timeout bounds the expected failure; no diagnostic timeout entered the committed test. The retained corrected source differs from the committed source only in formatting. Original-base production bytes, retained pre-control bytes, and current production bytes have the same SHA-256 digest."
+        },
+        {
+          "requirement": "Preserve settings, records, rejected writes, account isolation, and integrated tf-il7u.",
+          "locations": [
+            "test/reader/persistence_test.dart:182",
+            "test/reader/reading_changes_test.dart:177",
+            "test/reader/records_test.dart",
+            "test/reader/session_test.dart:103",
+            "/tmp/t5-rplx-logs/focused-reading-store.log",
+            "/tmp/t5-rplx-logs/full.log"
+          ],
+          "assessment": "Existing tests exercise rejected writes, old-account pending records, bookmark retention, unrelated records, and reading/audio coexistence. Their retained suite results pass. The complete base-to-head diff changes only the requested test, ticket notes, and evidence file; production and the integrated frame-test correction remain unchanged."
+        },
+        {
+          "requirement": "Retain evidence and complete bounded verification.",
+          "location": "docs/evidence/t5-rplx-verification.json",
+          "assessment": "Inspected the command ledger, diagnostic sources and patches, historical failure excerpts, suite results, and artifact hashes. Manifest-listed SHA-256 digests match the retained files. Recorded heavy commands use Nix, Flutter concurrency two, and sequential execution. No larger sleeps, pump counts, fixtures, or relaxed timing assertions were introduced."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Historical failure logs contain no operation trace, so their precise ordering remains unknown. The evidence explicitly preserves this limit.",
+        "The suite skips remain explicit exclusions; they are not passing coverage of benchmarks, absent corpora, or external integration checks."
+      ]
+    },
+    "software_design": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "source": "User and Ousterhout",
+          "locations": [
+            "test/reader/unread_records_test.dart:20",
+            "lib/reader/session.dart:639",
+            "lib/reader/session.dart:1975",
+            "lib/playback/store.dart:1572"
+          ],
+          "assessment": "Ownership remains coherent: ReaderSession owns unread changes and retry decisions; LocalResumeStore owns persistence; the existing test wrapper owns observation of completion. The change introduces no second persistence path, production state owner, or public testing hook."
+        },
+        {
+          "source": "Ousterhout",
+          "location": "test/reader/unread_records_test.dart:102",
+          "assessment": "The test now depends on the meaningful operation boundary rather than event-loop scheduling details. Changes to storage scheduling no longer require adjusting an arbitrary pump count."
+        },
+        {
+          "source": "Muratori",
+          "location": "test/reader/unread_records_test.dart:25",
+          "assessment": "One completion signal extends the existing wrapper for its actual caller. There is no speculative test framework or reusable abstraction. The comment states the signal's first-success semantics, and repeated saves remain safe."
+        },
+        {
+          "source": "User",
+          "locations": [
+            "lib/reader/session.dart:980",
+            "lib/reader/session.dart:996",
+            "lib/main.dart:373"
+          ],
+          "assessment": "Actual pager callers use the existing visible-address path. Lifecycle retry and flush remain separate existing triggers. The test invokes the visible-place path directly, so it does not rely on an unrelated lifecycle action to satisfy its contract."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "This is a scoped review of the observation change and its relevant owners and callers, not a new architecture or performance certification of the unchanged reader and storage systems."
+      ]
+    }
+  },
+  "inspected_validation_results": {
+    "reviewer_executed_checks": false,
+    "controlled_old_assertion": "Expected failure: early snapshot contains no resume.",
+    "controlled_completion": "Passed without explicit flush.",
+    "negative_control": "Expected five-second timeout with automatic retry removed.",
+    "independent_process_repeats": "Six runs; five tests passed in each.",
+    "focused_reading_and_store": "85 passed.",
+    "affected_suite": "2225 passed; 24 skipped.",
+    "full_suite": "3692 passed; 27 skipped.",
+    "affected_analysis": "Retained log reports no issues.",
+    "format_verification": "Retained log reports one file checked, zero changed.",
+    "production_restoration": "Verified by read-only base comparison and SHA-256 equality.",
+    "production_sha256": "51ea2f0192090ea2aeda01a0f8cf2eb6e6b9f4a43e62b4563960348cb6a2a2d3"
+  },
+  "findings": [],
+  "gaps": {
+    "material_blocking": [],
+    "scope_limits": [
+      "No historical schedule reconstruction.",
+      "No device, browser, physical crash, or operating-system restart acceptance.",
+      "No reviewer execution of builds, tests, analysis, coverage, or mutation checks.",
+      "Complete execution artifacts currently reside under /tmp/t5-rplx-logs; their hashes and paths are committed."
+    ]
+  },
+  "read_only_boundary_compliance": {
+    "complied": true,
+    "actions": "Read-only filesystem and Git inspection, text searches, and SHA-256 calculation.",
+    "edits_writes_commits": false,
+    "builds_tests_analysis_or_diagnostic_scripts_executed": false,
+    "devices_browser_network_or_credentials_used": false,
+    "subagents_started": false,
+    "report_file_generated": false
+  }
+}
