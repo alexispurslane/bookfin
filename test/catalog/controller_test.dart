@@ -26,6 +26,7 @@ JellyfinSession account(
 class MemoryCredentials implements CredentialStore {
   JellyfinSession? value;
   bool failWrites = false;
+  Object? writeError;
   Completer<void>? writeGate;
   Completer<void>? writeStarted;
 
@@ -42,6 +43,7 @@ class MemoryCredentials implements CredentialStore {
     if (writeStarted?.isCompleted == false) writeStarted!.complete();
     await writeGate?.future;
     if (failWrites) throw StateError('vault failure');
+    if (writeError case final error?) throw error;
     value = session;
   }
 
@@ -445,6 +447,55 @@ void main() {
       restarted.checkInvariants();
     },
   );
+
+  test('a rejected credential save does not hide a failed contract', () async {
+    await signIn();
+    final failure = AssertionError('credential invariant');
+    credentials.writeError = failure;
+    final uncaught = <Object>[];
+    runZonedGuarded<void>(
+      () => controller.session!.rejectCredential(),
+      (error, stack) => uncaught.add(error),
+    );
+    await pumpEventQueue();
+    expect(uncaught, [same(failure)]);
+  });
+
+  test(
+    'a rejected credential save reports an ordinary storage failure',
+    () async {
+      await signIn();
+      credentials.failWrites = true;
+      controller.session!.rejectCredential();
+      await pumpEventQueue();
+      expect(controller.message, contains('could not be saved on this device'));
+      expect(controller.session!.scope.userId, 'alice');
+      expect(controller.books, isNotEmpty);
+    },
+  );
+
+  test('a cancelled sign-in save does not hide a failed contract', () async {
+    await signIn();
+    client.pendingSignIn = Completer();
+    final connecting = controller.connect(
+      'https://books.example',
+      'bob',
+      'password',
+    );
+    await pumpEventQueue();
+    final failure = AssertionError('credential invariant');
+    credentials.writeError = failure;
+    final uncaught = <Object>[];
+    runZonedGuarded<void>(
+      controller.cancel,
+      (error, stack) => uncaught.add(error),
+    );
+    await pumpEventQueue();
+    client.pendingSignIn!.complete(account('bob'));
+    await connecting;
+    expect(uncaught, [same(failure)]);
+    expect(controller.session!.scope.userId, 'alice');
+  });
 
   test(
     'cancelled replacement sign-in retains the account and ignores its answer',

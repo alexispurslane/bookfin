@@ -763,7 +763,7 @@ class CatalogController extends ChangeNotifier {
           _message = 'Sign in again. The expired sign-in could not be saved on this device.';
           _notify();
         }
-      }),
+      }, test: (error) => error is! AssertionError),
     );
   }
 
@@ -1305,7 +1305,11 @@ class CatalogController extends ChangeNotifier {
     if (_work == _Work.signIn) {
       // A secure write already in flight cannot be cancelled. Queue the
       // still-current account after it, so cancellation is durable too.
-      unawaited(_writeCredentials(_session).catchError((Object _) {}));
+      unawaited(
+        _writeCredentials(
+          _session,
+        ).catchError((Object _) {}, test: (error) => error is! AssertionError),
+      );
     }
     _active?.close();
     _active = null;
