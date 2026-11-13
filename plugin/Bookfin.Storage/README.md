@@ -16,14 +16,15 @@ The package does not include a Jellyfin server or its dependencies.
 | --- | --- |
 | Plugin identifier | `55fb5a92-7fbd-411c-9838-6ee4c88d168b` |
 | Assembly filename | `Bookfin.Storage.dll` |
-| Candidate assembly version | `0.1.1.0` |
-| Previous research assembly version | `0.1.0.0` |
-| HTTP address | `/BookfinStorage/v1/objects` |
+| Candidate assembly version | `0.2.0.0` |
+| Previous integrated assembly version | `0.1.1.0` |
+| Existing HTTP address | `/BookfinStorage/v1/objects` |
+| Additive HTTP address | `/BookfinStorage/v2/objects` |
 | Database filename | `bookfin-storage-v1.sqlite` |
 
-The display name changes from `Bookfin Storage Research` to `Bookfin Storage`.
-The identifier, database, schema, and HTTP contract do not change.
-The storage and controller source move here without logic changes.
+The identifier, display name, database and schema stay unchanged.
+Version `0.2.0.0` adds batch upload and larger discovery pages.
+The existing v1 routes and four-object discovery limit stay usable.
 The research tests and app tests build this same source.
 
 `meta.json` contains `targetAbi: 12.0.0.0`, the Jellyfin loader compatibility field.
@@ -55,9 +56,9 @@ The default output directory is `.cache/plugin/package/`:
 
 | File | Contents |
 | --- | --- |
-| `Bookfin.Storage_0.1.1.0.zip` | DLL, Jellyfin metadata, and exact source/hash manifest |
-| `Bookfin.Storage_0.1.1.0.sources.zip` | Every build script, C# source, project file, and Nix pin needed to rebuild |
-| `Bookfin.Storage_0.1.1.0.sha256` | Hashes for both ZIP files |
+| `Bookfin.Storage_0.2.0.0.zip` | DLL, Jellyfin metadata, and exact source/hash manifest |
+| `Bookfin.Storage_0.2.0.0.sources.zip` | Every build script, C# source, project file, and Nix pin needed to rebuild |
+| `Bookfin.Storage_0.2.0.0.sha256` | Hashes for both ZIP files |
 
 The package manifest records every source hash and every referenced Jellyfin assembly hash.
 It also records the DLL hash, metadata hash, SDK version, and server archive pin.
@@ -90,11 +91,11 @@ Do not create a replacement database if you cannot find the existing database.
 3. Stop that Jellyfin service with its normal service manager.
 4. Make the stopped backup described below.
 5. Verify both ZIP hashes against the approved `.sha256` file.
-6. Extract the package ZIP into `plugins/Bookfin Storage_0.1.1.0/` inside the program-data directory.
+6. Extract the package ZIP into `plugins/Bookfin Storage_0.2.0.0/` inside the program-data directory.
 7. Give the Jellyfin service account read access to those three package files.
 8. Preserve the existing service account's write access to the database directory.
 9. Start Jellyfin with its normal service manager.
-10. Confirm one active `Bookfin Storage` plugin with the preserved identifier and version `0.1.1.0`.
+10. Confirm one active `Bookfin Storage` plugin with the preserved identifier and version `0.2.0.0`.
 11. Confirm ordinary-account Bookfin sync and record discovery without changing server or user identities.
 
 Do not replace Jellyfin's own DLLs with files from this plugin package.
@@ -140,7 +141,7 @@ Coordinate that recovery before reconnecting clients.
 
 ## Upgrade procedure after approval
 
-The proved transition is research `0.1.0.0` to candidate `0.1.1.0` on the same Jellyfin `12.4.0` server.
+The proved transition is integrated candidate `0.1.1.0` to candidate `0.2.0.0` on the same Jellyfin `12.4.0` server.
 It does not upgrade Jellyfin or migrate the database schema.
 The database path does not depend on the plugin display name or version directory.
 
@@ -186,8 +187,8 @@ Successful runs write sanitized `tool/evidence/plugin/packaging.json`.
 The proof covers these behaviors:
 
 1. Two clean builds produce identical package and source ZIP bytes.
-2. The installable candidate passes the existing 21 storage and pending-action tests.
-3. The original research DLL loads from source taken from commit `a0b3155`.
+2. The installable candidate passes the existing 21 storage and pending-action tests plus six additive API tests.
+3. The prior integrated `0.1.1.0` DLL loads from source taken from commit `1de1ed6ba8a0bd69af70b2123f7fd8a63cedd48f`.
 4. Two durable SQLite clients create concurrent records through the existing Flutter HTTP transport.
 5. One client retains an offline pending bookmark while the server plugin changes.
 6. Every object, sequence, payload, deletion marker, and client database remains unchanged across replacement.
@@ -195,7 +196,102 @@ The proof covers these behaviors:
 8. Choosing a resume position keeps both conflicting positions as bookmarks.
 9. Ordinary-account isolation and authentication remain enforced before and after upgrade.
 10. Restart preserves the new records and the existing app integration test passes.
-11. Restoring the stopped server backup recovers the original package and complete original inventory.
+11. A real Flutter client uploads 2,400 retained actions in ten requests and ten acknowledgment transactions. A second client discovers all actions in eleven requests, including negotiation. Both clients retain every action after reopening SQLite.
+12. Restoring the stopped server backup recovers the original package and complete original inventory.
+13. Rebuilding from the extracted source ZIP produces the identical package bytes.
 
 The proof does not cover physical Android behavior, host power loss, disk exhaustion, or lifetime storage limits.
 It does not establish compatibility with other Jellyfin versions or grant live deployment approval.
+
+
+## Additive API contract: 0.2.0.0
+
+This version preserves the plugin identifier and `bookfin-storage-v1.sqlite`.
+Objects remain immutable strings identified by the same client-generated identity.
+The server does not interpret journal actions, combine position updates, or expire records.
+All routes require Jellyfin authentication. The authenticated user owns every object;
+no request field or query parameter can select another owner.
+
+### Selecting the protocol
+
+The client first validates the server identity and authenticated user, then calls
+`GET /BookfinStorage/v1/objects?after=<saved cursor>&limit=4`.
+A valid discovery reply from this package includes `PluginVersion: "0.2.0.0"`.
+This is the loaded assembly version, returned through the authenticated route.
+Old `0.1.0.0` and `0.1.1.0` packages omit that field and retain their existing shape.
+An absent version on a valid v1 page selects v1. A four-part version with major zero
+and minor below two also selects v1. Major zero and minor two or greater selects v2.
+A future major version requires an explicit client compatibility decision.
+Malformed versions, invalid pages, unauthorized requests, timeouts, missing routes,
+and server failures fail the exchange. They never silently select fallback.
+The client does not cache this decision across exchanges or account changes.
+
+V1 keeps single-object PUT, GET and DELETE unchanged. Its discovery default and
+maximum remain four objects. The additional version field does not alter the three
+existing fields `Objects`, `Cursor`, and `HasMore`.
+
+### Batch upload
+
+`PUT /BookfinStorage/v2/objects` accepts this JSON body:
+
+```json
+{"Objects":[{"Id":"action.phone.1","Payload":"opaque immutable string"}]}
+```
+
+A request contains 1–256 distinct identities. Each identity contains 1–128 ASCII
+letters, digits, dots, underscores, colons or hyphens. Each payload is nonempty and
+at most 65,536 UTF-8 bytes. The sum of payload bytes is at most 1,048,576 bytes.
+The entire encoded HTTP body is limited to 8,388,608 bytes, allowing JSON escaping.
+Invalid identity, duplicate identity, empty payload or invalid count returns 400.
+An exceeded byte limit returns 413. Validation completes before any mutation.
+
+A successful transaction returns HTTP 200 with one result per requested identity:
+
+```json
+{"Results":[{"Id":"action.phone.1","Status":201,"Object":{"Id":"action.phone.1","Sequence":1,"Payload":"opaque immutable string","Deleted":false}}]}
+```
+
+| Item Status | Meaning | Object field |
+| --- | --- | --- |
+| 201 | New object committed | Complete committed object |
+| 200 | Identical object already exists | Original object and sequence |
+| 409 | This identity has a different immutable payload | Omitted |
+| 410 | This identity is a retained deletion marker | Omitted |
+
+Successful items commit in one server transaction, even when other items conflict.
+A storage failure rolls back the whole transaction and returns an HTTP error.
+Single-object PUT uses the same mutation operation as batch PUT.
+Repeating an identical batch never adds sequences or overwrites objects.
+Response order has no causal meaning. Match each result by identity.
+
+The Flutter client acknowledges only items whose identity, payload, deletion flag
+and positive integer server sequence match. It commits verified identities in one
+local transaction per group. Missing, duplicated or mismatched item confirmations
+remain pending. An unexpected identity or an interrupted/unreadable response keeps
+the whole group pending. A 409 permits a separately verified GET of the server copy,
+through the existing damaged-copy recovery. That exceptional adoption keeps the local
+damaged copy aside. A 410 never resurrects an object. Failed local acknowledgment
+rolls the group back; retry uses the same immutable identities.
+
+### Larger discovery
+
+`GET /BookfinStorage/v2/objects?after=<cursor>&limit=256` returns the existing
+`Objects`, `Cursor`, `HasMore` shape plus `PluginVersion`.
+The default and maximum limit are 256; the minimum is one. `after` is nonnegative.
+A page also stops before its opaque payloads exceed 1,048,576 UTF-8 bytes.
+`HasMore` is true when either bound leaves objects undiscovered. A page is ordered
+by the authenticated owner's server sequence. `Cursor` is its final sequence, or
+`after` for an empty page. Deletion markers remain visible on discovery.
+
+The Flutter client saves each received page and its cursor in one local transaction.
+Each exchange permits at most 128 discovery pages. Exhaustion reports an incomplete
+exchange and preserves the last committed cursor for the next retry. Uploads consume
+only the initial detached pending snapshot; new local actions stay pending for the
+existing RecordSync scheduler's next exchange. V1 fallback sends at most four PUTs
+at once and acknowledges their verified results together. V2 sends one bounded batch
+at a time; damaged-copy lookups are bounded to four simultaneous requests.
+
+The payload strings, account keys, journal identities and causal context do not change.
+Causal context controls when a received action applies, independent of upload order.
+All superseded position actions, held actions, conflicts and deletion actions remain.
+Host timings in the proof measure loopback tests, not Android performance.

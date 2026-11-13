@@ -46,7 +46,8 @@ def metadata():
 def assemble(dll, sources, runtime):
     contents = {"Bookfin.Storage.dll": dll, "meta.json": encoded(metadata())}
     contents["manifest.json"] = encoded({
-        "format": 1, "api": "/BookfinStorage/v1/objects", "database": "bookfin-storage-v1.sqlite",
+        "format": 1, "api": "/BookfinStorage/v1/objects",
+        "additiveApi": "/BookfinStorage/v2/objects", "database": "bookfin-storage-v1.sqlite",
         "plugin": metadata(), "runtime": runtime,
         "sourceSha256": {name: digest(payload) for name, payload in sources.items()},
         "filesSha256": {name: digest(payload) for name, payload in contents.items()},

@@ -180,3 +180,13 @@ The 21,600-resume fixture with 16 pending identities takes 636.09 ms to migrate 
 These startup costs remain because the owner admits and caches the complete retained journal.
 SQLite file sizes include the test audit table and freed pages from the migrated legacy payload.
 Logical export byte counts describe journal plus metadata, not a complete materialized snapshot or bytes rewritten by each save.
+
+
+## November 12 acknowledgment batching
+
+The approved `boo-s11s` follow-up extends LocalResumeStore with group acknowledgment.
+All verified identities in one upload group clear their pending flags in one existing
+SQLite transaction. A failed transaction leaves the entire group pending. This does
+not change action retention, causal coverage, current versions, migration or startup
+replay. Transport never edits the journal directly. The additive plugin protocol and
+its legacy fallback are documented in `plugin/Bookfin.Storage/README.md`.

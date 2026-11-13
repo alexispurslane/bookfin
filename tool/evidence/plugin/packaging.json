@@ -1,13 +1,13 @@
 {
   "baseline": {
-    "commit": "a0b3155bb850db6def19cfd5e8ad435a561a410c",
-    "dllSha256": "b962659b8935ad4b504d383a3d3102c126cf7fea0e4a65ceaa549372f01d2799",
+    "commit": "1de1ed6ba8a0bd69af70b2123f7fd8a63cedd48f",
+    "dllSha256": "42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6",
     "sourceSha256": {
-      "tool/research/plugin/Bookfin.Storage.csproj": "eff95a6b277a57a3f2349d64536fc83577a3b3515d52fb3da5151b680fda51b9",
-      "tool/research/plugin/Directory.Build.props": "597d46a17e428ac67e406b0e6f21c3c3ccf4cb2bf3926cca67c45e9e20980bf6",
-      "tool/research/plugin/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
-      "tool/research/plugin/Plugin.cs": "4f756e730f42acca9d083bc7769a19169f67552d4a6acc81e3d1b32536773859",
-      "tool/research/plugin/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a"
+      "plugin/Bookfin.Storage/Bookfin.Storage.csproj": "9253cbecc96ee246fcefd19ccce3415472b8e72eb27e2b042cd0b910d2c63469",
+      "plugin/Bookfin.Storage/Directory.Build.props": "7e809a03addb2892c0a8ed7ab6c7db7cf950108de0a13fd41baa96b896008cc9",
+      "plugin/Bookfin.Storage/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
+      "plugin/Bookfin.Storage/Plugin.cs": "78a6592b47b0a7df4029c49de7675f0656ce2a47fd7ab80da067bf61ccc6fc6b",
+      "plugin/Bookfin.Storage/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a"
     }
   },
   "cleanup": {
@@ -15,7 +15,7 @@
     "port7464HasListener": false,
     "port7465HasListener": false
   },
-  "elapsedSeconds": 84.607,
+  "elapsedSeconds": 114.061,
   "limits": [
     "Only Jellyfin 12.4.0 on macOS ARM64 was run",
     "No Android device or UI acceptance",
@@ -23,17 +23,19 @@
     "No server-version migration, disk-full, host power-loss, lifetime bounds or hardening campaign",
     "Backup restoration is a whole stopped-server snapshot, not merging later client activity"
   ],
-  "measuredAtUtc": "2026-11-03T01:54:29.000076+00:00",
+  "measuredAtUtc": "2026-11-13T04:56:13.128508+00:00",
   "milestone": "Reproducible local candidate, fresh install, research-to-package upgrade, restart and stopped backup restore",
   "package": {
-    "dllSha256": "42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6",
+    "dllSha256": "61c4ed1c7ba65fff6fc42b89ed54aa0da149956214efcd56d91efdc79b4d573d",
+    "extractedSourceRebuildByteIdentical": true,
     "independentCleanBuildsByteIdentical": true,
     "manifest": {
+      "additiveApi": "/BookfinStorage/v2/objects",
       "api": "/BookfinStorage/v1/objects",
       "database": "bookfin-storage-v1.sqlite",
       "filesSha256": {
-        "Bookfin.Storage.dll": "42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6",
-        "meta.json": "337b4661a0a45a2fecbac002cd5603dc2d13c97a34db9f902fac4bd837f4c348"
+        "Bookfin.Storage.dll": "61c4ed1c7ba65fff6fc42b89ed54aa0da149956214efcd56d91efdc79b4d573d",
+        "meta.json": "dd1e4d2cce17dcb4e26d4ce43c68aff85b17d1c1d936bb7763c2f82ffc6c1cc4"
       },
       "format": 1,
       "plugin": {
@@ -43,7 +45,7 @@
         "owner": "Bookfin",
         "status": "Active",
         "targetAbi": "12.0.0.0",
-        "version": "0.1.1.0"
+        "version": "0.2.0.0"
       },
       "runtime": {
         "buildHost": "aarch64-darwin",
@@ -61,29 +63,31 @@
         "serverArchiveHash": "sha256-wQfU4Nhei6EpJMkRTSqK1D6dg1QKZ5I9vveIuTMR/i0="
       },
       "sourceSha256": {
-        "plugin/Bookfin.Storage/Bookfin.Storage.csproj": "9253cbecc96ee246fcefd19ccce3415472b8e72eb27e2b042cd0b910d2c63469",
+        "plugin/Bookfin.Storage/Bookfin.Storage.csproj": "556dec313eadfc387e94ecaddada5f0a80daa2175c414ef9d6b708596ac00264",
         "plugin/Bookfin.Storage/Directory.Build.props": "7e809a03addb2892c0a8ed7ab6c7db7cf950108de0a13fd41baa96b896008cc9",
-        "plugin/Bookfin.Storage/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
+        "plugin/Bookfin.Storage/ObjectStore.cs": "c4790842b300b95d415f1a1d5930d14773e740259784969f15d738b08d0a6e34",
         "plugin/Bookfin.Storage/Plugin.cs": "78a6592b47b0a7df4029c49de7675f0656ce2a47fd7ab80da067bf61ccc6fc6b",
-        "plugin/Bookfin.Storage/README.md": "3869724d06b0fa09d29248a080d912d4913229f19b61070cc60e68cf4e29406b",
-        "plugin/Bookfin.Storage/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a",
-        "tool/plugin/package.py": "f176435b75f4cea458d39a357d28cd7e310af50ae19ac94425dd59051a380bb8",
+        "plugin/Bookfin.Storage/README.md": "d46b2991775c927a49c2a980aad34f437480b53d7cf91d4e6fe3c0c56319587d",
+        "plugin/Bookfin.Storage/StorageController.cs": "e4fea7b9cc1bbc6cce696275caf34315771a0f89177ce1111df6f7c3829e37b4",
+        "tool/plugin/package.py": "f743febd24e6a09c9bfd811d2e86d7d514a1f72a87b08824154ccdd626aecd2b",
         "tool/research/sync/flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
         "tool/research/sync/flake.nix": "b5c2c18c5db1b654b09079868be5863ae4b4896757e3575ac7a28bd9ff24e93b",
         "tool/research/sync/sources.json": "99f1e96972102936908722cf52064bbceb4bd55ac557d3e8980b38bb9fd455e1"
       },
       "status": "Local deployment candidate; not a published or signed release"
     },
-    "name": "Bookfin.Storage_0.1.1.0.zip",
-    "sha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
-    "sourcesZipSha256": "6d6f5a1db9d64865c008e48033f31486102a17f948a62003d3c2322e2e9d56d9"
+    "name": "Bookfin.Storage_0.2.0.0.zip",
+    "sha256": "4e37667dec6f0d8e0610849b6c2059b7b58266d2e0523c9e9f0d41ff9bb187e9",
+    "sourcesZipSha256": "6a635b4e56cf2b9f55621666db5ad01f9e2743c35361e62168cb929d97ad8a87"
   },
   "proofSourceSha256": {
-    "test/sync/plugin_integration_test.dart": "beb8fa3451b5ec12458419e55f26adc84c80fb80fa4fe822a4cb03a1728e60e9",
-    "test/sync/plugin_upgrade_integration_test.dart": "773382ce47c64716ae14afd111fcdd1103f8c7db7a6bcdb966169258f8ae7991",
-    "tool/plugin/prove.py": "07d0ea4c5db52f1ac274dab446013239acafa022627a252f391bf2f203c9e29c",
-    "tool/plugin/test_package.py": "9c445f29452b3f7fdd1d7ecd28c7c9423fd40d29826fc398e32be4ec8d9627ab",
-    "tool/research/plugin/dedicated_fixture.py": "24fe864e197e5343c765f6f3ebbcde68772d220f021c3364293f7f552cea35c0"
+    "test/sync/plugin_batch_integration_test.dart": "ff17efd0f64750137c9f173e2da1e421abf8c4e70bbf29c243a6e283faab366c",
+    "test/sync/plugin_integration_test.dart": "08bc2fffcd92c14b4666938d149d6c7be98d3f2dd559baaf5601584cffc80c89",
+    "test/sync/plugin_upgrade_integration_test.dart": "15176a518a8924a5bf87631929edf3a7158f8492780b20a1b0be8ea53b91537b",
+    "tool/plugin/prove.py": "0d53f0b50b6440214577d46bf874750b0ae9d8f4603834a78b07d376c1ec8aa0",
+    "tool/plugin/test_package.py": "54111c969446ca16452c909bcf6b8633bc2a25938ed06980e46426cd40700085",
+    "tool/research/plugin/dedicated_fixture.py": "4576dca932e8b6d373ba43ea1406c45ce57fd0ab3adba5eb16a2a71f1c589d58",
+    "tool/research/plugin/test_batch_storage.py": "f73d4f700a6c2b779d45548f7d12806a1992bed5c703246a130b5f0861a412b2"
   },
   "regressions": {
     "freshInstallStarts": 5,
@@ -172,9 +176,33 @@
       {
         "outcome": "passed",
         "test": "test_storage.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_01_legacy_clients_keep_their_routes_and_four_object_pages"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_02_batch_retries_share_single_object_immutability_and_deletion_rules"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_03_batch_identity_always_comes_from_the_authenticated_ordinary_user"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_04_invalid_batches_change_nothing_and_enforce_count_and_utf8_byte_limits"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_05_a_server_transaction_failure_rolls_back_the_whole_batch"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_batch_storage.BatchStorage.test_06_thousands_of_objects_are_discovered_after_upgrade_and_restart_with_bounded_pages"
       }
     ],
-    "testsRun": 21
+    "testsRun": 27
   },
   "runtime": {
     "buildHost": "aarch64-darwin",
@@ -194,28 +222,39 @@
   },
   "ticket": "t6-il6y",
   "upgrade": {
+    "batchWorkload": {
+      "acknowledgmentTransactions": 10,
+      "actions": 2400,
+      "lostActions": 0,
+      "receiveHostMilliseconds": 224,
+      "receiverDiscoveryRequests": 11,
+      "retainedActionsAfterBothClientRestarts": 2400,
+      "scope": "Jellyfin 12.4.0 loopback on macOS ARM64; no Android timing claim",
+      "uploadHostMilliseconds": 521,
+      "uploadRequests": 10
+    },
     "conflictsDeletionsAudioReadingAndHistoryPreserved": true,
     "databaseAfterAppVerification": {
-      "bytes": 36864,
+      "bytes": 1421312,
       "relativePath": "data/bookfin-storage-v1.sqlite",
-      "rows": 30,
-      "sha256": "0ed784dc77540f583954a9344720a139313f597ed57885a22041ec3c193b1758"
+      "rows": 2430,
+      "sha256": "2bc42378360b44ef8cd56fd682225619ec987beed3b3fa94e216aec1de6a3ec9"
     },
     "databaseBefore": {
       "bytes": 24576,
       "relativePath": "data/bookfin-storage-v1.sqlite",
       "rows": 13,
-      "sha256": "1cbf0c0c76564018e76e4cc1efac7c7721b6ce8c7295eb1a0ce93d76552766c5"
+      "sha256": "53fbd12aea41a757b4b1ea18b21c70d0b18b4e395b1ca9fb0cbd4d7d6baa35c3"
     },
     "databaseBeforeBackupRestore": {
-      "bytes": 36864,
+      "bytes": 1421312,
       "relativePath": "data/bookfin-storage-v1.sqlite",
-      "rows": 30,
-      "sha256": "0ed784dc77540f583954a9344720a139313f597ed57885a22041ec3c193b1758"
+      "rows": 2430,
+      "sha256": "2bc42378360b44ef8cd56fd682225619ec987beed3b3fa94e216aec1de6a3ec9"
     },
     "durableClientFilesUnchangedAcrossUpgrade": true,
     "existingProductionTransportRegressionPassed": true,
-    "from": "0.1.0.0",
+    "from": "0.1.1.0",
     "objectsAfterAppVerification": {
       "alice": 14,
       "bob": 3
@@ -229,6 +268,6 @@
     "starts": 4,
     "stoppedServerBackupRestored": true,
     "stops": 4,
-    "to": "0.1.1.0"
+    "to": "0.2.0.0"
   }
 }

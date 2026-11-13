@@ -14,6 +14,7 @@ import 'transport_protocol.dart';
 const _hopBytes = 8 * 1024;
 
 Object? _decode(Uint8List bytes) => jsonDecode(utf8.decode(bytes));
+Uint8List _encode(Map<String, dynamic> body) => utf8.encode(jsonEncode(body));
 
 JsonTransport createTransport() => _IoTransport();
 
@@ -74,7 +75,9 @@ class _IoTransport implements JsonTransport {
           .timeout(const Duration(seconds: 20));
       request.followRedirects = false;
       headers.forEach(request.headers.set);
-      if (body != null) request.add(utf8.encode(jsonEncode(body)));
+      // Batch uploads can carry a MiB of opaque record strings. Encode the
+      // complete request in one worker hop, including JSON string escaping.
+      if (body != null) request.add(await compute(_encode, body));
       final response = await request.close().timeout(
         const Duration(seconds: 20),
       );

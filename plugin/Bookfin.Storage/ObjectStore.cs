@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
@@ -16,6 +17,10 @@ public sealed record StoredObject(string Id, long Sequence,
 
 public sealed record ObjectPage(IReadOnlyList<StoredObject> Objects, long Cursor, bool HasMore);
 
+public sealed record ObjectUpload(string Id, string Payload);
+public sealed record UploadResult(string Id, int Status,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] StoredObject? Object);
+
 public sealed class StorageServices : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection services, IServerApplicationHost applicationHost)
@@ -24,6 +29,12 @@ public sealed class StorageServices : IPluginServiceRegistrator
 
 public sealed class ObjectStore
 {
+    // Invariants: identities and positive sequences are unique per owner;
+    // immutable payloads never change; null payloads remain deletion barriers.
+    // Every group commits together. CheckInvariants checks these on demand.
+    public const int MaximumObjects = 256;
+    public const int MaximumPayloadBytes = 65536;
+    public const int MaximumGroupBytes = 1048576;
     private readonly string connectionString;
 
     public ObjectStore(IApplicationPaths paths)
@@ -97,30 +108,55 @@ public sealed class ObjectStore
         command.Parameters.AddWithValue("$count", limit + 1);
         using var reader = command.ExecuteReader();
         var objects = new List<StoredObject>();
+        var bytes = 0;
+        var hasMore = false;
         while (reader.Read())
         {
-            objects.Add(Decode(reader));
-        }
-        var hasMore = objects.Count > limit;
-        if (hasMore)
-        {
-            objects.RemoveAt(objects.Count - 1);
+            var item = Decode(reader);
+            var size = item.Payload is null ? 0 : Encoding.UTF8.GetByteCount(item.Payload);
+            if (objects.Count == limit || bytes + size > MaximumGroupBytes)
+            {
+                hasMore = true;
+                break;
+            }
+            objects.Add(item);
+            bytes += size;
         }
         return new(objects, objects.Count == 0 ? after : objects[^1].Sequence, hasMore);
     }
 
-    public (int Status, StoredObject Object) Put(Guid owner, string identity, string payload)
+    /// Single uploads and batches share the same transaction and immutable-object rules.
+    public UploadResult Put(Guid owner, string identity, string payload)
+        => PutMany(owner, [new(identity, payload)])[0];
+
+    /// Commits every successful item together. Conflicting or retired identities
+    /// are returned individually without changing them. A storage failure commits
+    /// none of the group. HTTP size/identity guards run before this operation.
+    public IReadOnlyList<UploadResult> PutMany(Guid owner, IReadOnlyList<ObjectUpload> uploads)
     {
         using var connection = Open();
         using var transaction = connection.BeginTransaction(deferred: false);
+        var results = new List<UploadResult>(uploads.Count);
+        foreach (var upload in uploads)
+        {
+            results.Add(Put(connection, transaction, owner, upload.Id, upload.Payload));
+        }
+        transaction.Commit();
+        return results;
+    }
+
+    private static UploadResult Put(SqliteConnection connection, SqliteTransaction transaction,
+        Guid owner, string identity, string payload)
+    {
+        Debug.Assert(transaction.Connection == connection);
         var existing = Read(connection, transaction, owner, identity);
         if (existing is not null)
         {
-            return (existing.Deleted ? 410 : existing.Payload == payload ? 200 : 409, existing);
+            var status = existing.Deleted ? 410 : existing.Payload == payload ? 200 : 409;
+            return new(identity, status, status == 200 ? existing : null);
         }
         var stored = Replace(connection, transaction, owner, identity, payload);
-        transaction.Commit();
-        return (201, stored);
+        return new(identity, 201, stored);
     }
 
     public void Delete(Guid owner, string identity)

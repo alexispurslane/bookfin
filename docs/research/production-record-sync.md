@@ -155,3 +155,17 @@ and full parse/rewrite work during ordinary once-per-second playback saves and
 acknowledgments. No save-latency measurement or bound is claimed. `t6-il6y` must
 validate production plugin packaging, deployment, and upgrades. No fallback to
 ordinary Jellyfin playlists exists.
+
+
+## November 12 additive batch follow-up
+
+`boo-s11s` supersedes this report's fixed plugin-API limit, with user approval.
+The `0.2.0.0` local candidate adds v2 batch PUT and bounded 256-object discovery,
+selected from the authenticated v1 discovery reply's assembly version. Old packages
+retain bounded concurrent v1 uploads and four-object discovery. Every immutable
+action remains retained. LocalResumeStore still owns durable acknowledgment and
+page/cursor transactions; RecordTransport owns protocol validation; RecordSync owns
+scheduling. See `plugin/Bookfin.Storage/README.md` for the complete wire contract and
+`tool/evidence/plugin/packaging.json` for disposable compatibility and package proof.
+Startup replay remains deferred to `boo-0931`. No publication or live deployment is
+implied, and the earlier Android and server-version limitations remain.

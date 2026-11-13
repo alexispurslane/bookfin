@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Bookfin.Storage</AssemblyName>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <DebugType>none</DebugType>

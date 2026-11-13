@@ -21,11 +21,12 @@ sys.path.insert(0, str(ROOT / "tool/research/plugin"))
 from dedicated_fixture import Api, CACHE, ORIGIN, Server, private_json
 from test_outbox import PendingActions
 from test_storage import DedicatedStorage
+from test_batch_storage import BatchStorage
 from run import Outcomes
 
 
 BASE = "/BookfinStorage/v1/objects"
-BASELINE = "a0b3155"
+BASELINE = "1de1ed6ba8a0bd69af70b2123f7fd8a63cedd48f"
 EVIDENCE = ROOT / "tool/evidence/plugin/packaging.json"
 
 
@@ -88,9 +89,8 @@ def authorization(server):
         require(Api(origin=ORIGIN).request(method, BASE + suffix, value)[0] == 401, "Every storage method must require authentication")
 
 
-def app_test(config, phase=None):
+def app_test(config, phase=None, test="test/sync/plugin_integration_test.dart"):
     environment = {**os.environ, "BOOKFIN_PRODUCTION_SYNC_FIXTURE": str(config)}
-    test = "test/sync/plugin_integration_test.dart"
     if phase is not None:
         environment["BOOKFIN_PLUGIN_UPGRADE_PHASE"] = phase
         test = "test/sync/plugin_upgrade_integration_test.dart"
@@ -106,14 +106,14 @@ def baseline_package(destination):
     files = ["Bookfin.Storage.csproj", "Directory.Build.props", "Plugin.cs", "ObjectStore.cs", "StorageController.cs"]
     sources = {}
     for name in files:
-        path = "tool/research/plugin/" + name
+        path = "plugin/Bookfin.Storage/" + name
         contents = subprocess.check_output(["git", "show", BASELINE + ":" + path], cwd=ROOT)
         (source / name).write_bytes(contents)
         sources[path] = digest(contents)
     dll = compile_project(source / "Bookfin.Storage.csproj", destination / "baseline-out",
                           destination / "baseline-obj", Path(os.environ["BOOKFIN_SYNC_SERVER"]))
-    details = {**metadata(), "name": "Bookfin Storage Research", "version": "0.1.0.0",
-               "description": "Disposable dedicated-storage proof", "owner": "Bookfin research"}
+    details = {**metadata(), "name": "Bookfin Storage", "version": "0.1.1.0",
+               "description": "Previous integrated storage candidate", "owner": "Bookfin"}
     archive = destination / "baseline.zip"
     write_archive(archive, {"Bookfin.Storage.dll": dll.read_bytes(), "meta.json": encoded(details)})
     return archive, {"commit": subprocess.check_output(["git", "rev-parse", BASELINE], cwd=ROOT, text=True).strip(),
@@ -130,9 +130,16 @@ def main():
     require(candidate.read_bytes() == rebuilt.read_bytes(), "Independent clean builds must produce identical packages")
     require(candidate.with_suffix(".sources.zip").read_bytes() == rebuilt.with_suffix(".sources.zip").read_bytes(),
             "Independent source archives must match")
+    source_root = work / "extracted-source"
+    with zipfile.ZipFile(candidate.with_suffix(".sources.zip")) as sources:
+        sources.extractall(source_root)
+    subprocess.run(["nix", "develop", "path:" + str(source_root / "tool/research/sync"), "--command", "python3", "tool/plugin/package.py"],
+                   cwd=source_root, check=True, timeout=240)
+    source_rebuild = source_root / ".cache/plugin/package" / candidate.name
+    require(source_rebuild.read_bytes() == candidate.read_bytes(), "Source archive must reproduce the installable package")
     os.environ["BOOKFIN_STORAGE_FIXTURE_PACKAGE"] = str(candidate)
     suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(test)
-                               for test in (PendingActions, DedicatedStorage))
+                               for test in (PendingActions, DedicatedStorage, BatchStorage))
     result = unittest.TextTestRunner(verbosity=2, resultclass=Outcomes).run(suite)
     require(result.wasSuccessful(), "The existing dedicated-storage suite must pass with the installable package")
     fresh = DedicatedStorage.server
@@ -142,7 +149,7 @@ def main():
     try:
         server.start()
         server.seed()
-        require(plugin_version(server) == "0.1.0.0", "The original research plugin must load first")
+        require(plugin_version(server) == "0.1.1.0", "The previous integrated plugin must load first")
         config = server.root / "production-client.json"
         session = server.accounts["alice"]
         private_json(config, {"scope": {"server": ORIGIN, "serverId": server.server_id, "userId": session["id"]},
@@ -163,7 +170,7 @@ def main():
             shutil.copy2(server.root / name, backup / name)
         server.install_package(candidate)
         server.start()
-        require(plugin_version(server) == "0.1.1.0", "Jellyfin must activate the replacement package")
+        require(plugin_version(server) == "0.2.0.0", "Jellyfin must activate the replacement package")
         require({name: inventory(server, name) for name in before} == before, "Upgrade must preserve every object, sequence and deletion")
         require(storage_state(server) == state_before, "Upgrade must leave the same dedicated database and rows")
         require({name: digest((server.root / name).read_bytes()) for name in clients_before} == clients_before,
@@ -175,7 +182,7 @@ def main():
         after = {name: inventory(server, name) for name in before}
         server.stop()
         server.start()
-        require(plugin_version(server) == "0.1.1.0", "The installed version must survive restart")
+        require(plugin_version(server) == "0.2.0.0", "The installed version must survive restart")
         require({name: inventory(server, name) for name in after} == after, "Restart must preserve post-upgrade app uploads")
         authorization(server)
         password = secrets.token_urlsafe(24)
@@ -188,15 +195,24 @@ def main():
             "token": auth["AccessToken"], "username": "regression", "canDownload": True,
         })
         app_test(regression_config)
+        password = secrets.token_urlsafe(24)
+        server.api("admin").json("POST", "/Users/New", {"Name": "batch-regression", "Password": password})
+        auth = Api(origin=ORIGIN).json("POST", "/Users/AuthenticateByName", {"Username": "batch-regression", "Pw": password})
+        batch_config = server.root / "batch-client.json"
+        private_json(batch_config, {
+            "scope": {"server": ORIGIN, "serverId": server.server_id, "userId": auth["User"]["Id"]},
+            "token": auth["AccessToken"], "username": "batch-regression", "canDownload": True,
+        })
+        app_test(batch_config, test="test/sync/plugin_batch_integration_test.dart")
         state_after = storage_state(server)
         server.stop()
         restored_state = storage_state(server)
         for directory in ("data", "config"):
             shutil.rmtree(server.root / directory)
             shutil.copytree(backup / directory, server.root / directory)
-        server.plugin_directory = server.root / "data/plugins/Bookfin Storage Research_0.1.0.0"
+        server.plugin_directory = server.root / "data/plugins/Bookfin Storage_0.1.1.0"
         server.start()
-        require(plugin_version(server) == "0.1.0.0", "Stopped backup restore must reactivate the original plugin")
+        require(plugin_version(server) == "0.1.1.0", "Stopped backup restore must reactivate the original plugin")
         require({name: inventory(server, name) for name in before} == before, "Stopped backup restore must recover the complete original server state")
         server.stop()
     finally:
@@ -204,7 +220,7 @@ def main():
     with zipfile.ZipFile(candidate) as package:
         manifest = json.loads(package.read("manifest.json"))
         dll_hash = digest(package.read("Bookfin.Storage.dll"))
-    cleanup = {"ownedServersStopped": all(instance.process.poll() is not None for instance in (fresh, server)),
+    cleanup = {"ownedServersStopped": all(instance.process.poll() is not None for instance in (fresh, BatchStorage.server, server)),
                "port7464HasListener": listener_present(7464), "port7465HasListener": listener_present(7465)}
     require(cleanup == {"ownedServersStopped": True, "port7464HasListener": False, "port7465HasListener": False},
             "Owned servers must stop and both reserved ports must be free")
@@ -215,11 +231,11 @@ def main():
         "runtime": {**manifest["runtime"], "observedServerVersion": "12.4.0"},
         "package": {"name": candidate.name, "sha256": digest(candidate.read_bytes()), "dllSha256": dll_hash,
                     "sourcesZipSha256": digest(candidate.with_suffix(".sources.zip").read_bytes()),
-                    "independentCleanBuildsByteIdentical": True, "manifest": manifest},
+                    "independentCleanBuildsByteIdentical": True, "extractedSourceRebuildByteIdentical": True, "manifest": manifest},
         "baseline": baseline_evidence,
         "regressions": {"testsRun": result.testsRun, "outcomes": result.outcomes,
                         "freshInstallStarts": len(fresh.starts), "freshInstallStops": len(fresh.stops)},
-        "upgrade": {"from": "0.1.0.0", "to": "0.1.1.0", "starts": len(server.starts), "stops": len(server.stops),
+        "upgrade": {"from": "0.1.1.0", "to": "0.2.0.0", "starts": len(server.starts), "stops": len(server.stops),
                     "databaseBefore": state_before, "databaseAfterAppVerification": state_after,
                     "databaseBeforeBackupRestore": restored_state,
                     "objectsBefore": {name: len(objects) for name, objects in before.items()},
@@ -227,11 +243,13 @@ def main():
                     "durableClientFilesUnchangedAcrossUpgrade": True, "offlinePendingActionReopenedAndUploaded": True,
                     "conflictsDeletionsAudioReadingAndHistoryPreserved": True,
                     "ordinaryAccountIsolationAndUnauthorizedMethods": True, "stoppedServerBackupRestored": True,
-                    "existingProductionTransportRegressionPassed": True},
+                    "existingProductionTransportRegressionPassed": True,
+                    "batchWorkload": json.loads((server.root / "batch-workload.json").read_text())},
         "cleanup": cleanup,
         "proofSourceSha256": {name: digest((ROOT / name).read_bytes()) for name in (
             "tool/plugin/prove.py", "tool/plugin/test_package.py", "tool/research/plugin/dedicated_fixture.py",
-            "test/sync/plugin_upgrade_integration_test.dart", "test/sync/plugin_integration_test.dart")},
+            "test/sync/plugin_upgrade_integration_test.dart", "test/sync/plugin_integration_test.dart",
+            "test/sync/plugin_batch_integration_test.dart", "tool/research/plugin/test_batch_storage.py")},
         "limits": ["Only Jellyfin 12.4.0 on macOS ARM64 was run", "No Android device or UI acceptance",
                    "No public release, signatures, repository publication, live-server install or deployment acceptance",
                    "No server-version migration, disk-full, host power-loss, lifetime bounds or hardening campaign",

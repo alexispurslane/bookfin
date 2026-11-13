@@ -70,7 +70,7 @@ class Server:
             ):
                 raise ValueError("Unexpected disposable fixture package contents")
             details = json.loads(package.read("meta.json"))
-            if details["guid"] != metadata()["guid"] or details["version"] not in ("0.1.0.0", "0.1.1.0"):
+            if details["guid"] != metadata()["guid"] or details["version"] not in ("0.1.0.0", "0.1.1.0", "0.2.0.0"):
                 raise ValueError("Unexpected disposable fixture plugin identity")
             if details["name"] not in ("Bookfin Storage Research", "Bookfin Storage"):
                 raise ValueError("Unexpected disposable fixture plugin name")

@@ -25,7 +25,7 @@ class InstallablePackage(unittest.TestCase):
         self.assertEqual(set(contents), {"Bookfin.Storage.dll", "meta.json", "manifest.json"})
         metadata = json.loads(contents["meta.json"])
         self.assertEqual(metadata["guid"], "55fb5a92-7fbd-411c-9838-6ee4c88d168b")
-        self.assertEqual(metadata["version"], "0.1.1.0")
+        self.assertEqual(metadata["version"], "0.2.0.0")
         self.assertEqual(metadata["name"], "Bookfin Storage")
 
     def test_the_manifest_identifies_every_source_byte_and_the_installed_assembly(self):

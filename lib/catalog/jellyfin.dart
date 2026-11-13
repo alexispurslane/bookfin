@@ -353,6 +353,29 @@ class JellyfinClient {
     query: {'after': '$after', 'limit': '4'},
   );
 
+  /// Discovery for the authenticated v2 plugin contract. Transport selects
+  /// this only after a valid v1 discovery reply advertises a compatible version.
+  Future<Map<String, dynamic>> personalRecordBatchChanges(
+    JellyfinSession session,
+    int after,
+  ) => _send(
+    ['BookfinStorage', 'v2', 'objects'],
+    session: session,
+    query: {'after': '$after', 'limit': '256'},
+  );
+
+  /// Sends a bounded v2 group of immutable objects. Transport owns grouping
+  /// and confirmation checks; the authenticated server validates every item.
+  Future<Map<String, dynamic>> uploadPersonalRecords(
+    JellyfinSession session,
+    List<Map<String, String>> objects,
+  ) => _send(
+    ['BookfinStorage', 'v2', 'objects'],
+    session: session,
+    method: 'PUT',
+    body: {'Objects': objects},
+  );
+
   /// The server's copy of the personal-record object [identity].
   Future<Map<String, dynamic>> personalRecord(
     JellyfinSession session,
