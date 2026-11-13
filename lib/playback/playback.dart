@@ -300,6 +300,7 @@ class Playback extends ChangeNotifier {
   final _changedHistory = <String, Map<String, dynamic>?>{};
   final _changedBookmarks = <String, Map<String, dynamic>?>{};
   final _failedAccounts = <String>{};
+  // Saving local changes or adopting a snapshot invalidates older reads.
   int _recordRevision = 0;
   String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
@@ -618,16 +619,28 @@ class Playback extends ChangeNotifier {
     await _saveRecords();
   });
 
-  Future<void> refreshPersonalRecords() => _recordsCommand(() async {
+  /// Adopts durable history, bookmarks and resumes without moving the current
+  /// decoder or waiting for audio commands or account restoration. Waits only
+  /// for local writes. Unconfirmed saves, changed records, a closed player or
+  /// a replaced account reject the snapshot, leaving it stale for retry.
+  /// Only an adopted snapshot is accepted. Read failures, including [Error]s,
+  /// reach the caller and leave audio alone.
+  Future<void> refreshPersonalRecords() async {
     final account = _session?.scope.key;
+    final generation = _generation;
+    if (_closed || account == null || !_restored) return;
     await _writes.idle;
-    if (account == null || !_restored || _pendingWrites.containsKey(account)) {
+    if (_closed ||
+        generation != _generation ||
+        !_restored ||
+        _pendingWrites.containsKey(account)) {
       return;
     }
     final revision = _recordRevision;
     final saved = await store.read(account);
     if (saved == null ||
-        account != _session?.scope.key ||
+        _closed ||
+        generation != _generation ||
         revision != _recordRevision) {
       return;
     }
@@ -651,15 +664,14 @@ class Playback extends ChangeNotifier {
       for (final entry in (saved['resumes'] as Map<String, dynamic>).entries)
         entry.key: (entry.value as List).cast<Map<String, dynamic>>(),
     };
+    ++_recordRevision;
     _history = history;
     _bookmarks = bookmarks;
     _resumes = resumes;
+    _undo = _history.where((event) => event.id == _undo?.id).firstOrNull;
     store.acceptSnapshot(account, saved);
-    if (_undo != null && !_history.any((event) => event.id == _undo!.id)) {
-      _undo = null;
-    }
     _notify();
-  });
+  }
 
   Future<void> restoreBookmark(String id) => _audioCommand(() async {
     final bookmark = _bookmarks

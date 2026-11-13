@@ -91,3 +91,39 @@ entire diff. No second review, device/browser, coverage, mutation, publication
 or closure. Parent integrates and closes. Host work counts/completion gates are
 not device latency evidence. Parent combined verification of boo-gcu6 is running
 independently; its implementation and sole-review checks are already complete.
+
+## Implementation evidence — 2026-11-13
+
+Initial worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-171de35c`.
+Branch: `t3/decouple-record-refresh-audio`. Initial HEAD and original review
+base: `a72d2043804c336877d6f3ed5ef72f3fd4994cd8`. Initial status was clean.
+No checkout was created, reset, switched, or removed. `tk ready` and
+`tk dep tree boo-2bl9` showed no dependencies. `tk start boo-2bl9` retained
+in-progress status.
+
+Playback refresh now adopts records directly after local writes. It does not
+wait for audio commands or binding. Account generation is captured before
+waits, and closed, unrestored, pending-write, and record-revision guards reject
+unsafe snapshots. Only adoption calls the existing snapshot acceptance method.
+Undo uses the matching adopted history object. The existing record revision
+also advances on adoption, so startup recovery cannot replace a newer snapshot
+that sync adopted during a held recovery read.
+
+The remaining production owners and interfaces are unchanged. No record writer,
+pending-action inventory, generic queue, typed-record rewrite, Ask-at-Play,
+speech, gallery, or settings-schema change is included. Whole-list decoding on
+the UI isolate remains tracked by boo-w6m2. Shared writer work remains boo-n7no.
+
+Full caller audit, controlled red-green evidence, exact commands, results,
+failures, skips, and log locations are in
+`docs/evidence/playback/record-refresh.md`. Raw logs are in this worktree's
+`.cache/boo-2bl9/`. The parent owns integration, acceptance, hardening, and
+closure. No device, browser, coverage, mutation, push, PR, or deployment action
+was attempted.
+
+Final pre-review checks: focused 129 passed; required playback/sync/durability/app
+and reader suites 1,056 passed with three existing skips; full Flutter suite
+3,581 passed with 27 existing skips. Affected analysis and formatting passed.
+The complete diff is whitespace-clean. All commands finished. No failure from
+known intermittent tests t5-rplx or tf-il7u occurred in either full run, and
+neither cause is claimed as resolved. The single read-only review is next.

@@ -99,10 +99,15 @@ History and bookmarks should use this existing owner, not create another player 
 | `replacementStart`, `confirmReplacement`, `cancelReplacement` | Offer a fresh start and accept or cancel that exact offer. Account or catalog changes invalidate earlier offers. |
 | `play`, `pause`, `stop`, `jump`, `setSpeed`, `setJumps`, `setSleep` | Shared commands for the UI and native controls. |
 | `flush` | Save the current confirmed place and retry pending records for every account. Wait only for local record writes. Await a command's own future when its result is needed. Teardown stops audio and drains live reports. |
+| `refreshPersonalRecords` | Adopt durable history, bookmarks, and resumes without waiting for audio commands or account restoration. Keep the current decoder position. Reject a snapshot after local changes, account replacement, or close. Leave rejected records stale for retry. |
 | `ResumeStore` | Replaceable persistence boundary for durable scoped records, not an agreed server-sync protocol. |
 | `checkInvariants` | On-demand check available in every build. Tests or a debug action can call it. |
 
 The owner invariant checker requires a selected book, edition, and source position to appear together. A selected source must belong to its edition and have an account. Playing requires a selected position. History identifiers and bookmark identifiers are unique within their record types. Undo references a retained action. An unfinished slider origin fits the selected edition. Every failed account write retains a pending snapshot. A replacement offer belongs to a restored account and an edition in its current catalog. Tests can call `checkInvariants` in every build. Internal transition assertions compile out of release builds. Internal programming errors are not converted into successful playback.
+
+Record refresh waits for local writes that already started. It refuses adoption while a write remains pending or the account has not restored. The account generation identifies one binding lifetime, including when the user leaves an account and returns. Refresh captures that generation before any wait. The record revision counts changes to the live records. Refresh checks it after reading, so a concurrent local save cannot disappear. Adopting a snapshot advances that revision too. An older overlapping refresh cannot replace a newer adoption. Only adoption calls `acceptSnapshot`. Undo then refers to the adopted history entry with the same identifier, or ends if that entry was deleted. Read failures reach sync without stopping audio. Programming errors still reach the caller.
+
+Sync awaits that guarded refresh before completing each sync operation. A rejected snapshot stays stale and can be retried after restoration or a later sync. No refresh task continues after its future completes. An exchange can finish while audio remains held, including an incomplete upload that still receives records. Each audio command still saves its own confirmed result through the existing record writer. See `docs/evidence/playback/record-refresh.md` for the controlled tests and their limits.
 
 ## Verification
 
