@@ -41,6 +41,190 @@ class RecordJournal {
     }
   }
 
+  /// Restores the transaction's current versions and causal coverage. Only
+  /// current and unapplied actions are resident; SQLite still owns every
+  /// immutable payload. Pending identities need no payload until upload.
+  RecordJournal.restore(
+    this.account,
+    this.replica, {
+    required Map<String, dynamic> saved,
+    required Map<String, List<String>> current,
+    required Map<String, int> coverage,
+    this.validateValue,
+  }) {
+    if (!RegExp(r'^[a-zA-Z0-9_-]{1,80}$').hasMatch(replica) ||
+        saved['cursor'] is! int ||
+        (saved['cursor'] as int) < 0) {
+      throw const FormatException(
+        'Invalid committed journal identity or cursor.',
+      );
+    }
+    _stored = true;
+    cursor = saved['cursor'] as int;
+    _coverage.addAll(coverage);
+    _pending.addAll((saved['pending'] as List).cast<String>());
+    for (final action
+        in (saved['actions'] as List).cast<Map<String, dynamic>>()) {
+      validateAction(account, action);
+      validateValue?.call(action);
+      _actions[identity(action)] = action;
+    }
+    final referenced = <String>{};
+    for (final entry in current.entries) {
+      final versions = <Map<String, dynamic>>[];
+      for (final id in entry.value) {
+        final action = _actions[id];
+        if (action == null ||
+            action['record'] != entry.key ||
+            (action['sequence'] as int) > (_coverage[action['replica']] ?? 0) ||
+            !referenced.add(id) ||
+            (action['context'] as Map).entries.any(
+              (entry) => (entry.value as int) > (_coverage[entry.key] ?? 0),
+            )) {
+          throw const FormatException(
+            'Current versions must name applied actions of their record.',
+          );
+        }
+        versions.add(action);
+      }
+      if (versions.isEmpty) {
+        throw const FormatException('Current versions cannot be empty.');
+      }
+      _records[entry.key] = versions;
+    }
+    for (final action in _actions.values) {
+      if ((action['sequence'] as int) <= (_coverage[action['replica']] ?? 0)) {
+        continue;
+      }
+      var blocked = false;
+      for (final dependency
+          in (action['context'] as Map<String, dynamic>).entries) {
+        if ((dependency.value as int) <= (_coverage[dependency.key] ?? 0)) {
+          continue;
+        }
+        _waiting
+            .putIfAbsent(dependency.key, () => SplayTreeMap())
+            .putIfAbsent(dependency.value as int, () => {})
+            .add(identity(action));
+        blocked = true;
+      }
+      if (!blocked) {
+        throw const FormatException(
+          'Unapplied actions must wait for missing causal coverage.',
+        );
+      }
+    }
+  }
+
+  bool _stored = false;
+
+  /// Whether immutable payloads not needed by current state live on disk.
+  bool get retainedOnDisk => _stored;
+
+  /// Receives a page against disk-retained originals and preserved versions.
+  /// Lookup payloads are temporary. Callers cannot install an independent
+  /// inventory or bypass immutable duplicate and causal validation. [read]
+  /// supplies guarded payloads decoded by the owner's storage worker.
+  Future<Set<String>> receiveStored(
+    List<Map<String, dynamic>> actions,
+    Future<Map<String, Map<String, dynamic>>> Function(Set<String>) read,
+  ) => _withOriginals(actions, read, () => receive(actions));
+
+  /// Changes a local record with the same retained-original checks as a
+  /// received page: a local action can release held remote actions too.
+  Future<void> changeStored(
+    String record,
+    Map<String, dynamic>? value, {
+    required Future<Map<String, Map<String, dynamic>>> Function(Set<String>)
+    read,
+    bool resolve = false,
+    String? device,
+    DateTime? savedAt,
+  }) => _withOriginals(
+    const [],
+    read,
+    () => change(
+      record,
+      value,
+      resolve: resolve,
+      device: device,
+      savedAt: savedAt,
+    ),
+  );
+
+  Future<T> _withOriginals<T>(
+    List<Map<String, dynamic>> actions,
+    Future<Map<String, Map<String, dynamic>>> Function(Set<String>) read,
+    T Function() apply,
+  ) async {
+    if (!_stored) return apply();
+    final needed = <String>{};
+    for (final action in actions) {
+      validateAction(account, action);
+      needed.add(identity(action));
+      needed.addAll((action['preserve'] as List).cast<String>());
+    }
+    for (final action in _heldActions) {
+      needed.addAll((action['preserve'] as List).cast<String>());
+    }
+    needed.removeAll(_actions.keys);
+    final originals = await read(needed);
+    for (final action in actions) {
+      if ((action['sequence'] as int) <= (_coverage[action['replica']] ?? 0) &&
+          !_actions.containsKey(identity(action)) &&
+          !originals.containsKey(identity(action))) {
+        throw const FormatException(
+          'A covered action has no retained original.',
+        );
+      }
+    }
+    _actions.addAll(originals);
+    try {
+      return apply();
+    } finally {
+      _releasePayloads();
+    }
+  }
+
+  Iterable<Map<String, dynamic>> get _heldActions => {
+    for (final thresholds in _waiting.values)
+      for (final ids in thresholds.values) ...ids,
+  }.map((id) => _actions[id]!);
+
+  void _releasePayloads() {
+    final keep = <String>{
+      for (final versions in _records.values) ...versions.map(identity),
+      ..._heldActions.map(identity),
+      ...additions.keys,
+    };
+    _actions.removeWhere((id, _) => !keep.contains(id));
+    _ownLast.clear();
+  }
+
+  /// Pending payloads loaded only when transport asks. [read] returns the
+  /// owner's guarded, detached payloads; validation runs in its worker.
+  Future<List<Map<String, dynamic>>> storedUploads(
+    Future<Map<String, Map<String, dynamic>>> Function(Set<String>) read,
+  ) async {
+    if (!_stored) return uploads;
+    final actions = await read(_pending);
+    if (_pending.any((id) => !actions.containsKey(id))) {
+      throw const FormatException('A pending upload has no retained action.');
+    }
+    // Only references are ordered here, without encoding or decoding payloads.
+    return [for (final id in _pending) actions[id]!];
+  }
+
+  /// The resident portion for recovery after the database file was kept
+  /// aside. This is not a complete export; recovery joins the kept file.
+  Map<String, dynamic> recoveryState() => {
+    'version': 1,
+    'replica': replica,
+    'cursor': cursor,
+    'actions': _actions.values.toList(),
+    'pending': _pending.toList(),
+  };
+
   final String account;
   final String replica;
   final void Function(Map<String, dynamic>)? validateValue;
@@ -81,15 +265,17 @@ class RecordJournal {
     acknowledged.remove(identity);
   }
 
-  void persisted() {
+  void persisted({bool retainedOnDisk = false}) {
     additions.clear();
     changedRecords.clear();
     changedCoverage.clear();
     acknowledged.clear();
+    if (retainedOnDisk) _stored = true;
+    if (_stored) _releasePayloads();
   }
 
-  /// The retained action [identity], or null when the journal lacks it.
-  /// Do not change it.
+  /// The resident retained action [identity], or null. A disk-backed
+  /// journal holds only current, held and uncommitted actions. Do not change it.
   Map<String, dynamic>? retained(String identity) => _actions[identity];
 
   /// The last retained action of this installation on [record], or null
@@ -102,13 +288,20 @@ class RecordJournal {
   static String identity(Map<String, dynamic> action) =>
       'action.${action['replica']}.${action['sequence']}';
 
-  Map<String, dynamic> encode() => {
-    'version': 1,
-    'replica': replica,
-    'actions': _actions.values.toList(),
-    'pending': pending.toList(),
-    'cursor': cursor,
-  };
+  Map<String, dynamic> encode() {
+    if (_stored) {
+      throw StateError(
+        'A complete journal export must read retained disk actions.',
+      );
+    }
+    return {
+      'version': 1,
+      'replica': replica,
+      'actions': _actions.values.toList(),
+      'pending': pending.toList(),
+      'cursor': cursor,
+    };
+  }
 
   List<Map<String, dynamic>> get uploads => [
     for (final id in pending) _actions[id]!,
@@ -208,7 +401,7 @@ class RecordJournal {
     final candidates = Queue<String>();
     for (final original in actions) {
       final action = jsonDecode(jsonEncode(original)) as Map<String, dynamic>;
-      _validate(action);
+      validateAction(account, action);
       validateValue?.call(action);
       final id = identity(action);
       final previous = _actions[id];
@@ -220,7 +413,7 @@ class RecordJournal {
         _actions[id] = action;
         additions[id] = action;
         candidates.add(id);
-        if (action['replica'] == replica) _noteOwn(action);
+        if (!_stored && action['replica'] == replica) _noteOwn(action);
       }
     }
     while (candidates.isNotEmpty) {
@@ -290,7 +483,9 @@ class RecordJournal {
     }
   }
 
-  void _validate(Map<String, dynamic> action) {
+  /// Checks the immutable action envelope before its domain value is decoded.
+  /// This guard can run beside a retained-payload read in a worker.
+  static void validateAction(String account, Map<String, dynamic> action) {
     final author = action['replica'];
     final sequence = action['sequence'];
     final context = action['context'];
@@ -327,7 +522,51 @@ class RecordJournal {
     }
   }
 
+  Map<String, Map<int, List<String>>> get _dependencies => {
+    for (final entry in _waiting.entries)
+      if (entry.value.isNotEmpty)
+        entry.key: {
+          for (final threshold in entry.value.entries)
+            threshold.key: threshold.value.toList()..sort(),
+        },
+  };
+
+  /// Checks resident payloads and held dependencies against an independent
+  /// full replay. Only the owner's explicit invariant verification calls it.
+  void checkRetained(RecordJournal replay) {
+    if (_actions.entries.any(
+          (entry) => !const DeepCollectionEquality().equals(
+            entry.value,
+            replay.retained(entry.key),
+          ),
+        ) ||
+        !const DeepCollectionEquality().equals(
+          _dependencies,
+          replay._dependencies,
+        )) {
+      throw StateError(
+        'Resident actions and held dependencies must agree with retained originals.',
+      );
+    }
+  }
+
   void checkInvariants() {
+    if (_stored) {
+      if (cursor < 0 ||
+          _records.values.any(
+            (versions) =>
+                versions.isEmpty ||
+                versions.any(
+                  (action) =>
+                      !identical(_actions[identity(action)], action) ||
+                      (action['sequence'] as int) >
+                          (_coverage[action['replica']] ?? 0),
+                ),
+          )) {
+        throw StateError('Resident versions must be retained applied actions.');
+      }
+      return;
+    }
     final ownLast = <String, Map<String, dynamic>>{};
     for (final action in _actions.values) {
       if (action['replica'] != replica) continue;

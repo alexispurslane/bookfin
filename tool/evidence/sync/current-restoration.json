@@ -1,0 +1,1895 @@
+{
+  "description": "Warm host filesystem; Flutter debug test; three samples; one-time v3 upgrade separate. SQLite VM instructions measured by re-executing captured production queries on the same unchanged fixture. No Android claims.",
+  "profiles": [
+    {
+      "retainedResumeActions": 60,
+      "retainedActions": 106,
+      "currentRecordsIncludingDeletions": 43,
+      "currentVersions": 44,
+      "pendingIdentities": 16,
+      "heldActions": 1,
+      "payloadsReadOnRestore": 45,
+      "upgradeMilliseconds": 11.324,
+      "restoreMilliseconds": [
+        12.906,
+        5.667,
+        6.097
+      ],
+      "fullReplayMilliseconds": [
+        7.654,
+        6.013,
+        5.864
+      ],
+      "originalPayloadsUnchanged": true,
+      "queryWork": {
+        "vmInstructions": 8577,
+        "queries": [
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? LIMIT 1",
+            "vmInstructions": 19,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? UNION ALL SELECT 2, rowid, record, NULL, identities FROM record_versions WHERE account = ? UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? ORDER BY kind, position",
+            "vmInstructions": 1473,
+            "rows": 47,
+            "plan": [
+              [
+                1,
+                0,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                3,
+                1,
+                0,
+                "LEFT"
+              ],
+              [
+                4,
+                3,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                6,
+                4,
+                0,
+                "LEFT"
+              ],
+              [
+                10,
+                6,
+                39,
+                "SEARCH record_accounts USING INDEX sqlite_autoindex_record_accounts_1 (account=?)"
+              ],
+              [
+                25,
+                4,
+                0,
+                "RIGHT"
+              ],
+              [
+                29,
+                25,
+                62,
+                "SEARCH record_versions USING INDEX sqlite_autoindex_record_versions_1 (account=?)"
+              ],
+              [
+                44,
+                25,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ],
+              [
+                80,
+                1,
+                0,
+                "RIGHT"
+              ],
+              [
+                84,
+                80,
+                63,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=?)"
+              ],
+              [
+                99,
+                80,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE addresses(record) AS (SELECT MIN(record) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied",
+            "vmInstructions": 5740,
+            "rows": 43,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE addresses"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN addresses"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=? AND record>?)"
+              ],
+              [
+                72,
+                0,
+                215,
+                "SCAN addresses"
+              ],
+              [
+                78,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                84,
+                78,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                96,
+                78,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                101,
+                96,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                123,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                129,
+                123,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                141,
+                123,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                146,
+                141,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                169,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1",
+            "vmInstructions": 21,
+            "rows": 0,
+            "plan": [
+              [
+                4,
+                0,
+                61,
+                "SEARCH record_actions USING INDEX record_action_unindexed (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "vmInstructions": 725,
+            "rows": 44,
+            "plan": [
+              [
+                3,
+                0,
+                62,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE authors(author) AS (SELECT MIN(author) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE((SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)",
+            "vmInstructions": 343,
+            "rows": 1,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE authors"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN authors"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=? AND author>?)"
+              ],
+              [
+                73,
+                0,
+                215,
+                "SCAN r"
+              ],
+              [
+                76,
+                0,
+                50,
+                "SEARCH a USING INDEX record_action_sequence (account=? AND author=? AND sequence>?)"
+              ],
+              [
+                82,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                87,
+                82,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid",
+            "vmInstructions": 190,
+            "rows": 16,
+            "plan": [
+              [
+                3,
+                0,
+                54,
+                "SEARCH record_actions USING COVERING INDEX record_action_pending (account=?)"
+              ],
+              [
+                14,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "retainedResumeActions": 600,
+      "retainedActions": 646,
+      "currentRecordsIncludingDeletions": 43,
+      "currentVersions": 44,
+      "pendingIdentities": 16,
+      "heldActions": 1,
+      "payloadsReadOnRestore": 45,
+      "upgradeMilliseconds": 20.371,
+      "restoreMilliseconds": [
+        6.382,
+        6.722,
+        6.65
+      ],
+      "fullReplayMilliseconds": [
+        22.054,
+        20.543,
+        14.936
+      ],
+      "originalPayloadsUnchanged": true,
+      "queryWork": {
+        "vmInstructions": 8577,
+        "queries": [
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? LIMIT 1",
+            "vmInstructions": 19,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? UNION ALL SELECT 2, rowid, record, NULL, identities FROM record_versions WHERE account = ? UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? ORDER BY kind, position",
+            "vmInstructions": 1473,
+            "rows": 47,
+            "plan": [
+              [
+                1,
+                0,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                3,
+                1,
+                0,
+                "LEFT"
+              ],
+              [
+                4,
+                3,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                6,
+                4,
+                0,
+                "LEFT"
+              ],
+              [
+                10,
+                6,
+                39,
+                "SEARCH record_accounts USING INDEX sqlite_autoindex_record_accounts_1 (account=?)"
+              ],
+              [
+                25,
+                4,
+                0,
+                "RIGHT"
+              ],
+              [
+                29,
+                25,
+                62,
+                "SEARCH record_versions USING INDEX sqlite_autoindex_record_versions_1 (account=?)"
+              ],
+              [
+                44,
+                25,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ],
+              [
+                80,
+                1,
+                0,
+                "RIGHT"
+              ],
+              [
+                84,
+                80,
+                63,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=?)"
+              ],
+              [
+                99,
+                80,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE addresses(record) AS (SELECT MIN(record) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied",
+            "vmInstructions": 5740,
+            "rows": 43,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE addresses"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN addresses"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=? AND record>?)"
+              ],
+              [
+                72,
+                0,
+                215,
+                "SCAN addresses"
+              ],
+              [
+                78,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                84,
+                78,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                96,
+                78,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                101,
+                96,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                123,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                129,
+                123,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                141,
+                123,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                146,
+                141,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                169,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1",
+            "vmInstructions": 21,
+            "rows": 0,
+            "plan": [
+              [
+                4,
+                0,
+                61,
+                "SEARCH record_actions USING INDEX record_action_unindexed (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "vmInstructions": 725,
+            "rows": 44,
+            "plan": [
+              [
+                3,
+                0,
+                62,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE authors(author) AS (SELECT MIN(author) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE((SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)",
+            "vmInstructions": 343,
+            "rows": 1,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE authors"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN authors"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=? AND author>?)"
+              ],
+              [
+                73,
+                0,
+                215,
+                "SCAN r"
+              ],
+              [
+                76,
+                0,
+                50,
+                "SEARCH a USING INDEX record_action_sequence (account=? AND author=? AND sequence>?)"
+              ],
+              [
+                82,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                87,
+                82,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid",
+            "vmInstructions": 190,
+            "rows": 16,
+            "plan": [
+              [
+                3,
+                0,
+                54,
+                "SEARCH record_actions USING COVERING INDEX record_action_pending (account=?)"
+              ],
+              [
+                14,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "retainedResumeActions": 3600,
+      "retainedActions": 3646,
+      "currentRecordsIncludingDeletions": 43,
+      "currentVersions": 44,
+      "pendingIdentities": 16,
+      "heldActions": 1,
+      "payloadsReadOnRestore": 45,
+      "upgradeMilliseconds": 61.113,
+      "restoreMilliseconds": [
+        7.524,
+        6.316,
+        4.574
+      ],
+      "fullReplayMilliseconds": [
+        85.952,
+        75.219,
+        86.027
+      ],
+      "originalPayloadsUnchanged": true,
+      "queryWork": {
+        "vmInstructions": 8577,
+        "queries": [
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? LIMIT 1",
+            "vmInstructions": 19,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? UNION ALL SELECT 2, rowid, record, NULL, identities FROM record_versions WHERE account = ? UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? ORDER BY kind, position",
+            "vmInstructions": 1473,
+            "rows": 47,
+            "plan": [
+              [
+                1,
+                0,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                3,
+                1,
+                0,
+                "LEFT"
+              ],
+              [
+                4,
+                3,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                6,
+                4,
+                0,
+                "LEFT"
+              ],
+              [
+                10,
+                6,
+                39,
+                "SEARCH record_accounts USING INDEX sqlite_autoindex_record_accounts_1 (account=?)"
+              ],
+              [
+                25,
+                4,
+                0,
+                "RIGHT"
+              ],
+              [
+                29,
+                25,
+                62,
+                "SEARCH record_versions USING INDEX sqlite_autoindex_record_versions_1 (account=?)"
+              ],
+              [
+                44,
+                25,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ],
+              [
+                80,
+                1,
+                0,
+                "RIGHT"
+              ],
+              [
+                84,
+                80,
+                63,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=?)"
+              ],
+              [
+                99,
+                80,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE addresses(record) AS (SELECT MIN(record) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied",
+            "vmInstructions": 5740,
+            "rows": 43,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE addresses"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN addresses"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=? AND record>?)"
+              ],
+              [
+                72,
+                0,
+                215,
+                "SCAN addresses"
+              ],
+              [
+                78,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                84,
+                78,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                96,
+                78,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                101,
+                96,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                123,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                129,
+                123,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                141,
+                123,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                146,
+                141,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                169,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1",
+            "vmInstructions": 21,
+            "rows": 0,
+            "plan": [
+              [
+                4,
+                0,
+                61,
+                "SEARCH record_actions USING INDEX record_action_unindexed (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "vmInstructions": 725,
+            "rows": 44,
+            "plan": [
+              [
+                3,
+                0,
+                62,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE authors(author) AS (SELECT MIN(author) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE((SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)",
+            "vmInstructions": 343,
+            "rows": 1,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE authors"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN authors"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=? AND author>?)"
+              ],
+              [
+                73,
+                0,
+                215,
+                "SCAN r"
+              ],
+              [
+                76,
+                0,
+                50,
+                "SEARCH a USING INDEX record_action_sequence (account=? AND author=? AND sequence>?)"
+              ],
+              [
+                82,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                87,
+                82,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid",
+            "vmInstructions": 190,
+            "rows": 16,
+            "plan": [
+              [
+                3,
+                0,
+                54,
+                "SEARCH record_actions USING COVERING INDEX record_action_pending (account=?)"
+              ],
+              [
+                14,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "retainedResumeActions": 21600,
+      "retainedActions": 21646,
+      "currentRecordsIncludingDeletions": 43,
+      "currentVersions": 44,
+      "pendingIdentities": 16,
+      "heldActions": 1,
+      "payloadsReadOnRestore": 45,
+      "upgradeMilliseconds": 315.506,
+      "restoreMilliseconds": [
+        4.251,
+        3.971,
+        4.2
+      ],
+      "fullReplayMilliseconds": [
+        458.56,
+        443.959,
+        459.902
+      ],
+      "originalPayloadsUnchanged": true,
+      "queryWork": {
+        "vmInstructions": 8577,
+        "queries": [
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? LIMIT 1",
+            "vmInstructions": 19,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? UNION ALL SELECT 2, rowid, record, NULL, identities FROM record_versions WHERE account = ? UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? ORDER BY kind, position",
+            "vmInstructions": 1473,
+            "rows": 47,
+            "plan": [
+              [
+                1,
+                0,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                3,
+                1,
+                0,
+                "LEFT"
+              ],
+              [
+                4,
+                3,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                6,
+                4,
+                0,
+                "LEFT"
+              ],
+              [
+                10,
+                6,
+                39,
+                "SEARCH record_accounts USING INDEX sqlite_autoindex_record_accounts_1 (account=?)"
+              ],
+              [
+                25,
+                4,
+                0,
+                "RIGHT"
+              ],
+              [
+                29,
+                25,
+                62,
+                "SEARCH record_versions USING INDEX sqlite_autoindex_record_versions_1 (account=?)"
+              ],
+              [
+                44,
+                25,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ],
+              [
+                80,
+                1,
+                0,
+                "RIGHT"
+              ],
+              [
+                84,
+                80,
+                63,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=?)"
+              ],
+              [
+                99,
+                80,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE addresses(record) AS (SELECT MIN(record) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied",
+            "vmInstructions": 5740,
+            "rows": 43,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE addresses"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN addresses"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=? AND record>?)"
+              ],
+              [
+                72,
+                0,
+                215,
+                "SCAN addresses"
+              ],
+              [
+                78,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                84,
+                78,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                96,
+                78,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                101,
+                96,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                123,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                129,
+                123,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                141,
+                123,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                146,
+                141,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                169,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1",
+            "vmInstructions": 21,
+            "rows": 0,
+            "plan": [
+              [
+                4,
+                0,
+                61,
+                "SEARCH record_actions USING INDEX record_action_unindexed (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "vmInstructions": 725,
+            "rows": 44,
+            "plan": [
+              [
+                3,
+                0,
+                62,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE authors(author) AS (SELECT MIN(author) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE((SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)",
+            "vmInstructions": 343,
+            "rows": 1,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE authors"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN authors"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=? AND author>?)"
+              ],
+              [
+                73,
+                0,
+                215,
+                "SCAN r"
+              ],
+              [
+                76,
+                0,
+                50,
+                "SEARCH a USING INDEX record_action_sequence (account=? AND author=? AND sequence>?)"
+              ],
+              [
+                82,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                87,
+                82,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid",
+            "vmInstructions": 190,
+            "rows": 16,
+            "plan": [
+              [
+                3,
+                0,
+                54,
+                "SEARCH record_actions USING COVERING INDEX record_action_pending (account=?)"
+              ],
+              [
+                14,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "retainedResumeActions": 216000,
+      "retainedActions": 216046,
+      "currentRecordsIncludingDeletions": 43,
+      "currentVersions": 44,
+      "pendingIdentities": 16,
+      "heldActions": 1,
+      "payloadsReadOnRestore": 45,
+      "upgradeMilliseconds": 2923.365,
+      "restoreMilliseconds": [
+        4.586,
+        4.628,
+        3.981
+      ],
+      "fullReplayMilliseconds": [
+        4593.881,
+        4528.006,
+        4659.882
+      ],
+      "originalPayloadsUnchanged": true,
+      "queryWork": {
+        "vmInstructions": 8577,
+        "queries": [
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? LIMIT 1",
+            "vmInstructions": 19,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? UNION ALL SELECT 2, rowid, record, NULL, identities FROM record_versions WHERE account = ? UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? ORDER BY kind, position",
+            "vmInstructions": 1473,
+            "rows": 47,
+            "plan": [
+              [
+                1,
+                0,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                3,
+                1,
+                0,
+                "LEFT"
+              ],
+              [
+                4,
+                3,
+                0,
+                "MERGE (UNION ALL)"
+              ],
+              [
+                6,
+                4,
+                0,
+                "LEFT"
+              ],
+              [
+                10,
+                6,
+                39,
+                "SEARCH record_accounts USING INDEX sqlite_autoindex_record_accounts_1 (account=?)"
+              ],
+              [
+                25,
+                4,
+                0,
+                "RIGHT"
+              ],
+              [
+                29,
+                25,
+                62,
+                "SEARCH record_versions USING INDEX sqlite_autoindex_record_versions_1 (account=?)"
+              ],
+              [
+                44,
+                25,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ],
+              [
+                80,
+                1,
+                0,
+                "RIGHT"
+              ],
+              [
+                84,
+                80,
+                63,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=?)"
+              ],
+              [
+                99,
+                80,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE addresses(record) AS (SELECT MIN(record) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied",
+            "vmInstructions": 5740,
+            "rows": 43,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE addresses"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN addresses"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_record (account=? AND record>?)"
+              ],
+              [
+                72,
+                0,
+                215,
+                "SCAN addresses"
+              ],
+              [
+                78,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                84,
+                78,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                96,
+                78,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                101,
+                96,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                123,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 5"
+              ],
+              [
+                129,
+                123,
+                61,
+                "SEARCH a USING INDEX record_action_record (account=? AND record=?)"
+              ],
+              [
+                141,
+                123,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                146,
+                141,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ],
+              [
+                169,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1",
+            "vmInstructions": 21,
+            "rows": 0,
+            "plan": [
+              [
+                4,
+                0,
+                61,
+                "SEARCH record_actions USING INDEX record_action_unindexed (account=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "vmInstructions": 725,
+            "rows": 44,
+            "plan": [
+              [
+                3,
+                0,
+                62,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "WITH RECURSIVE authors(author) AS (SELECT MIN(author) FROM record_actions WHERE account = ? UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE((SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)",
+            "vmInstructions": 343,
+            "rows": 1,
+            "plan": [
+              [
+                2,
+                0,
+                0,
+                "CO-ROUTINE authors"
+              ],
+              [
+                5,
+                2,
+                0,
+                "SETUP"
+              ],
+              [
+                8,
+                5,
+                55,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=?)"
+              ],
+              [
+                38,
+                2,
+                0,
+                "RECURSIVE STEP"
+              ],
+              [
+                39,
+                38,
+                216,
+                "SCAN authors"
+              ],
+              [
+                43,
+                38,
+                0,
+                "CORRELATED SCALAR SUBQUERY 2"
+              ],
+              [
+                48,
+                43,
+                47,
+                "SEARCH record_actions USING COVERING INDEX record_action_sequence (account=? AND author>?)"
+              ],
+              [
+                73,
+                0,
+                215,
+                "SCAN r"
+              ],
+              [
+                76,
+                0,
+                50,
+                "SEARCH a USING INDEX record_action_sequence (account=? AND author=? AND sequence>?)"
+              ],
+              [
+                82,
+                0,
+                0,
+                "CORRELATED SCALAR SUBQUERY 4"
+              ],
+              [
+                87,
+                82,
+                39,
+                "SEARCH record_coverage USING INDEX sqlite_autoindex_record_coverage_1 (account=? AND replica=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?",
+            "vmInstructions": 22,
+            "rows": 1,
+            "plan": [
+              [
+                3,
+                0,
+                39,
+                "SEARCH record_actions USING INDEX sqlite_autoindex_record_actions_1 (account=? AND identity=?)"
+              ]
+            ]
+          },
+          {
+            "sql": "SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid",
+            "vmInstructions": 190,
+            "rows": 16,
+            "plan": [
+              [
+                3,
+                0,
+                54,
+                "SEARCH record_actions USING COVERING INDEX record_action_pending (account=?)"
+              ],
+              [
+                14,
+                0,
+                0,
+                "USE TEMP B-TREE FOR ORDER BY"
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

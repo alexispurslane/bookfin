@@ -261,7 +261,7 @@ void main() {
       'record_coverage': 'account, replica, sequence',
     }.entries) {
       await sql.rawInsert(
-        'INSERT INTO set_aside_$table SELECT 1, $columns FROM $table WHERE account = ?',
+        'INSERT INTO set_aside_$table (kept_at, $columns) SELECT 1, $columns FROM $table WHERE account = ?',
         [account],
       );
       await sql.delete(table, where: 'account = ?', whereArgs: [account]);

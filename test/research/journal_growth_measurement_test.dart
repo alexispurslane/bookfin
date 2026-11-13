@@ -540,9 +540,9 @@ void main() {
           'Eight measured saves after two warmups per profile, not a soak or hardening campaign',
           'Test-owned SQLite audit triggers count logical changed rows and field bytes, not filesystem, flash, or WAL write amplification; totals include warmups',
           'Acknowledgment samples include loopback HTTP validation, one upload, its durable acknowledgment, and discovery; initial pending uploads are cleared before timing',
-          'Startup validates and replays all retained actions once per account; the owner caches every decoded action until its lifetime ends or a failed operation evicts that account',
+          'Normalized startup reads committed current and held payloads plus pending identities; legacy migration and explicit verification still read every action',
           'Restart timing uses a new owner and reopened SQLite with a warm host filesystem, not a cold process or device launch',
-          'Startup and memory remain proportional to retained history; storage continues growing without compaction, checkpoints, pruning, or expiry',
+          'Normalized startup and memory depend on current records, held actions and pending identities; retained disk storage continues growing without compaction, checkpoints, pruning, or expiry',
         ],
       };
       await File(destination!).parent.create(recursive: true);

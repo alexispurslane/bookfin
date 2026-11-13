@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
@@ -61,7 +62,15 @@ typedef RecordCommit = ({
 const _accountTables = {
   'accounts': ['account', 'payload'],
   'record_accounts': ['account', 'replica', 'cursor', 'metadata'],
-  'record_actions': ['account', 'identity', 'payload', 'pending'],
+  'record_actions': [
+    'account',
+    'identity',
+    'payload',
+    'pending',
+    'author',
+    'sequence',
+    'record',
+  ],
   'record_versions': ['account', 'record', 'identities'],
   'record_coverage': ['account', 'replica', 'sequence'],
 };
@@ -78,6 +87,21 @@ class RecordFileSetAside implements Exception {
 
   @override
   String toString() => 'The damaged record file was kept as $keptFile.';
+}
+
+/// A worker could not open its own connection. The owner may use its
+/// existing connection; validation and contract failures never use this path.
+class RecordReaderUnavailable implements Exception {
+  const RecordReaderUnavailable(this.cause);
+  final Object cause;
+  @override
+  String toString() => 'The record reader is unavailable: $cause';
+}
+
+/// A retained-payload read found damaged pages. Only the file owner can
+/// keep the file aside and reconstruct cached accounts in its replacement.
+class RecordReaderDamaged implements Exception {
+  const RecordReaderDamaged();
 }
 
 /// Read access to the record file from another isolate. It is sendable to
@@ -106,21 +130,30 @@ final class RecordReader {
   /// The SQLite binding in the isolate that calls it.
   final DatabaseFactory Function() _files;
 
-  /// The durable rows of [account] as [RecordDatabase.rows] reads them, or
-  /// null when it has none. [damaged] says that SQLite reported damaged
+  /// Durable rows of [account], or null. With [current], only committed
+  /// current versions and held actions carry payloads; otherwise every
+  /// retained action is read for export, verification or recovery. [damaged] says that SQLite reported damaged
   /// pages, which the owner of the file sets aside with
   /// [RecordDatabase.setAsideDamaged].
   ///
-  /// One statement reads them, so they come from one snapshot of the file:
+  /// A read transaction (or one statement for a full export) gives one snapshot:
   /// a commit of another connection is in all of them or in none. A
   /// read-only connection writes nothing and takes no write lock, so a
   /// commit of another connection during the read waits for nothing.
-  Future<({AccountRows? rows, bool damaged})> rows(String account) async {
+  Future<({AccountRows? rows, bool damaged})> rows(
+    String account, {
+    bool current = false,
+  }) async {
     try {
       final database = await _readOnly(_files(), _name);
       try {
         return (
-          rows: await RecordDatabase._readRows(database, account),
+          rows: current
+              ? await _snapshot(
+                  database,
+                  () => RecordDatabase._currentRows(database, account),
+                )
+              : await RecordDatabase._readRows(database, account),
           damaged: false,
         );
       } finally {
@@ -129,6 +162,61 @@ final class RecordReader {
     } on DatabaseException catch (error) {
       if (!RecordDatabase._damaged(error)) rethrow;
       return (rows: null, damaged: true);
+    }
+  }
+
+  /// Looks up only the named immutable payloads. Missing identities are
+  /// omitted; the journal decides whether absence is legal for the operation.
+  Future<Map<String, Map<String, dynamic>>> actions(
+    String account,
+    Iterable<String> identities,
+  ) => _lookup(
+    (database) => _snapshot(
+      database,
+      () => RecordDatabase._actions(database, account, identities),
+    ),
+  );
+
+  /// The last action this installation made on a record, including one
+  /// superseded by another installation. The descending index stops at one row.
+  Future<Map<String, dynamic>?> lastOwn(
+    String account,
+    String replica,
+    String record,
+  ) => _lookup(
+    (database) async => RecordDatabase._decodeActions(
+      await database.rawQuery(
+        'SELECT identity, payload FROM record_actions WHERE account = ? AND author = ? AND record = ? ORDER BY sequence DESC LIMIT 1',
+        [account, replica, record],
+      ),
+    ).values.firstOrNull,
+  );
+
+  Future<T> _lookup<T>(Future<T> Function(Database) read) async {
+    try {
+      final database = await _readOnly(_files(), _name);
+      try {
+        return await read(database);
+      } finally {
+        await database.close();
+      }
+    } on DatabaseException catch (error) {
+      if (!RecordDatabase._damaged(error)) rethrow;
+      throw const RecordReaderDamaged();
+    }
+  }
+
+  // sqflite's transaction helper omits BEGIN on read-only connections.
+  // Explicit BEGIN DEFERRED keeps these bounded queries on one WAL snapshot.
+  static Future<T> _snapshot<T>(
+    Database database,
+    Future<T> Function() read,
+  ) async {
+    await database.execute('BEGIN DEFERRED');
+    try {
+      return await read();
+    } finally {
+      await database.execute('ROLLBACK');
     }
   }
 
@@ -195,11 +283,23 @@ final class RecordReader {
   }
 
   /// A connection of its own to the file [name] that only reads.
-  static Future<Database> _readOnly(DatabaseFactory files, String name) =>
-      files.openDatabase(
+  static Future<Database> _readOnly(DatabaseFactory files, String name) async {
+    try {
+      return await files.openDatabase(
         name,
         options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
       );
+    } on DatabaseException catch (error) {
+      if (RecordDatabase._damaged(error)) rethrow;
+      throw RecordReaderUnavailable(error);
+    } on StateError catch (error) {
+      // A missing isolate binding fails during connection creation, before
+      // any journal operation or contract can run.
+      throw RecordReaderUnavailable(error);
+    } on Exception catch (error) {
+      throw RecordReaderUnavailable(error);
+    }
+  }
 }
 
 class RecordDatabase {
@@ -411,7 +511,7 @@ class RecordDatabase {
       files.openDatabase(
         name,
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onConfigure: (database) async {
             await database.rawQuery('PRAGMA journal_mode=WAL');
             await database.execute('PRAGMA synchronous=FULL');
@@ -422,10 +522,12 @@ class RecordDatabase {
             );
             await _createRows(database);
             await _createSetAside(database);
+            await _createActionIndexes(database);
           },
           onUpgrade: (database, previous, _) async {
             if (previous < 2) await _createRows(database);
-            await _createSetAside(database);
+            if (previous < 3) await _createSetAside(database);
+            if (previous < 4) await _createActionIndexes(database);
           },
         ),
       );
@@ -443,6 +545,89 @@ class RecordDatabase {
     await database.execute(
       'CREATE TABLE record_coverage (account TEXT NOT NULL, replica TEXT NOT NULL, sequence INTEGER NOT NULL, PRIMARY KEY (account, replica))',
     );
+  }
+
+  /// Adds lookup columns derived from immutable payloads, once on upgrade.
+  /// Bad payloads remain untouched and have null lookup columns, so restoration
+  /// routes their account through the existing salvage path. Parsing is batched
+  /// off the UI isolate; SQLite builds the indexes in the upgrade transaction.
+  static Future<void> _createActionIndexes(DatabaseExecutor database) async {
+    for (final column in ['author TEXT', 'sequence INTEGER', 'record TEXT']) {
+      await database.execute('ALTER TABLE record_actions ADD COLUMN $column');
+    }
+    final keptColumns = {
+      for (final row in await database.rawQuery(
+        'PRAGMA table_info(set_aside_record_actions)',
+      ))
+        row['name'],
+    };
+    for (final column in ['author', 'sequence', 'record']) {
+      if (!keptColumns.contains(column)) {
+        await database.execute(
+          'ALTER TABLE set_aside_record_actions ADD COLUMN $column',
+        );
+      }
+    }
+    var after = 0;
+    while (true) {
+      final rows = await database.rawQuery(
+        'SELECT rowid, payload FROM record_actions WHERE rowid > ? ORDER BY rowid LIMIT 256',
+        [after],
+      );
+      if (rows.isEmpty) break;
+      final indexed = await Isolate.run(() => _indexPayloads(rows));
+      final batch = database.batch();
+      for (final row in indexed) {
+        batch.update(
+          'record_actions',
+          row.$2,
+          where: 'rowid = ?',
+          whereArgs: [row.$1],
+        );
+      }
+      await batch.commit(noResult: true);
+      after = rows.last['rowid'] as int;
+    }
+    await database.execute(
+      'CREATE INDEX record_action_sequence ON record_actions(account, author, sequence)',
+    );
+    await database.execute(
+      'CREATE INDEX record_action_own ON record_actions(account, author, record, sequence DESC)',
+    );
+    await database.execute(
+      'CREATE INDEX record_action_record ON record_actions(account, record)',
+    );
+    await database.execute(
+      'CREATE INDEX record_action_pending ON record_actions(account, identity) WHERE pending = 1',
+    );
+    await database.execute(
+      'CREATE INDEX record_action_unindexed ON record_actions(account) WHERE author IS NULL OR sequence IS NULL OR record IS NULL',
+    );
+  }
+
+  static List<(int, Map<String, Object?>)> _indexPayloads(
+    List<Map<String, Object?>> rows,
+  ) => [
+    for (final row in rows) (row['rowid'] as int, _actionIndex(row['payload'])),
+  ];
+
+  static Map<String, Object?> _actionIndex(Object? payload) {
+    try {
+      final action = payload is String ? jsonDecode(payload) : null;
+      if (action is Map &&
+          action['replica'] is String &&
+          action['sequence'] is int &&
+          action['record'] is String) {
+        return {
+          'author': action['replica'],
+          'sequence': action['sequence'],
+          'record': action['record'],
+        };
+      }
+    } on FormatException {
+      // Keep the immutable payload, including its unreadable bytes.
+    }
+    return {'author': null, 'sequence': null, 'record': null};
   }
 
   /// Creates the tables that keep damaged rows. Their columns have no type
@@ -465,6 +650,200 @@ class RecordDatabase {
   Future<AccountRows?> rows(String account) =>
       _guarded((database) => _readRows(database, account));
 
+  /// Whether the account has any actions, without counting retained history.
+  Future<bool> hasActions(String account) => _guarded(
+    (database) async => (await database.rawQuery(
+      'SELECT 1 FROM record_actions WHERE account = ? LIMIT 1',
+      [account],
+    )).isNotEmpty,
+  );
+
+  /// Reads committed current state and held actions, without historical payloads.
+  Future<AccountRows?> currentRows(String account) => _guarded(
+    (database) => database.transaction(
+      (transaction) => _currentRows(transaction, account, decodeInWorker: true),
+    ),
+  );
+
+  /// Reads retained payloads when a worker connection is unavailable.
+  Future<Map<String, Map<String, dynamic>>> actions(
+    String account,
+    Iterable<String> identities,
+  ) => _guarded(
+    (database) => _actions(database, account, identities, decodeInWorker: true),
+  );
+
+  /// Looks up a superseded local place through the existing connection
+  /// when the worker cannot open its own; payload decoding still uses a worker.
+  Future<Map<String, dynamic>?> lastOwn(
+    String account,
+    String replica,
+    String record,
+  ) => _guarded((database) async {
+    final rows = await database.rawQuery(
+      'SELECT identity, payload FROM record_actions WHERE account = ? AND author = ? AND record = ? ORDER BY sequence DESC LIMIT 1',
+      [account, replica, record],
+    );
+    return (await Isolate.run(() => _decodeActions(rows))).values.firstOrNull;
+  });
+
+  static Future<Map<String, Map<String, dynamic>>> _actions(
+    DatabaseExecutor database,
+    String account,
+    Iterable<String> identities, {
+    bool decodeInWorker = false,
+  }) async {
+    final ids = identities.toSet().toList();
+    final result = <String, Map<String, dynamic>>{};
+    for (var offset = 0; offset < ids.length; offset += 256) {
+      final group = ids.skip(offset).take(256).toList();
+      final rows = await database.rawQuery(
+        'SELECT identity, payload FROM record_actions WHERE account = ? AND identity IN (${List.filled(group.length, '?').join(',')})',
+        [account, ...group],
+      );
+      result.addAll(
+        decodeInWorker
+            ? await Isolate.run(() => _decodeActions(rows))
+            : _decodeActions(rows),
+      );
+    }
+    return result;
+  }
+
+  static Map<String, Map<String, dynamic>> _decodeActions(
+    List<Map<String, Object?>> rows,
+  ) {
+    final result = <String, Map<String, dynamic>>{};
+    for (final row in rows) {
+      final payload = row['payload'];
+      final action = payload is String ? jsonDecode(payload) : null;
+      if (action is! Map<String, dynamic> ||
+          RecordJournal.identity(action) != row['identity']) {
+        throw const FormatException(
+          'Stored action identity does not match its payload.',
+        );
+      }
+      result[row['identity'] as String] = action;
+    }
+    return result;
+  }
+
+  static Future<AccountRows?> _currentRows(
+    DatabaseExecutor database,
+    String account, {
+    bool decodeInWorker = false,
+  }) async {
+    // Reuse the row decoder for the small metadata/current/coverage set.
+    final head = await _readRows(database, account, includeActions: false);
+    if (head == null) return null;
+    final current = decodeInWorker && head.versions.isNotEmpty
+        ? await Isolate.run(() => _decodeVersions(head.versions))
+        : _decodeVersions(head.versions);
+    // Seek one record address at a time. The first applied action supplies
+    // stable presentation order and detects a missing current-record row.
+    final orderedRecords = await database.rawQuery(
+      'WITH RECURSIVE addresses(record) AS ('
+      'SELECT MIN(record) FROM record_actions WHERE account = ? '
+      'UNION ALL SELECT (SELECT MIN(record) FROM record_actions WHERE account = ? AND record > addresses.record) FROM addresses WHERE record IS NOT NULL) '
+      'SELECT record, (SELECT a.rowid FROM record_actions a WHERE a.account = ? AND a.record = addresses.record '
+      'AND a.sequence <= COALESCE((SELECT sequence FROM record_coverage WHERE account = a.account AND replica = a.author), 0) ORDER BY a.rowid LIMIT 1) AS first_applied '
+      'FROM addresses WHERE record IS NOT NULL AND first_applied IS NOT NULL ORDER BY first_applied',
+      [account, account, account],
+    );
+    if (orderedRecords.length != head.versions.length ||
+        orderedRecords.any(
+          (row) => !head.versions.containsKey(row['record']),
+        )) {
+      throw const FormatException(
+        'Applied records must have committed current versions.',
+      );
+    }
+    if (head.cursor < 0 ||
+        head.coverage.entries.any(
+          (entry) =>
+              !RegExp(r'^[a-zA-Z0-9_-]{1,80}$').hasMatch(entry.key) ||
+              entry.value < 1,
+        )) {
+      throw const FormatException('Invalid committed causal coverage.');
+    }
+    if ((await database.rawQuery(
+      'SELECT 1 FROM record_actions INDEXED BY record_action_unindexed WHERE account = ? AND (author IS NULL OR sequence IS NULL OR record IS NULL) LIMIT 1',
+      [account],
+    )).isNotEmpty) {
+      throw const FormatException(
+        'Retained actions need recovery before restoration.',
+      );
+    }
+    final needed = <String>{for (final versions in current.values) ...versions};
+    final payloadRows = <Map<String, Object?>>[];
+    final ids = needed.toList();
+    for (var offset = 0; offset < ids.length; offset += 256) {
+      final group = ids.skip(offset).take(256).toList();
+      payloadRows.addAll(
+        await database.rawQuery(
+          'SELECT identity, payload, pending FROM record_actions WHERE account = ? AND identity IN (${List.filled(group.length, '?').join(',')})',
+          [account, ...group],
+        ),
+      );
+    }
+    if (payloadRows.length != needed.length) {
+      throw const FormatException('A current version has no retained action.');
+    }
+    // Seek to the next author instead of scanning each retained action. Then
+    // seek past that author's coverage to read only its unapplied tail.
+    payloadRows.addAll(
+      await database.rawQuery(
+        'WITH RECURSIVE authors(author) AS ('
+        'SELECT MIN(author) FROM record_actions WHERE account = ? '
+        'UNION ALL SELECT (SELECT MIN(author) FROM record_actions WHERE account = ? AND author > authors.author) FROM authors WHERE author IS NOT NULL) '
+        'SELECT a.identity, a.payload, a.pending FROM authors r CROSS JOIN record_actions a INDEXED BY record_action_sequence '
+        'ON a.account = ? AND a.author = r.author AND a.sequence > COALESCE('
+        '(SELECT sequence FROM record_coverage WHERE account = ? AND replica = r.author), 0)',
+        [account, account, account, account],
+      ),
+    );
+    for (final entry in head.coverage.entries) {
+      if ((await database.rawQuery(
+        'SELECT 1 FROM record_actions WHERE account = ? AND identity = ? AND author = ? AND sequence = ?',
+        [account, 'action.${entry.key}.${entry.value}', entry.key, entry.value],
+      )).isEmpty) {
+        throw const FormatException('Causal coverage has no retained action.');
+      }
+    }
+    final pending = await database.rawQuery(
+      'SELECT identity FROM record_actions WHERE account = ? AND pending = 1 ORDER BY rowid',
+      [account],
+    );
+    final unique = {for (final row in payloadRows) row['identity']: row};
+    return (
+      malformed:
+          head.malformed ||
+          unique.values.any(
+            (row) =>
+                row['identity'] is! String ||
+                row['payload'] is! String ||
+                (row['pending'] != 0 && row['pending'] != 1),
+          ),
+      metadata: head.metadata,
+      replica: head.replica,
+      cursor: head.cursor,
+      identities: [
+        for (final row in unique.values)
+          row['identity'] is String ? row['identity'] as String : '',
+      ],
+      payloads: [
+        for (final row in unique.values)
+          row['payload'] is String ? row['payload'] as String : '',
+      ],
+      pending: [for (final row in pending) row['identity'] as String],
+      versions: {
+        for (final row in orderedRecords)
+          row['record'] as String: head.versions[row['record']]!,
+      },
+      coverage: head.coverage,
+    );
+  }
+
   /// How many actions [account] retains. It reads only the index of the
   /// actions. Throws [RecordFileSetAside] when the file has damaged pages.
   Future<int> actionCount(String account) => _guarded(
@@ -486,18 +865,27 @@ class RecordDatabase {
     DatabaseExecutor database,
     String account, {
     bool aside = false,
+    bool includeActions = true,
     Object? keptAt,
   }) async {
     final prefix = aside ? 'set_aside_' : '';
     final where = aside ? 'account = ? AND kept_at IS ?' : 'account = ?';
     final arguments = [account, if (aside) keptAt];
+    final actionQuery = includeActions
+        ? 'UNION ALL SELECT 1, rowid, identity, pending, payload FROM ${prefix}record_actions WHERE $where '
+        : '';
     final rows = await database.rawQuery(
       'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM ${prefix}record_accounts WHERE $where '
-      'UNION ALL SELECT 1, rowid, identity, pending, payload FROM ${prefix}record_actions WHERE $where '
-      'UNION ALL SELECT 2, NULL, record, NULL, identities FROM ${prefix}record_versions WHERE $where '
+      '$actionQuery'
+      'UNION ALL SELECT 2, rowid, record, NULL, identities FROM ${prefix}record_versions WHERE $where '
       'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM ${prefix}record_coverage WHERE $where '
       'ORDER BY kind, position',
-      [...arguments, ...arguments, ...arguments, ...arguments],
+      [
+        ...arguments,
+        if (includeActions) ...arguments,
+        ...arguments,
+        ...arguments,
+      ],
     );
     if (rows.isEmpty || rows.first['kind'] != 0) return null;
     // A value of another type than its column holds reads as one that does
@@ -589,17 +977,7 @@ class RecordDatabase {
       }
       decodedActions.add(decoded);
     }
-    final current = <String, List<String>>{};
-    for (final MapEntry(key: record, value: text) in rows.versions.entries) {
-      final identities = jsonDecode(text);
-      if (identities is! List ||
-          identities.any((identity) => identity is! String)) {
-        throw const FormatException(
-          'Current versions must name retained actions.',
-        );
-      }
-      current[record] = identities.cast<String>()..sort();
-    }
+    final current = _decodeVersions(rows.versions);
     return {
       'snapshot': metadata,
       'sync': {
@@ -612,6 +990,23 @@ class RecordDatabase {
       'current': current,
       'coverage': Map.of(rows.coverage),
     };
+  }
+
+  static Map<String, List<String>> _decodeVersions(
+    Map<String, String> versions,
+  ) {
+    final current = <String, List<String>>{};
+    for (final MapEntry(key: record, value: text) in versions.entries) {
+      final identities = jsonDecode(text);
+      if (identities is! List ||
+          identities.any((identity) => identity is! String)) {
+        throw const FormatException(
+          'Current versions must name retained actions.',
+        );
+      }
+      current[record] = identities.cast<String>()..sort();
+    }
+    return current;
   }
 
   /// The decoded account of [account], as [decode] returns it, or null
@@ -667,6 +1062,9 @@ class RecordDatabase {
             'account': account,
             'identity': entry.key,
             'payload': jsonEncode(entry.value),
+            'author': entry.value['replica'],
+            'sequence': entry.value['sequence'],
+            'record': entry.value['record'],
             'pending': journal.pending.contains(entry.key) ? 1 : 0,
           },
       ],
@@ -839,11 +1237,27 @@ class RecordDatabase {
   }
 
   Future<void> checkInvariants() async {
+    final actions = await _database.rawQuery(
+      'SELECT account, identity, payload, author, sequence, record FROM record_actions',
+    );
+    await Isolate.run(() => _checkActionIndexes(actions));
     final result = await _database.rawQuery('PRAGMA integrity_check');
     if (result.length != 1 || result.single.values.single != 'ok') {
       throw StateError(
         'The personal-record database failed its integrity check.',
       );
+    }
+  }
+
+  static void _checkActionIndexes(List<Map<String, Object?>> rows) {
+    for (final row in rows) {
+      final index = _actionIndex(row['payload']);
+      if (index.values.any((value) => value == null) ||
+          index.entries.any((entry) => row[entry.key] != entry.value)) {
+        throw StateError(
+          'Action lookup columns must agree with their immutable payload.',
+        );
+      }
     }
   }
 

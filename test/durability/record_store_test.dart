@@ -933,7 +933,7 @@ void main() {
     }) async {
       for (final MapEntry(key: table, value: names) in columns.entries) {
         await sql.rawInsert(
-          'INSERT INTO set_aside_$table SELECT ?, $names FROM $table WHERE account = ? ORDER BY rowid',
+          'INSERT INTO set_aside_$table (kept_at, $names) SELECT ?, $names FROM $table WHERE account = ? ORDER BY rowid',
           [keptAt, account],
         );
         if (move) {

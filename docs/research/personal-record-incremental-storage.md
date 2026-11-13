@@ -1,6 +1,7 @@
 # Incremental persistence with complete action retention
 
-Ticket: `t6-t9po`. Implementation base: `d69cfb3`.
+Historical save implementation: `t6-t9po`. The November 13 section below
+records the current restoration behavior from `boo-0931`. Implementation base: `d69cfb3`.
 The user selected Design A on November 3, 2026.
 Every immutable action remains stored, including every superseded position.
 Storage growth remains an accepted cost.
@@ -190,3 +191,122 @@ SQLite transaction. A failed transaction leaves the entire group pending. This d
 not change action retention, causal coverage, current versions, migration or startup
 replay. Transport never edits the journal directly. The additive plugin protocol and
 its legacy fallback are documented in `plugin/Bookfin.Storage/README.md`.
+
+## November 13: restore committed current state (boo-0931)
+
+This section supersedes the startup and memory costs described in the November 3
+implementation above. The retained-action format, server API and retention policy
+are unchanged. SQLite keeps every original immutable payload indefinitely.
+
+A normalized account now restores the current versions, causal coverage, pending
+identities and discovery cursor that its transactions already committed. It decodes
+only current versions and held actions. A held action is an action whose context
+still needs a missing predecessor. Superseded payloads stay on disk. The journal
+also releases payloads that cease to be current after a successful save, so normal
+use does not grow a second complete journal in memory.
+
+LocalResumeStore still owns each transition, its database transaction, failure
+rollback and the cached views. RecordJournal owns causal admission and conflict
+rules. Its disk-aware local-change and receive operations fetch temporary original
+payloads before applying a change. A local change can release a held remote action,
+so both operations use the same original-payload path. Callers cannot separately
+install retained originals or mutate a second action inventory.
+
+| Need | Payload access |
+| --- | --- |
+| Show current audio and reading records | Restore current identities and their payloads, including deletion actions and unresolved competing versions |
+| Hold an action with missing predecessors | Restore only actions beyond committed coverage, then rebuild their dependency index |
+| Upload pending actions | Restore pending identities first; load and validate their payloads when transport requests the upload snapshot |
+| Receive an immutable duplicate | Look up its original by account and identity; reject changed content or a covered identity whose original is missing |
+| Validate a preserved version | Load named originals, including those needed by held actions that either a local change or received page can release |
+| Find the last local position | Use the installation, record and descending sequence index, including local actions superseded by remote versions |
+| Adopt a server copy or recover kept records | Read the retained journal explicitly and use the existing replay and repair paths |
+| Verify invariants | Independently replay retained actions and compare current versions, coverage, pending flags, resident payloads and held dependencies; also check lookup columns and SQLite integrity |
+
+### Indexed access and the one-time upgrade
+
+Schema version four adds lookup columns to each retained row: its installation,
+sequence and record address. These columns derive from the immutable payload;
+they are not another authority. New actions write them with the original payload
+in the existing transaction. The explicit full checker compares them to that
+payload. Separate indexes support sequence ranges, last-local lookups, record
+addresses, pending identities and rows needing recovery.
+
+The upgrade decodes old payloads in batches of 256 in workers, then builds the
+indexes inside SQLite's schema-upgrade transaction. It changes no payload bytes.
+Malformed payloads keep their bytes and get missing lookup columns, which route
+the account through existing salvage. An upgrade failure rolls back the new
+columns, indexes and schema version; the original rows remain readable for retry.
+The measurement below reports this one-time cost separately.
+
+Normal restoration seeks to each distinct installation and record address, then
+seeks directly to the required ranges. It does not enumerate historical identities
+or count all retained rows first. A dedicated partial index checks for missing
+lookup metadata. The first measurement exposed SQLite choosing another index and
+scanning every retained entry for this check. A failing instruction-count regression
+caught that scan; the query now selects the partial index explicitly.
+
+The worker reads one snapshot through an explicit read-only transaction. This is
+necessary because sqflite's transaction helper omits BEGIN for read-only
+connections. If the worker cannot open a connection, or an injected connection
+factory holds an unsendable close lock, the store uses its existing connection for
+the same bounded reads and keeps payload decoding in workers. Both connections
+use the same validation of the last local action against its requested record and
+installation. Restoration contract failures propagate as bugs; they are never
+retried as success.
+
+### Recovery and limits
+
+Missing current references or malformed needed values use the existing retained
+copy and salvage process. A corrupt payload discovered by a later required lookup
+fails that operation without overwriting the original bytes. After damaged pages
+force a new database file, recovery rejoins every readable original from the kept
+file with resident and uncommitted actions. If predecessors cannot be read, the
+existing salvage process preserves readable actions and known visible records
+under a new installation; dependent old actions still wait for their predecessors.
+The complete damaged file stays kept for later recovery.
+
+The normal cache contains current and held payloads plus pending identities.
+These sets can themselves grow. A large pending upload snapshot still needs all
+of its pending payloads because that is the current transport interface. Preference
+and web storage retain their existing whole-value behavior. Migration, explicit
+verification and repair deliberately remain proportional to retained history.
+The admission and commit encoding work tracked by te-6j4k remains separate; this
+ticket moves required retained-payload reads and validation into workers and does
+not redesign received-page admission or the plugin boundary.
+
+### Host evidence
+
+`test/research/current_restore_measurement_test.dart` uses real LocalResumeStore
+reads after SQLite close/reopen. Each profile keeps 43 current record addresses:
+40 visible records with selected values, two deletions and one unresolved resume.
+There are 44 current versions, 16 pending identities and one held action. Each
+profile compares every original payload byte after reopening.
+
+The experiment captures production SQL and results. It then re-executes those
+queries against the unchanged fixture with SQLite's instruction counter enabled.
+This checks database work in addition to payload reads. The full-replay comparison
+reads, decodes, validates and admits the complete journal and derives both domain
+views in a worker. Three warm-host-filesystem samples describe host debug/test
+cost, not a cold process launch or Android latency, frame time, battery or flash.
+
+The machine-readable results are in `tool/evidence/sync/current-restoration.json`.
+The existing save/acknowledgment experiment is separately retained in
+`tool/evidence/sync/journal-growth-current-restoration.json`. Its SQLite triggers
+confirm that ten ordinary saves insert ten new action rows and never update or
+delete an original payload. Grouped acknowledgment and page/cursor atomicity remain
+covered by the unchanged boo-s11s suites and the required store suites.
+
+| Retained resume actions | Restore median, ms | Full-replay median, ms | One-time v3 upgrade, ms | Payloads read | SQLite instructions |
+| --- | --- | --- | --- | --- | --- |
+| 60 | 6.097 | 6.013 | 11.324 | 45 | 8,577 |
+| 600 | 6.650 | 20.543 | 20.371 | 45 | 8,577 |
+| 3,600 | 6.316 | 85.952 | 61.113 | 45 | 8,577 |
+| 21,600 | 4.200 | 458.560 | 315.506 | 45 | 8,577 |
+| 216,000 | 4.586 | 4593.881 | 2923.365 | 45 | 8,577 |
+
+All five profiles retain the same current records, pending identities and held
+action described above. The SQL instruction count stays at 8,577 across these
+profiles. Index depth, filesystem state and host load can still affect elapsed
+time. The largest one-time upgrade takes about three seconds on this host; it
+is not included in the normalized restore time.

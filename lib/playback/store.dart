@@ -108,15 +108,16 @@ const _inlineMetadataText = 512;
 /// When SQLite reports damaged pages in the record file during a read or a
 /// write, the database keeps the whole file aside and continues on a new
 /// file ([RecordFileSetAside]). The store then writes every account that it
-/// holds in memory whole into the new file, with the write in progress, and
+/// holds in memory into the new file, rejoining readable retained actions
+/// from the kept file and including the write in progress. Damaged pages
+/// that hide predecessors use the existing salvage transition, and
 /// [setAside] reports the damage for every account. Until that rewrite
 /// succeeds, memory holds the only copy of those accounts outside the kept
 /// file, so the store keeps all of them, and each later operation first
 /// tries the rewrite again.
 ///
-/// Engine rule 1: the whole-account work of a read (the read of a large
-/// account's rows, journal replay, the decoding of an older format, and
-/// each domain's snapshot) runs in one hop to another isolate, and its
+/// Engine rule 1: current-state restoration, retained payload lookups,
+/// migration/recovery replay and each domain's snapshot run in workers. Their
 /// result comes back without a copy. A save does only the work of its own
 /// change on the UI isolate.
 ///
@@ -359,7 +360,7 @@ class LocalResumeStore
         }
         final database = await _storage();
         final metadata = stored?.metadata ?? _metadata({});
-        final sync = journal?.encode();
+        final sync = journal == null ? null : await _fullSync(account, journal);
         final merged = await _derive(
           _withKept,
           (
@@ -444,6 +445,23 @@ class LocalResumeStore
     required bool small,
   }) async => small ? work(input) : _hop(work, input);
 
+  /// A reader factory can hold an unsendable connection lock during close.
+  /// Only that isolate-transfer failure permits the owner-connection fallback;
+  /// failures inside the work, including contracts, still propagate.
+  Future<R> _readerHop<M, R>(FutureOr<R> Function(M) work, M input) async {
+    try {
+      return await _hop(work, input);
+    } on ArgumentError catch (error) {
+      if (error.message is String &&
+          (error.message as String).startsWith(
+            'Illegal argument in isolate message:',
+          )) {
+        throw RecordReaderUnavailable(error);
+      }
+      rethrow;
+    }
+  }
+
   /// Keeps [views] of [account] for the next read of each domain.
   void _keep(String account, _Views views) {
     _views[_writer(account, reading: false)] = views.listening;
@@ -476,13 +494,16 @@ class LocalResumeStore
     _views.remove(_writer(account, reading: true));
   }
 
-  Future<T> _update<T>(String account, T Function(RecordJournal) change) {
+  Future<T> _update<T>(
+    String account,
+    FutureOr<T> Function(RecordJournal) change,
+  ) {
     final operation = _writes.then((_) async {
       var completed = false;
       try {
         final stored = await _readAccount(account);
         final journal = stored?.journal ?? _journal(account, {});
-        final result = change(journal);
+        final result = await change(journal);
         await _persist(account, stored?.metadata ?? _metadata({}), journal);
         completed = true;
         return result;
@@ -513,6 +534,96 @@ class LocalResumeStore
     (stored) => query(stored?.journal ?? _journal(account, {})),
   );
 
+  /// Reads only the immutable payloads that this operation needs. A failed
+  /// lookup changes no durable rows; unreadable originals remain recoverable.
+  Future<Map<String, Map<String, dynamic>>> _retainedActions(
+    String account,
+    Set<String> identities,
+  ) async {
+    if (identities.isEmpty) return {};
+    final database = (await _storage())!;
+    return _withFileRecovery(database, () async {
+      try {
+        return await _readerHop(_readActions, (
+          reader: database.reader,
+          account: account,
+          identities: identities,
+        ));
+      } on RecordReaderUnavailable {
+        final actions = await database.actions(account, identities);
+        return _hop(_validatedActions, (account: account, actions: actions));
+      }
+    });
+  }
+
+  Future<Map<String, dynamic>?> _lastOwn(
+    String account,
+    RecordJournal journal,
+    String record,
+  ) async {
+    if (!journal.retainedOnDisk) return journal.lastOwn(record);
+    final database = (await _storage())!;
+    return _withFileRecovery(database, () async {
+      try {
+        return await _readerHop(_readOwn, (
+          reader: database.reader,
+          account: account,
+          replica: journal.replica,
+          record: record,
+        ));
+      } on RecordReaderUnavailable {
+        final action = await database.lastOwn(account, journal.replica, record);
+        return _hop(_validatedOwn, (
+          account: account,
+          replica: journal.replica,
+          record: record,
+          action: action,
+        ));
+      }
+    });
+  }
+
+  /// Full exports are reserved for explicit repair and invariant verification.
+  Future<Map<String, dynamic>> _fullSync(
+    String account,
+    RecordJournal journal,
+  ) async {
+    if (!journal.retainedOnDisk) return journal.encode();
+    final database = (await _storage())!;
+    return _withFileRecovery(database, () async {
+      try {
+        return await _readerHop(_readFullSync, (
+          reader: database.reader,
+          account: account,
+        ));
+      } on RecordReaderUnavailable {
+        final rows = await database.rows(account);
+        if (rows == null) {
+          throw const FormatException('Retained journal is unavailable.');
+        }
+        return _hop(_decodedSync, rows);
+      }
+    });
+  }
+
+  /// Every deferred read reports file damage to the same recovery owner as
+  /// startup and saves. Cached views survive a failed reconstruction for retry.
+  Future<T> _withFileRecovery<T>(
+    RecordDatabase database,
+    Future<T> Function() read,
+  ) async {
+    try {
+      try {
+        return await read();
+      } on RecordReaderDamaged {
+        return await database.setAsideDamaged();
+      }
+    } on RecordFileSetAside {
+      await _rewriteCached(database);
+      rethrow;
+    }
+  }
+
   /// Whether this account has durable actions awaiting acknowledgment.
   /// Reads the journal's pending set without copying its actions.
   Future<bool> hasPendingUploads(String account) =>
@@ -522,8 +633,13 @@ class LocalResumeStore
   /// Editing the result cannot change retained or pending actions.
   Future<List<Map<String, dynamic>>> pendingUploads(String account) => _query(
     account,
-    (journal) =>
-        _derive(_copyActions, journal.uploads, small: journal.pending.isEmpty),
+    (journal) async => journal.retainedOnDisk
+        ? journal.storedUploads((ids) => _retainedActions(account, ids))
+        : _derive(
+            _copyActions,
+            journal.uploads,
+            small: journal.pending.isEmpty,
+          ),
   );
 
   /// The last discovery sequence durably saved with its received page.
@@ -558,11 +674,17 @@ class LocalResumeStore
     String account,
     List<Map<String, dynamic>> actions,
     int cursor,
-  ) => _update(account, (journal) {
+  ) => _update(account, (journal) async {
     if (cursor < journal.cursor) {
       throw RangeError.range(cursor, journal.cursor, null, 'cursor');
     }
-    _changedOutsideWriters(account, journal.receive(actions));
+    _changedOutsideWriters(
+      account,
+      await journal.receiveStored(
+        actions,
+        (ids) => _retainedActions(account, ids),
+      ),
+    );
     journal.cursor = cursor;
   });
 
@@ -584,10 +706,22 @@ class LocalResumeStore
       var completed = false;
       try {
         final stored = await _readAccount(account);
+        final originals = stored == null
+            ? <String, Map<String, dynamic>>{}
+            : stored.journal.retainedOnDisk
+            ? await _retainedActions(
+                account,
+                copies.map(RecordJournal.identity).toSet(),
+              )
+            : {
+                for (final action in copies)
+                  RecordJournal.identity(action): ?stored.journal.retained(
+                    RecordJournal.identity(action),
+                  ),
+              };
         copies = [
           for (final action in copies)
-            if (stored?.journal.retained(RecordJournal.identity(action))
-                case final local?
+            if (originals[RecordJournal.identity(action)] case final local?
                 when !const DeepCollectionEquality().equals(local, action))
               action,
         ];
@@ -596,7 +730,7 @@ class LocalResumeStore
           return 0;
         }
         final database = await _storage();
-        final sync = stored!.journal.encode();
+        final sync = await _fullSync(account, stored!.journal);
         final restored = await _derive(
           _withServerCopies,
           (
@@ -613,8 +747,7 @@ class LocalResumeStore
         _changedOutsideWriters(account, [
           for (final copy in copies) ...[
             copy['record'] as String,
-            stored.journal.retained(RecordJournal.identity(copy))!['record']
-                as String,
+            originals[RecordJournal.identity(copy)]!['record'] as String,
           ],
         ]);
         await _adopt(
@@ -672,7 +805,7 @@ class LocalResumeStore
     Map<String, String> bookmarkTitles = const {},
   }) async {
     final device = await _device();
-    return _update(account, (journal) {
+    return _update(account, (journal) async {
       final versions = journal.conflicts[record];
       final selected = versions
           ?.where((action) => RecordJournal.identity(action) == identity)
@@ -694,18 +827,20 @@ class LocalResumeStore
                 bookmarkTitles[RecordJournal.identity(action)] ??
                 'Saved before sync choice',
           );
-          journal.change(
+          await journal.changeStored(
             bookmark.key,
             bookmark.value,
+            read: (ids) => _retainedActions(account, ids),
             device: device,
             savedAt: now,
           );
         }
       }
-      journal.change(
+      await journal.changeStored(
         record,
         selected['value'] as Map<String, dynamic>?,
         resolve: true,
+        read: (ids) => _retainedActions(account, ids),
         device: device,
         savedAt: DateTime.now(),
       );
@@ -783,43 +918,51 @@ class LocalResumeStore
   }
 
   /// The account that the record file holds for [account], restored, or
-  /// null when it has none. A large account is read, decoded and replayed
-  /// in one hop that reads the file on a connection of its own, so its rows
+  /// null when it has none. Its committed current state is read and decoded
+  /// in one hop on a connection of its own, so historical payloads never
+  /// enter memory and the needed rows
   /// never cross the UI isolate. Throws [RecordFileSetAside] when the file
   /// has damaged pages.
   ///
-  /// When that hop fails for another reason, for example because its
-  /// connection cannot open, the UI isolate's connection reads the rows, as
+  /// When that connection cannot open, the UI isolate's connection reads
+  /// the same bounded rows, as
   /// for a small account, and another hop restores them. The user sees the
   /// account as usual, so nothing is reported.
   Future<_Restored?> _restoreFile(
     RecordDatabase database,
     String account,
   ) async {
-    final small = await database.actionCount(account) < _hopItems;
+    final small = !await database.hasActions(account);
     if (!small) {
       ({_Restored? restored, bool damaged})? read;
       try {
-        read = await _hop(_readAndRestore, (
+        read = await _readerHop(_readAndRestore, (
           account: account,
           reader: database.reader,
         ));
-      } catch (_) {
-        // The hop reports damage in [read] and throws only for other
-        // failures, which the read below does not share.
+      } on RecordReaderUnavailable {
+        // The owner connection can read the same rows when a reader cannot
+        // be sent to the worker or cannot open its separate connection.
       }
       if (read != null) {
         if (read.damaged) await database.setAsideDamaged();
         return read.restored;
       }
     }
-    final rows = await database.rows(account);
-    return rows == null
-        ? null
-        : _derive(_restoreRows, (
-            account: account,
-            rows: rows,
-          ), small: small && rows.metadata.length < _inlineMetadataText);
+    try {
+      final rows = await database.currentRows(account);
+      return rows == null
+          ? null
+          : await _derive(_readCurrentRows, (
+              account: account,
+              rows: rows,
+            ), small: small && rows.metadata.length < _inlineMetadataText);
+    } on FormatException {
+      final rows = await database.rows(account);
+      return rows == null
+          ? null
+          : _derive(_restoreRows, (account: account, rows: rows), small: false);
+    }
   }
 
   /// Saves [restored] as the durable state of [account] when it must be
@@ -846,7 +989,7 @@ class LocalResumeStore
           restored.commit!,
           keptAt: DateTime.now().millisecondsSinceEpoch,
         );
-        stored.journal.persisted();
+        stored.journal.persisted(retainedOnDisk: true);
         _accounts[account] = stored;
       } on RecordFileSetAside {
         _accounts[account] = stored;
@@ -901,7 +1044,7 @@ class LocalResumeStore
                 initialize: !_accounts.containsKey(account),
               ),
         );
-        journal.persisted();
+        journal.persisted(retainedOnDisk: true);
         _accounts[account] = (metadata: metadata, journal: journal);
       } on RecordFileSetAside {
         _accounts[account] = (metadata: metadata, journal: journal);
@@ -937,34 +1080,20 @@ class LocalResumeStore
   Future<void> _rewriteCached(RecordDatabase database) async {
     _rewriteDue = true;
     _keptCopy();
-    final accounts = Map.of(_accounts);
-    final input = [
-      for (final MapEntry(key: account, value: stored) in accounts.entries)
-        (
-          account: account,
-          metadata: stored.metadata,
-          sync: stored.journal.encode(),
-        ),
-    ];
-    final actions = input.fold(
-      0,
-      (count, account) => count + (account.sync['actions'] as List).length,
-    );
-    await database.writeCommits(
-      await _derive(
-        _wholeCommits,
-        input,
-        small:
-            actions < _hopItems &&
-            input.every(
-              (account) => _smallSettings(account.metadata, domains: true),
-            ),
-      ),
-    );
-    _rewriteDue = false;
-    for (final stored in accounts.values) {
-      stored.journal.persisted();
+    final restored = await _derive(_recoverAccounts, (
+      accounts: Map.of(_accounts),
+      reader: database.reader,
+    ), small: _accounts.isEmpty);
+    await database.writeCommits([
+      for (final account in restored.values) account.commit!,
+    ]);
+    for (final entry in restored.entries) {
+      entry.value.stored.journal.persisted(retainedOnDisk: true);
+      _accounts[entry.key] = entry.value.stored;
+      _forgetViews(entry.key);
+      _keep(entry.key, entry.value.views);
     }
+    _rewriteDue = false;
   }
 
   Future<void> checkInvariants() {
@@ -976,15 +1105,27 @@ class LocalResumeStore
         if (_rewriteDue) continue;
         final rows = await database!.load(entry.key);
         final savedSync = rows?['sync'] as Map<String, dynamic>?;
-        final encoded = journal.encode();
-        if (savedSync != null) {
-          savedSync['pending'] = (savedSync['pending'] as List).cast<String>()
-            ..sort();
-          encoded['pending'] = (encoded['pending'] as List).cast<String>()
-            ..sort();
-        }
+        final replay = savedSync == null
+            ? null
+            : _journal(entry.key, {'sync': savedSync});
+        replay?.checkInvariants();
+        if (replay != null) journal.checkRetained(replay);
         if (rows == null ||
-            !const DeepCollectionEquality().equals(savedSync, encoded) ||
+            replay == null ||
+            replay.replica != journal.replica ||
+            replay.cursor != journal.cursor ||
+            !const DeepCollectionEquality().equals(
+              replay.pending.toList()..sort(),
+              journal.pending.toList()..sort(),
+            ) ||
+            !const DeepCollectionEquality().equals(
+              replay.current,
+              journal.current,
+            ) ||
+            !const DeepCollectionEquality().equals(
+              replay.coverage,
+              journal.coverage,
+            ) ||
             !const DeepCollectionEquality().equals(
               rows['current'],
               journal.current,
@@ -1070,8 +1211,9 @@ class LocalResumeStore
   Future<PlaceOrigin> origin(String accountKey, Edition edition) {
     final reading = edition.kind == EditionKind.text;
     final record = resumeRecordAddress(edition);
-    return _query(accountKey, (journal) {
-      final own = journal.lastOwn(record)?['value'];
+    return _query(accountKey, (journal) async {
+      final ownAction = await _lastOwn(accountKey, journal, record);
+      final own = ownAction?['value'];
       final versions = journal.versionsByRecord[record] ?? const [];
       final current = versions.length == 1 ? versions.single : null;
       final elsewhere =
@@ -1182,7 +1324,13 @@ class LocalResumeStore
             observed[record] ?? journal.value(record),
             value,
           )) {
-            journal.change(record, value, device: device, savedAt: savedAt);
+            await journal.changeStored(
+              record,
+              value,
+              read: (ids) => _retainedActions(account, ids),
+              device: device,
+              savedAt: savedAt,
+            );
           }
         }
         final previous = stored?.metadata ?? _metadata({});
@@ -1381,14 +1529,185 @@ _Views _viewsOfVersions(
 Future<({_Restored? restored, bool damaged})> _readAndRestore(
   ({String account, RecordReader reader}) input,
 ) async {
-  final read = await input.reader.rows(input.account);
-  final rows = read.rows;
-  return (
-    restored: rows == null
-        ? null
-        : _restoreRows((account: input.account, rows: rows)),
-    damaged: read.damaged,
+  try {
+    final read = await input.reader.rows(input.account, current: true);
+    return (
+      restored: read.rows == null
+          ? null
+          : _readCurrentRows((account: input.account, rows: read.rows!)),
+      damaged: read.damaged,
+    );
+  } on FormatException {
+    final read = await input.reader.rows(input.account);
+    return (
+      restored: read.rows == null
+          ? null
+          : _restoreRows((account: input.account, rows: read.rows!)),
+      damaged: read.damaged,
+    );
+  }
+}
+
+/// Restores committed current identities, without admitting historical actions.
+_Restored _readCurrentRows(({String account, AccountRows rows}) input) {
+  final rows = RecordDatabase.decode(input.rows);
+  final journal = RecordJournal.restore(
+    input.account,
+    input.rows.replica,
+    saved: rows['sync'] as Map<String, dynamic>,
+    current: rows['current'] as Map<String, List<String>>,
+    coverage: input.rows.coverage,
+    validateValue: validateRecordAction,
   );
+  final metadata = rows['snapshot'] as Map<String, dynamic>;
+  return (
+    stored: (metadata: metadata, journal: journal),
+    views: _views(metadata, journal.values),
+    persist: false,
+    damaged: false,
+    commit: null,
+  );
+}
+
+Future<Map<String, Map<String, dynamic>>> _readActions(
+  ({RecordReader reader, String account, Set<String> identities}) input,
+) async {
+  final actions = await input.reader.actions(input.account, input.identities);
+  return _validatedActions((account: input.account, actions: actions));
+}
+
+Map<String, Map<String, dynamic>> _validatedActions(
+  ({String account, Map<String, Map<String, dynamic>> actions}) input,
+) {
+  for (final action in input.actions.values) {
+    RecordJournal.validateAction(input.account, action);
+    validateRecordAction(action);
+  }
+  return input.actions;
+}
+
+Map<String, dynamic> _decodedSync(AccountRows rows) =>
+    RecordDatabase.decode(rows)['sync'] as Map<String, dynamic>;
+
+Future<Map<String, dynamic>?> _readOwn(
+  ({RecordReader reader, String account, String replica, String record}) input,
+) async => _validatedOwn((
+  account: input.account,
+  replica: input.replica,
+  record: input.record,
+  action: await input.reader.lastOwn(
+    input.account,
+    input.replica,
+    input.record,
+  ),
+));
+
+/// Both connections enforce the same relationship between a lookup and its
+/// immutable payload. Corrupt lookup columns must never return another place.
+Map<String, dynamic>? _validatedOwn(
+  ({
+    String account,
+    String replica,
+    String record,
+    Map<String, dynamic>? action,
+  })
+  input,
+) {
+  final action = input.action;
+  if (action != null) {
+    RecordJournal.validateAction(input.account, action);
+    if (action['account'] != input.account ||
+        action['replica'] != input.replica ||
+        action['record'] != input.record) {
+      throw const FormatException(
+        'The last local action does not match its indexed record.',
+      );
+    }
+    validateRecordAction(action);
+  }
+  return action;
+}
+
+Future<Map<String, dynamic>> _readFullSync(
+  ({RecordReader reader, String account}) input,
+) async {
+  final read = await input.reader.rows(input.account);
+  if (read.damaged) throw const RecordReaderDamaged();
+  if (read.rows == null) {
+    throw const FormatException('Retained journal is unavailable.');
+  }
+  return RecordDatabase.decode(read.rows!)['sync'] as Map<String, dynamic>;
+}
+
+/// Rejoins every readable retained payload after a file was kept aside. The
+/// resident journal supplies the latest pending state and uncommitted changes.
+Future<Map<String, _Restored>> _recoverAccounts(
+  ({Map<String, _StoredAccount> accounts, RecordReader reader}) input,
+) async {
+  if (input.accounts.isEmpty) return {};
+  final kept = await input.reader.kept();
+  final result = <String, _Restored>{};
+  for (final MapEntry(key: account, value: stored) in input.accounts.entries) {
+    final resident = stored.journal.recoveryState();
+    final actions = <String, Map<String, dynamic>>{
+      for (final copy in kept.rows.where((copy) => copy.account == account))
+        ..._readableActions(account, _readableRows(copy.rows).actions),
+      for (final action
+          in (resident['actions'] as List).cast<Map<String, dynamic>>())
+        RecordJournal.identity(action): action,
+    };
+    try {
+      final journal = _journal(account, {
+        'sync': {...resident, 'actions': actions.values.toList()},
+      });
+      if (!const DeepCollectionEquality().equals(
+            journal.current,
+            stored.journal.current,
+          ) ||
+          !const DeepCollectionEquality().equals(
+            journal.coverage,
+            stored.journal.coverage,
+          )) {
+        throw const FormatException(
+          'The damaged file lacks applied predecessors.',
+        );
+      }
+      result[account] = (
+        stored: (metadata: stored.metadata, journal: journal),
+        views: _views(stored.metadata, journal.values),
+        persist: true,
+        damaged: false,
+        commit: RecordDatabase.encodeCommit(
+          account,
+          stored.metadata,
+          journal,
+          initialize: true,
+        ),
+      );
+    } on FormatException {
+      // A damaged page can hide predecessors no longer resident in memory.
+      // Keep the complete damaged file, retain every readable action, and
+      // use the existing salvage transition for the known visible records.
+      result[account] = _salvaged(account, (
+        snapshot: stored.metadata,
+        actions: actions.values.toList(),
+        pending: (resident['pending'] as List).cast<String>(),
+        records: {
+          ...recordSnapshot(
+            stored.metadata,
+            stored.journal.values,
+            reading: false,
+          ),
+          'reading': recordSnapshot(
+            stored.metadata,
+            stored.journal.values,
+            reading: true,
+          ),
+        },
+      ), database: true);
+    }
+  }
+  return result;
 }
 
 /// The account that its durable [AccountRows] hold, with its views, or a
@@ -1750,23 +2069,6 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
         : null,
   );
 }
-
-/// The first commit of each of [accounts] that writes all of its settings
-/// and its whole journal, encoded as [RecordJournal.encode] does.
-List<RecordCommit> _wholeCommits(
-  List<
-    ({String account, Map<String, dynamic> metadata, Map<String, dynamic> sync})
-  >
-  accounts,
-) => [
-  for (final account in accounts)
-    RecordDatabase.encodeCommit(
-      account.account,
-      account.metadata,
-      _journal(account.account, {'sync': account.sync}),
-      initialize: true,
-    ),
-];
 
 /// A new account from the damaged saved text of `input.account`, from what
 /// [_readableText] reads of it.
