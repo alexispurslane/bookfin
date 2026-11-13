@@ -91,3 +91,9 @@ Overall verdict: pass. No fixes or second review were needed. These are the revi
 Validation limits are retained: the reviewer inspected logs and source rather than executing tests; startup tests control native dependencies and worker scheduling; Android acceptance and measured launch-time improvement are unverified and outside scope; coverage and mutation testing remain with the parent after acceptance.
 
 This follow-up commit changes only ticket evidence. Production and tests are exactly the reviewed and fully verified implementation commit. All lead commands and the single reviewer finished before handoff. The ticket remains in progress for parent integration and closure.
+
+## Parent integration — 2026-11-13
+
+Inspected the entire three-file original-base diff, all twelve startup cases, current CatalogController restoration/disposal and account binding, the completed review, and saved final logs. Verified the reported branch/head and clean worktree. All original review assessments pass with no findings. Integrated bfc769d0 as bec1dbaa and review-only 9625803a as 2aab2d8b. Only appended ticket notes conflicted; both histories were kept. lib/main.dart and test/app/catalog_startup_test.dart are identical to the reviewed child.
+
+Combined checks run through Nix, concurrency two, one heavy parent command at a time. Formatting passed for both changed Dart files with zero changes; affected analysis found no issues. The required combined app/catalog/boot/download/playback/sync suites passed 1,548 tests, three existing skips, zero failures in 1m34s (/tmp/boo-2gse-integrated-affected.log). Full combined verification and closure follow below. No claim of Android launch-time improvement or device acceptance; t1-dth0 remains the acceptance blocker.
