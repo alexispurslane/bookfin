@@ -52,6 +52,10 @@ A book can have several audio editions and several ebook editions. An audio edit
 
 A series is an ordered collection of books. Preserve explicit ordering, including fractional entries and side stories. Do not assume that Jellyfin's television-oriented series fields describe books correctly.
 
+On 2026-11-13, the user chose to fetch current Jellyfin collection membership
+on every automatic and manual catalog refresh. The saved library still appears
+first at launch. Do not retain stale membership until a manual refresh.
+
 Each edition has its own resume position. Audio positions identify a file and a time within that file, measured in milliseconds of recorded audio. The player derives whole-edition time from the ordered files. Playback speed does not change the stored audio position.
 
 Ebook positions identify a location in a particular edition. Use a stable text anchor where the format permits one. PDF positions also retain the source page. Do not equate an audio percentage with an ebook percentage. Automatic audio-to-text alignment is outside the initial scope.

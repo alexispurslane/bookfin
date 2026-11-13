@@ -1,6 +1,6 @@
 ---
 id: boo-p6w1
-status: open
+status: closed
 deps: [boo-hwoz]
 links: [boo-hwoz]
 created: 2026-11-12T23:41:00Z
@@ -136,3 +136,18 @@ Both shared improvements are complete. This ticket remains open for the
 unanswered freshness choice. Every-refresh membership fetching remains; no
 retained membership cache or inferred approval has been introduced. Device
 latency, total-memory effects and live-server acceptance remain unverified.
+
+## User decision and completion — 2026-11-13
+
+The user chose current collection membership on every automatic and manual
+refresh. This preserves the implemented behavior. Do not add a membership
+cache that waits for a manual refresh before updating.
+
+The integrated boo-hwoz and t9-ftlz changes complete the chosen scope.
+The test `every catalog refresh observes changed collection membership`
+covers successive membership changes. The combined parent suite at 1bf2d597
+passed 3,692 tests with 27 existing skips. Analysis and formatting passed.
+See `docs/evidence/t9-ftlz/integration.json`. The later b006bc7d commit
+changed only evidence and tickets. No new code or repeat suite is needed
+for this decision. Native latency, total memory, live-server behavior and
+device acceptance remain outside the demonstrated results.

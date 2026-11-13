@@ -1,6 +1,6 @@
 ---
 id: t5-rplx
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-13T03:25:09Z
@@ -35,3 +35,21 @@ On base `77e6d62e3a7a6f7018fdeba3efd9d8862278aa81` with boo-o3cm download-bindin
 Inspection confirms that this test uses `LocalFiles` from `test/playback/playback_test.dart`, not `LocalDownloads`, and constructs ReaderSession directly without AccountBinding. The reader, record store, test file and its `pumpEventQueue` wait are unchanged by boo-o3cm. The affected suite, including all reader tests, passed three times before this full-suite failure. No cause is claimed from this evidence, and no timing threshold, test wait, or reader behavior was changed. Investigation remains owned by this ticket.
 
 The complete unchanged retry, `nix develop --command flutter test --concurrency=2`, passed 3375 tests with 27 skips; log `/tmp/boo-o3cm-full-retry.log`. The recovery test passed in that run. This confirms another intermittent occurrence, not its cause; the ticket remains open.
+
+## Investigation scope — 2026-11-13
+
+Establish a production defect versus an insufficient observation of storage
+completion. Control storage readiness and completion rather than adding sleeps,
+larger pump counts or looser timing thresholds. The next visible place must
+retry storage without an explicit flush. Keep production unchanged if the test
+observation is the only defect. Prove that the corrected test catches a
+deliberately broken retry contract, restoring the negative control afterwards.
+
+Preserve earlier font size and records, failed writes and account isolation.
+Retain historical failures, controlled cause evidence and justified bounded
+repeat results. Later green suites alone do not identify the cause. Run focused,
+affected and full suites through Nix at concurrency at most two, plus analysis,
+formatting and complete-diff whitespace checks. This tighter concurrency limit
+supersedes the original limit of four. Exactly one fresh read-only reviewer
+assesses the complete change. Parent owns integration, acceptance, hardening
+and closure. No device/browser work or general mutation campaign is in scope.

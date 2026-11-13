@@ -195,6 +195,18 @@ The reader still never moves an open book because of a sync. A synced place take
 
 Listening has the same gap today: a book opens at another device's place without a move. Ticket 8 in "Order of work" applies the same rule to Playback.
 
+### Listening choice at Play (boo-56h7, settled 2026-11-13)
+
+A sync never moves a paused open audio edition. If another device saved a newer
+place, in-app Play asks which place to use through the shared glass choice.
+The choices are this phone's place and the newer place from the other device.
+
+Headset, notification and lock-screen Play start from this phone's place.
+Keep both places in History before a resume save can replace the newer place.
+When the app comes to the foreground, ask which place to use. Playback owns
+the choice and durable record changes. Screen controllers present the choice
+and report the answer. Existing account, source-identity and Undo rules apply.
+
 ## Storage and sync
 
 The record store (`LocalResumeStore`) keeps one journal per account. Each record has an address `[domain, collection, id]`. The domain is `audio` or `reading`. Today `audio` has `bookmarks`, `history` and `resumes`, and `reading` has `bookmarks` and `resumes`.

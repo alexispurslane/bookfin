@@ -1,6 +1,6 @@
 ---
 id: boo-56h7
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -24,3 +24,27 @@ User decision, 2026-11-12: Ask at Play. The paused edition stays at its place af
 ## Pending product choice, 2026-11-13
 
 The parent has asked what headset and lock-screen Play should do when a newer remote place exists: play from this phone's place while preserving both places in History and defer the question to the foreground, or remain paused until an in-app choice. No reply has arrived yet. Do not infer a choice from elapsed time or launch dependent implementation. Independent download-restoration work can proceed.
+
+## Settled behavior and implementation scope — 2026-11-13
+
+The user chose: headset, notification and lock-screen Play start from this
+phone's place. Keep both this phone's place and the newer place from another
+device in History. Ask which place to use when the app comes to the foreground.
+In-app Play asks before playback starts. A sync alone never moves the open
+edition. This supersedes the pending-choice notes above.
+
+Playback owns the pending place choice and its record changes. Screen
+controllers show the shared glass choice and report the answer. Preserve
+durable records before a resume save can replace the newer place. Reuse
+existing move, History, Undo, account and source-identity rules. Do not add a
+parallel writer or change the sync refresh/audio-command separation.
+
+Cover both choice outcomes, cancellation, external Play followed by foreground,
+repeated Play and refresh, a choice made stale by a newer sync, edition/account
+replacement, failed writes, restart recovery and the actual UI/audio-service
+callers. Prove meaningful red behavior before implementation. Run focused,
+affected and full suites through Nix at concurrency at most two, plus analysis,
+formatting and complete-diff whitespace checks. Preserve failure and skip logs.
+The ticket lead builds and fixes. Exactly one fresh read-only reviewer assesses
+correctness, fulfillment and design. Parent owns integration, user acceptance,
+coverage, mutations and closure. Device work remains blocked by t1-dth0.
