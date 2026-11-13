@@ -1,6 +1,6 @@
 ---
 id: td-1vfz
-status: open
+status: closed
 deps: []
 links: [boo-x1zf]
 created: 2026-11-13T01:42:34Z

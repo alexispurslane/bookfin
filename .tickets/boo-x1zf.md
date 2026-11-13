@@ -1,6 +1,6 @@
 ---
 id: boo-x1zf
-status: in_progress
+status: closed
 deps: []
 links: [boo-23ji, td-1vfz, td-w0wc, t5-6lnm]
 created: 2026-11-12T23:41:00Z
@@ -72,3 +72,7 @@ Every review item was applied. No user decision is needed. The playback message 
 **2026-11-13T02:41:46Z**
 
 Orchestrator, 2026-11-12: merged into main as four commits, after two reviews and two rounds of fixes. One more change by the orchestrator on top: the last fixer made `flush()` and `close()` throw the Exception of a failed save. That gave every caller that drops the future of `flush()` an uncaught error for an expected failure such as full storage (the app when it goes to the background, the Retry action of the save notice), and it differed from the flush of the reader session. The contract is now: an Exception from a save is the save status and `flush()` and `close()` complete normally. An Error from a save is a bug and goes to the caller of `flush()` and `close()`. Verification: the tests "close keeps as the save status the final Exception", "flush keeps as the save status the Exception of its own retry save" and "the status shows a records save that failed" failed before this last change and pass after it. test/foundation, test/playback, test/sync, test/durability and test/app: 800 passed, 2 skipped. td-1vfz and td-w0wc are fixed by this ticket. Follow-up: t5-6lnm.
+
+**2026-11-13T02:44:40Z**
+
+Whole suite on main at 4f36c1b7: `nix develop --command flutter test`, 3092 passed, 25 skipped, 0 failed.
