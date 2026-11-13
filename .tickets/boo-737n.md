@@ -2,7 +2,7 @@
 id: boo-737n
 status: in_progress
 deps: []
-links: []
+links: [boo-zyx1, t1-dth0]
 created: 2026-11-12T23:41:02Z
 type: bug
 priority: 2
@@ -41,3 +41,7 @@ Orchestrator, 2026-11-12: merged into main. A reviewer passed correctness and de
 **2026-11-13T02:59:48Z**
 
 Astra-only Android acceptance started from 0643cebc. Task node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; child thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; clientRequestId bookfin-android-survey-acceptance-astra-20261112-1. Target codex/gpt-6-astra reasoningEffort xhigh. Assigned local emulator-5556 through device_open and the returned agent-device command. Evidence pending; do not treat launch as acceptance.
+
+**2026-11-13T03:03:38Z**
+
+Device acceptance attempt from main 0643cebc on local/emulator-5556 (bookfin-api36) stopped after two failed Device panel screenshots and the single advised discovery/retry. New blocker t1-dth0 records the error. No speech window ran, no compiled CPU guard execution was observed, and no bookfin_speech logcat was captured. Thus words, absence of the unsupported-instruction warning, and no crash remain unverified. Discovery listed only emulators, with no Pixel 8 or unsupported physical ARMv8.0 hardware. Prior CPU-feature, unit, and disassembly evidence was not repeated or promoted to device acceptance. Evidence: docs/evidence/android-survey-20261112/acceptance.md and device-attempt.json. No build, install, app-data clear, product change, coverage, or mutation job ran. The ticket remains in_progress for the parent.

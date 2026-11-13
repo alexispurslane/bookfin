@@ -1,0 +1,210 @@
+{
+  "base": "0643cebc21fb13079f82e453d558d58a551ad546",
+  "branch": "t3/verify-android-device-fixes",
+  "checkout": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-15fac808",
+  "initialGitStatusPorcelain": "",
+  "device": {
+    "hostId": "local",
+    "deviceId": "emulator-5556",
+    "name": "bookfin-api36",
+    "physical": false
+  },
+  "agentDeviceCommand": "/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device",
+  "sequence": [
+    {
+      "tool": "device_open",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": "success"
+    },
+    {
+      "command": "/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device help",
+      "exitCode": 0
+    },
+    {
+      "command": "/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open dev.bookfin.bookfin --foreground",
+      "exitCode": 0,
+      "result": "Opened: dev.bookfin.bookfin",
+      "snapshotSummary": {
+        "nodes": 9,
+        "labels": [
+          "Scan",
+          "Fixture",
+          "Night",
+          "20",
+          "View: pageWords"
+        ]
+      }
+    },
+    {
+      "tool": "device_screenshot",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+    },
+    {
+      "tool": "device_list",
+      "arguments": {
+        "hostId": "local"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"hostStatuses\":{\"local\":{\"status\":\"ready\"}},\"hosts\":[{\"id\":\"local\",\"label\":\"This machine\",\"platforms\":[{\"platform\":\"ios\",\"available\":true},{\"platform\":\"android\",\"available\":true}],\"tools\":{\"hub\":{\"requiredVersion\":\"0.19.0-canary-20261023-1357114\",\"installedVersions\":[\"0.19.0-canary-20261023-1357114\"],\"runningVersion\":\"0.19.0-canary-20261023-1357114\"},\"agent\":{\"requiredVersion\":\"0.21.31\",\"installedVersions\":[\"0.21.31\"],\"runningVersion\":\"0.21.31\"}},\"hubInstalled\":true,\"agentDeviceInstalled\":true,\"kind\":\"local\"}],\"devices\":[{\"hostId\":\"local\",\"id\":\"emulator-5554\",\"platform\":\"android\",\"name\":\"bookfin-tb22fu\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5556\",\"platform\":\"android\",\"name\":\"bookfin-api36\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5558\",\"platform\":\"android\",\"name\":\"bookfin-bench-gpu\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5560\",\"platform\":\"android\",\"name\":\"bookfin-tam0\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-bench-rerun\",\"platform\":\"android\",\"name\":\"bookfin-bench-rerun\",\"version\":\"Android\",\"booted\":false,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-bench-sym\",\"platform\":\"android\",\"name\":\"bookfin-bench-sym\",\"version\":\"Android\",\"booted\":false,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-vh77\",\"platform\":\"android\",\"name\":\"bookfin-vh77\",\"version\":\"Android\",\"booted\":false,\"physical\":false}],\"open\":[{\"hostId\":\"local\",\"deviceId\":\"emulator-5556\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "hostStatuses": {
+            "local": {
+              "status": "ready"
+            }
+          },
+          "hosts": [
+            {
+              "id": "local",
+              "label": "This machine",
+              "platforms": [
+                {
+                  "platform": "ios",
+                  "available": true
+                },
+                {
+                  "platform": "android",
+                  "available": true
+                }
+              ],
+              "tools": {
+                "hub": {
+                  "requiredVersion": "0.19.0-canary-20261023-1357114",
+                  "installedVersions": [
+                    "0.19.0-canary-20261023-1357114"
+                  ],
+                  "runningVersion": "0.19.0-canary-20261023-1357114"
+                },
+                "agent": {
+                  "requiredVersion": "0.21.31",
+                  "installedVersions": [
+                    "0.21.31"
+                  ],
+                  "runningVersion": "0.21.31"
+                }
+              },
+              "hubInstalled": true,
+              "agentDeviceInstalled": true,
+              "kind": "local"
+            }
+          ],
+          "devices": [
+            {
+              "hostId": "local",
+              "id": "emulator-5554",
+              "platform": "android",
+              "name": "bookfin-tb22fu",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5556",
+              "platform": "android",
+              "name": "bookfin-api36",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5558",
+              "platform": "android",
+              "name": "bookfin-bench-gpu",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5560",
+              "platform": "android",
+              "name": "bookfin-tam0",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-bench-rerun",
+              "platform": "android",
+              "name": "bookfin-bench-rerun",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-bench-sym",
+              "platform": "android",
+              "name": "bookfin-bench-sym",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-vh77",
+              "platform": "android",
+              "name": "bookfin-vh77",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            }
+          ],
+          "open": [
+            {
+              "hostId": "local",
+              "deviceId": "emulator-5556"
+            }
+          ]
+        },
+        "isError": false
+      }
+    },
+    {
+      "tool": "device_screenshot",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        ],
+        "structuredContent": {
+          "error": {
+            "_tag": "DeviceOperationError",
+            "operation": "screenshot",
+            "failureCount": 1,
+            "message": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        },
+        "isError": true
+      }
+    }
+  ],
+  "stoppedAfterSingleAdvisedRetry": true,
+  "buildCommandsRun": [],
+  "testCommandsRun": [],
+  "screenshots": [],
+  "deviceLogcatCaptured": false,
+  "appDataCleared": false,
+  "ownedBackgroundProcesses": [],
+  "newTicket": "t1-dth0"
+}

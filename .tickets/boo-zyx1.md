@@ -2,7 +2,7 @@
 id: boo-zyx1
 status: in_progress
 deps: []
-links: [t0-5b9b, t0-wedg]
+links: [t0-5b9b, t0-wedg, boo-737n, t1-dth0]
 created: 2026-11-12T23:41:01Z
 type: bug
 priority: 1
@@ -34,3 +34,7 @@ Orchestrator, 2026-11-12: merged into main. A reviewer read the old MainActivity
 **2026-11-13T02:59:48Z**
 
 Astra-only Android acceptance started from 0643cebc. Task node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; child thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; clientRequestId bookfin-android-survey-acceptance-astra-20261112-1. Target codex/gpt-6-astra reasoningEffort xhigh. Assigned local emulator-5556 through device_open and the returned agent-device command. Evidence pending; do not treat launch as acceptance.
+
+**2026-11-13T03:03:38Z**
+
+Device acceptance attempt from main 0643cebc on local/emulator-5556 (bookfin-api36) stopped under the device failure rule. device_open and the bound open dev.bookfin.bookfin --foreground succeeded, but device_screenshot failed twice. Between attempts, the advised device_list reported the host ready and the same emulator booted and already open. New blocker t1-dth0 holds the exact error. No playback, Recents removal, Activity destruction, network toggle, or download pause/resume was observed. No engine/channel logcat was captured. No app data was cleared and no product code changed. Evidence: docs/evidence/android-survey-20261112/acceptance.md, device-attempt.json, and agent-device-events.ndjson. The ticket remains in_progress for the parent; device acceptance is unverified.
