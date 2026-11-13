@@ -722,6 +722,12 @@ abstract class PdfTextSupply {
   Future<void> close();
 }
 
+/// A request made after a native book began closing. The survey treats this
+/// as cancellation, while other StateErrors still report broken state.
+class PdfClosedError extends StateError {
+  PdfClosedError() : super('This PDF is closed.');
+}
+
 class PdfRuntime {
   PdfRuntime._();
   static final PdfRuntime instance = PdfRuntime._();
@@ -904,7 +910,7 @@ class _NativePdfBook extends PdfBook {
 
   Future<T> _run<T>(Future<T> Function() action) {
     if (_closing != null) {
-      return Future.error(StateError('This PDF is closed.'));
+      return Future.error(PdfClosedError());
     }
     final operation = Future<T>.sync(action);
     late final Future<void> settled;
@@ -967,7 +973,7 @@ class _NativePdfBook extends PdfBook {
   /// keeps the last 16 pages.
   Future<PreparedPdfPage> _layer(int sourcePage) {
     if (_closing != null) {
-      return Future.error(StateError('This PDF is closed.'));
+      return Future.error(PdfClosedError());
     }
     _check(sourcePage);
     if (_layers.length >= 16 && !_layers.containsKey(sourcePage)) {
@@ -1100,20 +1106,29 @@ class _NativePdfBook extends PdfBook {
   });
 
   @override
-  Future<void> dispose() {
-    textSupply?.cancel();
-    return _closing ??= _dispose();
-  }
+  Future<void> dispose() => _closing ??= _dispose();
 
   Future<void> _dispose() async {
-    // The survey surveys no more pages, and keeps what it surveyed.
-    await Future.wait([..._work, survey.close()]);
-    try {
-      await textSupply?.close();
-    } finally {
-      await _document.dispose();
-      _disposed = true;
-      owner._release(this);
+    (Object, StackTrace)? failure;
+    // Each release must run even if the preceding work failed. Keep the
+    // first failure and its stack for every caller of dispose.
+    Future<void> finish(FutureOr<void> Function() action) async {
+      try {
+        await action();
+      } catch (error, stack) {
+        failure ??= (error, stack);
+      }
+    }
+
+    await finish(() => textSupply?.cancel());
+    // Stop the survey and drain all admitted native work before release.
+    await finish(() => Future.wait([..._work, survey.close()]));
+    await finish(() async => await textSupply?.close());
+    await finish(_document.dispose);
+    _disposed = true;
+    owner._release(this);
+    if (failure case (final error, final stack)) {
+      Error.throwWithStackTrace(error, stack);
     }
   }
 }

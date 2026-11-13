@@ -609,13 +609,23 @@ class BundledEnglishText implements PdfTextSupply {
   Future<void> close() async {
     cancel();
     _closed = true;
-    await _read?.done;
+    (Object, StackTrace)? failure;
+    try {
+      await _read?.done;
+    } catch (error, stack) {
+      failure = (error, stack);
+    }
     try {
       await _recognition._release(held: _holding);
+    } catch (error, stack) {
+      failure ??= (error, stack);
     } finally {
       _holding = false;
       _selected.clear();
       _recognizing.dispose();
+    }
+    if (failure case (final error, final stack)) {
+      Error.throwWithStackTrace(error, stack);
     }
   }
 

@@ -56,6 +56,7 @@ void main() {
   late Completer<void> nativeStarted;
   late Completer<String> nativeResult;
   var calls = 0;
+  var closes = 0;
 
   setUp(() async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
@@ -94,8 +95,10 @@ void main() {
     nativeStarted = Completer<void>();
     nativeResult = Completer<String>();
     calls = 0;
+    closes = 0;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'close') closes++;
           if (call.method != 'recognize') return null;
           calls++;
           if (calls == 1) return englishPage;
@@ -121,6 +124,32 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
     await root.delete(recursive: true);
   });
+
+  test(
+    'a failed read release still releases the recognition worker on close',
+    () async {
+      final released = Completer<void>();
+      final gate = Completer<void>();
+      final failure = AssertionError('download read release');
+      final stack = StackTrace.current;
+      pdf.textSupply!.bind((read) async {
+        await downloads.readLocalFile<PdfText>(
+          pdfSource,
+          (file) => read(file, () => true),
+        );
+        released.complete();
+        await gate.future;
+        Error.throwWithStackTrace(failure, stack);
+      });
+      final reading = expectLater(pdf.text(1), throwsA(same(failure)));
+      await released.future;
+      gate.complete();
+      await reading;
+      await expectLater(pdf.dispose(), throwsA(same(failure)));
+      expect(closes, 1);
+      (pdf.textSupply! as BundledEnglishText).checkInvariants();
+    },
+  );
 
   test(
     'failed shared acquisition settles all users and allows a later retry',

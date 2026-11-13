@@ -127,7 +127,8 @@ List<int> _targets(int count) => count <= _sampleSize
 /// background request, which waits for the reader's own requests, and whose
 /// layout pass on a scanned page waits behind all other recognition work.
 /// The layout pass keeps its record, so the word view later opens that page
-/// at once. A page that fails is tried again at the next open.
+/// at once. A page that fails is tried again at the next open. An unexpected
+/// Error stops this survey, is reported, and remains the result of [close].
 ///
 /// Invariants, which [checkInvariants] makes sure of: each surveyed page is
 /// kept under its number, within the book; no page is both surveyed and
@@ -199,11 +200,25 @@ class BookSurvey {
   }
 
   /// Stops the survey for good, as when its book closes. It completes after
-  /// the page that runs and the last write.
+  /// the page that runs and the last write, retaining any survey failure.
   Future<void> close() async {
     _closed = true;
-    await _loop;
-    await _save();
+    (Object, StackTrace)? failure;
+    try {
+      await _loop;
+    } catch (error, stack) {
+      failure = (error, stack);
+    }
+    // The running page may have added one last write. Drain it even when
+    // analysis failed, without replacing the original failure.
+    try {
+      await _save();
+    } catch (error, stack) {
+      failure ??= (error, stack);
+    }
+    if (failure case (final error, final stack)) {
+      Error.throwWithStackTrace(error, stack);
+    }
   }
 
   /// The crop of source page [page], or null until the survey surveyed it
@@ -273,7 +288,26 @@ class BookSurvey {
 
   void _wake() {
     if (_store == null || _paused || _closed || _loop != null) return;
-    _loop = _run();
+    final loop = _loop = _run();
+    unawaited(
+      loop.then<void>(
+        (_) {
+          _loop = null;
+        },
+        onError: (Object error, StackTrace stack) {
+          // Keep the failed loop: page turns must not retry a broken contract,
+          // and a later close must still report its original failure.
+          FlutterError.reportError(
+            FlutterErrorDetails(
+              exception: error,
+              stack: stack,
+              library: 'bookfin reader',
+              context: ErrorDescription('while surveying a PDF'),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _run() async {
@@ -316,7 +350,6 @@ class BookSurvey {
         }
       }
     } finally {
-      _loop = null;
       unawaited(_save());
     }
   }
@@ -332,8 +365,11 @@ class BookSurvey {
       return surveyPage(await reflow.templateReading());
     } on Exception {
       return null;
-    } on StateError {
-      return null; // The book closed.
+    } on PdfClosedError {
+      return null;
+    } catch (_) {
+      _failed.add(page);
+      rethrow;
     }
   }
 

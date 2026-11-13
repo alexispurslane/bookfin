@@ -7,6 +7,7 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../crossings/crossings.dart' show TextLanding;
 import '../downloads/downloads.dart';
+import '../foundation/serial_queue.dart';
 import '../foundation/time.dart' show roundEstimate;
 import '../playback/playback.dart';
 import '../playback/record_writer.dart';
@@ -360,8 +361,7 @@ class ReaderSession extends ChangeNotifier {
   TextPosition? _position;
   ReaderAddress? _visibleAddress;
   ReaderAddress? _initialAddress;
-  Future<void> _closing = Future.value();
-  bool _releaseFailed = false;
+  final _closing = SerialQueue();
   int _token = 0;
   String? _message;
   bool _loading = false;
@@ -771,15 +771,22 @@ class ReaderSession extends ChangeNotifier {
     _pdfPager?.dispose();
     _pdfPager = null;
     final previous = _document;
-    if (previous is PdfBook) previous.textSupply?.cancel();
     _document = null;
     if (previous != null) {
-      _closing = _closing.then((_) => previous.dispose()).onError<Exception>((
-        error,
-        stack,
-      ) {
-        _releaseFailed = true;
-      });
+      unawaited(
+        _closing.run(previous.dispose).onError<Object>((error, stack) {
+          // This chain orders releases; each document owns its failed close.
+          // Report it without making the next document inherit that failure.
+          FlutterError.reportError(
+            FlutterErrorDetails(
+              exception: error,
+              stack: stack,
+              library: 'bookfin reader',
+              context: ErrorDescription('while closing an ebook'),
+            ),
+          );
+        }),
+      );
     }
     _edition = null;
     _book = null;
@@ -855,12 +862,7 @@ class ReaderSession extends ChangeNotifier {
                 onError: (Object _) => null,
               );
     try {
-      await _closing;
-      if (_releaseFailed) {
-        throw const FormatException(
-          'A previous document could not be released. Restart Bookfin before opening another ebook.',
-        );
-      }
+      await _closing.idle;
       if (selected.kind != EditionKind.text || selected.files.length != 1) {
         throw const FormatException('Choose a single-file ebook edition.');
       }
