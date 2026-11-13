@@ -38,7 +38,8 @@ Required Nix checks: focused real-file regressions, sync/playback/durability/app
 ## Implementation worktree — 2026-11-13
 
 Lead checkout: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c6dae15e`,
-branch `t3/c6dae15e`, original base
+initial recorded branch `t3/c6dae15e`, final branch
+`t3/persist-settings-on-change`, original base
 `eb64fe705198fba0563df0a188939f6e57e16f35`.
 
 Implemented schema-six domain settings rows within RecordDatabase's existing
@@ -78,6 +79,29 @@ still in progress until the completion evidence below is recorded.
   31. A failing invariant check exposed a lost cached original count; the
   normal persistence/reconstruction path now retains the restored count.
   All 133 focused durability/recovery/migration tests passed after that fix.
-- The single authorized read-only Astra high review is the remaining gate.
-  All implementation commands have finished. Original iteration failures and
-  their resolutions remain in the evidence record.
+- At this checkpoint, the single authorized read-only Astra high review was
+  the remaining gate. All implementation commands had finished. Original
+  iteration failures and their resolutions remain in the evidence record.
+
+### Review completion and integration handback
+
+The sole authorized read-only reviewer completed the full original-base diff
+through implementation commit `9af2b94356c9cb9f7ce59d3bff532294d9d8b340`.
+Original verdicts: correctness pass, ticket fulfillment pass, and software
+design pass. There were no findings. Full original evidence and gaps are
+preserved in `docs/evidence/boo-gcu6/review.json`.
+
+The reviewer used the saved execution evidence and independently verified its
+29 compressed log hashes, without rerunning tests. Device, process-kill, and
+latency claims remain outside this evidence; 27 explicitly gated checks remain
+skipped. No material acceptance requirement remains unverified within the
+authorized host-test scope.
+
+The review's branch documentation gap is resolved by recording both the
+initial and final branch names. The lead issued no checkout switch or branch
+rename. The final evidence commit contains only review and verification
+documentation. Both final diff checks passed; exact commands and logs are in
+the verification record. All owned commands and the reviewer have finished.
+No product fork remains. Ready for parent integration; ticket status stays
+in progress because the parent owns integration, acceptance, hardening, and
+closure.

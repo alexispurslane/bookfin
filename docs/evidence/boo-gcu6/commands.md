@@ -2,7 +2,9 @@
 
 Original review base: `eb64fe705198fba0563df0a188939f6e57e16f35`.
 Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c6dae15e`.
-Branch: `t3/c6dae15e`.
+Initial recorded branch: `t3/c6dae15e`.
+Final branch: `t3/persist-settings-on-change`.
+The lead did not issue a checkout switch or branch rename.
 
 All commands below run from this worktree. Flutter tests use concurrency two.
 Commands ran sequentially. No command was interrupted. The developer shell
@@ -126,3 +128,32 @@ argument is restoration bookkeeping inside ResumeStore, not a second inventory.
 
 `nix develop --command git diff --cached --check` also exited 0 after staging
 all named files, including the new test. Log: `staged-diff-check.log`.
+
+## Completed independent review
+
+The sole authorized reviewer inspected the complete original-base-to-head
+range ending at `9af2b94356c9cb9f7ce59d3bff532294d9d8b340`, the real callers,
+and the saved verification evidence. The reviewer used Codex `gpt-6-astra`
+with high reasoning effort, shared isolation, and asynchronous read-only
+review. The reviewer ran no builds or tests and made no edits.
+
+Original verdicts are preserved without revision in `review.json`:
+correctness pass, ticket fulfillment pass, and software design pass, with
+no findings. The reviewer verified all 29 pre-review compressed log hashes
+and their equality with the local text logs. Review gaps are preserved in
+that JSON. The branch documentation gap is resolved above and in the ticket.
+No material acceptance requirement remains unverified within the authorized
+host-test scope.
+
+The final evidence commit changes documentation only. No behavior changed
+after review, so the completed full suite and analysis remain applicable.
+Final evidence diff checks are recorded below; no test run was repeated.
+
+| Command | Result | Log |
+| --- | --- | --- |
+| `nix develop --command git diff --check` | Exit 0. | `review-diff-check.log.gz` |
+| `nix develop --command git diff --cached --check` | Exit 0. | `review-staged-diff-check.log.gz` |
+
+All owned commands and the sole reviewer have finished. There are no product
+forks or review findings to resolve. The ticket remains in progress for the
+parent's integration, acceptance, hardening, and closure.

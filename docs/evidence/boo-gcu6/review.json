@@ -1,0 +1,137 @@
+{
+  "ticket": "boo-gcu6",
+  "reviewed_range": "eb64fe705198fba0563df0a188939f6e57e16f35..9af2b94356c9cb9f7ce59d3bff532294d9d8b340",
+  "scope": "Complete diff, required guidance, real callers, persistence and recovery paths, changed tests, and saved evidence.",
+  "review_mode": "Read-only; no children, edits, builds, analysis commands, formatting, or tests.",
+  "assessments": {
+    "correctness": {
+      "original_verdict": "pass",
+      "evidence": [
+        {
+          "type": "static inspection",
+          "location": "lib/playback/database.dart:1203",
+          "result": "Domain settings and journal changes use the existing transaction. Account migration writes both domain rows and replaces legacy metadata atomically."
+        },
+        {
+          "type": "static inspection",
+          "location": "lib/playback/store.dart:1239",
+          "result": "Normal native saves compare against committed settings. Unchanged retained reading settings avoid nested traversal. Ordinary commit failure does not advance the committed comparison baseline."
+        },
+        {
+          "type": "static inspection",
+          "location": "lib/reader/session.dart:1934",
+          "result": "Reader saves can omit settings. Pending changes retain earlier unsaved settings, including across retries and account changes. Restored settings preserve the legacy text-size migration."
+        },
+        {
+          "type": "static inspection",
+          "location": "lib/playback/store.dart:1217",
+          "result": "Native migration carries the retained-original count into persistence and damaged-file reconstruction. Current-state restoration, pending identities, conflicts, deletion state, and cursors retain their existing owner paths."
+        },
+        {
+          "type": "saved executed evidence",
+          "location": "docs/evidence/boo-gcu6/originals-green.log.gz",
+          "result": "133 focused migration, recovery, unreadable-original, and durability tests passed."
+        },
+        {
+          "type": "saved executed evidence",
+          "location": "docs/evidence/boo-gcu6/full-final.log.gz",
+          "result": "3,530 tests passed; 27 explicitly gated checks skipped. The required sync, playback, durability, app, reader, and settings suites are included."
+        }
+      ],
+      "findings": [],
+      "gaps": [
+        "Execution results were inspected from saved logs, not independently rerun.",
+        "The saved durability tests include injected transaction failures; this review makes no additional physical-device or process-kill claim."
+      ]
+    },
+    "ticket_fulfillment": {
+      "original_verdict": "pass",
+      "evidence": [
+        {
+          "requirement": "Independent settings persistence with no unchanged-settings work during normal record saves and acknowledgments",
+          "locations": [
+            "lib/playback/store.dart:1239",
+            "test/playback/domain_settings_test.dart:123",
+            "test/playback/domain_settings_test.dart:172"
+          ],
+          "result": "Real SQLite triggers and worker instrumentation cover 2,000 nested PDF choices, listening saves, first and later reader saves, batch acknowledgments, changed domains, and equal settings."
+        },
+        {
+          "requirement": "Meaningful original failure",
+          "location": "docs/evidence/boo-gcu6/red.log.gz",
+          "result": "Three listening saves produced three combined-settings writes and three worker text encodes; one acknowledgment produced one of each. Final saved evidence records zero for those unchanged-settings operations."
+        },
+        {
+          "requirement": "Atomicity, migrations, account isolation, snapshots, recovery, and retry",
+          "locations": [
+            "test/playback/domain_settings_test.dart:237",
+            "test/playback/domain_settings_test.dart:262",
+            "test/playback/domain_settings_test.dart:327",
+            "test/playback/domain_settings_test.dart:360"
+          ],
+          "result": "New regressions exercise rollback and retry, schema-five and preference migration, reopen, account isolation, retained original bytes and cursor, and damaged-domain retention. Existing recovery and reader tests provide additional evidence."
+        },
+        {
+          "requirement": "Bounded UI work and honest browser limitations",
+          "locations": [
+            "lib/playback/store.dart:1742",
+            "lib/reader/session.dart:1955",
+            "lib/playback/store.dart:1319"
+          ],
+          "result": "The steady reader path uses scalar and map-identity comparisons. Large submitted settings use workers. Browser persistence remains a documented whole-account preference write; no native-equivalent browser or Android latency claim is made."
+        },
+        {
+          "requirement": "Required checks and complete evidence",
+          "location": "docs/evidence/boo-gcu6/commands.md",
+          "result": "Saved final analysis reports no issues in eight Dart files; final formatting reports zero changes; saved diff checks are clean. All 29 compressed log hashes match the manifest, and decompressed logs match the local text copies. Failed iterations and the overwritten initial verbose log are disclosed."
+        },
+        {
+          "requirement": "Settled scope",
+          "result": "The changes retain ResumeStore and RecordDatabase ownership, add no writer abstraction, journal, or pending inventory, and do not undertake boo-n7no or boo-w6m2."
+        }
+      ],
+      "findings": [],
+      "gaps": [
+        "Evidence documents still name the initial branch. The current clean checkout is t3/persist-settings-on-change at the requested head; the brief explicitly assigns branch clarification to the final evidence commit.",
+        "No material acceptance requirement remains unverified within the authorized host-test scope."
+      ]
+    },
+    "software_design": {
+      "original_verdict": "pass",
+      "evidence": [
+        {
+          "source": "User / Ousterhout",
+          "owner": "LocalResumeStore",
+          "location": "lib/playback/store.dart:1272",
+          "result": "The existing owner maintains committed settings, account caches, and reconstruction state. The settings comparison baseline is derived from that account state rather than maintained as a separate dirty inventory."
+        },
+        {
+          "source": "User / Ousterhout",
+          "owner": "RecordDatabase",
+          "location": "lib/playback/database.dart:1284",
+          "result": "The database retains ownership of transactional writes and exact damaged-row retention. Domain rows extend the existing commit and retention mechanisms."
+        },
+        {
+          "source": "User / Muratori",
+          "owner": "ReaderSession",
+          "location": "lib/reader/session.dart:1955",
+          "result": "The submitted-settings cache has a concrete performance purpose and remains under the session owner. Existing pending changes retain retry responsibility; the cache does not claim durability."
+        },
+        {
+          "source": "Ousterhout / Muratori",
+          "result": "Callers express domain changes without knowing table names, migration markers, or transaction order. Normal saves, migration, repair, and reconstruction converge on existing owner operations. No concrete ownership leak or unjustified change amplification was found."
+        }
+      ],
+      "findings": [],
+      "gaps": [
+        "Performance evidence measures executed work counts, not device latency; the design assessment does not infer a latency improvement."
+      ]
+    }
+  },
+  "overall_verdict": "pass",
+  "unavailable_checks": [
+    "Independent execution was prohibited.",
+    "Device, browser, coverage, and mutation checks were outside this review.",
+    "The 27 gated integration, research, and corpus checks remain skipped as documented."
+  ]
+}
