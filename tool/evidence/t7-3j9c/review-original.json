@@ -1,0 +1,185 @@
+{
+  "ticket": "t7-3j9c",
+  "base": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "reviewHead": "fb943fcc584c6f8c3cf096929ec47dac58d937eb",
+  "implementationCommit": "e890defe5a02882fa714e7984e27d3aa0d45e7e4",
+  "reviewMethod": "Read-only inspection of the complete base-to-head diff, required instructions and plans, actual callers, retained execution logs, and recorded hashes. No files changed, agents started, or builds, tests, analysis, formatting, browser, or device checks run.",
+  "correctness": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "references": [
+          "lib/reader/pdf_outline.dart:5",
+          "lib/reader/pdf_outline_io.dart:10",
+          "lib/reader/pdf_outline_stub.dart:4"
+        ],
+        "assessment": "The conditional export excludes the native implementation from browser compilation while preserving the existing public measurement signature. The browser implementation rejects measurement with UnsupportedError."
+      },
+      {
+        "references": [
+          "lib/reader/pdf_outline_io.dart:22",
+          "lib/reader/pdf_outline_io.dart:61",
+          "lib/reader/pdf_outline_io.dart:86",
+          "lib/reader/pdf.dart:785",
+          "lib/reader/pdf.dart:804"
+        ],
+        "assessment": "Independently compared the complete relocated native measurement function and private helpers with the original source: they are byte-for-byte unchanged and match the recorded native-body hash. Background scheduling, worker calls, private document ownership, opening-error cleanup, and finally cleanup remain intact. PdfRuntime still tracks active measurements and waits for them during shutdown."
+      },
+      {
+        "references": [
+          "lib/reader/platform_io.dart:84",
+          "lib/reader/platform_stub.dart:34",
+          "lib/reader/book_map.dart:10",
+          "lib/reader/text_outline.dart:4",
+          "lib/crossings/crossings.dart:401",
+          "lib/app/account_binding.dart:6",
+          "lib/main.dart:148"
+        ],
+        "assessment": "Traced the production callers and transitive imports. Native downloaded PDFs still use PdfRuntime.measureOutline. The unchanged browser platform implementation supplies no ebook measurement. Crossings retains its existing UnsupportedError handling. No caller changes or browser PDF functionality were introduced."
+      },
+      {
+        "references": [
+          "test/reader/pdf_outline_calculation_test.dart:6",
+          "test/reader/pdf_outline_stub_test.dart:5",
+          "tool/evidence/t7-3j9c/06-focused-native.log.gz",
+          "tool/evidence/t7-3j9c/07-affected-suites.log.gz",
+          "tool/evidence/t7-3j9c/08-full-suite.log.gz"
+        ],
+        "assessment": "The pure calculation body is unchanged apart from its surrounding separation, and its normalized hash matches the manifest. All seven calculation tests moved unchanged. Retained logs confirm 109 focused passes, 1817 affected-suite passes with 21 skips, and 3693 full-suite passes with 27 skips. Native outline cases include real PDF measurement, nested bookmarks, damaged files, and measurement after shutdown."
+      }
+    ],
+    "findings": [],
+    "gaps": [
+      {
+        "material": false,
+        "description": "Execution evidence comes from inspected builder logs, not reviewer reruns. Browser runtime interaction and native-device acceptance remain outside this build-portability review."
+      },
+      {
+        "material": false,
+        "description": "The stub rejection test executes the stub directly on the host. Browser selection is supported separately by the conditional export and successful real application compilations; no browser runtime test was performed."
+      }
+    ]
+  },
+  "fulfillment": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "references": [
+          ".tickets/t7-3j9c.md",
+          "docs/plans/bookfin.md",
+          "docs/plans/cross-edition-places.md:431",
+          "docs/plans/cross-edition-places.md:442"
+        ],
+        "assessment": "The implementation fulfills the settled scope: restore production and gallery browser compilation while preserving pure outline calculations and native PDF ownership. The accepted outline and engine behavior remains unchanged."
+      },
+      {
+        "references": [
+          "tool/evidence/t7-3j9c/01-base-production-web.log.gz",
+          "tool/evidence/t7-3j9c/02-pub-get.log.gz",
+          "tool/evidence/t7-3j9c/03-base-production-web.log.gz",
+          "tool/evidence/t7-3j9c/04-original-web-regression.log.gz"
+        ],
+        "assessment": "The initial missing package configuration is correctly classified as setup failure. After dependency setup, the exact original production command fails on unavailable dart:ffi imports. The regression script also fails both real entry points before the correction. These are meaningful reproductions of the actual build defect."
+      },
+      {
+        "references": [
+          "test/web_build_test.sh:8",
+          "tool/evidence/t7-3j9c/05-boundary-web-regression.log.gz"
+        ],
+        "assessment": "The regression builds lib/main.dart and lib/gallery.dart, checks nonempty generated JavaScript after each successful build, and returns failure if either target fails. The retained corrected run builds both targets successfully. It launches no browser and uses no source-text assertion."
+      },
+      {
+        "references": [
+          "tool/evidence/t7-3j9c/commands.json",
+          "tool/evidence/t7-3j9c/09-affected-analysis.log.gz",
+          "tool/evidence/t7-3j9c/10-format-verification.log.gz",
+          "tool/evidence/t7-3j9c/11-original-base-whitespace.log.gz",
+          "tool/evidence/t7-3j9c/12-committed-base-whitespace.log.gz"
+        ],
+        "assessment": "All 13 archived logs match their recorded raw-byte counts, SHA-256 hashes, and retained original files. Recorded commands use Nix, with Flutter test concurrency set to two. Logs confirm affected analysis found no issues and formatting changed none of six files. The manifest records successful Bash syntax and whitespace checks."
+      },
+      {
+        "references": [
+          "test/reader/epub/page_source_test.dart:1215",
+          "test/reader/epub/pager_test.dart:1206",
+          "test/research/current_restore_measurement_test.dart:254",
+          "tool/evidence/t7-3j9c/commands.json"
+        ],
+        "assessment": "The recorded skip accounting agrees with reporter output and unchanged boolean skip conditions. The complete diff leaves tf-il7u and unrelated implementation untouched. The evidence-only second commit changes no production or test code. The ticket remains in progress, and t5-rplx is not claimed resolved."
+      }
+    ],
+    "findings": [],
+    "gaps": [
+      {
+        "material": false,
+        "description": "The last recorded whitespace check identifies implementation commit e890defe, not review HEAD fb943fcc. The later commit contains only ticket and evidence updates, which were inspected. README wording about the final HEAD should be read with this limitation."
+      },
+      {
+        "material": false,
+        "description": "Existing secure-storage WebAssembly incompatibilities and the font warning remain. The evidence establishes default JavaScript builds only. Optional corpus, benchmark, measurement, and plugin integration checks remain skipped."
+      }
+    ]
+  },
+  "design": {
+    "verdict": "pass",
+    "evidence": [
+      {
+        "rule": "User, section 4: one model for existing and new behavior; Ousterhout, section 6: consistent conventions and information hiding.",
+        "references": [
+          "lib/reader/pdf_outline.dart:5",
+          "lib/reader/platform.dart:1",
+          "lib/reader/ocr_storage.dart:1"
+        ],
+        "assessment": "The repair applies the established conditional-export model. Platform selection stays at the import boundary, with no new platform flags, caller branches, or parallel measurement mechanism."
+      },
+      {
+        "rule": "User and Ousterhout, section 6: one owner for state and lifecycle transitions.",
+        "references": [
+          "lib/reader/pdf.dart:730",
+          "lib/reader/pdf.dart:785",
+          "lib/reader/pdf.dart:804",
+          "lib/reader/pdf_outline_io.dart:22",
+          "lib/reader/pdf_outline_io.dart:86"
+        ],
+        "assessment": "PdfRuntime retains engine initialization, active-measurement tracking, and shutdown ownership. The native measurement operation retains its private file handle and cleanup. No handle, storage lifetime, or worker coordination responsibility is exposed to callers."
+      },
+      {
+        "rule": "Ousterhout, section 6: pull complexity downward; Muratori, sections 5 and 9: no speculative generality.",
+        "references": [
+          "lib/reader/pdf_outline.dart:28",
+          "lib/reader/pdf_outline_io.dart:16",
+          "lib/reader/pdf_outline_stub.dart:3",
+          "lib/reader/platform_io.dart:90"
+        ],
+        "assessment": "Pure calculation remains authoritative in one place. Native extraction reuses it through a narrow import. Existing callers retain their interface, and the change adds no configurable worker, replacement runtime, shared-state copy, or hypothetical extension mechanism."
+      }
+    ],
+    "findings": [],
+    "gaps": [
+      {
+        "material": false,
+        "description": "Worker scheduling and cleanup preservation are supported by source comparison, caller inspection, and retained native tests. No new phone latency measurement or exhaustive failure-injection evidence is claimed; the scheduling algorithm is unchanged."
+      }
+    ]
+  },
+  "overallVerdict": "pass",
+  "materialUnverifiedRequirements": [],
+  "unavailableChecks": [
+    {
+      "check": "Independent build, test, analysis, formatting, and whitespace reruns",
+      "reason": "Prohibited by the read-only review brief; retained evidence was inspected instead.",
+      "blocking": false
+    },
+    {
+      "check": "Browser interaction, device acceptance, and WebAssembly support",
+      "reason": "Outside the settled ticket scope and not established by these JavaScript builds.",
+      "blocking": false
+    },
+    {
+      "check": "Coverage and mutation testing",
+      "reason": "Reserved for parent-coordinated hardening after acceptance.",
+      "blocking": false
+    }
+  ],
+  "handoff": "No blocking findings or material unverified requirements. Parent retains integration, user acceptance, hardening, and ticket closure."
+}

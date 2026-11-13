@@ -87,3 +87,37 @@ The integrated tf-il7u correction is preserved. The separate t5-rplx failure
 remains unexplained; a passing run here would not establish its cause.
 No product fork arose. The implementation follows the accepted PDF outline
 and engine rules in `docs/plans/cross-edition-places.md` and the ticket scope.
+
+## Review
+
+Exactly one fresh reviewer completed on Codex / gpt-6-astra / high, with shared
+isolation, async mode and the review role. Its original report is retained
+unchanged in `review-original.json`. `review-resolution.json` records the
+delegate identity, verdicts and disposition of every reported gap.
+
+Reviewer: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A871adda1-9161-4c17-b9ea-5de4886c8aad%3Adelegate-task%3Abookfin-t7-3j9c-review-astra-high-20261113-1>
+
+Reviewed HEAD: `fb943fcc584c6f8c3cf096929ec47dac58d937eb`.
+
+| Assessment | Verdict | Findings | Material unverified requirements |
+| --- | --- | --- | --- |
+| Correctness | pass | None | None |
+| Ticket fulfillment | pass | None | None |
+| Software design | pass | None | None |
+
+The reviewer independently checked the relocated code, actual callers, all
+13 then-archived logs, their original files, byte counts and hashes. The review
+ran no build, test, analysis, formatting or browser/device commands.
+
+The report keeps five nonblocking gaps. One asks that the whitespace evidence
+cover the final HEAD rather than only the implementation commit. The lead
+addresses that with checks after review and after the final evidence commit.
+The final committed manifest gives the exact final command and its raw log
+path; the final handoff records the verified HEAD and result. The other gaps
+are scope limits: host execution of the stub test, no reviewer reruns, existing
+WebAssembly/font warnings and optional skips, and no new device latency or
+exhaustive failure-injection measurements.
+
+No finding required a code change, and no second review ran. Only ticket and
+evidence files changed after review; production and test code remain exactly
+as tested and reviewed. The final check also verifies that equality.

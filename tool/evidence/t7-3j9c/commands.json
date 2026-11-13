@@ -517,6 +517,28 @@
       "testSummaries": [],
       "builtTargets": [],
       "classification": "pass"
+    },
+    {
+      "label": "13-review-and-staged-whitespace",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "-c",
+        "git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 HEAD && git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 && git diff --cached --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 && git diff --exit-code fb943fcc584c6f8c3cf096929ec47dac58d937eb -- lib test"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/13-review-and-staged-whitespace.log",
+      "exitCode": 0,
+      "seconds": 2.98,
+      "archive": "13-review-and-staged-whitespace.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
     }
   ],
   "historicalEvidence": {
@@ -532,5 +554,23 @@
     "nativeBodySha256": "b088791c7525a48d04e169e53a36853a0edb7ad5be5f6000c3a8403cf107ecdf",
     "calculationBodyUnchanged": true,
     "calculationBodySha256": "6bb2a1c6b2e9738df3b4605f1add5674a14956f5bd9a49c68063f6d6a989687e"
+  },
+  "reviewEvidence": {
+    "originalReport": "review-original.json",
+    "rawSha256": "4138de127b9f9ed83093ab17760f144d4e52257177f8142806521cd40640493e",
+    "resolutions": "review-resolution.json"
+  },
+  "finalHeadVerification": {
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 HEAD && git diff --exit-code fb943fcc584c6f8c3cf096929ec47dac58d937eb HEAD -- lib test && test -z \"$(git status --porcelain)\" && git rev-parse HEAD && git branch --show-current"
+    ],
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+    "log": "/tmp/bookfin-t7-3j9c/14-final-head-whitespace.log",
+    "resultLocation": "Final JSON handoff; this command runs after the last evidence commit, so its raw log stays outside the checkout."
   }
 }
