@@ -1,6 +1,6 @@
 ---
 id: t0-bbyo
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-13T22:29:03Z
@@ -29,3 +29,5 @@ Both touched Dart files format without changes.
 Exact commands, retained before/after logs and source hashes:
 docs/evidence/td-bz4y/integration/integration.json and commands.json. Parent
 performed this small correction directly; no additional delegate or review stage.
+
+Integrated in c7ff192c and closed by the parent after the passing checks above.

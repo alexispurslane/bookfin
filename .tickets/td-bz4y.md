@@ -1,6 +1,6 @@
 ---
 id: td-bz4y
-status: in_progress
+status: closed
 deps: []
 links: [te-c2tc]
 created: 2026-11-13T21:58:52Z
@@ -87,3 +87,25 @@ Client request: td-bz4y-review-0ae29400-20261113.
 Ready for parent integration after final evidence/whitespace checks. The parent
 retains integration, acceptance, hardening and ticket closure; status stays
 in_progress. No running owned command or reviewer remains.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated both delegate commits as d3ba22b9 and 5df8f969. Only appended ticket
+notes conflicted; both the parent launch record and child evidence were retained.
+All four reviewed source files remain identical to the reviewed delegate result.
+Parent verified 96 child evidence hashes and all 28 command records, including
+their compressed logs and source patches. Original review verdicts are unchanged.
+
+Parent checks passed: 102 EPUB-engine tests, all 40 sync tests, five compatibility
+tests, and seven controlled Python archive checks. The 13 sync exclusions were
+temporary loopback test servers with synthetic data; the ordinary complete suite
+ran without the skip wrapper. Four existing public-corpus tests remain gated.
+No live Jellyfin service, user credentials, device or browser was used.
+
+The separate t0-bbyo correction is committed in c7ff192c: the isolated package
+analysis now has no issues; two Dart files format unchanged. All parent command
+logs, failures, skips and source hashes are committed under
+docs/evidence/td-bz4y/integration/. The root application, root tests and Nix files
+are unchanged from the already-verified parent, so root Flutter and web checks
+were not repeated. Native acceptance and general hardening remain in their
+existing tickets. This research-fixture scope is integrated and closed.
