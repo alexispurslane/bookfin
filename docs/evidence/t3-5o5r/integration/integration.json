@@ -1,0 +1,95 @@
+{
+  "ticket": "t3-5o5r",
+  "commitMapping": {
+    "cb2354c654d9c0bf92e344e8c9d62c50d21aabdc": "8cbc5ec3eb7e10d87fc26806605fc2b4a15020cd",
+    "537bda63cf4e2a68f7136055bdd6f1171cba6252": "bcf02ea66b564e4d0e67eccb3a50d56405ce04cd"
+  },
+  "inspection": {
+    "completeSourceDiff": "Eight-line change in the existing epub fixture only. Production and restart test remain unchanged.",
+    "conflicts": "Appended ticket text only; retained parent launch and child investigation/review records.",
+    "evidenceHashesVerified": 58,
+    "archiveManifestEntriesVerified": 34,
+    "sourceMatchesReviewedChild": true,
+    "sourceSha256": "eb1d0e52049ae8e772f1849fbce8ac012d629538bbf31c15267aa774d9b62715",
+    "reviewSha256": "dea9ecb8c86b2c693d11a6735320cf84602debea03a69dec222b6e940dafd1a8",
+    "reviewVerdicts": "Pass in all three assessments; no findings. Original report preserved.",
+    "controlledEvidence": "Inspected timestamp-difference failure and same-time pass, completed save and retained-place observations, unchanged payload hashes, omitted-save negative control and byte-exact restoration."
+  },
+  "checks": [
+    {
+      "command": "nix develop --command bash -c 'xargs flutter test --no-pub --concurrency=2 --reporter expanded < /tmp/bookfin-t3-5o5r-integration/test-paths.txt'",
+      "head": "bcf02ea66b564e4d0e67eccb3a50d56405ce04cd",
+      "exitCode": 0,
+      "result": "335 passed, 1 existing corpus skip",
+      "originalLog": "/tmp/bookfin-t3-5o5r-integration/callers.log",
+      "archive": "docs/evidence/t3-5o5r/integration/callers.log.gz",
+      "rawBytes": 61817,
+      "rawSha256": "9f7b0ed894a756506019f28f48c74e53abc03c00aaccc57a8a2691b1b11ea0e7",
+      "archiveBytes": 6621,
+      "archiveSha256": "6968039c1253437c4df0d0cc780684e4ef7abe4db8e13f6ffbe930243351af1d"
+    },
+    {
+      "command": "nix develop --command bash -c 'dart analyze test/reader/publication_test.dart && dart format --output=none --set-exit-if-changed test/reader/publication_test.dart'",
+      "head": "bcf02ea66b564e4d0e67eccb3a50d56405ce04cd",
+      "exitCode": 0,
+      "result": "No issues; one file, zero formatting changes",
+      "originalLog": "/tmp/bookfin-t3-5o5r-integration/static-checks.log",
+      "archive": "docs/evidence/t3-5o5r/integration/static-checks.log.gz",
+      "rawBytes": 98,
+      "rawSha256": "dbee8749c74bfbd9e0d83e2bd4acef29caf538506c7b0be13e2be893192df11b",
+      "archiveBytes": 109,
+      "archiveSha256": "abf8f41542840aa3452f34604ea10e37eee2f6335bcb80c679da9d59dd6ffc8a"
+    },
+    {
+      "command": "git diff --check ae404245 HEAD",
+      "head": "bcf02ea66b564e4d0e67eccb3a50d56405ce04cd",
+      "exitCode": 0,
+      "result": "Passed at bcf02ea6",
+      "originalLog": "/tmp/bookfin-t3-5o5r-integration/whitespace.log",
+      "archive": "docs/evidence/t3-5o5r/integration/whitespace.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 20,
+      "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+    },
+    {
+      "command": "git diff --exit-code ae404245 HEAD -- lib test/reader/session_signals_test.dart",
+      "head": "bcf02ea66b564e4d0e67eccb3a50d56405ce04cd",
+      "exitCode": 0,
+      "result": "Production and original restart test unchanged",
+      "originalLog": "/tmp/bookfin-t3-5o5r-integration/unchanged-production-and-restart.log",
+      "archive": "docs/evidence/t3-5o5r/integration/unchanged-production-and-restart.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 20,
+      "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+    }
+  ],
+  "skip": {
+    "file": "test/reader/epub/zip_test.dart",
+    "name": "of every entry of every corpus book is the CRC-32 that package:archive gives",
+    "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+    "count": 1
+  },
+  "fullSuiteEvidence": {
+    "beforeFixtureIntegration": {
+      "head": "ac63796a",
+      "passed": 3768,
+      "skipped": 27,
+      "evidence": "docs/evidence/boo-56h7/integration/integration.json"
+    },
+    "childFixtureFullSuite": {
+      "passed": 3693,
+      "skipped": 27,
+      "evidence": "docs/evidence/t3-5o5r/commands.jsonl"
+    },
+    "parentDecision": "No repeat full suite: the reviewed fixture source integrated unchanged with no production/test conflict. Ran all 23 directly importing test files plus the fixture test after integration, including the changed Ask-at-Play persistence caller."
+  },
+  "limits": [
+    "Controlled cause established; historical schedules and exclusive causes remain unknown.",
+    "Host restart test does not establish physical-device persistence or OS-process kill recovery.",
+    "Optional corpus check remains skipped; no new disabled tests.",
+    "Seven remaining builders belong to te-c2tc; this ticket does not close that follow-up.",
+    "No device/browser interaction or general coverage/mutation campaign."
+  ]
+}
