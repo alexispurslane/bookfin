@@ -2,7 +2,7 @@
 id: td-6hd7
 status: open
 deps: []
-links: []
+links: [boo-7z9a]
 created: 2026-11-09T15:41:19Z
 type: bug
 priority: 2

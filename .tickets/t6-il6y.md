@@ -2,7 +2,7 @@
 id: t6-il6y
 status: in_progress
 deps: []
-links: [boo-3oq0]
+links: [boo-3oq0, boo-s11s]
 created: 2026-11-02T23:19:27Z
 type: task
 priority: 2
