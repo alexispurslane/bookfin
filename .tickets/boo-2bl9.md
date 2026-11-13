@@ -1,6 +1,6 @@
 ---
 id: boo-2bl9
-status: in_progress
+status: closed
 deps: []
 links: [boo-rw9z, boo-n7no, boo-w6m2]
 created: 2026-11-13T08:23:18Z
@@ -23,6 +23,41 @@ Astra high reviewer authorized. Parent combined boo-gcu6 verification continues.
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-2bl9-astra-20261113-1>
 
 # Keep record refresh from holding sync behind audio commands
+
+## Parent integration and closure — 2026-11-13
+
+Verified clean child identity, complete original-base diff, original review
+and saved red/green checks. Inspected all 34 regression cases, real sync/store
+callers, account and record-revision guards, audio mutations across waits,
+snapshot acceptance and Undo ownership. Integrated without conflicts:
+`85cf3c20` became `3634b062`; `47b39a14` became `5ca486a0`. Parent Playback
+production code before integration was identical to the child's original base.
+No second review or reviewer execution is claimed.
+
+Parent checks ran sequentially through `nix develop --command bash -c`:
+
+- `dart format --output=none --set-exit-if-changed lib/playback/playback.dart
+  test/sync/playback_refresh_test.dart`: two files, zero changes.
+- `flutter analyze --no-pub lib test integration_test`: no issues.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded` on playback,
+  sync, durability, app, crossings, speech, and the affected reader persistence,
+  records, unread_records, session, session_signals, session_text_size,
+  pdf_session, bookmark_names, history_pages, dock_history, book_words_reader,
+  text_outline and book_map test files: 1,289 passed, three existing skips,
+  no failures; completed in 1:14.
+
+The driver exited 0. Logs: `/tmp/boo-2bl9-integrated-format.log`,
+`/tmp/boo-2bl9-integrated-analysis.log`,
+`/tmp/boo-2bl9-integrated-affected.log`, and
+`/tmp/boo-2bl9-integrated-driver.log`. The child full suite at the unchanged
+implementation passed 3,581 tests with 27 skips; the parent reran integration-
+affected suites, including the newly integrated speech work, rather than
+claiming a new combined full-suite run. Integration/staged diff checks passed.
+
+Implementation is integrated and closed. Device acceptance, existing gated
+checks, user acceptance and hardening remain separate. No device/browser,
+coverage, mutations, push, PR, deployment or worktree removal. The known
+intermittent test causes remain unresolved.
 
 Found during parent integration of boo-rw9z at 4c020d1e. Read-only evidence; no reproduction has been run. Playback.flush is now independent of unfinished audio commands, and its regression proves transport can exchange durable records while a seek is held. A later step remains coupled: RecordSync._sync awaits records.refreshWriters (lib/sync/coordinator.dart:391); the store awaits every stale writer (lib/playback/store.dart:241); Playback.refreshPersonalRecords uses _recordsCommand (lib/playback/playback.dart:619), which shares the audio command queue. When received listening records make Playback stale during a held audio command, the exchange can finish but the sync operation cannot. _exclusive retains _running until _sync returns, so later manual or background syncs also wait. This is a statically confirmed path; the trigger still needs a controlled regression.
 
