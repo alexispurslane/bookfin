@@ -47,12 +47,13 @@ void main() {
           '</metadata>',
           '<meta name="cover" content="resource00000"/></metadata>',
         );
+    // Replacing metadata must not make identical source bytes depend on time.
     archive.addFile(
       ArchiveFile(
         'OEBPS/content.opf',
         utf8.encode(metadata).length,
         utf8.encode(metadata),
-      ),
+      )..lastModTime = DateTime(2026, 11, 1).millisecondsSinceEpoch ~/ 1000,
     );
     final book = await EpubReader.openBook(ZipEncoder().encode(archive));
     final cover = await book.readCover();

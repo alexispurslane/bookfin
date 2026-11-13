@@ -177,11 +177,13 @@ def seed_media():
     import zipfile
     ebook = ROOT / "media/public/Work/Text Edition"
     ebook.mkdir(parents=True, exist_ok=True)
+    # Re-seeding unchanged content must produce the same EPUB bytes.
+    entry_time = (2026, 11, 1, 0, 0, 0)
     with zipfile.ZipFile(ebook / "Synthetic Work.epub", "w") as archive:
-        archive.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
-        archive.writestr("META-INF/container.xml", '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
-        archive.writestr("content.opf", '<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Synthetic Work</dc:title><dc:creator>Research Author</dc:creator><dc:identifier id="id">urn:bookfin:synthetic</dc:identifier><dc:language>en</dc:language></metadata><manifest><item id="chapter" href="chapter.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="chapter"/></spine></package>')
-        archive.writestr("chapter.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>Synthetic only</h1><p>Disposable research.</p></body></html>')
+        archive.writestr(zipfile.ZipInfo("mimetype", entry_time), "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+        archive.writestr(zipfile.ZipInfo("META-INF/container.xml", entry_time), '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
+        archive.writestr(zipfile.ZipInfo("content.opf", entry_time), '<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Synthetic Work</dc:title><dc:creator>Research Author</dc:creator><dc:identifier id="id">urn:bookfin:synthetic</dc:identifier><dc:language>en</dc:language></metadata><manifest><item id="chapter" href="chapter.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="chapter"/></spine></package>')
+        archive.writestr(zipfile.ZipInfo("chapter.xhtml", entry_time), '<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>Synthetic only</h1><p>Disposable research.</p></body></html>')
 
 
 def seed():

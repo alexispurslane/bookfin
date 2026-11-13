@@ -39,3 +39,34 @@ Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-ta
 
 Running; branch and stage not yet reported. T3 owns the worktree. No result is
 claimed from launch.
+
+## Implementation and verification — 2026-11-13
+
+Bound checkout: /Users/alexispurslane/.t3/worktrees/bookfin/t3-0cfba5ea,
+branch t3/stabilize-epub-archive-times. Initial HEAD and review base:
+215273e35f986cd6682b47b1efc8eff627ddee34; initial checkout clean. No checkout
+creation, switch or reset. Ticket remains in progress for parent integration.
+
+The four named owners set explicit entry modification times, preserving their
+payloads, order, interfaces, compression and original test contracts. Decoded
+source entries in the Dart replacement retain their metadata. No root Flutter,
+production reader, checked-in asset, lockfile or security-probe change.
+
+Evidence: docs/evidence/td-bz4y/README.md, inventory.json, commands.jsonl,
+results.json, failures.json, preserved.json and HASHES.sha256. Controlled byte
+comparisons fail before correction for all four owners, then pass, while changed
+content still changes bytes. Both unfixed-clock controls pass in the valid runs.
+Invalid initial clock-control attempts and an evidence-script syntax error are
+recorded separately from meaningful red evidence.
+
+Complete applicable isolated suites: epub_engines 102 passed; sync 27 passed,
+13 local-HTTP-server tests explicitly skipped; dart_compat 5 passed, four existing
+public-corpus skips. Focused suites also pass. Changed-file analysis and format
+checks pass. Full dart_compat analysis retains an existing unnecessary_cast in
+unchanged corpus_test.dart:45:18; new follow-up t0-bbyo records that separate work.
+
+Native libmobi conversion callers are classified outside this four-owner scope;
+only ignored conversion prerequisites were produced from checked-in MOBIs. No
+new handwritten EPUB owner was found. No live server, device, browser, model or
+public-corpus action; no coverage or general mutation run. One fresh read-only
+review follows this implementation commit. Parent retains integration/closure.

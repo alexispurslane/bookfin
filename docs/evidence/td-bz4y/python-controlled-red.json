@@ -1,0 +1,742 @@
+[
+  {
+    "owner": "calibrate",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "be3eeef613892b26fa58723e942a667f9cdff8169adb1d7f4f8625c44cc19681",
+    "entries": [
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "06dbb01a5b07efb95762cc5d3faed607cfc9233f0b5d691233887f18473e679d",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "calibrate",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      2
+    ],
+    "changed": false,
+    "sha256": "145bd6f1b4d7e6c3570e2eff6384f4736d82697006347c53942b57283a80b4b1",
+    "entries": [
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "06dbb01a5b07efb95762cc5d3faed607cfc9233f0b5d691233887f18473e679d",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "calibrate",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "be3eeef613892b26fa58723e942a667f9cdff8169adb1d7f4f8625c44cc19681",
+    "entries": [
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "06dbb01a5b07efb95762cc5d3faed607cfc9233f0b5d691233887f18473e679d",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "calibrate",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": true,
+    "sha256": "3f3823ea674c947d9996fd353c94026b91c732fb0cdad8a2625a49e8869d9a13",
+    "entries": [
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "002b7ce3b3c3a1f8d13790dd7493002d432e422d30e210446a3c6cf5ac152723",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "prepare",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "97efd488c8c8c3e7fe27675e018216e8cca6ec9617f55b463bf3b8e1c5e4c89b",
+    "entries": [
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "fb6d6aa931daed7fb2d0fd0dea3bc3caef19078a780f65cb6e116b284c1f2203",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/package.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e94ff5f93029d4008edafc458129e0e950ac98cc304edd8e43f3a118b8d727b9",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/first.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e76082dfdcd3ec95b8152c38f2fb3091d77b531f99461c68156de7ca177c7eba",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/second.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "508ff4d41b74c62854986220fad92043639dbf1478e607f7a31ad751334c3ac3",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/nav.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "43b2aa79a64a18131f00066ca8b2f4ee1bd0ae821fc68d13d009d57bf94b1dea",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "prepare",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      2
+    ],
+    "changed": false,
+    "sha256": "3f655f9dba9deedba54f7299582a4d502a7858105cc770c65426dcba6065219a",
+    "entries": [
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "fb6d6aa931daed7fb2d0fd0dea3bc3caef19078a780f65cb6e116b284c1f2203",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/package.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "e94ff5f93029d4008edafc458129e0e950ac98cc304edd8e43f3a118b8d727b9",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/first.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "e76082dfdcd3ec95b8152c38f2fb3091d77b531f99461c68156de7ca177c7eba",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/second.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "508ff4d41b74c62854986220fad92043639dbf1478e607f7a31ad751334c3ac3",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/nav.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "43b2aa79a64a18131f00066ca8b2f4ee1bd0ae821fc68d13d009d57bf94b1dea",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "prepare",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "97efd488c8c8c3e7fe27675e018216e8cca6ec9617f55b463bf3b8e1c5e4c89b",
+    "entries": [
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "fb6d6aa931daed7fb2d0fd0dea3bc3caef19078a780f65cb6e116b284c1f2203",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/package.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e94ff5f93029d4008edafc458129e0e950ac98cc304edd8e43f3a118b8d727b9",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/first.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e76082dfdcd3ec95b8152c38f2fb3091d77b531f99461c68156de7ca177c7eba",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/second.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "508ff4d41b74c62854986220fad92043639dbf1478e607f7a31ad751334c3ac3",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/nav.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "43b2aa79a64a18131f00066ca8b2f4ee1bd0ae821fc68d13d009d57bf94b1dea",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "prepare",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": true,
+    "sha256": "26b328c5694ce0f80546a47bebd6ce4043ae4468dd52ad06d8e94c3cdca7648f",
+    "entries": [
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "fb6d6aa931daed7fb2d0fd0dea3bc3caef19078a780f65cb6e116b284c1f2203",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/package.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e94ff5f93029d4008edafc458129e0e950ac98cc304edd8e43f3a118b8d727b9",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/first.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e50a5937d078b98f894893cba776d3ffc63de2aa5287d706fa2907dea9761e7b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/second.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "508ff4d41b74c62854986220fad92043639dbf1478e607f7a31ad751334c3ac3",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "EPUB/nav.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "43b2aa79a64a18131f00066ca8b2f4ee1bd0ae821fc68d13d009d57bf94b1dea",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "sync",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "7bbd8bfa5f7cfc8405a7fb61d68c88e88624956689f1cac989c2cdbeba34bab7",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "0eaec194ca3eac78b2cdbf15895bde3668a0d64520c698eca2121e6f67851810",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "content.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "8962fbb5e8f24ce266b7f715ec6a2e7715bf012a32a0fd5f7813395b98f96427",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "a04427f1d9586ff778eb5583299e53bc268821a6879929517a570ce4c0056c4b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "sync",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      2
+    ],
+    "changed": false,
+    "sha256": "7799d3b52436ca76b4b7aa7df8cbb61a2fb3cb24e127ca00a1fca2ab889ed45d",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "0eaec194ca3eac78b2cdbf15895bde3668a0d64520c698eca2121e6f67851810",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "content.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "8962fbb5e8f24ce266b7f715ec6a2e7715bf012a32a0fd5f7813395b98f96427",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          2
+        ],
+        "payloadSha256": "a04427f1d9586ff778eb5583299e53bc268821a6879929517a570ce4c0056c4b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "sync",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": false,
+    "sha256": "7bbd8bfa5f7cfc8405a7fb61d68c88e88624956689f1cac989c2cdbeba34bab7",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "0eaec194ca3eac78b2cdbf15895bde3668a0d64520c698eca2121e6f67851810",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "content.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "8962fbb5e8f24ce266b7f715ec6a2e7715bf012a32a0fd5f7813395b98f96427",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "a04427f1d9586ff778eb5583299e53bc268821a6879929517a570ce4c0056c4b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  },
+  {
+    "owner": "sync",
+    "clock": [
+      2026,
+      1,
+      1,
+      12,
+      0,
+      0
+    ],
+    "changed": true,
+    "sha256": "05a2bbe2e12e63cab0901ba1bb4f7e0e44552a8b1d206300034d616150cbffd5",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "0eaec194ca3eac78b2cdbf15895bde3668a0d64520c698eca2121e6f67851810",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "content.opf",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "8962fbb5e8f24ce266b7f715ec6a2e7715bf012a32a0fd5f7813395b98f96427",
+        "compression": 0,
+        "externalAttributes": 25165824
+      },
+      {
+        "name": "chapter.xhtml",
+        "time": [
+          2026,
+          1,
+          1,
+          12,
+          0,
+          0
+        ],
+        "payloadSha256": "85a68d1dde163a6ae8285d48670c2bb6d7ca291be35fa06d14213905acd0bfea",
+        "compression": 0,
+        "externalAttributes": 25165824
+      }
+    ]
+  }
+]

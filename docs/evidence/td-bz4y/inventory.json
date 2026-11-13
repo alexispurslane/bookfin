@@ -1,0 +1,62 @@
+{
+  "scope": "Named research owners and their callers; supporting source inventory includes the readers, epub_engines and sync research trees. Parent repository-wide inventory remains docs/evidence/te-c2tc/inventory.json.",
+  "changedOwners": [
+    {
+      "file": "tool/research/readers/dart_compat/test/compat_test.dart",
+      "owner": "EPUB cover bytes decode through the new image dependency test",
+      "callers": ["Only the inline test body; no external helper interface"],
+      "consumer": "EpubReader.openBook and book.readCover; original assertions require a 24 by 24 pixel cover",
+      "change": "Set lastModTime only on the new OEBPS/content.opf entry. Decoded source entries retain their times, order and payloads."
+    },
+    {
+      "file": "tool/research/epub_engines/test_prepare.py",
+      "owner": "CorpusDescriptionTest.test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section",
+      "callers": ["unittest test discovery; the real test directly calls describe(book)"],
+      "consumer": "prepare.describe reads spine ordering, image counts, heading and navigation title",
+      "change": "Explicit ZipInfo times for the same five entries in the same order."
+    },
+    {
+      "file": "tool/research/epub_engines/test_calibrate.py",
+      "owner": "ReferencePromotionTest.setUp",
+      "callers": [
+        "test_reference_promotion_requires_successful_workload_assertions",
+        "test_failed_ocr_preserves_the_accepted_reference_file",
+        "test_missing_illustration_approval_does_not_create_a_promoted_reference_file",
+        "test_explicit_drafts_retain_unapproved_content_for_inspection"
+      ],
+      "consumer": "calibrate.main reads the one chapter against synthetic OCR results; this is a partial EPUB-shaped test archive, not a complete EPUB publication",
+      "change": "Explicit ZipInfo time on the existing single chapter. Mock OCR behavior and all assertions remain unchanged."
+    },
+    {
+      "file": "tool/research/sync/fixture.py",
+      "owner": "seed_media",
+      "callers": ["seed", "CLI seed-media command"],
+      "consumer": "Disposable server library seeding; current tests inspect protocol and server metadata, not rebuilt publication identity",
+      "change": "Explicit ZipInfo times on the same four EPUB entries. Audio creation, chapter injection, seeding and CLI signatures remain unchanged."
+    }
+  ],
+  "alreadyStable": [
+    "tool/research/readers/fixtures.py: generate uses fixed ZipInfo times",
+    "tool/research/readers/navigator/semantic_fixture.py: fixed ZipInfo times",
+    "tool/acceptance/reader_fixture.py and reader_remaining_fixture.py: unchanged fixed times from parent inventory",
+    "Root Flutter fixture correction and tool/showcase_media.dart: already integrated, untouched"
+  ],
+  "otherCreators": [
+    {
+      "paths": ["tool/research/readers/run", "tool/research/readers/test_native_conversion.py", "tool/research/readers/navigator/prepare.py"],
+      "classification": "Conversion callers of the pinned native libmobi writer, not additional handwritten fixture owners",
+      "disposition": "Out of this four-owner scope; no converter changes or determinism claim. Only the three ignored local conversion prerequisites from checked-in MOBIs were produced for dart_compat; no public corpus acquired or regenerated."
+    },
+    {
+      "paths": ["tool/research/readers/navigator/widget/test/resources_test.dart", "tool/research/readers/navigator/widget/test/security_gate_probe.dart", "tool/research/readers/navigator/test_raster_fallback.py"],
+      "classification": "SVG and image resource/security ZIP probes, not EPUB builders",
+      "disposition": "Explicitly out of scope; untouched"
+    },
+    {
+      "classification": "Plugin and APK ZIP writers, read-only ZIP consumers",
+      "disposition": "Do not build test EPUBs; unchanged"
+    }
+  ],
+  "additionalHandwrittenEpubOwnerFound": false,
+  "design": "Each existing owner fixes the modification time of entries it creates. No generic builder, cached archive, public clock argument or payload rewrite is introduced."
+}

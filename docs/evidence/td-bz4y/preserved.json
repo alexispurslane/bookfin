@@ -1,0 +1,24 @@
+{
+  "base": "215273e35f986cd6682b47b1efc8eff627ddee34",
+  "unchangedPaths": [
+    "lib",
+    "test",
+    "tool/showcase_media.dart",
+    "flake.nix",
+    "flake.lock",
+    "tool/research/readers/fixtures",
+    "tool/research/readers/dart_compat/pubspec.yaml",
+    "tool/research/readers/dart_compat/pubspec.lock",
+    "tool/research/readers/dart_compat/test/corpus_test.dart",
+    "tool/research/readers/navigator",
+    "tool/research/epub_engines/prepare.py",
+    "tool/research/epub_engines/calibrate.py"
+  ],
+  "changedTrackedPaths": [
+    ".tickets/td-bz4y.md",
+    "tool/research/epub_engines/test_calibrate.py",
+    "tool/research/epub_engines/test_prepare.py",
+    "tool/research/readers/dart_compat/test/compat_test.dart",
+    "tool/research/sync/fixture.py"
+  ]
+}

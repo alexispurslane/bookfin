@@ -1,0 +1,31 @@
+{
+  "meaningfulRed": [
+    {"command": "04-python-red", "exit": 1, "passed": 4, "failed": 3, "reason": "All three real Python writers produced different complete archive bytes at two controlled encoding times. Default-clock control and all three content-sensitivity checks passed."},
+    {"command": "09-dart-red", "exit": 1, "passed": 2, "failed": 1, "reason": "The real cover-metadata replacement produced different complete archive bytes at two controlled encoding times. Default-clock control and source-content sensitivity passed."}
+  ],
+  "diagnosticSetupFailures": [
+    {"command": "02-python-red", "exit": 1, "passed": 6, "failed": 1, "reason": "Positive clock control failed: Python 3.14 ZipInfo._for_archive honors Nix SOURCE_DATE_EPOCH=315532800 before localtime. Not meaningful red evidence.", "resolution": "Temporarily remove SOURCE_DATE_EPOCH only inside the diagnostic environment patch. Command 03 archives the actual standard-library method; 04 is the valid red and 06 is green."},
+    {"command": "07-dart-red", "exit": 1, "passed": 2, "failed": 1, "reason": "Positive clock control failed: dart test used the ordinary archive dependency instead of the private root in the temporary package config. Not meaningful red evidence.", "resolution": "Invoke the pinned test runner directly with explicit --packages; 09 is the valid red and 10 is green. Both attempts restored source/config and left the original dependency untouched."},
+    {"command": "21-evidence-audit", "exit": 1, "reason": "SyntaxError: unmatched closing parenthesis in the new evidence summary script; no fixture behavior evaluated.", "resolution": "Corrected the parenthesis; 22 passed the preservation checks."},
+    {"command": "24-whitespace", "exit": 2, "reason": "The tk-generated follow-up ticket ended with a new blank line at EOF.", "resolution": "Removed only the final blank line in command 25; command 26 verifies the staged diff."}
+  ],
+  "existingAnalysisIssue": {
+    "command": "18-compat-analysis",
+    "exit": 2,
+    "diagnostic": "test/corpus_test.dart:45:18 unnecessary_cast",
+    "scope": "Unchanged file at the review base, separately recorded as t0-bbyo; no code fix in this ticket",
+    "changedFileCheck": "20-changed-file-analysis passed with no issues"
+  },
+  "readAndSearchErrors": [
+    "rg --files -g AGENTS.md -g CLAUDE.md tool docs .tickets returned 1 because no nested instruction files matched; root AGENTS.md was read and root CLAUDE.md was absent.",
+    "Exploratory reads guessed readers/run.py, compat.py and README.md, which do not exist. Used discovered readers/run, epub-compat, flake.nix and epubx-compat.patch instead.",
+    "Initial ls found no local readers/_out; the pinned preparation created only ignored prerequisite outputs.",
+    "A creationTime/DateTime.now search in archive's ZipEncoder returned 1 (no matches). The encoder uses lastModTime for ZIP timestamps.",
+    "An exploratory sed read guessed readers/native_conversion.py, which does not exist. Read the actual test_native_conversion.py and classified the native conversion callers in inventory.json."
+  ],
+  "toolchainNotices": [
+    "Pinned package resolution listed newer versions; --enforce-lockfile preserved existing dependency versions.",
+    "Dart native build hooks reported missing iphoneos/iphonesimulator SDKs and Windows Visual Studio tools. Host tests still passed. No iOS, Windows or device acceptance is claimed."
+  ],
+  "unresolvedInScopeFailures": []
+}

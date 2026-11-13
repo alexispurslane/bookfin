@@ -1,0 +1,13 @@
+{
+  "originalBase": "215273e35f986cd6682b47b1efc8eff627ddee34",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-0cfba5ea",
+  "branch": "t3/stabilize-epub-archive-times",
+  "initialHead": "215273e35f986cd6682b47b1efc8eff627ddee34",
+  "initialClean": true,
+  "initialStatusOutput": "",
+  "checkoutCreatedSwitchedOrReset": false,
+  "ticket": "td-bz4y",
+  "initialTicketStatus": "in_progress",
+  "ticketDependencies": [],
+  "ticketStartConfirmed": true
+}

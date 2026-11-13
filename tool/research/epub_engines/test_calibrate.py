@@ -46,7 +46,8 @@ class ReferencePromotionTest(unittest.TestCase):
         runs.mkdir()
         text = "Alice was beginning to get very tired of sitting by her sister."
         with zipfile.ZipFile(assets / "fixture.epub", "w") as archive:
-            archive.writestr("chapter.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body>' + text + '</body></html>')
+            # Fixture identity depends on content, not the time of this run.
+            archive.writestr(zipfile.ZipInfo("chapter.xhtml", (2026, 11, 1, 0, 0, 0)), '<html xmlns="http://www.w3.org/1999/xhtml"><body>' + text + '</body></html>')
         book = {"target": {"index": 0}, "file": "fixture.epub",
                 "sections": [{"path": "chapter.xhtml"}, {"path": "chapter.xhtml"}]}
         (assets / "manifest.json").write_text(json.dumps({"books": {name: book for name in ("prose", "long", "illustrated")}}))

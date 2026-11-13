@@ -1,0 +1,144 @@
+tool/research/readers/fixtures.py:81:    with zipfile.ZipFile(FIXTURES / "river.epub", "w") as archive:
+tool/research/readers/fixtures.py:83:            archive.writestr(zipfile.ZipInfo(name, (2026, 11, 1, 0, 0, 0)), content)
+tool/research/sync/test_finite_journal.py:2:import unittest
+tool/research/sync/test_finite_journal.py:18:class FiniteJournalTests(unittest.TestCase):
+tool/research/readers/report.py:42:        with zipfile.ZipFile(output / f"{name}.epub") as archive:
+tool/research/readers/report.py:46:        with zipfile.ZipFile(apk) as archive:
+tool/research/sync/test_playlist_protocol.py:5:import unittest
+tool/research/sync/test_playlist_protocol.py:39:class PrivacyEvidenceTests(unittest.TestCase):
+tool/research/sync/test_playlist_protocol.py:89:class JournalDiscoveryTests(unittest.TestCase):
+tool/research/sync/test_finite_runtime.py:4:import unittest
+tool/research/sync/test_finite_runtime.py:11:class InventoryTests(unittest.TestCase):
+tool/research/readers/test_pdf_text_quality.py:7:import unittest
+tool/research/readers/test_pdf_text_quality.py:20:class TextQualityBoundary(unittest.TestCase):
+tool/research/readers/test_pdf_text_quality.py:83:@unittest.skipUnless(os.environ.get("BOOKFIN_REAL_CORPUS") == "1", "Acquire the exact public corpus first")
+tool/research/readers/test_pdf_text_quality.py:84:class PinnedTextQuality(unittest.TestCase):
+tool/research/readers/test_pdf_text_quality.py:182:    unittest.main()
+tool/research/readers/test_corpus_inputs.py:5:import unittest
+tool/research/readers/test_corpus_inputs.py:10:class CorpusInputs(unittest.TestCase):
+tool/research/readers/test_corpus_inputs.py:56:    unittest.main()
+tool/research/readers/test_run_inputs.py:7:import unittest
+tool/research/readers/test_run_inputs.py:10:class RunnerInputs(unittest.TestCase):
+tool/research/readers/test_run_inputs.py:43:    unittest.main()
+tool/research/sync/README.md:26:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py serve
+tool/research/sync/README.md:44:python3 tool/research/sync/fixture.py wait
+tool/research/sync/README.md:45:python3 tool/research/sync/fixture.py seed
+tool/research/sync/README.md:48:python3 -m unittest discover -s tool/research/sync -v
+tool/research/sync/README.md:54:python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:85:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py wait
+tool/research/sync/README.md:87:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:134:nix develop ./tool/research/sync --command python3 -m unittest discover -s tool/research/sync -v
+tool/research/sync/README.md:139:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:146:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py wait
+tool/research/sync/README.md:148:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:192:  'export BOOKFIN_SYNC_CORE_ONLY=1 BOOKFIN_SYNC_SERVER="$BOOKFIN_SYNC_OLD_SERVER"; exec python3 tool/research/sync/fixture.py serve' </dev/null
+tool/research/sync/README.md:201:  'BOOKFIN_SYNC_VERSION=12.3.0 python3 tool/research/sync/fixture.py wait'
+tool/research/sync/README.md:202:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py seed
+tool/research/sync/README.md:203:nix develop ./tool/research/sync --command python3 -m unittest discover -s tool/research/sync -v
+tool/research/sync/README.md:204:nix develop ./tool/research/sync --command python3 -O -m unittest discover -s tool/research/sync -p test_finite_journal.py -v
+tool/research/sync/README.md:209:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:217:  'export BOOKFIN_SYNC_CORE_ONLY=1; exec python3 tool/research/sync/fixture.py serve' </dev/null
+tool/research/sync/README.md:223:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py wait
+tool/research/sync/README.md:225:nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+tool/research/sync/README.md:229:Run `wait`, then `finite_runtime.py after-new-restart`, then `fixture.py stop`,
+tool/research/sync/finite_runtime.py:226:def compatibility(phase, expected_version):
+tool/research/sync/finite_runtime.py:288:                "before-upgrade": lambda: compatibility("finite-before-upgrade", "12.3.0"),
+tool/research/sync/finite_runtime.py:289:                "after-upgrade": lambda: compatibility("finite-after-upgrade", "12.4.0"),
+tool/research/sync/finite_runtime.py:290:                "after-new-restart": lambda: compatibility("finite-after-new-restart", "12.4.0")}
+tool/research/sync/test_fixture.py:7:import unittest
+tool/research/sync/test_fixture.py:8:from unittest.mock import patch
+tool/research/sync/test_fixture.py:13:class DisposableSafetyTests(unittest.TestCase):
+tool/research/sync/test_fixture.py:162:    unittest.main()
+tool/research/sync/fixture.py:154:def seed_media():
+tool/research/sync/fixture.py:180:    with zipfile.ZipFile(ebook / "Synthetic Work.epub", "w") as archive:
+tool/research/sync/fixture.py:181:        archive.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+tool/research/sync/fixture.py:182:        archive.writestr("META-INF/container.xml", '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0"><rootfiles><rootfile full-path="content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>')
+tool/research/sync/fixture.py:183:        archive.writestr("content.opf", '<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Synthetic Work</dc:title><dc:creator>Research Author</dc:creator><dc:identifier id="id">urn:bookfin:synthetic</dc:identifier><dc:language>en</dc:language></metadata><manifest><item id="chapter" href="chapter.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="chapter"/></spine></package>')
+tool/research/sync/fixture.py:184:        archive.writestr("chapter.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>Synthetic only</h1><p>Disposable research.</p></body></html>')
+tool/research/sync/fixture.py:191:    seed_media()
+tool/research/sync/fixture.py:248:    commands = {"prepare": prepare, "serve": serve, "wait": wait_ready, "seed": seed, "seed-media": seed_media, "stop": stop}
+tool/research/readers/navigator/semantic_fixture.py:24:    with zipfile.ZipFile(destination, 'w') as archive:
+tool/research/readers/navigator/semantic_fixture.py:26:            archive.writestr(zipfile.ZipInfo(name, (2026, 11, 2, 0, 0, 0)), content)
+tool/research/epub_engines/test_run.py:5:import unittest
+tool/research/epub_engines/test_run.py:16:class QuietHostTest(unittest.TestCase):
+tool/research/epub_engines/test_run.py:27:class SampledTest(unittest.TestCase):
+tool/research/epub_engines/test_run.py:34:class MeasureQuietlyTest(unittest.TestCase):
+tool/research/epub_engines/test_run.py:68:    unittest.main()
+tool/research/readers/navigator/prepare.py:39:    with zipfile.ZipFile(source) as archive:
+tool/research/readers/navigator/prepare.py:106:    with zipfile.ZipFile(converted / 'alice.epub') as archive:
+tool/research/readers/navigator/test_raster_fallback.py:3:import unittest
+tool/research/readers/navigator/test_raster_fallback.py:14:class RasterFallbackTests(unittest.TestCase):
+tool/research/readers/navigator/test_raster_fallback.py:16:        with zipfile.ZipFile(BOOK) as archive:
+tool/research/readers/navigator/test_raster_fallback.py:25:        with zipfile.ZipFile(BOOK) as archive:
+tool/research/readers/navigator/test_raster_fallback.py:46:                    with zipfile.ZipFile(output, 'w') as changed:
+tool/research/readers/navigator/test_raster_fallback.py:47:                        changed.writestr(SVG, content)
+tool/research/readers/navigator/test_raster_fallback.py:48:                        changed.writestr('OEBPS/resource00000.jpg', archive.read('OEBPS/resource00000.jpg'))
+tool/research/readers/navigator/test_raster_fallback.py:49:                    with zipfile.ZipFile(output) as changed:
+tool/research/readers/navigator/test_raster_fallback.py:53:        with zipfile.ZipFile(BOOK) as archive:
+tool/research/readers/navigator/test_raster_fallback.py:55:            with zipfile.ZipFile(output, 'w') as changed:
+tool/research/readers/navigator/test_raster_fallback.py:56:                changed.writestr(SVG, archive.read(SVG))
+tool/research/readers/navigator/test_raster_fallback.py:57:                changed.writestr('OEBPS/resource00000.jpg', (ROOT / 'tool/research/readers/fixtures/dot.png').read_bytes())
+tool/research/readers/navigator/test_raster_fallback.py:58:            with zipfile.ZipFile(output) as changed:
+tool/research/readers/navigator/test_raster_fallback.py:63:    unittest.main()
+tool/research/epub_engines/test_tables.py:1:import unittest
+tool/research/epub_engines/test_tables.py:24:class TablesTest(unittest.TestCase):
+tool/research/epub_engines/test_tables.py:48:    unittest.main()
+tool/research/epub_engines/test_rerun.py:4:import unittest
+tool/research/epub_engines/test_rerun.py:48:class FreshOpenPreparedAtDownloadTest(unittest.TestCase):
+tool/research/epub_engines/test_rerun.py:75:class KeptPageOfACachedReopenTest(unittest.TestCase):
+tool/research/epub_engines/test_rerun.py:111:class RerunTableTest(unittest.TestCase):
+tool/research/epub_engines/test_rerun.py:132:    unittest.main()
+tool/research/epub_engines/test_preparation.py:2:import unittest
+tool/research/epub_engines/test_preparation.py:69:class PreparedPageIntervalTest(unittest.TestCase):
+tool/research/epub_engines/test_preparation.py:228:class DrawnPageIntervalTest(unittest.TestCase):
+tool/research/epub_engines/test_preparation.py:317:    unittest.main()
+tool/research/epub_engines/test_results.py:2:import unittest
+tool/research/epub_engines/test_results.py:25:class ResultsTest(unittest.TestCase):
+tool/research/epub_engines/test_results.py:112:    unittest.main()
+tool/research/epub_engines/test_protocol.py:2:import unittest
+tool/research/epub_engines/test_protocol.py:15:class ScheduleTest(unittest.TestCase):
+tool/research/epub_engines/test_protocol.py:90:    unittest.main()
+tool/research/epub_engines/build.sh:30:flutter pub get > "$evidence/flutter-pub-get.txt" 2>&1
+tool/research/epub_engines/test_collect.py:7:import unittest
+tool/research/epub_engines/test_collect.py:11:class PartialEvidenceTest(unittest.TestCase):
+tool/research/epub_engines/test_calibrate.py:1:import unittest
+tool/research/epub_engines/test_calibrate.py:9:from unittest.mock import patch
+tool/research/epub_engines/test_calibrate.py:15:class SourceEvidenceTest(unittest.TestCase):
+tool/research/epub_engines/test_calibrate.py:37:class ReferencePromotionTest(unittest.TestCase):
+tool/research/epub_engines/test_calibrate.py:48:        with zipfile.ZipFile(assets / "fixture.epub", "w") as archive:
+tool/research/epub_engines/test_calibrate.py:49:            archive.writestr("chapter.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body>' + text + '</body></html>')
+tool/research/epub_engines/test_phase_adapters.py:5:import unittest
+tool/research/epub_engines/test_phase_adapters.py:29:class WebClockTest(unittest.TestCase):
+tool/research/epub_engines/test_phase_adapters.py:36:class WebPageImagesTest(unittest.TestCase):
+tool/research/epub_engines/test_phase_adapters.py:51:class WebDrawingFrameTest(unittest.TestCase):
+tool/research/epub_engines/test_phase_adapters.py:112:class WebFrameWatchTest(unittest.TestCase):
+tool/research/epub_engines/test_phase_adapters.py:171:    unittest.main()
+tool/research/epub_engines/prepare.py:32:    with zipfile.ZipFile(path) as archive:
+tool/research/readers/test_native_conversion.py:5:import unittest
+tool/research/readers/test_native_conversion.py:9:class AndroidConversionBoundary(unittest.TestCase):
+tool/research/readers/test_native_conversion.py:27:                with zipfile.ZipFile(destination) as book:
+tool/research/readers/test_native_conversion.py:45:    unittest.main()
+tool/research/epub_engines/calibrate.py:67:        with zipfile.ZipFile(args.assets / book["file"]) as archive:
+tool/research/epub_engines/test_prepare.py:3:import unittest
+tool/research/epub_engines/test_prepare.py:9:class CorpusDescriptionTest(unittest.TestCase):
+tool/research/epub_engines/test_prepare.py:28:            with zipfile.ZipFile(book, "w") as archive:
+tool/research/epub_engines/test_prepare.py:29:                archive.writestr("META-INF/container.xml", '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="EPUB/package.opf"/></rootfiles></container>')
+tool/research/epub_engines/test_prepare.py:30:                archive.writestr("EPUB/package.opf", '<package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="first" href="first.xhtml"/><item id="second" href="second.xhtml"/><item id="nav" href="nav.xhtml" properties="nav"/></manifest><spine><itemref idref="second"/><itemref idref="first"/></spine></package>')
+tool/research/epub_engines/test_prepare.py:31:                archive.writestr("EPUB/first.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>I</h1><p>The first story.</p><img src="picture.jpg"/></body></html>')
+tool/research/epub_engines/test_prepare.py:32:                archive.writestr("EPUB/second.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body><h1>II</h1><p>The second story.</p></body></html>')
+tool/research/epub_engines/test_prepare.py:33:                archive.writestr("EPUB/nav.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body><nav><a href="first.xhtml#chapter">One: The beginning</a><a href="second.xhtml">Two</a></nav></body></html>')
+tool/research/epub_engines/test_prepare.py:42:    unittest.main()
+tool/research/readers/flutter_smoke/main.dart:334:                  'EPUBX compatibility candidate. Plain text and first image, not an EPUB navigator.',
+tool/research/readers/dart_compat/test/compat_test.dart:51:      ArchiveFile(
+tool/research/readers/dart_compat/test/compat_test.dart:57:    final book = await EpubReader.openBook(ZipEncoder().encode(archive));
+tool/research/epub_engines/test_validation.py:1:import unittest
+tool/research/epub_engines/test_validation.py:23:class IndependentReferenceTest(unittest.TestCase):
+tool/research/readers/corpus_probe.py:35:    with zipfile.ZipFile(path) as archive:
+tool/research/readers/corpus_probe.py:175:            with zipfile.ZipFile(path) as archive:
+tool/research/readers/navigator/widget/test/security_gate_probe.dart:28:    final bytes = ZipEncoder().encode(
+tool/research/readers/navigator/widget/test/security_gate_probe.dart:29:      Archive()..addFile(ArchiveFile.string('active.svg', svg)),
+tool/research/readers/test_readers.py:5:import unittest
+tool/research/readers/test_readers.py:11:class ReadingProof(unittest.TestCase):
+tool/research/readers/test_readers.py:63:    unittest.main(verbosity=2)
+tool/research/readers/navigator/widget/test/resources_test.dart:211:    final bytes = ZipEncoder().encode(
+tool/research/readers/navigator/widget/test/resources_test.dart:212:      Archive()..addFile(ArchiveFile.string('active.svg', source)),

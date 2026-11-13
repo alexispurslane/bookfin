@@ -1,0 +1,198 @@
+[
+  {
+    "clock": "2026-01-01T12:00:00.000",
+    "changed": false,
+    "sha256": "34c27b2db77c3abf24e5dc9caad20e7a0e17a97976b6944393b094939ba5885a",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": 1794608658,
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": "none",
+        "mode": 420
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": 1794608658,
+        "payloadSha256": "f4a3370e582d3b476e387d13a2ed74c400bb3bc336cbd3751b96ca18e3ce5997",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/part00000.html",
+        "time": 1794608658,
+        "payloadSha256": "cbac5682d2e313051d04b126e20f3e23a774560404c70c67fa1cf912c238be5c",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00000.png",
+        "time": 1794608658,
+        "payloadSha256": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00001.ncx",
+        "time": 1794608658,
+        "payloadSha256": "7ad6cb2adbd8a0c14a00cc598ad802d036ff30c6a2f25d239bd7a7f7728f76d4",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/content.opf",
+        "time": 1793505600,
+        "payloadSha256": "43c942cfa2f349326013acfe0e712b8672a22afbda9a3eaf967c28fb2c2f5bfd",
+        "compression": "deflate",
+        "mode": 420
+      }
+    ]
+  },
+  {
+    "clock": "2026-01-01T12:00:02.000",
+    "changed": false,
+    "sha256": "34c27b2db77c3abf24e5dc9caad20e7a0e17a97976b6944393b094939ba5885a",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": 1794608658,
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": "none",
+        "mode": 420
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": 1794608658,
+        "payloadSha256": "f4a3370e582d3b476e387d13a2ed74c400bb3bc336cbd3751b96ca18e3ce5997",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/part00000.html",
+        "time": 1794608658,
+        "payloadSha256": "cbac5682d2e313051d04b126e20f3e23a774560404c70c67fa1cf912c238be5c",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00000.png",
+        "time": 1794608658,
+        "payloadSha256": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00001.ncx",
+        "time": 1794608658,
+        "payloadSha256": "7ad6cb2adbd8a0c14a00cc598ad802d036ff30c6a2f25d239bd7a7f7728f76d4",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/content.opf",
+        "time": 1793505600,
+        "payloadSha256": "43c942cfa2f349326013acfe0e712b8672a22afbda9a3eaf967c28fb2c2f5bfd",
+        "compression": "deflate",
+        "mode": 420
+      }
+    ]
+  },
+  {
+    "clock": "2026-01-01T12:00:00.000",
+    "changed": false,
+    "sha256": "34c27b2db77c3abf24e5dc9caad20e7a0e17a97976b6944393b094939ba5885a",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": 1794608658,
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": "none",
+        "mode": 420
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": 1794608658,
+        "payloadSha256": "f4a3370e582d3b476e387d13a2ed74c400bb3bc336cbd3751b96ca18e3ce5997",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/part00000.html",
+        "time": 1794608658,
+        "payloadSha256": "cbac5682d2e313051d04b126e20f3e23a774560404c70c67fa1cf912c238be5c",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00000.png",
+        "time": 1794608658,
+        "payloadSha256": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00001.ncx",
+        "time": 1794608658,
+        "payloadSha256": "7ad6cb2adbd8a0c14a00cc598ad802d036ff30c6a2f25d239bd7a7f7728f76d4",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/content.opf",
+        "time": 1793505600,
+        "payloadSha256": "43c942cfa2f349326013acfe0e712b8672a22afbda9a3eaf967c28fb2c2f5bfd",
+        "compression": "deflate",
+        "mode": 420
+      }
+    ]
+  },
+  {
+    "clock": "2026-01-01T12:00:00.000",
+    "changed": true,
+    "sha256": "2fd7eb813f61d7bed5c227fe1b82f2c58cfc2e8db71b7a8e7c7f2e7cb005d042",
+    "entries": [
+      {
+        "name": "mimetype",
+        "time": 1794608658,
+        "payloadSha256": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b",
+        "compression": "none",
+        "mode": 420
+      },
+      {
+        "name": "META-INF/container.xml",
+        "time": 1794608658,
+        "payloadSha256": "f4a3370e582d3b476e387d13a2ed74c400bb3bc336cbd3751b96ca18e3ce5997",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/part00000.html",
+        "time": 1794608658,
+        "payloadSha256": "cbac5682d2e313051d04b126e20f3e23a774560404c70c67fa1cf912c238be5c",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00000.png",
+        "time": 1794608658,
+        "payloadSha256": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/resource00001.ncx",
+        "time": 1794608658,
+        "payloadSha256": "7ad6cb2adbd8a0c14a00cc598ad802d036ff30c6a2f25d239bd7a7f7728f76d4",
+        "compression": "deflate",
+        "mode": 420
+      },
+      {
+        "name": "OEBPS/content.opf",
+        "time": 1793505600,
+        "payloadSha256": "c4807d8bb052a53febdfc5dbebba5ca584a3f36ef14200c15ceaf32e4b19a8bc",
+        "compression": "deflate",
+        "mode": 420
+      }
+    ]
+  }
+]
