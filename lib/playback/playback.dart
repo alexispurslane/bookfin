@@ -1783,7 +1783,11 @@ class Playback extends ChangeNotifier {
     // status of [_persistChanges]. A bug in the save goes to the zone, and
     // the queue runs the next save all the same. The changes stay pending,
     // so the next save and [flush] send them again.
-    unawaited(_writes.run(() => _persistChanges(accountKey, value)));
+    unawaited(
+      _writes
+          .run(() => _persistChanges(accountKey, value))
+          .onError<Exception>((error, stack) {}),
+    );
   }
 
   Future<void> _persistChanges(
@@ -1796,7 +1800,7 @@ class Playback extends ChangeNotifier {
         final status = _status;
         _pendingWrites.remove(accountKey);
         _failedAccounts.remove(accountKey);
-        if (_session?.scope.key == accountKey) {
+        if (!_closed && _session?.scope.key == accountKey) {
           if (_message ==
               'Personal records could not be saved. Free storage and try again.') {
             _message = null;
@@ -1812,9 +1816,12 @@ class Playback extends ChangeNotifier {
             'Personal records could not be saved. Free storage and try again.';
         _notify();
       }
+      rethrow;
     }
   }
 
+  /// Saves the current place and retries pending changes of every account.
+  /// A retry failure goes to the caller and leaves its changes pending.
   Future<void> flush() async {
     final generation = _generation;
     await _binding;
@@ -1822,28 +1829,36 @@ class Playback extends ChangeNotifier {
     if (generation != _generation) return;
     if (_decoderAnchor != _recordedDecoderAnchor) _save();
     await _writes.idle;
-    final accountKey = _session?.scope.key;
-    final pending = _pendingWrites[accountKey];
-    if (accountKey != null && pending != null && generation == _generation) {
-      await _writes.run(() => _persistChanges(accountKey, pending));
-    }
+    // An account change keeps pending records under their original account.
+    // They need a retry even after that account was unbound.
+    await Future.wait([
+      for (final entry in _pendingWrites.entries)
+        _writes.run(() => _persistChanges(entry.key, entry.value)),
+    ]);
     await reports?.idle;
   }
 
+  /// Stops playback and flushes records before releasing its resources.
+  /// Teardown completes even when the final save fails. That failure goes
+  /// to the caller and the pending changes remain available to [flush].
   Future<void> close() async {
     if (_closed) return;
-    await stop();
-    reports?.stop();
-    await reports?.idle;
-    reports?.close();
-    _closed = true;
-    _cancelSleep();
-    await _samples.cancel();
-    await engine.close();
-    for (final signal in _signals) {
-      signal.dispose();
+    try {
+      await stop();
+      await flush();
+    } finally {
+      reports?.stop();
+      await reports?.idle;
+      reports?.close();
+      _closed = true;
+      _cancelSleep();
+      await _samples.cancel();
+      await engine.close();
+      for (final signal in _signals) {
+        signal.dispose();
+      }
+      super.dispose();
     }
-    super.dispose();
   }
 
   List<ChangeNotifier> get _signals => [

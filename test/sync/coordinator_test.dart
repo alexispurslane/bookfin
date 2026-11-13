@@ -20,6 +20,7 @@ void main() {
   for (final durable in [false, true]) {
     group(durable ? 'SQLite' : 'preferences', () {
       RecordDatabase? database;
+      Directory? directory;
       late SyncFixture fixture;
       late LocalResumeStore records;
       late audio.TestEngine engine;
@@ -30,15 +31,13 @@ void main() {
       setUp(() async {
         SharedPreferences.setMockInitialValues({});
         if (durable) {
-          final directory = await Directory.systemTemp.createTemp(
+          directory = await Directory.systemTemp.createTemp(
             'bookfin-coordinator-',
           );
-          addTearDown(() => directory.delete(recursive: true));
           database = await RecordDatabase.open(
             factory: databaseFactoryFfi,
-            path: '${directory.path}/records.sqlite',
+            path: '${directory!.path}/records.sqlite',
           );
-          addTearDown(() => database!.close());
         }
         fixture = await SyncFixture.open();
         records = LocalResumeStore(
@@ -81,6 +80,8 @@ void main() {
         await player.close();
         downloads.dispose();
         await fixture.close();
+        await database?.close();
+        await directory?.delete(recursive: true);
       });
 
       Future<int> savedMilliseconds() async {

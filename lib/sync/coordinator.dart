@@ -16,7 +16,7 @@ import 'journal.dart' show DeepCollectionEquality;
 ///   not saved. Null otherwise.
 typedef RecordSyncStatus = ({bool busy, String? message});
 
-/// Why a sync failed.
+/// Why a sync or the records refresh after it failed.
 enum RecordSyncFailure {
   /// Jellyfin could not be reached: no network, a timeout, or a server
   /// error.
@@ -27,10 +27,12 @@ enum RecordSyncFailure {
   /// follow the storage contract.
   pluginMissing,
 
-  /// The personal records on this phone could not be read: by the sync
-  /// itself, or by Playback or the reader when they refreshed after a sync
-  /// that reached Jellyfin.
+  /// The sync could not read the personal records on this phone.
   unreadable,
+
+  /// The exchange with Jellyfin succeeded, but Playback or the reader
+  /// could not refresh its records. The next sync retries that refresh.
+  refreshFailed,
 
   /// Another cause, for example storage on this phone that could not be
   /// written, or a sign-in that expired.
@@ -39,9 +41,9 @@ enum RecordSyncFailure {
 
 /// How the latest sync ended.
 /// - [at]: when it ended.
-/// - [failure]: why it failed, or null when it succeeded.
-/// - [synced]: when the latest successful sync of this account ended, or
-///   null before the first one. A failed sync keeps it.
+/// - [failure]: why the sync or the refresh failed, or null when both worked.
+/// - [synced]: when the latest successful exchange with Jellyfin ended, or
+///   null before the first one. A failed refresh still advances it.
 /// - [replaced]: how many damaged records on this phone it replaced by the
 ///   server's copy.
 typedef RecordSyncOutcome = ({
@@ -339,7 +341,7 @@ class RecordSync {
       // The sync itself succeeded. A refresh that failed after it changes
       // only the failure, to its own kind.
       return _ended(
-        failure: refreshed ? null : RecordSyncFailure.unreadable,
+        failure: refreshed ? null : RecordSyncFailure.refreshFailed,
         replaced: replaced,
       );
     } on Exception catch (error) {
@@ -382,7 +384,13 @@ class RecordSync {
     _lastSync.value = (
       at: at,
       failure: failure,
-      synced: failure == null ? at : _lastSync.value?.synced,
+      synced: switch (failure) {
+        null || RecordSyncFailure.refreshFailed => at,
+        RecordSyncFailure.unreachable ||
+        RecordSyncFailure.pluginMissing ||
+        RecordSyncFailure.unreadable ||
+        RecordSyncFailure.other => _lastSync.value?.synced,
+      },
       replaced: replaced,
     );
     return (message: null);

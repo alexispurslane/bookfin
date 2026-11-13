@@ -206,6 +206,11 @@ class RecordSyncView extends StatelessWidget {
       title: 'Personal records could not be read',
       text: 'Existing records were kept. Restart Bookfin before syncing again.',
     ),
+    RecordSyncFailure.refreshFailed => const SyncBanner(
+      icon: Icons.sync_problem_rounded,
+      title: 'Synced records could not be shown',
+      text: 'The sync finished. Bookfin shows the new records after the next sync.',
+    ),
     RecordSyncFailure.other => SyncBanner(
       icon: Icons.sync_problem_rounded,
       title: 'Sync did not finish',
@@ -252,41 +257,50 @@ class SyncStatusStrip extends StatelessWidget {
       final outcome = line.outcome;
       final synced = outcome?.synced;
       final failure = outcome?.failure;
-      final (title, detail, button) = switch (failure) {
-        _ when line.busy => (
-          'Syncing…',
-          synced == null
-              ? 'Sending this phone’s changes'
-              : 'Last synced ${_when(context, synced)}',
-          'Sync now',
-        ),
-        RecordSyncFailure.pluginMissing => (
-          'Sync is off',
-          'Records stay on this phone',
-          'Check again',
-        ),
-        final RecordSyncFailure _ => (
-          'Not syncing',
-          [
-            if (synced != null) 'Last synced ${_when(context, synced)}',
-            '${synced == null ? 'Tried' : 'tried'} ${_when(context, outcome!.at)}',
-          ].join(' · '),
-          'Retry',
-        ),
-        _ when line.waiting > 0 => (
-          line.waiting == 1 ? '1 choice waits' : '${line.waiting} choices wait',
-          synced == null
-              ? 'Not synced yet'
-              : 'Synced ${_when(context, synced)}',
-          'Sync now',
-        ),
-        _ when synced != null => (
-          'Synced',
-          '${_when(context, synced)} · Jellyfin',
-          'Sync now',
-        ),
-        _ => ('Not synced yet', 'Records stay on this phone', 'Sync now'),
-      };
+      final (title, detail, button) = line.busy
+          ? (
+              'Syncing…',
+              synced == null
+                  ? 'Sending this phone’s changes'
+                  : 'Last synced ${_when(context, synced)}',
+              'Sync now',
+            )
+          : switch (failure) {
+              RecordSyncFailure.pluginMissing => (
+                'Sync is off',
+                'Records stay on this phone',
+                'Check again',
+              ),
+              RecordSyncFailure.unreachable ||
+              RecordSyncFailure.unreadable ||
+              RecordSyncFailure.other => (
+                'Not syncing',
+                [
+                  if (synced != null) 'Last synced ${_when(context, synced)}',
+                  '${synced == null ? 'Tried' : 'tried'} ${_when(context, outcome!.at)}',
+                ].join(' · '),
+                'Retry',
+              ),
+              null || RecordSyncFailure.refreshFailed when line.waiting > 0 => (
+                line.waiting == 1
+                    ? '1 choice waits'
+                    : '${line.waiting} choices wait',
+                synced == null
+                    ? 'Not synced yet'
+                    : 'Synced ${_when(context, synced)}',
+                'Sync now',
+              ),
+              null || RecordSyncFailure.refreshFailed when synced != null => (
+                'Synced',
+                '${_when(context, synced)} · Jellyfin',
+                'Sync now',
+              ),
+              null || RecordSyncFailure.refreshFailed => (
+                'Not synced yet',
+                'Records stay on this phone',
+                'Sync now',
+              ),
+            };
       final warn = !line.busy && (failure != null || line.waiting > 0);
       return Container(
         constraints: const BoxConstraints(minHeight: 54),

@@ -102,14 +102,20 @@ void main() {
   late _Reader reader;
   late _Records records;
   late RecordSync sync;
+  late DateTime clock;
 
   setUp(() async {
     downloads = LocalFiles();
     playback = _Playback(downloads);
     reader = _Reader(downloads);
     records = _Records();
-    sync = RecordSync(records: records, playback: playback, reader: reader)
-      ..bind(account());
+    clock = DateTime(2026, 11, 7, 16, 29);
+    sync = RecordSync(
+      records: records,
+      playback: playback,
+      reader: reader,
+      now: () => clock,
+    )..bind(account());
     // Signing in syncs at once. These tests start after that sync.
     await pumpEventQueue();
     playback.refreshes = 0;
@@ -216,14 +222,14 @@ void main() {
       expect(playback.refreshes, 1);
     });
 
-    test('ends the sync as one whose records could not be read', () async {
+    test('reports a refresh failure after the exchange succeeded', () async {
       records.stale = (listening: false, reading: true);
       reader.refreshFailure = Exception('The reading records failed.');
       await sync.synchronize();
 
       expect(
         sync.lastSyncNotifier.value?.failure,
-        RecordSyncFailure.unreadable,
+        RecordSyncFailure.refreshFailed,
       );
     });
 
@@ -234,19 +240,37 @@ void main() {
 
       expect(
         sync.lastSyncNotifier.value?.failure,
-        RecordSyncFailure.unreadable,
+        RecordSyncFailure.refreshFailed,
       );
     });
 
-    test('keeps the number of records that the sync restored from Jellyfin', () async {
-      records
-        ..stale = (listening: true, reading: false)
-        ..replaced = 2;
-      playback.refreshFailure = Exception('The listening records failed.');
-      await sync.synchronize();
+    test(
+      'advances the last successful sync time despite the failed refresh',
+      () async {
+        records.stale = (listening: true, reading: false);
+        playback.refreshFailure = Exception('The listening records failed.');
+        clock = DateTime(2026, 11, 7, 16, 30);
+        await sync.synchronize();
 
-      expect(sync.lastSyncNotifier.value?.replaced, 2);
-    });
+        expect(
+          sync.lastSyncNotifier.value?.synced,
+          DateTime(2026, 11, 7, 16, 30),
+        );
+      },
+    );
+
+    test(
+      'keeps the number of records that the sync restored from Jellyfin',
+      () async {
+        records
+          ..stale = (listening: true, reading: false)
+          ..replaced = 2;
+        playback.refreshFailure = Exception('The listening records failed.');
+        await sync.synchronize();
+
+        expect(sync.lastSyncNotifier.value?.replaced, 2);
+      },
+    );
 
     test('still shows the choices that the sync found', () async {
       records
@@ -296,59 +320,65 @@ void main() {
     expect(reader.refreshes, 1);
   });
 
-  group('a listening refresh that cannot read the store, while audio plays', () {
-    late TestEngine engine;
-    late MemoryResume store;
-    late Playback playing;
-    late RecordSync sync;
+  group(
+    'a listening refresh that cannot read the store, while audio plays',
+    () {
+      late TestEngine engine;
+      late MemoryResume store;
+      late Playback playing;
+      late RecordSync sync;
 
-    setUp(() async {
-      engine = TestEngine();
-      store = MemoryResume();
-      playing = Playback(downloads: downloads, engine: engine, store: store);
-      await playing.bind(account(), [title]);
-      await playing.open(title, recording);
-      sync = RecordSync(records: records, playback: playing)..bind(account());
-      // Signing in syncs at once. These tests start after that sync.
-      await pumpEventQueue();
-      records.stale = (listening: true, reading: false);
-      store.failRead = true;
-    });
-    tearDown(() async {
-      sync.dispose();
-      await playing.close();
-    });
+      setUp(() async {
+        engine = TestEngine();
+        store = MemoryResume();
+        playing = Playback(downloads: downloads, engine: engine, store: store);
+        await playing.bind(account(), [title]);
+        await playing.open(title, recording);
+        sync = RecordSync(records: records, playback: playing)..bind(account());
+        // Signing in syncs at once. These tests start after that sync.
+        await pumpEventQueue();
+        records.stale = (listening: true, reading: false);
+        store.failRead = true;
+      });
+      tearDown(() async {
+        sync.dispose();
+        await playing.close();
+      });
 
-    test('ends a background sync as one whose records could not be read', () async {
-      await sync.synchronize();
+      test(
+        'reports a background refresh failure after the exchange succeeded',
+        () async {
+          await sync.synchronize();
 
-      expect(
-        sync.lastSyncNotifier.value?.failure,
-        RecordSyncFailure.unreadable,
+          expect(
+            sync.lastSyncNotifier.value?.failure,
+            RecordSyncFailure.refreshFailed,
+          );
+        },
       );
-    });
 
-    test('leaves the audio playing through a background sync', () async {
-      await sync.synchronize();
+      test('leaves the audio playing through a background sync', () async {
+        await sync.synchronize();
 
-      expect(engine.isPlaying, isTrue);
-      expect(playing.playing, isTrue);
-      expect(playing.message, isNull);
-    });
+        expect(engine.isPlaying, isTrue);
+        expect(playing.playing, isTrue);
+        expect(playing.message, isNull);
+      });
 
-    test('reports nothing after a retry of kept copies', () async {
-      await sync.recoverKept();
+      test('reports nothing after a retry of kept copies', () async {
+        await sync.recoverKept();
 
-      expect(sync.message, isNull);
-      expect(sync.lastSyncNotifier.value?.failure, isNull);
-    });
+        expect(sync.message, isNull);
+        expect(sync.lastSyncNotifier.value?.failure, isNull);
+      });
 
-    test('leaves the audio playing after a retry of kept copies', () async {
-      await sync.recoverKept();
+      test('leaves the audio playing after a retry of kept copies', () async {
+        await sync.recoverKept();
 
-      expect(engine.isPlaying, isTrue);
-      expect(playing.playing, isTrue);
-      expect(playing.message, isNull);
-    });
-  });
+        expect(engine.isPlaying, isTrue);
+        expect(playing.playing, isTrue);
+        expect(playing.message, isNull);
+      });
+    },
+  );
 }

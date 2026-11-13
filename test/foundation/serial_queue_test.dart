@@ -25,38 +25,38 @@ void main() {
     expect(log, ['first starts', 'first ends', 'second starts']);
   });
 
-  test('gives the caller of a run the value of its work', () async {
-    expect(await queue.run(() async => 7), 7);
-  });
-
   test('gives the caller of a run the failure of its work', () async {
     await expectLater(
-      queue.run<void>(() async => throw StateError('A bug in the work.')),
+      queue.run(() async => throw StateError('A bug in the work.')),
       throwsStateError,
     );
     await expectLater(
-      queue.run<void>(() async => throw const FormatException('Bad data.')),
+      queue.run(() async => throw const FormatException('Bad data.')),
       throwsFormatException,
     );
   });
 
   test('runs the work that was queued after a failed run', () async {
-    final failed = queue.run<void>(
+    final failed = queue.run(
       () async => throw StateError('A bug in the work.'),
     );
-    final later = queue.run(() async => 'ran');
+    var ran = false;
+    final later = queue.run(() async {
+      ran = true;
+    });
 
     await expectLater(failed, throwsStateError);
-    expect(await later, 'ran');
+    await later;
+    expect(ran, isTrue);
   });
 
-  test('gives a later caller its own result, not an earlier failure', () async {
+  test('completes a later call without the earlier failure', () async {
     await expectLater(
-      queue.run<void>(() async => throw StateError('A bug in the work.')),
+      queue.run(() async => throw StateError('A bug in the work.')),
       throwsStateError,
     );
 
-    expect(await queue.run(() async => 'ran'), 'ran');
+    await expectLater(queue.run(() async {}), completes);
   });
 
   group('idle', () {
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('completes normally after a run that failed', () async {
-      final failed = queue.run<void>(
+      final failed = queue.run(
         () async => throw StateError('A bug in the work.'),
       );
 
@@ -101,24 +101,27 @@ void main() {
     });
   });
 
-  test('reports the failure of a run that nothing awaits once, to the zone', () async {
-    final uncaught = <Object>[];
-    final done = Completer<void>();
-    runZonedGuarded(() async {
-      final queue = SerialQueue();
-      try {
-        unawaited(
-          queue.run<void>(() async => throw StateError('A bug in the work.')),
-        );
-        await queue.run(() async {});
-        await queue.idle;
-        await pumpEventQueue();
-      } finally {
-        done.complete();
-      }
-    }, (error, stack) => uncaught.add(error));
-    await done.future;
+  test(
+    'reports the failure of a run that nothing awaits once, to the zone',
+    () async {
+      final uncaught = <Object>[];
+      final done = Completer<void>();
+      runZonedGuarded(() async {
+        final queue = SerialQueue();
+        try {
+          unawaited(
+            queue.run(() async => throw StateError('A bug in the work.')),
+          );
+          await queue.run(() async {});
+          await queue.idle;
+          await pumpEventQueue();
+        } finally {
+          done.complete();
+        }
+      }, (error, stack) => uncaught.add(error));
+      await done.future;
 
-    expect(uncaught, [isStateError]);
-  });
+      expect(uncaught, [isStateError]);
+    },
+  );
 }

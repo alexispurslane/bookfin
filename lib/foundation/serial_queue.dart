@@ -13,15 +13,21 @@ final class SerialQueue {
 
   /// Starts [work] after every run that was queued before it has ended.
   ///
-  /// The returned future completes as [work] completed: with its value, or
+  /// The returned future completes as [work] completed: normally, or
   /// with its failure. A failure of any type goes only there. It reaches
   /// the caller, or the zone when the caller drops the future. It does not
   /// reach [idle] or a later run.
-  Future<T> run<T>(Future<T> Function() work) {
-    final result = Completer<T>();
+  ///
+  /// Work that queues another run on this queue and awaits it never
+  /// completes. The new run waits for the current run to end, so the
+  /// current run waits for itself. Waiting for [idle] inside work has the
+  /// same problem.
+  Future<void> run(Future<void> Function() work) {
+    final result = Completer<void>();
     _last = _last.then((_) async {
       try {
-        result.complete(await work());
+        await work();
+        result.complete();
       } catch (error, stack) {
         // This hands the failure to the caller of this run. It does not
         // recover from it.
