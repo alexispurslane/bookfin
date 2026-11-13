@@ -317,6 +317,17 @@ class RecordDatabase {
   /// Reads the record file from another isolate.
   final RecordReader reader;
 
+  /// Reads only the authoritative rows in the file this owner just kept
+  /// aside. Older archived rows can contain rejected immutable payloads and
+  /// must never participate in reconstructing this file's committed state.
+  RecordReader get recoveryReader {
+    final source = keptFile;
+    if (source == null) {
+      throw StateError('No damaged record file awaits reconstruction.');
+    }
+    return RecordReader._(source, reader._files);
+  }
+
   /// The name of the copy of a record file that SQLite reported as damaged,
   /// or null while the file is intact. [open], or a later read or write that
   /// found damaged pages, copied the damaged file and its write-ahead log to

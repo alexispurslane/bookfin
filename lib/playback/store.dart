@@ -109,9 +109,10 @@ const _inlineMetadataText = 512;
 /// write, the database keeps the whole file aside and continues on a new
 /// file ([RecordFileSetAside]). The store then writes every account that it
 /// holds in memory into the new file, rejoining readable retained actions
-/// from the kept file and including the write in progress. Damaged pages
-/// that hide predecessors use the existing salvage transition, and
-/// [setAside] reports the damage for every account. Until that rewrite
+/// from that file's authoritative rows and including the write in progress.
+/// Archived rejected payloads never override those rows. If predecessors
+/// remain unavailable, reconstruction fails instead of losing committed
+/// deletions or competing versions; [setAside] reports the damage. Until that rewrite
 /// succeeds, memory holds the only copy of those accounts outside the kept
 /// file, so the store keeps all of them, and each later operation first
 /// tries the rewrite again.
@@ -1082,7 +1083,7 @@ class LocalResumeStore
     _keptCopy();
     final restored = await _derive(_recoverAccounts, (
       accounts: Map.of(_accounts),
-      reader: database.reader,
+      reader: database.recoveryReader,
     ), small: _accounts.isEmpty);
     await database.writeCommits([
       for (final account in restored.values) account.commit!,
@@ -1639,73 +1640,51 @@ Future<Map<String, dynamic>> _readFullSync(
   return RecordDatabase.decode(read.rows!)['sync'] as Map<String, dynamic>;
 }
 
-/// Rejoins every readable retained payload after a file was kept aside. The
-/// resident journal supplies the latest pending state and uncommitted changes.
+/// Replays the just-damaged file's authoritative originals with the resident
+/// current, held and uncommitted actions. Reconstruction must reproduce all
+/// committed state, including deletions and competing versions. An incomplete
+/// replay fails without replacing the cached accounts or their kept file.
 Future<Map<String, _Restored>> _recoverAccounts(
   ({Map<String, _StoredAccount> accounts, RecordReader reader}) input,
 ) async {
-  if (input.accounts.isEmpty) return {};
-  final kept = await input.reader.kept();
   final result = <String, _Restored>{};
   for (final MapEntry(key: account, value: stored) in input.accounts.entries) {
     final resident = stored.journal.recoveryState();
+    final source = await input.reader.rows(account);
     final actions = <String, Map<String, dynamic>>{
-      for (final copy in kept.rows.where((copy) => copy.account == account))
-        ..._readableActions(account, _readableRows(copy.rows).actions),
+      if (source.rows case final rows?)
+        ..._readableActions(account, _readableRows(rows).actions),
       for (final action
           in (resident['actions'] as List).cast<Map<String, dynamic>>())
         RecordJournal.identity(action): action,
     };
-    try {
-      final journal = _journal(account, {
-        'sync': {...resident, 'actions': actions.values.toList()},
-      });
-      if (!const DeepCollectionEquality().equals(
-            journal.current,
-            stored.journal.current,
-          ) ||
-          !const DeepCollectionEquality().equals(
-            journal.coverage,
-            stored.journal.coverage,
-          )) {
-        throw const FormatException(
-          'The damaged file lacks applied predecessors.',
-        );
-      }
-      result[account] = (
-        stored: (metadata: stored.metadata, journal: journal),
-        views: _views(stored.metadata, journal.values),
-        persist: true,
-        damaged: false,
-        commit: RecordDatabase.encodeCommit(
-          account,
-          stored.metadata,
-          journal,
-          initialize: true,
-        ),
+    final journal = _journal(account, {
+      'sync': {...resident, 'actions': actions.values.toList()},
+    });
+    if (!const DeepCollectionEquality().equals(
+          journal.current,
+          stored.journal.current,
+        ) ||
+        !const DeepCollectionEquality().equals(
+          journal.coverage,
+          stored.journal.coverage,
+        )) {
+      throw const FormatException(
+        'Retained predecessors are unavailable. The cached records and damaged file are kept for recovery.',
       );
-    } on FormatException {
-      // A damaged page can hide predecessors no longer resident in memory.
-      // Keep the complete damaged file, retain every readable action, and
-      // use the existing salvage transition for the known visible records.
-      result[account] = _salvaged(account, (
-        snapshot: stored.metadata,
-        actions: actions.values.toList(),
-        pending: (resident['pending'] as List).cast<String>(),
-        records: {
-          ...recordSnapshot(
-            stored.metadata,
-            stored.journal.values,
-            reading: false,
-          ),
-          'reading': recordSnapshot(
-            stored.metadata,
-            stored.journal.values,
-            reading: true,
-          ),
-        },
-      ), database: true);
     }
+    result[account] = (
+      stored: (metadata: stored.metadata, journal: journal),
+      views: _views(stored.metadata, journal.values),
+      persist: true,
+      damaged: false,
+      commit: RecordDatabase.encodeCommit(
+        account,
+        stored.metadata,
+        journal,
+        initialize: true,
+      ),
+    );
   }
   return result;
 }

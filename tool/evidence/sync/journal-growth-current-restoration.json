@@ -1,9 +1,9 @@
 {
   "ticket": "t6-t9po",
-  "measuredAtUtc": "2026-11-13T06:39:17.775025Z",
+  "measuredAtUtc": "2026-11-13T06:57:53.440223Z",
   "host": "macos",
   "dart": "3.13.3 (stable) (Tue Sep 1 01:07:17 2026 -0700) on \"macos_arm64\"",
-  "baseCommit": "77b941334ee9885324cdfac6d62a77400490a644",
+  "baseCommit": "d00940e7532f95ce34c60321dc538402ba99ba90",
   "cadence": {
     "syntheticDecoderSamples": 20,
     "sourcePositionStepMilliseconds": 100,
@@ -20,7 +20,7 @@
       "totalRetainedActionsAtStart": 106,
       "pendingActionsAtStart": 103,
       "journalAndMetadataExportUtf8BytesAtStart": 38899,
-      "journalAndMetadataExportUtf8BytesAfterSamples": 42836,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 42839,
       "logicalRowWritesAcrossTenSavesIncludingWarmup": [
         {
           "kind": "record_accounts.update",
@@ -30,7 +30,7 @@
         {
           "kind": "record_actions.insert",
           "rows": 10,
-          "bytes": 3737
+          "bytes": 3740
         },
         {
           "kind": "record_coverage.insert",
@@ -46,19 +46,19 @@
       "closedSqliteFileBytes": 188416,
       "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
         "samples": 8,
-        "minimumMilliseconds": 1.678,
-        "medianMilliseconds": 1.8119999999999998,
-        "maximumMilliseconds": 2.009,
-        "meanMilliseconds": 1.829875
+        "minimumMilliseconds": 2.012,
+        "medianMilliseconds": 2.1710000000000003,
+        "maximumMilliseconds": 2.45,
+        "meanMilliseconds": 2.1925
       },
-      "migrationStartupMilliseconds": 27.501,
-      "normalizedRestartMilliseconds": 9.252,
+      "migrationStartupMilliseconds": 28.004,
+      "normalizedRestartMilliseconds": 10.98,
       "explicitWholeHistoryExportDecodeAndReplayOnly": {
         "samples": 8,
-        "minimumMilliseconds": 2.122,
-        "medianMilliseconds": 2.333,
-        "maximumMilliseconds": 2.578,
-        "meanMilliseconds": 2.328
+        "minimumMilliseconds": 2.288,
+        "medianMilliseconds": 2.4615,
+        "maximumMilliseconds": 2.783,
+        "meanMilliseconds": 2.485875
       },
       "allOriginalActionsAndPendingRetainedAfterRestart": true,
       "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
@@ -98,19 +98,19 @@
       "closedSqliteFileBytes": 770048,
       "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
         "samples": 8,
-        "minimumMilliseconds": 1.345,
-        "medianMilliseconds": 1.6435,
-        "maximumMilliseconds": 2.236,
-        "meanMilliseconds": 1.7298749999999998
+        "minimumMilliseconds": 1.672,
+        "medianMilliseconds": 1.889,
+        "maximumMilliseconds": 2.289,
+        "meanMilliseconds": 1.9022500000000002
       },
-      "migrationStartupMilliseconds": 44.076,
-      "normalizedRestartMilliseconds": 4.977,
+      "migrationStartupMilliseconds": 46.846,
+      "normalizedRestartMilliseconds": 5.672,
       "explicitWholeHistoryExportDecodeAndReplayOnly": {
         "samples": 8,
-        "minimumMilliseconds": 8.754,
-        "medianMilliseconds": 9.838999999999999,
-        "maximumMilliseconds": 10.397,
-        "meanMilliseconds": 9.713625
+        "minimumMilliseconds": 8.686,
+        "medianMilliseconds": 10.366,
+        "maximumMilliseconds": 11.415,
+        "meanMilliseconds": 10.217500000000001
       },
       "allOriginalActionsAndPendingRetainedAfterRestart": true,
       "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
@@ -150,19 +150,19 @@
       "closedSqliteFileBytes": 4083712,
       "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
         "samples": 8,
-        "minimumMilliseconds": 1.251,
-        "medianMilliseconds": 1.3645,
-        "maximumMilliseconds": 1.719,
-        "meanMilliseconds": 1.3938750000000002
+        "minimumMilliseconds": 1.254,
+        "medianMilliseconds": 1.3765,
+        "maximumMilliseconds": 1.605,
+        "meanMilliseconds": 1.406
       },
-      "migrationStartupMilliseconds": 175.284,
-      "normalizedRestartMilliseconds": 7.79,
+      "migrationStartupMilliseconds": 186.494,
+      "normalizedRestartMilliseconds": 7.551,
       "explicitWholeHistoryExportDecodeAndReplayOnly": {
         "samples": 8,
-        "minimumMilliseconds": 49.655,
-        "medianMilliseconds": 51.552499999999995,
-        "maximumMilliseconds": 62.695,
-        "meanMilliseconds": 54.776875000000004
+        "minimumMilliseconds": 51.654,
+        "medianMilliseconds": 54.03,
+        "maximumMilliseconds": 65.378,
+        "meanMilliseconds": 57.614
       },
       "allOriginalActionsAndPendingRetainedAfterRestart": true,
       "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
@@ -176,7 +176,7 @@
       "totalRetainedActionsAtStart": 21646,
       "pendingActionsAtStart": 21643,
       "journalAndMetadataExportUtf8BytesAtStart": 7297664,
-      "journalAndMetadataExportUtf8BytesAfterSamples": 7301694,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 7301691,
       "logicalRowWritesAcrossTenSavesIncludingWarmup": [
         {
           "kind": "record_accounts.update",
@@ -186,7 +186,7 @@
         {
           "kind": "record_actions.insert",
           "rows": 10,
-          "bytes": 3810
+          "bytes": 3807
         },
         {
           "kind": "record_coverage.insert",
@@ -202,19 +202,19 @@
       "closedSqliteFileBytes": 24248320,
       "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
         "samples": 8,
-        "minimumMilliseconds": 2.045,
-        "medianMilliseconds": 2.2565,
-        "maximumMilliseconds": 3.589,
-        "meanMilliseconds": 2.428625
+        "minimumMilliseconds": 1.471,
+        "medianMilliseconds": 1.7125,
+        "maximumMilliseconds": 4.678,
+        "meanMilliseconds": 2.069125
       },
-      "migrationStartupMilliseconds": 893.522,
-      "normalizedRestartMilliseconds": 21.126,
+      "migrationStartupMilliseconds": 922.731,
+      "normalizedRestartMilliseconds": 22.319,
       "explicitWholeHistoryExportDecodeAndReplayOnly": {
         "samples": 8,
-        "minimumMilliseconds": 321.337,
-        "medianMilliseconds": 326.829,
-        "maximumMilliseconds": 337.061,
-        "meanMilliseconds": 327.067875
+        "minimumMilliseconds": 336.408,
+        "medianMilliseconds": 343.14149999999995,
+        "maximumMilliseconds": 347.072,
+        "meanMilliseconds": 343.04337499999997
       },
       "allOriginalActionsAndPendingRetainedAfterRestart": true,
       "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
@@ -254,19 +254,19 @@
       "closedSqliteFileBytes": 23031808,
       "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
         "samples": 8,
-        "minimumMilliseconds": 1.443,
-        "medianMilliseconds": 1.941,
-        "maximumMilliseconds": 10.375,
-        "meanMilliseconds": 2.8980000000000006
+        "minimumMilliseconds": 1.39,
+        "medianMilliseconds": 1.7215,
+        "maximumMilliseconds": 3.173,
+        "meanMilliseconds": 1.8838750000000002
       },
-      "migrationStartupMilliseconds": 860.943,
-      "normalizedRestartMilliseconds": 3.721,
+      "migrationStartupMilliseconds": 878.802,
+      "normalizedRestartMilliseconds": 4.788,
       "explicitWholeHistoryExportDecodeAndReplayOnly": {
         "samples": 8,
-        "minimumMilliseconds": 327.082,
-        "medianMilliseconds": 330.0125,
-        "maximumMilliseconds": 342.226,
-        "meanMilliseconds": 332.07837500000005
+        "minimumMilliseconds": 335.345,
+        "medianMilliseconds": 349.269,
+        "maximumMilliseconds": 360.354,
+        "meanMilliseconds": 348.602
       },
       "allOriginalActionsAndPendingRetainedAfterRestart": true,
       "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
@@ -280,10 +280,10 @@
       "retainedResumeActionsAtStart": 60,
       "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
         "samples": 8,
-        "minimumMilliseconds": 10.746,
-        "medianMilliseconds": 11.7015,
-        "maximumMilliseconds": 11.918,
-        "meanMilliseconds": 11.522250000000001
+        "minimumMilliseconds": 11.397,
+        "medianMilliseconds": 12.249,
+        "maximumMilliseconds": 12.98,
+        "meanMilliseconds": 12.22925
       },
       "logicalRowWritesAcrossEightSavesAndSyncs": [
         {
@@ -318,10 +318,10 @@
       "retainedResumeActionsAtStart": 600,
       "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
         "samples": 8,
-        "minimumMilliseconds": 10.291,
-        "medianMilliseconds": 10.739,
-        "maximumMilliseconds": 11.732,
-        "meanMilliseconds": 10.8955
+        "minimumMilliseconds": 11.345,
+        "medianMilliseconds": 11.9485,
+        "maximumMilliseconds": 13.493,
+        "meanMilliseconds": 12.18625
       },
       "logicalRowWritesAcrossEightSavesAndSyncs": [
         {
@@ -356,10 +356,10 @@
       "retainedResumeActionsAtStart": 3600,
       "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
         "samples": 8,
-        "minimumMilliseconds": 9.811,
-        "medianMilliseconds": 10.8165,
-        "maximumMilliseconds": 12.281,
-        "meanMilliseconds": 10.77975
+        "minimumMilliseconds": 11.873,
+        "medianMilliseconds": 12.190999999999999,
+        "maximumMilliseconds": 14.74,
+        "meanMilliseconds": 12.4945
       },
       "logicalRowWritesAcrossEightSavesAndSyncs": [
         {
@@ -394,10 +394,10 @@
       "retainedResumeActionsAtStart": 21600,
       "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
         "samples": 8,
-        "minimumMilliseconds": 9.825,
-        "medianMilliseconds": 10.376999999999999,
-        "maximumMilliseconds": 12.778,
-        "meanMilliseconds": 10.710875
+        "minimumMilliseconds": 11.055,
+        "medianMilliseconds": 12.375,
+        "maximumMilliseconds": 13.071,
+        "meanMilliseconds": 12.213875
       },
       "logicalRowWritesAcrossEightSavesAndSyncs": [
         {
@@ -431,8 +431,8 @@
   ],
   "sourcesSha256": {
     "lib/playback/playback.dart": "da7db538ab2d3f3b51dae74e67afef476f44151f224330f53138679b8ce0f6f8",
-    "lib/playback/store.dart": "4d2dd1d2999699a3351c4dcf81cbb3ecb0ae9b16767f90d8f84febf054d678b5",
-    "lib/playback/database.dart": "9c8aeba83fc4ecec5879138d01afc9a64e97120044604d4ea94bfa6a57cfa97e",
+    "lib/playback/store.dart": "f801baf2d39dc4105867746477d32174d96b5b3ace061186528714a91f7c635d",
+    "lib/playback/database.dart": "7b339c85e58ee0676728f0878e6f74ca3f5c9144261e87ff40857005cf3f6e30",
     "lib/sync/journal.dart": "3dc994f9a62d814569e5596713a4df9e43bd5106f2c089926cfb4e8a13c6c37a",
     "test/research/journal_growth_measurement_test.dart": "bef097786f7a70ac23323c3044bfcf5f1908155576bf6cb8b085199da5cb0de9"
   },

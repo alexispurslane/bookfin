@@ -78,21 +78,24 @@ class Disk {
   }
 }
 
-Future<void> damageActions(Disk disk) async {
+Future<List<int>> damageActions(Disk disk, {String? index}) async {
   final sql = await disk.sql;
   await sql.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
   await sql.execute('PRAGMA cache_size = 0');
   await sql.execute('PRAGMA shrink_memory');
   final roots = await sql.rawQuery(
-    "SELECT rootpage FROM sqlite_master WHERE tbl_name = 'record_actions'",
+    'SELECT rootpage FROM sqlite_master WHERE ${index == null ? 'tbl_name' : 'name'} = ?',
+    [index ?? 'record_actions'],
   );
   final file = File(disk.path);
   final bytes = await file.readAsBytes();
+  final original = List<int>.of(bytes);
   for (final row in roots) {
     final root = row['rootpage'] as int;
     bytes.fillRange((root - 1) * 4096, root * 4096, 0xff);
   }
   await file.writeAsBytes(bytes, flush: true);
+  return original;
 }
 
 Map<String, dynamic> place(int milliseconds) => {
@@ -347,7 +350,120 @@ void main() {
     await expectLater(disk.store.checkInvariants(), throwsStateError);
   });
 
-  test('damage after a sparse restore keeps the cached place and all readable retained copies', () async {
+  for (final deletion in [true, false]) {
+    test(
+      'incomplete reconstruction preserves ${deletion ? 'a deletion barrier' : 'an unresolved resume'} through partial delivery and retry',
+      () async {
+        final disk = await Disk.open();
+        final record = deletion
+            ? jsonEncode(['audio', 'bookmarks', 'mark'])
+            : resumeRecordAddress(recording);
+        final local = RecordJournal('alice', 'local')
+          ..change(
+            record,
+            deletion
+                ? {
+                    'id': 'mark',
+                    'position': place(1000),
+                    'createdAt': '1970-01-01T00:00:00Z',
+                    'bookTitle': 'Book',
+                    'editionLabel': 'Audio',
+                    'title': 'Mark',
+                  }
+                : place(1000),
+          );
+        final first = local.uploads.single;
+        for (var i = 2; i < 100; i++) {
+          local.change(resumeRecordAddress(recording), place(i * 1000));
+        }
+        if (deletion) {
+          local.change(record, null);
+        } else {
+          final remote = RecordJournal('alice', 'remote')
+            ..change(record, place(9000));
+          local.receive(remote.uploads);
+        }
+        await disk.seed(local);
+        RecordJournal? resident;
+        Future<R> hop<M, R>(FutureOr<R> Function(M) work, M input) async {
+          final result = await isolated(work, input);
+          if (result case (:final restored, :final damaged)) {
+            if (damaged == false && restored != null) {
+              resident = (restored as dynamic).stored.journal as RecordJournal;
+            }
+          }
+          return result;
+        }
+
+        disk.store = LocalResumeStore(
+          openDatabase: () async => disk.database,
+          hop: hop,
+        );
+        await disk.store.read('alice');
+        final expected = resident!.current;
+        final originalFile = await damageActions(disk);
+        await expectLater(
+          disk.store.pendingUploads('alice'),
+          throwsA(anything),
+        );
+        expect(
+          await disk.database.rows('alice'),
+          isNull,
+          reason: 'an incomplete replacement must not become committed state',
+        );
+        expect(resident!.current, expected);
+        await expectLater(
+          disk.store.receivePage('alice', [first], 1),
+          throwsFormatException,
+        );
+        expect(resident!.current, expected);
+        expect(await disk.database.rows('alice'), isNull);
+        final kept = File(disk.database.keptFile!);
+        expect(await kept.exists(), isTrue);
+        // A repaired retained copy lets the same owner retry its entire rewrite.
+        await kept.writeAsBytes(originalFile, flush: true);
+        await disk.store.receivePage('alice', [first], 1);
+        await disk.restart();
+        final restored = (await disk.database.load('alice'))!;
+        expect(restored['current'], expected);
+        await disk.store.read('alice');
+        await disk.store.checkInvariants();
+      },
+    );
+  }
+
+  test('reconstruction keeps an accepted server original ahead of its rejected archive', () async {
+    final disk = await Disk.open();
+    final journal = RecordJournal('alice', 'local')
+      ..change(resumeRecordAddress(recording), place(1000))
+      ..change(resumeRecordAddress(recording), place(2000));
+    await disk.seed(journal);
+    final accepted = {...journal.uploads.first, 'value': place(1500)};
+    expect(await disk.store.takeServerCopies('alice', [accepted]), 1);
+    await disk.restart();
+    await disk.store.read('alice');
+    await damageActions(disk, index: 'record_action_own');
+    await expectLater(disk.store.origin('alice', recording), throwsA(anything));
+    expect(disk.database.keptFile, isNotNull);
+    await disk.restart();
+    final rows = (await disk.database.rows('alice'))!;
+    expect(
+      jsonDecode(rows.payloads[rows.identities.indexOf('action.local.1')]),
+      accepted,
+    );
+    expect(
+      (await disk.database.reader.kept()).rows.any(
+        (copy) => copy.rows.payloads.any(
+          (payload) => payload == jsonEncode(journal.uploads.first),
+        ),
+      ),
+      isTrue,
+    );
+    await disk.store.read('alice');
+    await disk.store.checkInvariants();
+  });
+
+  test('incomplete reconstruction keeps an unsaved place until its retained predecessors can be read', () async {
     final disk = await Disk.open();
     final journal = RecordJournal('alice', 'local');
     for (var i = 1; i <= 100; i++) {
@@ -355,17 +471,23 @@ void main() {
     }
     await disk.seed(journal);
     await disk.store.read('alice');
-    await damageActions(disk);
-    await disk.store.save(
-      'alice',
-      ListeningChanges(
-        {'version': 3},
-        resumes: {
-          recording.id: [place(101000)],
-        },
+    final originalFile = await damageActions(disk);
+    await expectLater(
+      disk.store.save(
+        'alice',
+        ListeningChanges(
+          {'version': 3},
+          resumes: {
+            recording.id: [place(101000)],
+          },
+        ),
       ),
+      throwsFormatException,
     );
     expect(disk.store.setAside('alice'), isTrue);
+    expect(await disk.database.rows('alice'), isNull);
+    await File(disk.database.keptFile!).writeAsBytes(originalFile, flush: true);
+    await disk.store.read('alice');
     await disk.restart();
     expect(
       (await disk.store.read(
@@ -375,6 +497,7 @@ void main() {
     );
     final kept = await disk.database.reader.kept();
     expect(kept.kept, isTrue);
+    expect((await disk.database.rows('alice'))!.identities, hasLength(101));
     await disk.store.checkInvariants();
   });
 
@@ -521,7 +644,7 @@ void main() {
         }
         await disk.seed(journal);
         await disk.store.read('alice');
-        await damageActions(disk);
+        final originalFile = await damageActions(disk);
         await expectLater(
           lookup == 'pending uploads'
               ? disk.store.pendingUploads('alice')
@@ -529,6 +652,10 @@ void main() {
           throwsA(anything),
         );
         expect(disk.store.setAside('alice'), isTrue);
+        expect(await disk.database.rows('alice'), isNull);
+        await File(disk.database.keptFile!)
+            .writeAsBytes(originalFile, flush: true);
+        await disk.store.read('alice');
         await disk.restart();
         expect(
           (await disk.store.read(

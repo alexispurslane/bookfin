@@ -9,16 +9,16 @@
       "pendingIdentities": 16,
       "heldActions": 1,
       "payloadsReadOnRestore": 45,
-      "upgradeMilliseconds": 11.324,
+      "upgradeMilliseconds": 10.979,
       "restoreMilliseconds": [
-        12.906,
-        5.667,
-        6.097
+        12.406,
+        6.14,
+        6.289
       ],
       "fullReplayMilliseconds": [
-        7.654,
-        6.013,
-        5.864
+        7.273,
+        5.923,
+        5.624
       ],
       "originalPayloadsUnchanged": true,
       "queryWork": {
@@ -387,16 +387,16 @@
       "pendingIdentities": 16,
       "heldActions": 1,
       "payloadsReadOnRestore": 45,
-      "upgradeMilliseconds": 20.371,
+      "upgradeMilliseconds": 19.453,
       "restoreMilliseconds": [
-        6.382,
-        6.722,
-        6.65
+        4.941,
+        6.811,
+        6.076
       ],
       "fullReplayMilliseconds": [
-        22.054,
-        20.543,
-        14.936
+        22.057,
+        19.201,
+        14.248
       ],
       "originalPayloadsUnchanged": true,
       "queryWork": {
@@ -765,16 +765,16 @@
       "pendingIdentities": 16,
       "heldActions": 1,
       "payloadsReadOnRestore": 45,
-      "upgradeMilliseconds": 61.113,
+      "upgradeMilliseconds": 59.362,
       "restoreMilliseconds": [
-        7.524,
-        6.316,
-        4.574
+        6.321,
+        5.42,
+        4.744
       ],
       "fullReplayMilliseconds": [
-        85.952,
-        75.219,
-        86.027
+        82.14,
+        73.809,
+        82.372
       ],
       "originalPayloadsUnchanged": true,
       "queryWork": {
@@ -1143,16 +1143,16 @@
       "pendingIdentities": 16,
       "heldActions": 1,
       "payloadsReadOnRestore": 45,
-      "upgradeMilliseconds": 315.506,
+      "upgradeMilliseconds": 318.746,
       "restoreMilliseconds": [
-        4.251,
-        3.971,
-        4.2
+        4.715,
+        4.734,
+        4.809
       ],
       "fullReplayMilliseconds": [
-        458.56,
-        443.959,
-        459.902
+        459.02,
+        476.092,
+        453.29
       ],
       "originalPayloadsUnchanged": true,
       "queryWork": {
@@ -1521,16 +1521,16 @@
       "pendingIdentities": 16,
       "heldActions": 1,
       "payloadsReadOnRestore": 45,
-      "upgradeMilliseconds": 2923.365,
+      "upgradeMilliseconds": 3096.16,
       "restoreMilliseconds": [
-        4.586,
-        4.628,
-        3.981
+        4.431,
+        5.032,
+        5.056
       ],
       "fullReplayMilliseconds": [
-        4593.881,
-        4528.006,
-        4659.882
+        4727.412,
+        4785.979,
+        4860.332
       ],
       "originalPayloadsUnchanged": true,
       "queryWork": {

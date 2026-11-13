@@ -260,11 +260,15 @@ retried as success.
 Missing current references or malformed needed values use the existing retained
 copy and salvage process. A corrupt payload discovered by a later required lookup
 fails that operation without overwriting the original bytes. After damaged pages
-force a new database file, recovery rejoins every readable original from the kept
-file with resident and uncommitted actions. If predecessors cannot be read, the
-existing salvage process preserves readable actions and known visible records
-under a new installation; dependent old actions still wait for their predecessors.
-The complete damaged file stays kept for later recovery.
+force a new database file, recovery rejoins the just-damaged file's authoritative
+originals with resident and uncommitted actions. The storage owner supplies a
+reader for those originals; archived rejected copies never enter that selection.
+The full replay must reproduce the cached current identities and coverage before
+any replacement is committed. If predecessors cannot be read, reconstruction
+reports failure and retains the cached accounts and complete damaged file for
+retry. It does not convert visible values into a replacement journal: that would
+omit known deletions and unresolved resume conflicts. Once the retained originals
+become readable, retry commits the complete reconstructed state atomically.
 
 The normal cache contains current and held payloads plus pending identities.
 These sets can themselves grow. A large pending upload snapshot still needs all
@@ -299,11 +303,11 @@ covered by the unchanged boo-s11s suites and the required store suites.
 
 | Retained resume actions | Restore median, ms | Full-replay median, ms | One-time v3 upgrade, ms | Payloads read | SQLite instructions |
 | --- | --- | --- | --- | --- | --- |
-| 60 | 6.097 | 6.013 | 11.324 | 45 | 8,577 |
-| 600 | 6.650 | 20.543 | 20.371 | 45 | 8,577 |
-| 3,600 | 6.316 | 85.952 | 61.113 | 45 | 8,577 |
-| 21,600 | 4.200 | 458.560 | 315.506 | 45 | 8,577 |
-| 216,000 | 4.586 | 4593.881 | 2923.365 | 45 | 8,577 |
+| 60 | 6.289 | 5.923 | 10.979 | 45 | 8,577 |
+| 600 | 6.076 | 19.201 | 19.453 | 45 | 8,577 |
+| 3,600 | 5.420 | 82.140 | 59.362 | 45 | 8,577 |
+| 21,600 | 4.734 | 459.020 | 318.746 | 45 | 8,577 |
+| 216,000 | 5.032 | 4785.979 | 3096.160 | 45 | 8,577 |
 
 All five profiles retain the same current records, pending identities and held
 action described above. The SQL instruction count stays at 8,577 across these
