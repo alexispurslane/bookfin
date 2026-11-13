@@ -1,6 +1,6 @@
 ---
 id: boo-721h
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -138,3 +138,20 @@ The parent found two new asynchronous credential-save handlers that swallowed `A
 `nix develop --command flutter test --no-pub --concurrency=2 test/catalog/controller_test.dart --name 'failed contract|ordinary storage failure' --reporter expanded` reproduced both defects: two meaningful failures because no uncaught assertion arrived, and the ordinary-storage-failure control passed. Log: `/tmp/boo-721h-integrated-contract-red.log`. After the narrow fix, `nix develop --command bash -c 'dart format lib/catalog/controller.dart test/catalog/controller_test.dart && flutter test --no-pub --concurrency=2 test/catalog/controller_test.dart --reporter expanded'` passed all 39 tests, including both original-assertion identity checks. Log: `/tmp/boo-721h-integrated-contract-green.log`.
 
 Parent affected/full checks and ticket closure remain pending at this commit. Android acceptance and hardening remain separate.
+
+## Parent verification and closure, 2026-11-13
+
+The assertion fix and its tests are committed as `e4854681`. No production changes followed that commit during parent verification. Integrated production comprises `663c6eb7`, `25a2fde5` and `e4854681`; later commits only record ticket scope and launch information.
+
+| Check | Command and result | Evidence |
+| --- | --- | --- |
+| Required affected suites | `nix develop --command flutter test --no-pub --concurrency=2 test/catalog test/app test/downloads test/playback test/sync test/settings test/reader/persistence_test.dart test/reader/records_test.dart test/reader/unread_records_test.dart test/reader/session_test.dart test/reader/catalog_flow_test.dart test/reader/pdf_session_test.dart test/reader/kept_page_session_test.dart test/reader/survey_session_test.dart --reporter expanded` — exit 0, 1,489 passed, 3 existing skips, zero failures; 1:40 | `/tmp/boo-721h-integrated-required.log` |
+| Complete combined suite | `nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded` — exit 0, 3,389 passed, 27 existing skips, zero failures; 4:36 | `/tmp/boo-721h-integrated-full.log` |
+| Format and analysis | `nix develop --command bash /tmp/boo-721h-integrated-checks.sh` — exit 0; all 25 changed Dart files format-clean and no analysis issues (3.5 seconds) | `/tmp/boo-721h-integrated-format.log`, `/tmp/boo-721h-integrated-analysis.log` |
+| Complete integrated diff | `git diff --check 23af4216 HEAD` — passed | Parent command result |
+
+The check script runs `dart format --output=none --set-exit-if-changed` and then `flutter analyze --no-pub` on the 25 Dart paths returned by `git diff --name-only 23af4216 HEAD -- '*.dart'`. This includes the merged catalog controller and all changed catalog/account tests. No checks overlapped another parent heavy command. Existing missing iOS SDK diagnostics remained nonfatal.
+
+All parent commands finished. No unexplained test failures remain: the two initial assertion failures were the intended reproductions. The child review's original verdicts remain unchanged; direct resolutions and the parent's regression evidence establish completion without a second reviewer. The combined tests include the integrated catalog-choice migration, record restoration, PDF pager and upload scheduling.
+
+Closed after integration and successful host verification. Device acceptance remains blocked by `t1-dth0`; `boo-zyx1` and `boo-737n` remain acceptance-open. Coverage and mutation testing await acceptance. No device retry, browser validation, push, PR, deployment or worktree deletion was performed.
