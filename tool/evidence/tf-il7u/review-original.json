@@ -1,0 +1,68 @@
+{
+  "ticket": "tf-il7u",
+  "base": "403b803d24b5e20a9a249ca094dff477fba90eac",
+  "reviewedHead": "e40d1abc8704800d54a6e7a54e47cfbc760b25bd",
+  "branch": "t3/fix-idle-layout-frame-flake",
+  "checkout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-db20027d",
+    "status": "clean",
+    "identityVerified": true
+  },
+  "correctness": {
+    "verdict": "pass",
+    "evidence": [
+      "The complete base-to-HEAD diff contains no production changes. The base, HEAD and working-file hashes of page_source.dart match.",
+      "02-original-order-trace records no preparation-time layout before the first frame. Later idle callbacks execute during post-frame callbacks, before Redraws requests another frame, with hasScheduledFrame=false. This diagnostic passed; it is ordering evidence, not a reproduced failure.",
+      "03-controlled-original-oracle-red demonstrates exactly one legal callback per frame for three frames, followed by failure of the old completion assertion.",
+      "page_source_frames_test.dart:49-59 observes actual callback execution through the production scheduler. Lines 211-227 check initial readiness, callbacks per frame and absence of execution during a hold.",
+      "Lines 237-268 establish a pending-frame hold, zero callbacks during that hold, bounded task polling and exactly one callback after release. Lines 271-290 cover the opposite callback order.",
+      "06-negative-control records five failures after removal of only the pending-frame guard, including eleven callbacks where at most one is permitted.",
+      "Failure cleanup is registered at lines 101 and 187-189. PageSource.dispose is idempotent."
+    ],
+    "findings": [],
+    "gaps": [
+      "Historical failing runs did not record callback ordering, so their individual execution histories cannot be reconstructed.",
+      "The inherited completion helper treats error completion as completion; it alone does not establish successful page output. The new controlled release test independently establishes actual callback progress."
+    ],
+    "materialUnverifiedRequirements": []
+  },
+  "ticketFulfillment": {
+    "verdict": "pass",
+    "evidence": [
+      "Reviewed the complete ticket, product plan, test diff, evidence documents and experimental patches.",
+      "All 22 compressed artifacts match their manifest byte counts, SHA-256 hashes and original raw files.",
+      "Saved original execution records four passes and one failure. Parent recurrence records are retained and consistent with the documented failure.",
+      "Saved final executions record five independent seven-test passes, 1714 reader/crossing passes with 21 skips, and 3676 full-suite passes with 27 skips.",
+      "Saved analysis reports no issues; formatting reports zero changes. Independent read-only base-to-HEAD whitespace inspection passed.",
+      "No fixture growth, sleeps, changed timing budgets, disabled tests or production policy changes appear in the diff. Settings, eviction, excerpt, cancellation, error handling and urgent production paths remain unchanged."
+    ],
+    "findings": [],
+    "gaps": [
+      "Execution results were inspected from saved evidence, not rerun by this reviewer.",
+      "Existing optional corpus, benchmark and integration skips remain explicit."
+    ],
+    "materialUnverifiedRequirements": [],
+    "remainingInScopeImplementationWork": []
+  },
+  "design": {
+    "verdict": "pass",
+    "evidence": [
+      "User: the existing PageSource scheduler remains the single owner of admission decisions. LayoutSteps adds observation through the existing injection point, without a parallel scheduler.",
+      "Ousterhout: LayoutSteps owns callback measurements in one place; the regression cases share that observation boundary.",
+      "Muratori: the change adds no speculative framework or production abstraction.",
+      "The corrected tests distinguish execution during a hold from eventual completion, removing the invalid inference responsible for the test defect."
+    ],
+    "findings": [],
+    "gaps": [
+      "Assessment is based on static inspection and archived execution evidence."
+    ],
+    "materialUnverifiedRequirements": []
+  },
+  "reviewLimitations": [
+    "No files changed; no builds, tests, formatting, experimental controls, devices, browsers or children were run.",
+    "Device acceptance and general hardening are outside this review.",
+    "t1-dth0 and t7-3j9c were not retried; t5-rplx remains unexplained."
+  ],
+  "userDecisionNeeded": null,
+  "overallVerdict": "pass"
+}

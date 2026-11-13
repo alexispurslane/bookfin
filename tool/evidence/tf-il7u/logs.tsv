@@ -21,3 +21,4 @@ parent-hwoz-full-suite.log.gz	2113019	7e095499984513598b6f283137f5ec7e828d157db1
 09-full.log.gz	733088	aac0e3c76c3626b04147d663315ac1d780fcb7a65035ad9a04ba22bb7ab67070	/tmp/bookfin-tf-il7u/09-full.log
 10-analysis.log.gz	96	110894485ec7a8676057be064d4289cd7879117347a490af2e66d6f6fbc433d2	/tmp/bookfin-tf-il7u/10-analysis.log
 11-format-diff.log.gz	46	1685974b88bd671112e17334bdc2abb8ef350e01ae026547459ec7a8307375ec	/tmp/bookfin-tf-il7u/11-format-diff.log
+12-staged-diff.log.gz	1955	5ea84a893711e5ef0d5227e50d05405f66317dffb4735bb45a6114fba537150e	/tmp/bookfin-tf-il7u/12-staged-diff.log
