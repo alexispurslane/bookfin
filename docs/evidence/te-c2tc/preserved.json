@@ -1,0 +1,39 @@
+{
+  "originalBase": "5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c",
+  "initialCheckout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-dac305e5",
+    "branch": "t3/stabilize-epub-builder-timestamps",
+    "head": "5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c",
+    "clean": true
+  },
+  "pathsUnchanged": {
+    "lib": true,
+    "test/reader/session_signals_test.dart": true,
+    "test/reader/publication_test.dart": true,
+    "test/reader/session_native_test.dart": true,
+    "test/reader/epub/fixtures": true,
+    "pubspec.yaml": true,
+    "pubspec.lock": true,
+    "web": true
+  },
+  "integratedPrerequisites": {
+    "8cbc5ec3": {
+      "ancestorOfOriginalBase": true,
+      "exit": 0
+    },
+    "bcf02ea6": {
+      "ancestorOfOriginalBase": true,
+      "exit": 0
+    },
+    "866aeca3": {
+      "ancestorOfOriginalBase": true,
+      "exit": 0
+    },
+    "ac63796a": {
+      "ancestorOfOriginalBase": true,
+      "exit": 0
+    }
+  },
+  "noIntegrationFromConcurrentLeads": true,
+  "note": "All production code is unchanged. Ask-at-Play, t5-rplx, tf-il7u and original reader assertions are preserved through an unchanged production tree and inherited base."
+}

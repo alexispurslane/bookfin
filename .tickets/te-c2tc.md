@@ -2,7 +2,7 @@
 id: te-c2tc
 status: in_progress
 deps: []
-links: [t3-5o5r]
+links: [t3-5o5r, td-bz4y]
 created: 2026-11-09T23:25:19Z
 type: task
 priority: 3
@@ -80,3 +80,32 @@ Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-ta
 Launch accepted. T3 owns the new worktree; branch not yet reported. Lead builds,
 starts one read-only review, resolves findings and returns evidence. Parent owns
 integration and closure. No result or acceptance is claimed at launch.
+
+## Implementation and verification — 2026-11-13
+
+The ticket lead corrected all seven settled fixture owners. Every newly created
+entry uses the existing fixed local-calendar pattern. The two named showcase
+wrappers retain their original date and identities. Contents, ordering, fixture
+interfaces, missing entries, deliberate CRC damage and production identity
+checks are unchanged. No checked-in corpus assets were regenerated.
+
+A private copy of archive-4.0.9 supplied controlled default times two seconds
+apart. Before the correction, all seven stability assertions failed with equal
+payloads and order, while all seven changed-content checks and the clock control
+passed. After the correction, all 15 checks passed. The diagnostic dependency
+configuration and temporary test access were restored before final checks; the
+shared package cache was never edited. This reuses the earlier t3-5o5r restart
+cause proof without claiming a reconstruction of historical failures.
+
+Focused checks: 99 passed, 8 existing skips. The 89-file transitive caller suite:
+1,195 passed, 18 existing skips. Required full suite: 3,768 passed, 27 existing
+skips, no failures. Complete commands, compressed logs, source snapshots, skip
+reasons and hashes are retained under `docs/evidence/te-c2tc/`. Analysis,
+formatting and original-base whitespace results are in `commands.jsonl`.
+
+The repository audit found additional independent research EPUB creators,
+recorded in td-bz4y. SVG-only ZIP security probes are not EPUB builders. The
+complete inventory and scope decisions are in `inventory.json`.
+
+One fresh read-only reviewer follows implementation. The parent owns integration,
+acceptance, hardening and ticket closure. The ticket remains in progress.

@@ -1,0 +1,191 @@
+[
+  {
+    "path": "docs/evidence/te-c2tc/diagnostic/damaged-before.dart.gz",
+    "rawBytes": 6864,
+    "rawSha256": "36174fb7c499aa1d1faf6da8896e54a668bd26ecef0ea1de208136def38e324d",
+    "compressedBytes": 2263,
+    "compressedSha256": "c8c7a294f67c0e1b3ce86a1744dddd75c6680c7a980afa4cd042dca106027417"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/diagnostic/dependency-before.dart.gz",
+    "rawBytes": 8050,
+    "rawSha256": "33a1256ebeaa9d4e39d6bf13ab09948c2978b36413777cd5eb1a039ec494024c",
+    "compressedBytes": 2360,
+    "compressedSha256": "b0052060a90b3fe2609c27d9a952407311e1e34f013607ab5b1afd1e7fda66b8"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/diagnostic/dependency.patch.gz",
+    "rawBytes": 717,
+    "rawSha256": "74403660172a4ada977d9d9fc72ca7523f754252f384ab4085527e823774fcbb",
+    "compressedBytes": 407,
+    "compressedSha256": "a69564024233d5019cc1f27e1b9d99ace03960488f5ee103a2bb95b004c28dfc"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/diagnostic/package-config-before.json.gz",
+    "rawBytes": 25238,
+    "rawSha256": "0e49e9a4d978c2aa7f6b66aef7fbfbb50ffa33c9c488b4527d4604a96edb65c0",
+    "compressedBytes": 2078,
+    "compressedSha256": "17268b3ce760a290873a92e397f35fbc7a1d4bb471d5b021c28b23cf4ad19f5e"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/diagnostic/timestamp_diagnostic_test.dart.gz",
+    "rawBytes": 4541,
+    "rawSha256": "38a5bdcc1582285cbee7d935cff926f59612eaabdfa766babb56668e9f5ef73f",
+    "compressedBytes": 1567,
+    "compressedSha256": "4a9094e838c203a67a553673579c7c50847e48609bff5287e8a1d21943c31dfb"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/01-pub-get.log.gz",
+    "rawBytes": 1787,
+    "rawSha256": "5dd8f24529c8ba79e334b26273ca0c7c5983bc5371b4e4abfbf241fab747a17d",
+    "compressedBytes": 694,
+    "compressedSha256": "34b80a248fb8ebd7fa9884afecae5d02ad72ad0ee52535bb7f208f3f702b3690"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/02-controlled-red.log.gz",
+    "rawBytes": 22781,
+    "rawSha256": "e3112cde1afbe14661ad7872ba71f3b32d1450f16dc49c4468a9c580781dc9c6",
+    "compressedBytes": 3636,
+    "compressedSha256": "da604f41fc9ee2e5293ab3accb2cc70fa773cb1a707b88fdb6c27899fc651aab"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/03-controlled-green.log.gz",
+    "rawBytes": 13501,
+    "rawSha256": "0352883cc1f8256c15cfefd87700ee394c530165aa3a1f47d22919adaa54c40e",
+    "compressedBytes": 2877,
+    "compressedSha256": "5703f77e2afbda30bbf4d514cd9a5ea2fdafa7729ecdd5b6390c3fd78173142c"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/04-format-write.log.gz",
+    "rawBytes": 47,
+    "rawSha256": "f4300ffaee589677b0b337dff8f384f4eb0546bac8eb49c92a8fcc73fc08a616",
+    "compressedBytes": 67,
+    "compressedSha256": "9ebd25f0dcfd95cc1a9e74c457c81b0eb2b0d0b46797acfa14f702a2cbcb79a2"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/05-focused.log.gz",
+    "rawBytes": 57856,
+    "rawSha256": "24976a6ef3803694dc0d8b6dbf8c08bd3feaaf605af29e345971645da21ac978",
+    "compressedBytes": 7009,
+    "compressedSha256": "a1669758237b3a99a772d7148a8b7fe6cf5a18f7bdea3503b39e68bcb7588e1b"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/06-affected.log.gz",
+    "rawBytes": 724542,
+    "rawSha256": "75af81d1aacb194603d03e0620d57be9f8bf8720caea80d962672ae47121193d",
+    "compressedBytes": 72510,
+    "compressedSha256": "772c7dab946345d8e8348aed219737b6abb2769692516cd2af1743a7aad5079d"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/07-full.log.gz",
+    "rawBytes": 2137112,
+    "rawSha256": "a3873cf1e0e4e3aadb781dbbdd8c14d8fbaaff28748ad7cfd44e119f19b834ad",
+    "compressedBytes": 208829,
+    "compressedSha256": "0e162938ffbe376101e0b405596507d5b7ed955f34f8f194b54b6cee31f218fb"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/08-analysis.log.gz",
+    "rawBytes": 96,
+    "rawSha256": "fd760b10bdd8a9e14b552fe16972e7db40a24baac25302005304f8fb8342d23f",
+    "compressedBytes": 75,
+    "compressedSha256": "851884c7c2b1f27d3e7511328f057f66e730be7366994b81cd7ab7457b64118c"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/09-format-check.log.gz",
+    "rawBytes": 47,
+    "rawSha256": "f4300ffaee589677b0b337dff8f384f4eb0546bac8eb49c92a8fcc73fc08a616",
+    "compressedBytes": 67,
+    "compressedSha256": "9ebd25f0dcfd95cc1a9e74c457c81b0eb2b0d0b46797acfa14f702a2cbcb79a2"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/10-whitespace.log.gz",
+    "rawBytes": 47,
+    "rawSha256": "4c75f9f39befea3a91afcc5bb1b39c2e1034791ba792965f61a0b2a973fcb5ce",
+    "compressedBytes": 67,
+    "compressedSha256": "24b38d1fee62938ba5e2e7b2b6f316caea1db2c375e5c1524a4eefe97e2cc481"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/logs/11-whitespace-fixed.log.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressedBytes": 20,
+    "compressedSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/01-pub-get.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressedBytes": 20,
+    "compressedSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/02-controlled-red.patch.gz",
+    "rawBytes": 463,
+    "rawSha256": "536bf4b66504be4c0123ff9994ecb765e18c1564f7e0156700b67099a456e959",
+    "compressedBytes": 272,
+    "compressedSha256": "947cc0908f30409386c12ceba87b4f77ecbb55b55e82914baeb36b37544ae757"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/03-controlled-green.patch.gz",
+    "rawBytes": 6727,
+    "rawSha256": "14bb7a1d1bc968268ae0c4ebc88a22c1cb39cc8ab2f3d713d5dd8b5fb0462241",
+    "compressedBytes": 1832,
+    "compressedSha256": "061aa69c247eba8fc103300c96cb648eb14efd58098903373bfc28edcbb72310"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/04-format-write.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/05-focused.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/06-affected.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/07-full.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/08-analysis.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/09-format-check.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/10-whitespace.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  },
+  {
+    "path": "docs/evidence/te-c2tc/patches/11-whitespace-fixed.patch.gz",
+    "rawBytes": 6499,
+    "rawSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+    "compressedBytes": 1712,
+    "compressedSha256": "8c77021991e833f38f175054fbedf8e8bf40042df6ab4ba865fe07ceb48153a1"
+  }
+]

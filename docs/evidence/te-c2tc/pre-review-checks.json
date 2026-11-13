@@ -1,0 +1,31 @@
+{
+  "originalBase": "5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c",
+  "sourcePatchSha256": "58478615bb990dcec17f257374d207c9e035b7864a81e5d6c9b52d88c2233e7b",
+  "sameDartPatchForAllFinalChecks": true,
+  "completeCommandLogsAndPatchesVerified": 11,
+  "expectedDiagnosticExit1": [
+    "02-controlled-red"
+  ],
+  "reviewTargetValidated": {
+    "providerInstanceId": "codex",
+    "model": "gpt-6-astra",
+    "options": {
+      "reasoningEffort": "high"
+    }
+  },
+  "capabilitiesCalls": 1,
+  "recordedCommandExits": {
+    "01-pub-get": 0,
+    "02-controlled-red": 1,
+    "03-controlled-green": 0,
+    "04-format-write": 0,
+    "05-focused": 0,
+    "06-affected": 0,
+    "07-full": 0,
+    "08-analysis": 0,
+    "09-format-check": 0,
+    "10-whitespace": 2,
+    "11-whitespace-fixed": 0
+  },
+  "resolvedDevelopmentFailure": "10-whitespace: generated ticket blank line removed; 11-whitespace-fixed passes"
+}

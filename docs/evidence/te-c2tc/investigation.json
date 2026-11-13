@@ -1,0 +1,68 @@
+{
+  "ticket": "te-c2tc",
+  "originalBase": "5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c",
+  "scope": "Seven remaining root Flutter test/showcase EPUB owners; fixed local-calendar ZIP entry time. Existing caller interfaces and payload construction retained.",
+  "cause": "ZIP entry metadata contributes to the original-file digest, which participates in the publication identity. Lazy clock defaults can make independent builds of identical content look like replacement publications.",
+  "priorCauseProof": {
+    "path": "docs/evidence/t3-5o5r/investigation.json",
+    "red": "docs/evidence/t3-5o5r/logs/02-controlled-time-change-red.log.gz",
+    "sameTimeControl": "docs/evidence/t3-5o5r/logs/03-controlled-same-time-green.log.gz",
+    "observations": "docs/evidence/t3-5o5r/controlled-observations.json",
+    "limit": "Controlled reproduction of the exact restart assertion after a successful save, not reconstruction of the historical schedules."
+  },
+  "controlledProof": {
+    "red": {
+      "commandName": "02-controlled-red",
+      "passed": 8,
+      "failed": 7,
+      "expectedFailures": "All seven time-stability tests. Entries match in payload/order; raw original-file digests differ."
+    },
+    "green": {
+      "commandName": "03-controlled-green",
+      "passed": 15,
+      "failed": 0,
+      "meaning": "All seven stability tests and all seven changed-content tests pass; independent default-clock positive control still detects the two-second difference."
+    },
+    "method": "Private copy of the pinned archive package accepts a Zone-scoped default time. No shared dependency changes, fixture cache, waits, clock-boundary sampling, production mutation or general mutation campaign. Each actual builder runs independently at local 2026-01-01 noon and noon plus two seconds. Changed-content pairs use the same clock to isolate content sensitivity.",
+    "payloadPreservation": "All seven observation pairs have identical entry payload hashes and order across red and green. For pages.book these are admitted text entries plus raw archive digest; its untouched payload-building source supplies the raw-construction evidence.",
+    "restoration": "restoration.json; diagnostic/reproduction.txt; compressed test, dependency patch and per-command patches"
+  },
+  "design": "Each existing fixture owner sets new entry times. The CSS rewrite fixes replacements only. The two pre-existing encoder overrides stay at their original date to preserve named corpus identities. No generic builder layer or caller option was added.",
+  "audit": "inventory.json; source-inventory.txt; caller-audit.json. Additional isolated research creators are recorded in td-bz4y, outside the settled seven-owner implementation scope.",
+  "preservation": "preserved.json confirms the complete lib tree, original restart test, earlier fixed helpers, fixture assets, dependencies and web sources remain unchanged.",
+  "checks": "commands.jsonl contains complete exact commands, exit statuses, source snapshots and compressed log hashes. test-results.json records each executed test-suite result and every skip reason or existing boolean gate.",
+  "failures": "Seven expected diagnostic failures, a corrected rg inventory-helper error, and a corrected tk-generated ticket EOF blank line. Both development issues are recorded in development-failures.json. No final test failures.",
+  "limits": [
+    "Optional downloaded-corpus and opt-in benchmark checks retain their existing skip gates; no network download or benchmark override is claimed.",
+    "Headless Flutter emits missing iphoneos and iphonesimulator SDK notices; these are in full logs. No iOS build or device claim.",
+    "No production/gallery JavaScript rebuild: all production/web sources remain identical to the reviewed original base.",
+    "No new persistent test framework: the controlled clock tests are retained as diagnostic evidence. Existing caller, restart, source-change and corruption tests remain the regression suite.",
+    "No device/browser interactions, credentials, coverage, general mutations, merge/cherry-pick, push, PR, deployment, ticket closure, worktree cleanup or concurrent lead integration."
+  ],
+  "forks": [],
+  "remainingWork": [
+    "Parent integration, acceptance and any hardening/closure.",
+    "Separate research-fixture follow-up td-bz4y."
+  ],
+  "results": {
+    "05-focused": {
+      "passed": 99,
+      "failed": 0,
+      "skipped": 8,
+      "exit": 0
+    },
+    "06-affected": {
+      "passed": 1195,
+      "failed": 0,
+      "skipped": 18,
+      "exit": 0
+    },
+    "07-full": {
+      "passed": 3768,
+      "failed": 0,
+      "skipped": 27,
+      "exit": 0
+    }
+  },
+  "fullSuiteComparison": "3768 passed and 27 skipped match the parent full suite at ac63796a; this branch adds no permanent test cases or skips."
+}

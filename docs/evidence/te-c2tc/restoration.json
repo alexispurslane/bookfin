@@ -1,0 +1,13 @@
+{
+  "packageConfigRestoredSha256": "0e49e9a4d978c2aa7f6b66aef7fbfbb50ffa33c9c488b4527d4604a96edb65c0",
+  "sharedDependencyUnchangedSha256": "33a1256ebeaa9d4e39d6bf13ab09948c2978b36413777cd5eb1a039ec494024c",
+  "temporaryTestRemoved": true,
+  "temporaryDamagedAccessRemoved": true,
+  "unchangedPaths": [
+    "lib",
+    "pubspec.lock",
+    "test/reader/epub/fixtures",
+    "test/reader/session_signals_test.dart"
+  ],
+  "sameEntryPayloadsAndOrderAcrossRedAndGreen": true
+}

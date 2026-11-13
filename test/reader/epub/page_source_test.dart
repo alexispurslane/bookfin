@@ -152,9 +152,13 @@ Publication book(
       ),
     for (final MapEntry(:key, :value) in files.entries) 'OPS/$key': value,
   };
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final MapEntry(:key, :value) in entries.entries) {
-    archive.addFile(ArchiveFile(key, value.length, value));
+    archive.addFile(
+      ArchiveFile(key, value.length, value)..lastModTime = builtAt,
+    );
   }
   return Publication.admit(ZipEncoder().encodeBytes(archive));
 }

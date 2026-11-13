@@ -1,0 +1,698 @@
+[
+  {
+    "commandName": "05-focused",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "flutter",
+      "test",
+      "--no-pub",
+      "--concurrency=2",
+      "--reporter",
+      "json",
+      "test/reader/epub/page_source_test.dart",
+      "test/reader/epub/admission_test.dart",
+      "test/reader/epub/damaged_chapters_test.dart",
+      "test/reader/epub/section_styles_test.dart",
+      "test/reader/session_signals_test.dart",
+      "test/reader/publication_test.dart",
+      "test/reader/session_test.dart"
+    ],
+    "exit": 0,
+    "passed": 99,
+    "failed": 0,
+    "skipped": 8,
+    "failures": [],
+    "skips": [
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+        "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+        "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-moby-dick",
+        "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-poetry",
+        "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+        "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/page_source_test.dart",
+        "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 1219,
+            "source": "    );\n    expect(slowest, lessThanOrEqualTo(budget + longest));\n  }, skip: Platform.environment['BOOKFIN_PAGE_SOURCE_BENCHMARK'] != '1');\n}"
+          }
+        ]
+      }
+    ],
+    "log": {
+      "path": "docs/evidence/te-c2tc/logs/05-focused.log.gz",
+      "bytes": 57856,
+      "sha256": "24976a6ef3803694dc0d8b6dbf8c08bd3feaaf605af29e345971645da21ac978",
+      "compressedBytes": 7009,
+      "compressedSha256": "a1669758237b3a99a772d7148a8b7fe6cf5a18f7bdea3503b39e68bcb7588e1b"
+    },
+    "completion": [
+      {
+        "success": true,
+        "type": "done",
+        "time": 18489
+      }
+    ]
+  },
+  {
+    "commandName": "06-affected",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "flutter",
+      "test",
+      "--no-pub",
+      "--concurrency=2",
+      "--reporter",
+      "json",
+      "test/catalog/show_reader_test.dart",
+      "test/crossings/speech_landings_test.dart",
+      "test/playback/crossing_history_test.dart",
+      "test/playback/domain_settings_test.dart",
+      "test/reader/admitted_books_test.dart",
+      "test/reader/appearance_test.dart",
+      "test/reader/book_crop_test.dart",
+      "test/reader/book_survey_test.dart",
+      "test/reader/book_words_reader_test.dart",
+      "test/reader/column_ink_test.dart",
+      "test/reader/column_layout_test.dart",
+      "test/reader/column_running_lines_test.dart",
+      "test/reader/dock_history_test.dart",
+      "test/reader/dock_test.dart",
+      "test/reader/drop_cap_layout_test.dart",
+      "test/reader/epub/admission_benchmark_test.dart",
+      "test/reader/epub/admission_test.dart",
+      "test/reader/epub/book_fonts_test.dart",
+      "test/reader/epub/chapter_titles_test.dart",
+      "test/reader/epub/corpus/check_test.dart",
+      "test/reader/epub/corpus/list_test.dart",
+      "test/reader/epub/corpus/support_test.dart",
+      "test/reader/epub/corpus_prepare_test.dart",
+      "test/reader/epub/corpus_steps_test.dart",
+      "test/reader/epub/corpus_test.dart",
+      "test/reader/epub/damaged_chapters_test.dart",
+      "test/reader/epub/fidelity_test.dart",
+      "test/reader/epub/hyphenate_test.dart",
+      "test/reader/epub/image_test.dart",
+      "test/reader/epub/kept_page_test.dart",
+      "test/reader/epub/layout_run_test.dart",
+      "test/reader/epub/page_map_jump_test.dart",
+      "test/reader/epub/page_map_open_test.dart",
+      "test/reader/epub/page_source_frames_test.dart",
+      "test/reader/epub/page_source_test.dart",
+      "test/reader/epub/pager_test.dart",
+      "test/reader/epub/part_open_benchmark_test.dart",
+      "test/reader/epub/places_test.dart",
+      "test/reader/epub/saved_places_test.dart",
+      "test/reader/epub/search_test.dart",
+      "test/reader/epub/section_styles_test.dart",
+      "test/reader/epub/selection_test.dart",
+      "test/reader/epub/semantics_test.dart",
+      "test/reader/epub/text_size_test.dart",
+      "test/reader/epub/viewport_test.dart",
+      "test/reader/epub/whole_book_pages_test.dart",
+      "test/reader/history_pages_test.dart",
+      "test/reader/kept_page_session_test.dart",
+      "test/reader/kept_pages_test.dart",
+      "test/reader/landing_words_test.dart",
+      "test/reader/ocr_cancel_screen_test.dart",
+      "test/reader/ocr_hop_test.dart",
+      "test/reader/ocr_layout_queue_test.dart",
+      "test/reader/ocr_viewport_test.dart",
+      "test/reader/page_analysis_test.dart",
+      "test/reader/page_geometry_test.dart",
+      "test/reader/page_preview_sources_test.dart",
+      "test/reader/pdf_close_test.dart",
+      "test/reader/pdf_crop_test.dart",
+      "test/reader/pdf_navigation_test.dart",
+      "test/reader/pdf_pager_test.dart",
+      "test/reader/pdf_place_test.dart",
+      "test/reader/pdf_preferences_store_test.dart",
+      "test/reader/pdf_reflow_original_test.dart",
+      "test/reader/pdf_text_screens_test.dart",
+      "test/reader/pdf_viewport_test.dart",
+      "test/reader/pdf_word_selection_test.dart",
+      "test/reader/pdf_word_view_test.dart",
+      "test/reader/quiet_pdf_test.dart",
+      "test/reader/reader_gestures_test.dart",
+      "test/reader/reading_moves_test.dart",
+      "test/reader/running_lines_test.dart",
+      "test/reader/screen_test.dart",
+      "test/reader/scrub_test.dart",
+      "test/reader/session_native_test.dart",
+      "test/reader/session_reflow_test.dart",
+      "test/reader/shared_appearance_test.dart",
+      "test/reader/survey_session_test.dart",
+      "test/reader/text_layer_geometry_test.dart",
+      "test/reader/text_outline_test.dart",
+      "test/reader/time_left_test.dart",
+      "test/reader/trim_margins_test.dart",
+      "test/reader/update_forgets_layout_test.dart",
+      "test/reader/word_pages_test.dart",
+      "test/research/epub_layout_cache_test.dart",
+      "test/speech/book_search_test.dart",
+      "test/speech/book_words_test.dart",
+      "test/sync/playback_refresh_test.dart",
+      "test/sync/stale_reading_actions_test.dart"
+    ],
+    "exit": 0,
+    "passed": 1195,
+    "failed": 0,
+    "skipped": 18,
+    "failures": [],
+    "skips": [
+      {
+        "file": "test/reader/epub/admission_benchmark_test.dart",
+        "name": "the admission benchmark",
+        "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+        "messages": [
+          "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+        "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+        "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-moby-dick",
+        "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-poetry",
+        "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+        "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_prepare_test.dart",
+        "name": "the corpus prepare",
+        "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_steps_test.dart",
+        "name": "the corpus steps",
+        "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_test.dart",
+        "name": "the corpus run",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/fidelity_test.dart",
+        "name": "body text breaks lines and pages where epub.js broke them",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/page_map_jump_test.dart",
+        "name": "the jumps into real books",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/page_source_test.dart",
+        "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 1219,
+            "source": "    );\n    expect(slowest, lessThanOrEqualTo(budget + longest));\n  }, skip: Platform.environment['BOOKFIN_PAGE_SOURCE_BENCHMARK'] != '1');\n}"
+          }
+        ]
+      },
+      {
+        "file": "test/reader/epub/pager_test.dart",
+        "name": "the host benchmark draws each deck page in a section in under 20 ms",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 1206,
+            "source": "    );\n    expect(inSection.last, lessThan(const Duration(milliseconds: 20)));\n  }, skip: Platform.environment['BOOKFIN_PAGER_BENCHMARK'] != '1');\n}\n"
+          }
+        ]
+      },
+      {
+        "file": "test/reader/epub/part_open_benchmark_test.dart",
+        "name": "the part open benchmark",
+        "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/saved_places_test.dart",
+        "name": "the downloaded books open the places that epub.js saved",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/research/epub_layout_cache_test.dart",
+        "name": "the layout cache survey",
+        "reason": "set BOOKFIN_LAYOUT_CACHE=1",
+        "messages": [
+          "Skip: set BOOKFIN_LAYOUT_CACHE=1"
+        ],
+        "booleanGateSource": []
+      }
+    ],
+    "log": {
+      "path": "docs/evidence/te-c2tc/logs/06-affected.log.gz",
+      "bytes": 724542,
+      "sha256": "75af81d1aacb194603d03e0620d57be9f8bf8720caea80d962672ae47121193d",
+      "compressedBytes": 72510,
+      "compressedSha256": "772c7dab946345d8e8348aed219737b6abb2769692516cd2af1743a7aad5079d"
+    },
+    "completion": [
+      {
+        "success": true,
+        "type": "done",
+        "time": 161392
+      }
+    ]
+  },
+  {
+    "commandName": "07-full",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "flutter",
+      "test",
+      "--no-pub",
+      "--concurrency=2",
+      "--reporter",
+      "json"
+    ],
+    "exit": 0,
+    "passed": 3768,
+    "failed": 0,
+    "skipped": 27,
+    "failures": [],
+    "skips": [
+      {
+        "file": "test/reader/epub/part_open_benchmark_test.dart",
+        "name": "the part open benchmark",
+        "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_prepare_test.dart",
+        "name": "the corpus prepare",
+        "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/saved_places_test.dart",
+        "name": "the downloaded books open the places that epub.js saved",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/page_source_test.dart",
+        "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 1219,
+            "source": "    );\n    expect(slowest, lessThanOrEqualTo(budget + longest));\n  }, skip: Platform.environment['BOOKFIN_PAGE_SOURCE_BENCHMARK'] != '1');\n}"
+          }
+        ]
+      },
+      {
+        "file": "test/reader/epub/fidelity_test.dart",
+        "name": "body text breaks lines and pages where epub.js broke them",
+        "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+        "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+        "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-frankenstein",
+        "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-moby-dick",
+        "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-poetry",
+        "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_test.dart",
+        "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+        "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+        "messages": [
+          "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/step_budget_test.dart",
+        "name": "the step budget",
+        "reason": "set BOOKFIN_EPUB_STEPS=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_STEPS=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_steps_test.dart",
+        "name": "the corpus steps",
+        "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/admission_benchmark_test.dart",
+        "name": "the admission benchmark",
+        "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+        "messages": [
+          "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/zip_test.dart",
+        "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/page_map_jump_test.dart",
+        "name": "the jumps into real books",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/corpus_test.dart",
+        "name": "the corpus run",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1 to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/image_size_test.dart",
+        "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+        "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+        "messages": [
+          "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/pdf_open_benchmark_test.dart",
+        "name": "the open of a PDF",
+        "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+        "messages": [
+          "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/reader/epub/pager_test.dart",
+        "name": "the host benchmark draws each deck page in a section in under 20 ms",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 1206,
+            "source": "    );\n    expect(inSection.last, lessThan(const Duration(milliseconds: 20)));\n  }, skip: Platform.environment['BOOKFIN_PAGER_BENCHMARK'] != '1');\n}\n"
+          }
+        ]
+      },
+      {
+        "file": "test/research/journal_growth_measurement_test.dart",
+        "name": "measure incremental saves and acknowledgments while retaining every original action",
+        "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement.",
+        "messages": [
+          "Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/research/current_restore_measurement_test.dart",
+        "name": "measure current restoration against complete retained replay on this host",
+        "reason": null,
+        "messages": [],
+        "booleanGateSource": [
+          {
+            "line": 254,
+            "source": "      );\n    },\n    skip: output == null,\n    timeout: const Timeout(Duration(minutes: 10)),\n  );"
+          }
+        ]
+      },
+      {
+        "file": "test/research/epub_layout_cache_test.dart",
+        "name": "the layout cache survey",
+        "reason": "set BOOKFIN_LAYOUT_CACHE=1",
+        "messages": [
+          "Skip: set BOOKFIN_LAYOUT_CACHE=1"
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/sync/plugin_upgrade_integration_test.dart",
+        "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+        "reason": "Run tool/plugin/prove.py in the pinned shells.",
+        "messages": [
+          "Skip: Run tool/plugin/prove.py in the pinned shells."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/sync/plugin_batch_integration_test.dart",
+        "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+        "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell.",
+        "messages": [
+          "Skip: Run with tool/plugin/prove.py in the pinned sync dev shell."
+        ],
+        "booleanGateSource": []
+      },
+      {
+        "file": "test/sync/plugin_integration_test.dart",
+        "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+        "reason": "Run tool/sync_fixture.py in the pinned shells.",
+        "messages": [
+          "Skip: Run tool/sync_fixture.py in the pinned shells."
+        ],
+        "booleanGateSource": []
+      }
+    ],
+    "log": {
+      "path": "docs/evidence/te-c2tc/logs/07-full.log.gz",
+      "bytes": 2137112,
+      "sha256": "a3873cf1e0e4e3aadb781dbbdd8c14d8fbaaff28748ad7cfd44e119f19b834ad",
+      "compressedBytes": 208829,
+      "compressedSha256": "0e162938ffbe376101e0b405596507d5b7ed955f34f8f194b54b6cee31f218fb"
+    },
+    "completion": [
+      {
+        "success": true,
+        "type": "done",
+        "time": 319740
+      }
+    ]
+  }
+]

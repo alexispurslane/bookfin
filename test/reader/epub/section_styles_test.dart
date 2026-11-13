@@ -68,9 +68,14 @@ Uint8List styledBook({
     for (final entry in sheets.entries)
       'OPS/css/${entry.key}': utf8.encode(entry.value),
   };
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final entry in entries.entries) {
-    archive.addFile(ArchiveFile(entry.key, entry.value.length, entry.value));
+    archive.addFile(
+      ArchiveFile(entry.key, entry.value.length, entry.value)
+        ..lastModTime = builtAt,
+    );
   }
   return ZipEncoder().encodeBytes(archive);
 }

@@ -53,9 +53,8 @@ class CorpusBook {
 }
 
 /// The made-up books of tool/showcase_media.dart, by trial name. Each is
-/// zipped again with a fixed file time, because the showcase stamps each
-/// file with the time it was made and the publication identity hashes the
-/// archive bytes too.
+/// zipped again with the fixed file time used by the recorded corpus
+/// identities. Retain that time because identity includes the archive bytes.
 Map<String, Uint8List> showcaseBooks() => {
   for (final (id, title, chapters) in [
     ('frost', 'First Frost', media.firstFrost),
@@ -133,6 +132,11 @@ Uint8List madeUpEpub(
             '<body>$body</body></html>',
       ),
     );
+  }
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
+  for (final file in archive.files) {
+    file.lastModTime = builtAt;
   }
   return Uint8List.fromList(ZipEncoder().encode(archive));
 }

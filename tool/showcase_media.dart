@@ -315,6 +315,11 @@ Uint8List epub(
       ),
     );
   }
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
+  for (final file in archive.files) {
+    file.lastModTime = builtAt;
+  }
   return ZipEncoder().encodeBytes(archive);
 }
 

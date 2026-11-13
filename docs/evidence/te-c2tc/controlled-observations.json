@@ -1,0 +1,988 @@
+{
+  "02-controlled-red": [
+    {
+      "builder": "admission.archive",
+      "first": {
+        "digest": "c06bbb85c03087d77c82356a623e3da9250e7c30a5c05948dbb08146a27ec976",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "65edc8055cbf4f65aa65293744e7a60e58e7902e86546865c49a288a2c1e89ad"
+          },
+          {
+            "name": "OPS/nav.xhtml",
+            "payload": "8a41e61412e5a158c3e291ab4b6bba78c6d998147e2345de7bd208c5bc468f50"
+          },
+          {
+            "name": "OPS/text/one.xhtml",
+            "payload": "c6ffafc7cc10f091064a7c49d99df7e4871b795a37fcf64f6a85050f2173f762"
+          }
+        ]
+      },
+      "later": {
+        "digest": "66478ffad7f6d93fceaa50506e335e1fc829ec8e4849e475e459dc5fed52f0db",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "65edc8055cbf4f65aa65293744e7a60e58e7902e86546865c49a288a2c1e89ad"
+          },
+          {
+            "name": "OPS/nav.xhtml",
+            "payload": "8a41e61412e5a158c3e291ab4b6bba78c6d998147e2345de7bd208c5bc468f50"
+          },
+          {
+            "name": "OPS/text/one.xhtml",
+            "payload": "c6ffafc7cc10f091064a7c49d99df7e4871b795a37fcf64f6a85050f2173f762"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "epubjs.asRecorded",
+      "first": {
+        "digest": "3afb76cd9b71d9c9d1d880e05a9abd727cfdf8dc6cdccc8de653b1f9885a44c2",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "a2c124573cb8e5b1bc530eb5d36788c8acd45b6080fe53abce299039284d8271"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "a905ee0f1e7ebfaec477f7be8211b19502113d4ef138da75d673efbc2cf4b8d8"
+          },
+          {
+            "name": "OPS/book.css",
+            "payload": "7a8633c02278ce32e9e252ed2167d2732e13dedecbf76f6ecbd9387cab1602a1"
+          },
+          {
+            "name": "OPS/dot.png",
+            "payload": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08"
+          },
+          {
+            "name": "OPS/active.svg",
+            "payload": "ac52c0863dcea7140e023171c5b5272f6c0a0aa61f3012651dda24d02be0572a"
+          }
+        ]
+      },
+      "later": {
+        "digest": "fc4bd0f49ff588ae91bf11a2fd8716c008716fe1371ec70c7be54a93529c7dad",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "a2c124573cb8e5b1bc530eb5d36788c8acd45b6080fe53abce299039284d8271"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "a905ee0f1e7ebfaec477f7be8211b19502113d4ef138da75d673efbc2cf4b8d8"
+          },
+          {
+            "name": "OPS/book.css",
+            "payload": "7a8633c02278ce32e9e252ed2167d2732e13dedecbf76f6ecbd9387cab1602a1"
+          },
+          {
+            "name": "OPS/dot.png",
+            "payload": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08"
+          },
+          {
+            "name": "OPS/active.svg",
+            "payload": "ac52c0863dcea7140e023171c5b5272f6c0a0aa61f3012651dda24d02be0572a"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "corpus.madeUpEpub",
+      "first": {
+        "digest": "4a8be0e03fff7dfb99fbc02cd0a12cfd9db88adecc11f94e6f36dcb62edb52e2",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "d6d8bdcf4492b4ae7989c55e0f402f39314bf2e01d9b11292824ea1be8fbdd09"
+          },
+          {
+            "name": "book.opf",
+            "payload": "2eb3b4b49ed29cf17641ef9f1e45514de13236fed0650eab9059e8be92e945e1"
+          },
+          {
+            "name": "book.css",
+            "payload": "00a55ffb14f658afc296b8389b051d82d37eff1dcb6792312ff0424bc6b068b5"
+          },
+          {
+            "name": "s0.xhtml",
+            "payload": "8eb9cba2c4181dc6bb91fdd75cbd18d5c28499e50a01595e7e4891bc4856dce3"
+          }
+        ]
+      },
+      "later": {
+        "digest": "3fb59d40a9af22f79e4b2fc8f85c0ff7193f8cedc2339d81933d1fb2df90da31",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "d6d8bdcf4492b4ae7989c55e0f402f39314bf2e01d9b11292824ea1be8fbdd09"
+          },
+          {
+            "name": "book.opf",
+            "payload": "2eb3b4b49ed29cf17641ef9f1e45514de13236fed0650eab9059e8be92e945e1"
+          },
+          {
+            "name": "book.css",
+            "payload": "00a55ffb14f658afc296b8389b051d82d37eff1dcb6792312ff0424bc6b068b5"
+          },
+          {
+            "name": "s0.xhtml",
+            "payload": "8eb9cba2c4181dc6bb91fdd75cbd18d5c28499e50a01595e7e4891bc4856dce3"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "showcase.epub",
+      "first": {
+        "digest": "60c39df0ad43b17f77ab56d3801f896612d4d6243396ed581e0754b6e31544f1",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "8e68b2e3b6b0be82be754811a289c7c5170b6910567b36ef663e6fbaa763a5c0"
+          },
+          {
+            "name": "OEBPS/content.opf",
+            "payload": "4714d3b8850f004509a6669b2adcbe6a49c637cc882e307747a3212669e4676f"
+          },
+          {
+            "name": "OEBPS/style.css",
+            "payload": "49b8a478b07ce74647e866fd8ca9dcb6cb64a9d9cc27302092291a99da948bc7"
+          },
+          {
+            "name": "OEBPS/nav.xhtml",
+            "payload": "8f7a6001c291a3a741d4d4dd5d975f757ed1cfe6748c3832da44ac829efe36f5"
+          },
+          {
+            "name": "OEBPS/chapter1.xhtml",
+            "payload": "a19babe9da1c5beb2d1a1ab85652d887f8d043212948f3416fe4625bc140174f"
+          },
+          {
+            "name": "OEBPS/endnotes.xhtml",
+            "payload": "3951eca8c9fe2337cd2707c70b71644787ac46bcef157594dcb75997e405255a"
+          }
+        ]
+      },
+      "later": {
+        "digest": "7110adae85facad1b1543cf965dc522b99768ece5cdc817dac1608c4a36d3070",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "8e68b2e3b6b0be82be754811a289c7c5170b6910567b36ef663e6fbaa763a5c0"
+          },
+          {
+            "name": "OEBPS/content.opf",
+            "payload": "4714d3b8850f004509a6669b2adcbe6a49c637cc882e307747a3212669e4676f"
+          },
+          {
+            "name": "OEBPS/style.css",
+            "payload": "49b8a478b07ce74647e866fd8ca9dcb6cb64a9d9cc27302092291a99da948bc7"
+          },
+          {
+            "name": "OEBPS/nav.xhtml",
+            "payload": "8f7a6001c291a3a741d4d4dd5d975f757ed1cfe6748c3832da44ac829efe36f5"
+          },
+          {
+            "name": "OEBPS/chapter1.xhtml",
+            "payload": "a19babe9da1c5beb2d1a1ab85652d887f8d043212948f3416fe4625bc140174f"
+          },
+          {
+            "name": "OEBPS/endnotes.xhtml",
+            "payload": "3951eca8c9fe2337cd2707c70b71644787ac46bcef157594dcb75997e405255a"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "damaged._book",
+      "first": {
+        "digest": "eebb1e5c56850117b65e23174e31cc548c96bb31d843d428d987a7381948a16d",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "e662bc73f2e5c46083e5f9378f020bf1f0ff5889ef586732ca411a6e2609a2a1"
+          },
+          {
+            "name": "OPS/toc.ncx",
+            "payload": "78e10c48b3cb5e71fe45b39fcc6bdcf531975a2b5493d24ed38f7fd2083c1c8d"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "fae73dba7b0b5c61585e6cbb71b2c104906f041582891865a73812ee17128a8a"
+          },
+          {
+            "name": "OPS/two.xhtml",
+            "payload": "ea007c0f461d05699a061aee53a5c540bc92bdff4cb93dade7860f5e3a8a0216"
+          },
+          {
+            "name": "OPS/three.xhtml",
+            "payload": "52c26329e1ac6db8d72dba9dd39328837dcddc9819cabe0e5b45629efe23d9e4"
+          }
+        ]
+      },
+      "later": {
+        "digest": "7dc9afcce964578e9ab17a3ac12784bdc6c7e1ab557484cc892e997ef6fa21b4",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "e662bc73f2e5c46083e5f9378f020bf1f0ff5889ef586732ca411a6e2609a2a1"
+          },
+          {
+            "name": "OPS/toc.ncx",
+            "payload": "78e10c48b3cb5e71fe45b39fcc6bdcf531975a2b5493d24ed38f7fd2083c1c8d"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "fae73dba7b0b5c61585e6cbb71b2c104906f041582891865a73812ee17128a8a"
+          },
+          {
+            "name": "OPS/two.xhtml",
+            "payload": "ea007c0f461d05699a061aee53a5c540bc92bdff4cb93dade7860f5e3a8a0216"
+          },
+          {
+            "name": "OPS/three.xhtml",
+            "payload": "52c26329e1ac6db8d72dba9dd39328837dcddc9819cabe0e5b45629efe23d9e4"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "styles.styledBook",
+      "first": {
+        "digest": "9d26a864f883e09fc3472dfb36062c45bd3240311030dfb1200ee4de9e09506f",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "85f3bab4d9e82a13e7f364a89c7fb35981e5ea5f29ee56dda44cade15770eb55"
+          },
+          {
+            "name": "OPS/s0.xhtml",
+            "payload": "3345a0ef9ae673d0e80bf5f77e5559b3fb49cea07c8ad0a2cf72d04ddcf5d29f"
+          },
+          {
+            "name": "OPS/s1.xhtml",
+            "payload": "9c08d906a3a587eef487586739608622dda03ac1fd1bda4014b3887da84df532"
+          },
+          {
+            "name": "OPS/s2.xhtml",
+            "payload": "9f2a93813cbfc7640420bb40af65587fc33bc3eac617f28228c031e10f3369a8"
+          },
+          {
+            "name": "OPS/s3.xhtml",
+            "payload": "1ca8cfd39e66cfb6eda62dff7d9ba4a34002700383f775ab53fd0d1edd66dc06"
+          },
+          {
+            "name": "OPS/css/one.css",
+            "payload": "a9c4ceab8d70150a3b9109a7becbdf28f6ce1aaecbfcc90fcb327fbd8576b7ac"
+          },
+          {
+            "name": "OPS/css/nested/deep.css",
+            "payload": "b7a8d62644dbf7a317b89d2fa5d434a1230d1e9969cd934cabde09ae02e4161b"
+          },
+          {
+            "name": "OPS/css/shared.css",
+            "payload": "fea3b4a4e3fb4215aca9cdd726ed2f911a7c2ac80730ee2651f8ebe92de15f36"
+          },
+          {
+            "name": "OPS/css/end.css",
+            "payload": "e46ce871cae7245a01cb5c505abc458d6d3b0d8602c81ce1176d9cbbe7a9bd60"
+          },
+          {
+            "name": "OPS/css/two.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/three.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/four.css",
+            "payload": "c92cd76c2bf5c5b15a61231fb2f8e3a4908577bcb00f21b304ece47999f579f4"
+          },
+          {
+            "name": "OPS/css/inline.css",
+            "payload": "4260b9c1fd682fe79cafa5c0fc5104391b49678bc3b39a1a1aa29e595e208e57"
+          }
+        ]
+      },
+      "later": {
+        "digest": "a21a11c458f18279bc8fa6c2f2fc6004bbb236ff91791b26f0a191409859c3d7",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "85f3bab4d9e82a13e7f364a89c7fb35981e5ea5f29ee56dda44cade15770eb55"
+          },
+          {
+            "name": "OPS/s0.xhtml",
+            "payload": "3345a0ef9ae673d0e80bf5f77e5559b3fb49cea07c8ad0a2cf72d04ddcf5d29f"
+          },
+          {
+            "name": "OPS/s1.xhtml",
+            "payload": "9c08d906a3a587eef487586739608622dda03ac1fd1bda4014b3887da84df532"
+          },
+          {
+            "name": "OPS/s2.xhtml",
+            "payload": "9f2a93813cbfc7640420bb40af65587fc33bc3eac617f28228c031e10f3369a8"
+          },
+          {
+            "name": "OPS/s3.xhtml",
+            "payload": "1ca8cfd39e66cfb6eda62dff7d9ba4a34002700383f775ab53fd0d1edd66dc06"
+          },
+          {
+            "name": "OPS/css/one.css",
+            "payload": "a9c4ceab8d70150a3b9109a7becbdf28f6ce1aaecbfcc90fcb327fbd8576b7ac"
+          },
+          {
+            "name": "OPS/css/nested/deep.css",
+            "payload": "b7a8d62644dbf7a317b89d2fa5d434a1230d1e9969cd934cabde09ae02e4161b"
+          },
+          {
+            "name": "OPS/css/shared.css",
+            "payload": "fea3b4a4e3fb4215aca9cdd726ed2f911a7c2ac80730ee2651f8ebe92de15f36"
+          },
+          {
+            "name": "OPS/css/end.css",
+            "payload": "e46ce871cae7245a01cb5c505abc458d6d3b0d8602c81ce1176d9cbbe7a9bd60"
+          },
+          {
+            "name": "OPS/css/two.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/three.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/four.css",
+            "payload": "c92cd76c2bf5c5b15a61231fb2f8e3a4908577bcb00f21b304ece47999f579f4"
+          },
+          {
+            "name": "OPS/css/inline.css",
+            "payload": "4260b9c1fd682fe79cafa5c0fc5104391b49678bc3b39a1a1aa29e595e208e57"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "pages.book",
+      "first": {
+        "digest": "3465b88d189daf3d4d5d4e3b1668ff0fad0efc4987ce7a07041eb00e3f8760b0",
+        "entries": [
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "5dc7a2a8aad1cc4176db92d3fb418490b1a5674df8f78c97fb356feabeb2731f"
+          },
+          {
+            "name": "OPS/css/book.css",
+            "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "OPS/text/s0.xhtml",
+            "payload": "1cfcae8131a51392c1e1a00454a1428e65a319d7f5f01cfe8a90303169ce3b43"
+          }
+        ]
+      },
+      "later": {
+        "digest": "0ee31351ff1fbcfbceb1da3a2c8f7487af2faf85f87a7f231b6242186dc2608b",
+        "entries": [
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "5dc7a2a8aad1cc4176db92d3fb418490b1a5674df8f78c97fb356feabeb2731f"
+          },
+          {
+            "name": "OPS/css/book.css",
+            "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "OPS/text/s0.xhtml",
+            "payload": "1cfcae8131a51392c1e1a00454a1428e65a319d7f5f01cfe8a90303169ce3b43"
+          }
+        ]
+      }
+    }
+  ],
+  "03-controlled-green": [
+    {
+      "builder": "admission.archive",
+      "first": {
+        "digest": "4dc5fd356e0b3f7ccfefb9477061ceaeb6d7b3cedcd01ae3363bc41c02b61752",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "65edc8055cbf4f65aa65293744e7a60e58e7902e86546865c49a288a2c1e89ad"
+          },
+          {
+            "name": "OPS/nav.xhtml",
+            "payload": "8a41e61412e5a158c3e291ab4b6bba78c6d998147e2345de7bd208c5bc468f50"
+          },
+          {
+            "name": "OPS/text/one.xhtml",
+            "payload": "c6ffafc7cc10f091064a7c49d99df7e4871b795a37fcf64f6a85050f2173f762"
+          }
+        ]
+      },
+      "later": {
+        "digest": "4dc5fd356e0b3f7ccfefb9477061ceaeb6d7b3cedcd01ae3363bc41c02b61752",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "65edc8055cbf4f65aa65293744e7a60e58e7902e86546865c49a288a2c1e89ad"
+          },
+          {
+            "name": "OPS/nav.xhtml",
+            "payload": "8a41e61412e5a158c3e291ab4b6bba78c6d998147e2345de7bd208c5bc468f50"
+          },
+          {
+            "name": "OPS/text/one.xhtml",
+            "payload": "c6ffafc7cc10f091064a7c49d99df7e4871b795a37fcf64f6a85050f2173f762"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "epubjs.asRecorded",
+      "first": {
+        "digest": "cb4eab2e6509848ae34ab883cc2905af0409e33353db3e1a5fd8c81763318f60",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "a2c124573cb8e5b1bc530eb5d36788c8acd45b6080fe53abce299039284d8271"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "a905ee0f1e7ebfaec477f7be8211b19502113d4ef138da75d673efbc2cf4b8d8"
+          },
+          {
+            "name": "OPS/book.css",
+            "payload": "7a8633c02278ce32e9e252ed2167d2732e13dedecbf76f6ecbd9387cab1602a1"
+          },
+          {
+            "name": "OPS/dot.png",
+            "payload": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08"
+          },
+          {
+            "name": "OPS/active.svg",
+            "payload": "ac52c0863dcea7140e023171c5b5272f6c0a0aa61f3012651dda24d02be0572a"
+          }
+        ]
+      },
+      "later": {
+        "digest": "cb4eab2e6509848ae34ab883cc2905af0409e33353db3e1a5fd8c81763318f60",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "a2c124573cb8e5b1bc530eb5d36788c8acd45b6080fe53abce299039284d8271"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "a905ee0f1e7ebfaec477f7be8211b19502113d4ef138da75d673efbc2cf4b8d8"
+          },
+          {
+            "name": "OPS/book.css",
+            "payload": "7a8633c02278ce32e9e252ed2167d2732e13dedecbf76f6ecbd9387cab1602a1"
+          },
+          {
+            "name": "OPS/dot.png",
+            "payload": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08"
+          },
+          {
+            "name": "OPS/active.svg",
+            "payload": "ac52c0863dcea7140e023171c5b5272f6c0a0aa61f3012651dda24d02be0572a"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "corpus.madeUpEpub",
+      "first": {
+        "digest": "0b7fe0811169172d0bdb4b26fa4f22565f338bc6679590505e1b9dbed95f999a",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "d6d8bdcf4492b4ae7989c55e0f402f39314bf2e01d9b11292824ea1be8fbdd09"
+          },
+          {
+            "name": "book.opf",
+            "payload": "2eb3b4b49ed29cf17641ef9f1e45514de13236fed0650eab9059e8be92e945e1"
+          },
+          {
+            "name": "book.css",
+            "payload": "00a55ffb14f658afc296b8389b051d82d37eff1dcb6792312ff0424bc6b068b5"
+          },
+          {
+            "name": "s0.xhtml",
+            "payload": "8eb9cba2c4181dc6bb91fdd75cbd18d5c28499e50a01595e7e4891bc4856dce3"
+          }
+        ]
+      },
+      "later": {
+        "digest": "0b7fe0811169172d0bdb4b26fa4f22565f338bc6679590505e1b9dbed95f999a",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "d6d8bdcf4492b4ae7989c55e0f402f39314bf2e01d9b11292824ea1be8fbdd09"
+          },
+          {
+            "name": "book.opf",
+            "payload": "2eb3b4b49ed29cf17641ef9f1e45514de13236fed0650eab9059e8be92e945e1"
+          },
+          {
+            "name": "book.css",
+            "payload": "00a55ffb14f658afc296b8389b051d82d37eff1dcb6792312ff0424bc6b068b5"
+          },
+          {
+            "name": "s0.xhtml",
+            "payload": "8eb9cba2c4181dc6bb91fdd75cbd18d5c28499e50a01595e7e4891bc4856dce3"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "showcase.epub",
+      "first": {
+        "digest": "5cfb7226e18c1db12b6424c4a37214e0197db5ca3d44bf2370df092e17aa4a79",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "8e68b2e3b6b0be82be754811a289c7c5170b6910567b36ef663e6fbaa763a5c0"
+          },
+          {
+            "name": "OEBPS/content.opf",
+            "payload": "4714d3b8850f004509a6669b2adcbe6a49c637cc882e307747a3212669e4676f"
+          },
+          {
+            "name": "OEBPS/style.css",
+            "payload": "49b8a478b07ce74647e866fd8ca9dcb6cb64a9d9cc27302092291a99da948bc7"
+          },
+          {
+            "name": "OEBPS/nav.xhtml",
+            "payload": "8f7a6001c291a3a741d4d4dd5d975f757ed1cfe6748c3832da44ac829efe36f5"
+          },
+          {
+            "name": "OEBPS/chapter1.xhtml",
+            "payload": "a19babe9da1c5beb2d1a1ab85652d887f8d043212948f3416fe4625bc140174f"
+          },
+          {
+            "name": "OEBPS/endnotes.xhtml",
+            "payload": "3951eca8c9fe2337cd2707c70b71644787ac46bcef157594dcb75997e405255a"
+          }
+        ]
+      },
+      "later": {
+        "digest": "5cfb7226e18c1db12b6424c4a37214e0197db5ca3d44bf2370df092e17aa4a79",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "8e68b2e3b6b0be82be754811a289c7c5170b6910567b36ef663e6fbaa763a5c0"
+          },
+          {
+            "name": "OEBPS/content.opf",
+            "payload": "4714d3b8850f004509a6669b2adcbe6a49c637cc882e307747a3212669e4676f"
+          },
+          {
+            "name": "OEBPS/style.css",
+            "payload": "49b8a478b07ce74647e866fd8ca9dcb6cb64a9d9cc27302092291a99da948bc7"
+          },
+          {
+            "name": "OEBPS/nav.xhtml",
+            "payload": "8f7a6001c291a3a741d4d4dd5d975f757ed1cfe6748c3832da44ac829efe36f5"
+          },
+          {
+            "name": "OEBPS/chapter1.xhtml",
+            "payload": "a19babe9da1c5beb2d1a1ab85652d887f8d043212948f3416fe4625bc140174f"
+          },
+          {
+            "name": "OEBPS/endnotes.xhtml",
+            "payload": "3951eca8c9fe2337cd2707c70b71644787ac46bcef157594dcb75997e405255a"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "damaged._book",
+      "first": {
+        "digest": "b815b160f8f4cd9d3b04598237fcc11dc88ce5a4eb09afac6f4bee84384e27bd",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "e662bc73f2e5c46083e5f9378f020bf1f0ff5889ef586732ca411a6e2609a2a1"
+          },
+          {
+            "name": "OPS/toc.ncx",
+            "payload": "78e10c48b3cb5e71fe45b39fcc6bdcf531975a2b5493d24ed38f7fd2083c1c8d"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "fae73dba7b0b5c61585e6cbb71b2c104906f041582891865a73812ee17128a8a"
+          },
+          {
+            "name": "OPS/two.xhtml",
+            "payload": "ea007c0f461d05699a061aee53a5c540bc92bdff4cb93dade7860f5e3a8a0216"
+          },
+          {
+            "name": "OPS/three.xhtml",
+            "payload": "52c26329e1ac6db8d72dba9dd39328837dcddc9819cabe0e5b45629efe23d9e4"
+          }
+        ]
+      },
+      "later": {
+        "digest": "b815b160f8f4cd9d3b04598237fcc11dc88ce5a4eb09afac6f4bee84384e27bd",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "e662bc73f2e5c46083e5f9378f020bf1f0ff5889ef586732ca411a6e2609a2a1"
+          },
+          {
+            "name": "OPS/toc.ncx",
+            "payload": "78e10c48b3cb5e71fe45b39fcc6bdcf531975a2b5493d24ed38f7fd2083c1c8d"
+          },
+          {
+            "name": "OPS/one.xhtml",
+            "payload": "fae73dba7b0b5c61585e6cbb71b2c104906f041582891865a73812ee17128a8a"
+          },
+          {
+            "name": "OPS/two.xhtml",
+            "payload": "ea007c0f461d05699a061aee53a5c540bc92bdff4cb93dade7860f5e3a8a0216"
+          },
+          {
+            "name": "OPS/three.xhtml",
+            "payload": "52c26329e1ac6db8d72dba9dd39328837dcddc9819cabe0e5b45629efe23d9e4"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "styles.styledBook",
+      "first": {
+        "digest": "f89af99e8eb2e7b3c971cd8d27f8d7db55e8754c6da3457dc49cedea6a60b3fb",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "85f3bab4d9e82a13e7f364a89c7fb35981e5ea5f29ee56dda44cade15770eb55"
+          },
+          {
+            "name": "OPS/s0.xhtml",
+            "payload": "3345a0ef9ae673d0e80bf5f77e5559b3fb49cea07c8ad0a2cf72d04ddcf5d29f"
+          },
+          {
+            "name": "OPS/s1.xhtml",
+            "payload": "9c08d906a3a587eef487586739608622dda03ac1fd1bda4014b3887da84df532"
+          },
+          {
+            "name": "OPS/s2.xhtml",
+            "payload": "9f2a93813cbfc7640420bb40af65587fc33bc3eac617f28228c031e10f3369a8"
+          },
+          {
+            "name": "OPS/s3.xhtml",
+            "payload": "1ca8cfd39e66cfb6eda62dff7d9ba4a34002700383f775ab53fd0d1edd66dc06"
+          },
+          {
+            "name": "OPS/css/one.css",
+            "payload": "a9c4ceab8d70150a3b9109a7becbdf28f6ce1aaecbfcc90fcb327fbd8576b7ac"
+          },
+          {
+            "name": "OPS/css/nested/deep.css",
+            "payload": "b7a8d62644dbf7a317b89d2fa5d434a1230d1e9969cd934cabde09ae02e4161b"
+          },
+          {
+            "name": "OPS/css/shared.css",
+            "payload": "fea3b4a4e3fb4215aca9cdd726ed2f911a7c2ac80730ee2651f8ebe92de15f36"
+          },
+          {
+            "name": "OPS/css/end.css",
+            "payload": "e46ce871cae7245a01cb5c505abc458d6d3b0d8602c81ce1176d9cbbe7a9bd60"
+          },
+          {
+            "name": "OPS/css/two.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/three.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/four.css",
+            "payload": "c92cd76c2bf5c5b15a61231fb2f8e3a4908577bcb00f21b304ece47999f579f4"
+          },
+          {
+            "name": "OPS/css/inline.css",
+            "payload": "4260b9c1fd682fe79cafa5c0fc5104391b49678bc3b39a1a1aa29e595e208e57"
+          }
+        ]
+      },
+      "later": {
+        "digest": "f89af99e8eb2e7b3c971cd8d27f8d7db55e8754c6da3457dc49cedea6a60b3fb",
+        "entries": [
+          {
+            "name": "mimetype",
+            "payload": "e468e350d1143eb648f60c7b0bd6031101ec0544a361ca74ecef256ac901f48b"
+          },
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "85f3bab4d9e82a13e7f364a89c7fb35981e5ea5f29ee56dda44cade15770eb55"
+          },
+          {
+            "name": "OPS/s0.xhtml",
+            "payload": "3345a0ef9ae673d0e80bf5f77e5559b3fb49cea07c8ad0a2cf72d04ddcf5d29f"
+          },
+          {
+            "name": "OPS/s1.xhtml",
+            "payload": "9c08d906a3a587eef487586739608622dda03ac1fd1bda4014b3887da84df532"
+          },
+          {
+            "name": "OPS/s2.xhtml",
+            "payload": "9f2a93813cbfc7640420bb40af65587fc33bc3eac617f28228c031e10f3369a8"
+          },
+          {
+            "name": "OPS/s3.xhtml",
+            "payload": "1ca8cfd39e66cfb6eda62dff7d9ba4a34002700383f775ab53fd0d1edd66dc06"
+          },
+          {
+            "name": "OPS/css/one.css",
+            "payload": "a9c4ceab8d70150a3b9109a7becbdf28f6ce1aaecbfcc90fcb327fbd8576b7ac"
+          },
+          {
+            "name": "OPS/css/nested/deep.css",
+            "payload": "b7a8d62644dbf7a317b89d2fa5d434a1230d1e9969cd934cabde09ae02e4161b"
+          },
+          {
+            "name": "OPS/css/shared.css",
+            "payload": "fea3b4a4e3fb4215aca9cdd726ed2f911a7c2ac80730ee2651f8ebe92de15f36"
+          },
+          {
+            "name": "OPS/css/end.css",
+            "payload": "e46ce871cae7245a01cb5c505abc458d6d3b0d8602c81ce1176d9cbbe7a9bd60"
+          },
+          {
+            "name": "OPS/css/two.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/three.css",
+            "payload": "c3863c6417c96f08b909a6e57b36dc35f5e022030f0db885269008709e018bed"
+          },
+          {
+            "name": "OPS/css/four.css",
+            "payload": "c92cd76c2bf5c5b15a61231fb2f8e3a4908577bcb00f21b304ece47999f579f4"
+          },
+          {
+            "name": "OPS/css/inline.css",
+            "payload": "4260b9c1fd682fe79cafa5c0fc5104391b49678bc3b39a1a1aa29e595e208e57"
+          }
+        ]
+      }
+    },
+    {
+      "builder": "pages.book",
+      "first": {
+        "digest": "ed230f8dc1c425985ed59243bd9d033beb45302f1e312ebc49f984dc63aae8f1",
+        "entries": [
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "5dc7a2a8aad1cc4176db92d3fb418490b1a5674df8f78c97fb356feabeb2731f"
+          },
+          {
+            "name": "OPS/css/book.css",
+            "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "OPS/text/s0.xhtml",
+            "payload": "1cfcae8131a51392c1e1a00454a1428e65a319d7f5f01cfe8a90303169ce3b43"
+          }
+        ]
+      },
+      "later": {
+        "digest": "ed230f8dc1c425985ed59243bd9d033beb45302f1e312ebc49f984dc63aae8f1",
+        "entries": [
+          {
+            "name": "META-INF/container.xml",
+            "payload": "888b3fd7cc9e063417bfe8b58f07312d30b3a5d1684eac4da0cb09a52f38cb7c"
+          },
+          {
+            "name": "OPS/book.opf",
+            "payload": "5dc7a2a8aad1cc4176db92d3fb418490b1a5674df8f78c97fb356feabeb2731f"
+          },
+          {
+            "name": "OPS/css/book.css",
+            "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "OPS/text/s0.xhtml",
+            "payload": "1cfcae8131a51392c1e1a00454a1428e65a319d7f5f01cfe8a90303169ce3b43"
+          }
+        ]
+      }
+    }
+  ]
+}

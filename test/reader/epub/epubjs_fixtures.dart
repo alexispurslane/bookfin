@@ -63,14 +63,16 @@ PageSource immediateSource(Publication publication) => PageSource(
 /// the Standard Ebooks sheets that ask for it. Native pages can start where
 /// epub.js pages started only without it.
 Uint8List asRecorded(Uint8List book) {
+  // Replacing a sheet must not give identical content a new source digest.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final file in ZipDecoder().decodeBytes(book).files) {
     archive.add(
       file.isFile && file.name.endsWith('.css')
-          ? ArchiveFile.string(
+          ? (ArchiveFile.string(
               file.name,
               '${utf8.decode(file.content)}\n*{hyphens:manual!important}',
-            )
+            )..lastModTime = builtAt)
           : file,
     );
   }

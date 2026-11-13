@@ -1,0 +1,21 @@
+[
+  {
+    "command": [
+      "rg",
+      "-n",
+      "ArchiveFile|ZipEncoder|ZipFileEncoder|ZipOutputStream",
+      "--glob",
+      "*.dart"
+    ],
+    "exit": 1,
+    "failure": "Inventory helper check_output raised CalledProcessError. With inherited piped stdin and no explicit path, rg searched exhausted stdin rather than the checkout.",
+    "resolution": "Reran the inventory with an explicit dot path; exit 0. No source or test failure."
+  },
+  {
+    "commandName": "10-whitespace",
+    "exit": 2,
+    "failure": "The tk-generated follow-up ticket had an extra blank line at EOF.",
+    "resolution": "Removed only that extra blank line; final whitespace check rerun.",
+    "log": "docs/evidence/te-c2tc/logs/10-whitespace.log.gz"
+  }
+]

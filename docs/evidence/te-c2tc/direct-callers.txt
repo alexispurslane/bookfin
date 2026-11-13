@@ -1,0 +1,46 @@
+test/research/epub_layout_cache_test.dart:28:import '../reader/epub/corpus/book.dart';
+test/reader/scrub_test.dart:13:import 'epub/page_source_test.dart' show paragraphs;
+test/reader/epub/book_fonts_test.dart:18:import 'admission_test.dart' show archive, package, xhtml;
+test/reader/reading_moves_test.dart:34:import 'epub/page_source_test.dart' show paragraphs;
+test/reader/epub/text_size_test.dart:18:import 'page_source_test.dart' show TestScheduler, book;
+test/reader/native_reader.dart:17:import 'epub/page_source_test.dart' show paragraphs;
+test/reader/epub/pager_test.dart:25:import '../../../tool/showcase_media.dart' as media;
+test/reader/epub/pager_test.dart:27:import 'page_source_test.dart'
+test/reader/epub/chapter_titles_test.dart:16:import 'page_source_test.dart'
+test/reader/kept_page_session_test.dart:27:import 'epub/corpus/book.dart' show madeUpEpub, showcaseBooks;
+test/reader/epub/corpus_test.dart:22:import 'corpus/book.dart';
+test/reader/session_native_test.dart:31:import 'epub/corpus/book.dart' show showcaseBooks;
+test/reader/session_native_test.dart:32:import 'epub/epubjs_fixtures.dart'
+test/reader/session_native_test.dart:35:import 'epub/page_source_test.dart' as pages show book;
+test/reader/session_native_test.dart:36:import 'epub/page_source_test.dart' show paragraphs;
+test/reader/epub/page_map_jump_test.dart:24:import 'corpus/book.dart';
+test/reader/epub/page_map_jump_test.dart:27:import 'page_source_test.dart' show TestScheduler, placeIn;
+test/reader/epub/places_test.dart:10:import '../../../tool/showcase_media.dart' as media;
+test/reader/screen_test.dart:19:import 'epub/page_source_test.dart' show paragraphs;
+test/reader/epub/admission_benchmark_test.dart:40:import 'page_source_test.dart' show TestScheduler;
+test/reader/epub/image_test.dart:18:import 'epubjs_fixtures.dart' show immediateSource;
+test/reader/epub/image_test.dart:20:import 'page_source_test.dart' show book;
+test/reader/epub/corpus_steps_test.dart:31:import 'corpus/book.dart';
+test/reader/epub/damaged_chapters_test.dart:15:import 'epubjs_fixtures.dart' show immediateSource, pageAt;
+test/reader/admitted_books_test.dart:29:import 'epub/corpus/book.dart' show showcaseBooks;
+test/reader/admitted_books_test.dart:31:import 'epub/page_source_test.dart' show TestScheduler;
+test/reader/admitted_books_test.dart:32:import 'epub/section_styles_test.dart' show styledBook;
+test/reader/epub/hyphenate_test.dart:10:import 'epubjs_fixtures.dart' show immediateSource;
+test/reader/epub/hyphenate_test.dart:12:import 'page_source_test.dart' show book;
+test/reader/epub/corpus_prepare_test.dart:45:import 'corpus/book.dart';
+test/reader/epub/fidelity_test.dart:18:import 'epubjs_fixtures.dart';
+test/reader/epub/page_map_open_test.dart:23:import 'page_source_test.dart'
+test/reader/epub/semantics_test.dart:21:import 'page_source_test.dart' show TestScheduler, book, paragraphs;
+test/reader/epub/admission_test.dart:17:import '../../../tool/showcase_media.dart' as media;
+test/reader/epub/part_open_benchmark_test.dart:28:import 'corpus/book.dart';
+test/reader/epub/part_open_benchmark_test.dart:31:import 'page_source_test.dart' show TestScheduler;
+test/reader/epub/selection_test.dart:24:import 'page_source_test.dart' show TestScheduler, book, paragraphs;
+test/reader/epub/search_test.dart:13:import '../../../tool/showcase_media.dart' as media;
+test/reader/epub/saved_places_test.dart:21:import 'corpus/book.dart';
+test/reader/epub/saved_places_test.dart:22:import 'epubjs_fixtures.dart';
+test/reader/epub/viewport_test.dart:27:import 'page_source_test.dart' show TestScheduler;
+test/reader/epub/corpus/book.dart:17:import '../../../../tool/showcase_media.dart' as media;
+test/reader/epub/whole_book_pages_test.dart:17:import 'page_source_test.dart' show TestScheduler, book, paragraphs;
+test/reader/epub/section_styles_test.dart:23:import 'page_source_test.dart' show TestScheduler, WatchedPublication;
+test/reader/epub/layout_run_test.dart:14:import '../../../tool/showcase_media.dart' as media;
+test/reader/epub/page_source_frames_test.dart:16:import 'page_source_test.dart' show book, paragraphs, placeIn;

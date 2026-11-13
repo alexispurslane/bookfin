@@ -1,0 +1,8 @@
+{
+  "originalPackage": "/Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/archive-4.0.9",
+  "privatePackage": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-dac305e5/.dart_tool/te-c2tc-archive",
+  "packageConfigBeforeSha256": "0e49e9a4d978c2aa7f6b66aef7fbfbb50ffa33c9c488b4527d4604a96edb65c0",
+  "dependencyBeforeSha256": "33a1256ebeaa9d4e39d6bf13ab09948c2978b36413777cd5eb1a039ec494024c",
+  "controlledTimes": "local 2026-01-01 12:00:00 and 12:00:02",
+  "scope": "Only default lastModTime changes. Explicit timestamps and encoder overrides retain real behavior."
+}

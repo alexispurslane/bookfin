@@ -1,0 +1,92 @@
+{
+  "scope": "All tracked repository Dart ArchiveFile/ZipEncoder creation sites, plus supporting Python ZIP writers found during the audit. No external packages or historical binaries claimed audited.",
+  "changedOwners": [
+    {
+      "file": "test/reader/epub/page_source_test.dart",
+      "builder": "book",
+      "change": "stamp every newly created entry before admission"
+    },
+    {
+      "file": "test/reader/epub/admission_test.dart",
+      "builder": "archive",
+      "change": "stamp every newly created entry"
+    },
+    {
+      "file": "test/reader/epub/epubjs_fixtures.dart",
+      "builder": "asRecorded",
+      "change": "stamp replacement CSS entries only; retain decoded originals"
+    },
+    {
+      "file": "test/reader/epub/corpus/book.dart",
+      "builder": "madeUpEpub",
+      "change": "stamp complete archive including uncompressed mimetype, images and fonts"
+    },
+    {
+      "file": "tool/showcase_media.dart",
+      "builder": "epub",
+      "change": "stamp complete archive including optional endnotes"
+    },
+    {
+      "file": "test/reader/epub/damaged_chapters_test.dart",
+      "builder": "_book",
+      "change": "stamp present entries; missing-entry selection and later CRC damage remain unchanged"
+    },
+    {
+      "file": "test/reader/epub/section_styles_test.dart",
+      "builder": "styledBook",
+      "change": "stamp every entry including extra sheets"
+    }
+  ],
+  "alreadyStable": [
+    {
+      "file": "test/reader/publication_test.dart",
+      "reason": "epub sets a fixed local entry time; integrated t3-5o5r correction unchanged"
+    },
+    {
+      "file": "test/reader/session_native_test.dart",
+      "reason": "existing fixed entry time unchanged"
+    },
+    {
+      "file": "test/reader/epub/admission_test.dart",
+      "builder": "showcase",
+      "reason": "encoder modified override retained exactly at 2026-11-07; named identities unchanged"
+    },
+    {
+      "file": "test/reader/epub/corpus/book.dart",
+      "builder": "showcaseBooks",
+      "reason": "encoder modified override retained exactly at 2026-11-07; named corpus identities unchanged"
+    }
+  ],
+  "otherDartSites": [
+    {
+      "file": "tool/research/readers/dart_compat/test/compat_test.dart",
+      "reason": "standalone research package replaces OPF with a clock-dependent entry; current test reads cover pixels, not archive identity",
+      "disposition": "follow-up td-bz4y"
+    },
+    {
+      "file": "tool/research/readers/navigator/widget/test/resources_test.dart",
+      "reason": "single active.svg ZIP resource-security probe; not an EPUB builder or digest/reopen test",
+      "disposition": "unchanged"
+    },
+    {
+      "file": "tool/research/readers/navigator/widget/test/security_gate_probe.dart",
+      "reason": "single active.svg negative security probe; not an EPUB builder or digest/reopen test",
+      "disposition": "unchanged"
+    }
+  ],
+  "pythonSites": {
+    "alreadyStable": [
+      "tool/acceptance/reader_fixture.py",
+      "tool/acceptance/reader_remaining_fixture.py",
+      "tool/research/readers/fixtures.py",
+      "tool/research/readers/navigator/semantic_fixture.py"
+    ],
+    "followupTdBz4y": [
+      "tool/research/epub_engines/test_prepare.py",
+      "tool/research/epub_engines/test_calibrate.py",
+      "tool/research/sync/fixture.py"
+    ],
+    "other": "Plugin/APK ZIP writers do not construct EPUBs; navigator raster-fallback rewrites retain each original ZipInfo; read-only ZIP consumers create no entries."
+  },
+  "corruptionHelpers": "test/reader/epub/zip_test.dart edits existing headers directly; no clock creation. All deliberate CRC/size/flags mutations retained."
+}

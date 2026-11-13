@@ -1,0 +1,46 @@
+Controlled diagnostic reproduction
+
+The committed fixture diff is deliberately small. Diagnostic code is archived
+instead of adding a public clock argument or a generic builder test framework.
+
+1. Use the pinned Nix shell and flutter pub get in an isolated checkout of the
+   original base 5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c.
+2. Copy archive-4.0.9 from the package_config archive root to a private directory.
+   Never patch the shared Pub cache. Apply dependency.patch.gz to that copy.
+   Its only semantic change is the lazy lastModTime default: a Dart Zone value
+   can supply a DateTime; an absent value retains DateTime.now(). Explicit
+   lastModTime assignments and ZipEncoder.modified overrides are unchanged.
+3. Save .dart_tool/package_config.json byte-for-byte. Change only archive's
+   rootUri to the private copy. The archived before-config is evidence from
+   this machine, not a portable replacement package configuration.
+4. Expand timestamp_diagnostic_test.dart.gz into
+   test/reader/epub/timestamp_diagnostic_test.dart. Append the temporary
+   diagnosticBook function shown in patches/02-controlled-red.patch.gz to
+   damaged_chapters_test.dart. It calls the real private _book; no clone of
+   that builder is tested.
+5. Run the exact 02-controlled-red command in commands.jsonl. The dependency
+   clock control and seven content-sensitivity tests pass; the seven time-
+   stability assertions fail. Every build is independent. No sleeps, clock
+   boundary waits, fixture inflation, caching or reader changes are involved.
+6. Apply the seven-owner fixture correction and run the same test command
+   (03-controlled-green). All 15 tests pass. The source clock still changes,
+   proven by the positive control; fixture entry times override that clock.
+7. Restore the original package config bytes, remove the temporary diagnostic
+   file and temporary damaged-book access. restoration.json verifies this.
+   The shared dependency file is byte-identical to its original copy. The
+   private unused copy stays under ignored .dart_tool; no shared process or
+   tool installation was modified. Final focused/affected/full checks use
+   the unmodified dependency.
+
+The exact diagnostic test and dependency patch are gzip archives with hashes
+in HASHES.sha256. Commands carry complete compressed output and source patches.
+controlled-observations.json retains every observation and verifies that entry
+payload hashes and order match across red and green. pages.book returns an
+admitted publication, so its observation retains the raw archive digest plus
+admitted text entries; source inspection proves no payload construction changed.
+The other six builders compare the complete raw byte arrays as well.
+
+The original reader restart assertion remains unchanged. Reuse the earlier
+controlled cause proof in ../t3-5o5r/investigation.json: time-only ZIP differences
+caused the exact restore assertion despite a completed save; equal timestamps
+restored the place. That proves a possible cause, not the historical schedule.

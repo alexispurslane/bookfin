@@ -1,0 +1,38 @@
+./tool/showcase_media.dart:212:      ArchiveFile.noCompress(
+./tool/showcase_media.dart:219:      ArchiveFile.string(
+./tool/showcase_media.dart:232:    ArchiveFile.string(
+./tool/showcase_media.dart:252:    ArchiveFile.string(
+./tool/showcase_media.dart:266:    ArchiveFile.string(
+./tool/showcase_media.dart:293:      ArchiveFile.string(
+./tool/showcase_media.dart:307:      ArchiveFile.string(
+./tool/showcase_media.dart:323:  return ZipEncoder().encodeBytes(archive);
+./tool/research/readers/navigator/widget/test/security_gate_probe.dart:28:    final bytes = ZipEncoder().encode(
+./tool/research/readers/navigator/widget/test/security_gate_probe.dart:29:      Archive()..addFile(ArchiveFile.string('active.svg', svg)),
+./tool/research/readers/navigator/widget/test/resources_test.dart:211:    final bytes = ZipEncoder().encode(
+./tool/research/readers/navigator/widget/test/resources_test.dart:212:      Archive()..addFile(ArchiveFile.string('active.svg', source)),
+./tool/research/readers/dart_compat/test/compat_test.dart:51:      ArchiveFile(
+./tool/research/readers/dart_compat/test/compat_test.dart:57:    final book = await EpubReader.openBook(ZipEncoder().encode(archive));
+./test/reader/epub/epubjs_fixtures.dart:72:          ? (ArchiveFile.string(
+./test/reader/epub/epubjs_fixtures.dart:79:  return ZipEncoder().encodeBytes(archive);
+./test/reader/session_native_test.dart:212:      ArchiveFile.noCompress(
+./test/reader/session_native_test.dart:219:    archive.add(ArchiveFile.string(path, text));
+./test/reader/session_native_test.dart:224:  return ZipEncoder().encodeBytes(archive);
+./test/reader/epub/damaged_chapters_test.dart:66:      ArchiveFile(name, bytes.length, bytes)..lastModTime = builtAt,
+./test/reader/epub/damaged_chapters_test.dart:69:  return Uint8List.fromList(ZipEncoder().encode(archive));
+./test/reader/publication_test.dart:39:      ArchiveFile(entry.key, entry.value.length, entry.value)
+./test/reader/publication_test.dart:43:  return Uint8List.fromList(ZipEncoder().encode(archive));
+./test/reader/epub/admission_test.dart:39:      ArchiveFile(key, value.length, value)..lastModTime = builtAt,
+./test/reader/epub/admission_test.dart:42:  return ZipEncoder().encodeBytes(archive);
+./test/reader/epub/admission_test.dart:165:) => ZipEncoder().encodeBytes(
+./test/reader/epub/corpus/book.dart:64:    'showcase-$id': ZipEncoder().encodeBytes(
+./test/reader/epub/corpus/book.dart:98:      ArchiveFile.noCompress(
+./test/reader/epub/corpus/book.dart:105:      ArchiveFile.string(
+./test/reader/epub/corpus/book.dart:112:      ArchiveFile.string(
+./test/reader/epub/corpus/book.dart:119:    ..add(ArchiveFile.string('book.css', css));
+./test/reader/epub/corpus/book.dart:124:    archive.add(ArchiveFile.noCompress(path, bytes.length, bytes));
+./test/reader/epub/corpus/book.dart:128:      ArchiveFile.string(
+./test/reader/epub/corpus/book.dart:141:  return Uint8List.fromList(ZipEncoder().encode(archive));
+./test/reader/epub/section_styles_test.dart:76:      ArchiveFile(entry.key, entry.value.length, entry.value)
+./test/reader/epub/section_styles_test.dart:80:  return ZipEncoder().encodeBytes(archive);
+./test/reader/epub/page_source_test.dart:159:      ArchiveFile(key, value.length, value)..lastModTime = builtAt,
+./test/reader/epub/page_source_test.dart:162:  return Publication.admit(ZipEncoder().encodeBytes(archive));

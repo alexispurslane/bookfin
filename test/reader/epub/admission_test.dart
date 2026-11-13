@@ -31,9 +31,13 @@ Uint8List archive(
     for (final MapEntry(:key, :value) in files.entries) key: utf8.encode(value),
     ...binary,
   };
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final MapEntry(:key, :value) in entries.entries) {
-    archive.addFile(ArchiveFile(key, value.length, value));
+    archive.addFile(
+      ArchiveFile(key, value.length, value)..lastModTime = builtAt,
+    );
   }
   return ZipEncoder().encodeBytes(archive);
 }
@@ -151,8 +155,8 @@ List<(String, String, int)> listed(Publication publication) => [
 ];
 
 /// A showcase book from `tool/showcase_media.dart`, zipped again with a
-/// fixed file time, because the showcase stamps each file with the time it
-/// was made and the admitted files digest hashes the archive bytes too.
+/// fixed file time retained by the named identities below. The source digest
+/// includes the archive entry times as well as their contents.
 Uint8List showcase(
   String id,
   String title,

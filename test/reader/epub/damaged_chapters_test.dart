@@ -57,10 +57,14 @@ Uint8List _book({
     'OPS/two.xhtml': utf8.encode(_chapter(2)),
     'OPS/three.xhtml': utf8.encode(_chapter(3)),
   };
+  // Rebuilding identical content must keep the source digest of saved places.
+  final builtAt = DateTime(2026).millisecondsSinceEpoch ~/ 1000;
   final archive = Archive();
   for (final MapEntry(key: name, value: bytes) in files.entries) {
     if (missing.contains(name)) continue;
-    archive.addFile(ArchiveFile(name, bytes.length, bytes));
+    archive.addFile(
+      ArchiveFile(name, bytes.length, bytes)..lastModTime = builtAt,
+    );
   }
   return Uint8List.fromList(ZipEncoder().encode(archive));
 }
