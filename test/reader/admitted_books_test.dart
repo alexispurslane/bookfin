@@ -60,6 +60,34 @@ Future<File> _download(List<int> bytes) async {
 File _record(File file) =>
     File('${file.parent.path}/.bookfin-admitted/publication');
 
+/// Refuses a record open in the calling isolate. IO overrides stay in this
+/// zone; the real load worker opens the real saved record. Keep path queries
+/// available because the caller tracks pending writes by record path.
+T _withoutRecordOpen<T>(File original, T Function() work) {
+  final record = _record(original);
+  return IOOverrides.runZoned(
+    work,
+    createFile: (path) => path == record.path
+        ? _RecordNeedsWorker(record)
+        : Zone.root.run(() => File(path)),
+  );
+}
+
+class _RecordNeedsWorker extends Fake implements File {
+  _RecordNeedsWorker(this.file);
+  final File file;
+
+  @override
+  String get path => file.path;
+  @override
+  Directory get parent => file.parent;
+  @override
+  Future<RandomAccessFile> open({FileMode mode = FileMode.read}) =>
+      throw _RecordOpenedInCaller();
+}
+
+class _RecordOpenedInCaller extends Error {}
+
 /// The publication of the download [file] as [AdmittedBooks.read] gives it
 /// in this isolate, once its record is kept.
 Future<Publication> _openHere(
@@ -136,19 +164,71 @@ final _books = <String, (Uint8List, String)>{
 void main() {
   setUpAll(loadReaderFont);
 
+  test('the record-open guard detects a saved record read in the calling '
+      'isolate', () async {
+    final bytes = epub();
+    final file = await _download(bytes);
+    final digest = _digest(bytes);
+    await _open(file, digest, 'epub');
+    await AdmittedBooks.written(file);
+
+    await expectLater(
+      _withoutRecordOpen(
+        file,
+        () => _openHere(
+          file,
+          digest,
+          Publication.policy,
+          () => throw StateError('The saved book must not admit again.'),
+        ),
+      ),
+      throwsA(isA<_RecordOpenedInCaller>()),
+    );
+  });
+
   group('an EPUB', () {
-    test('a second open of a book reads the kept admitted book, not the '
-        'downloaded file', () async {
+    test('a second open reads the saved EPUB outside the calling isolate, '
+        'without the downloaded bytes', () async {
       final bytes = showcaseBooks()['showcase-frost']!;
       final file = await _download(bytes);
       final first = await _open(file, _digest(bytes), 'epub');
+      await AdmittedBooks.written(file);
 
       // The kept record is the only source left: the file is no EPUB now.
       await file.writeAsBytes(List.filled(bytes.length, 0));
-      final second = await _open(file, _digest(bytes), 'epub');
+      final second = await _withoutRecordOpen(
+        file,
+        () => _open(file, _digest(bytes), 'epub'),
+      );
 
       expect(_facts(second.publication), _facts(first.publication));
       second.publication.checkInvariants();
+    });
+
+    test('the publication loader reads the saved EPUB outside the calling '
+        'isolate, without the downloaded bytes', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final original = VerifiedFile(file.uri, _digest(bytes));
+      final first = await loadPublication(original);
+      await AdmittedBooks.written(file);
+      await file.writeAsBytes(List.filled(bytes.length, 0));
+
+      final second = await _withoutRecordOpen(
+        file,
+        () => loadPublication(original),
+      );
+
+      expect(_facts(second), _facts(first));
+      expect(
+        () => second.textFiles['OPS/one.xhtml']![0] = 0,
+        throwsUnsupportedError,
+      );
+      expect(
+        await second.bytesOf('OPS/dot.png'),
+        await first.bytesOf('OPS/dot.png'),
+      );
+      second.checkInvariants();
     });
 
     test('the publication keeps the digest that Downloads verified, and the '
@@ -657,16 +737,20 @@ void main() {
   });
 
   group('a MOBI', () {
-    test('a second open reads the kept admitted book, without its '
-        'conversion or its file', () async {
+    test('a second open reads the saved MOBI outside the calling isolate, '
+        'without its conversion or downloaded bytes', () async {
       final bytes = _books['pg11-kf8.mobi']!.$1;
       final file = await _download(bytes);
       final first = await _open(file, _digest(bytes), 'mobi');
+      await AdmittedBooks.written(file);
 
       await Directory('${file.parent.path}/.bookfin-mobi')
           .delete(recursive: true);
       await file.writeAsBytes(List.filled(bytes.length, 0));
-      final second = await _open(file, _digest(bytes), 'mobi');
+      final second = await _withoutRecordOpen(
+        file,
+        () => _open(file, _digest(bytes), 'mobi'),
+      );
 
       expect(second.format, 'mobi');
       expect(second.identity, first.identity);
