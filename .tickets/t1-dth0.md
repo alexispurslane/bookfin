@@ -12,7 +12,7 @@ tags: [survey-1112, device-acceptance]
 ---
 # Restore Device panel screen inspection for Android acceptance
 
-## Active acceptance continuation — 2026-11-13
+## Acceptance continuation — stopped at screen inspection, 2026-11-13
 
 The user authorized a new attempt. The original acceptance delegate resumed in
 its own session after a parent app-open reported DEVICE_IN_USE. No session was
@@ -26,9 +26,18 @@ borrowed or closed. Evidence of the parent attempt:
 - Branch: `t3/verify-android-device-fixes`.
 - Source to merge and test: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
 - Stages: screen inspection, controlled Android acceptance, evidence, parent integration.
-- Launch accepted. Screen inspection and product acceptance remain unverified.
+- The continuation completed with two new screenshot failures. Product acceptance remains unverified.
 
 ## Original finding and prior work
+
+Parent integrated the completed attempt as 1621c9eede88e2a5cc6dad2bda41e035ea5858df
+from child f9205fe2b3f3f04d85ff657c5289c4e708128755. The child checkout was clean.
+The parent inspected the complete evidence change, original tool responses and
+app-open events. The pinned parent and child merge trees were identical.
+The prior attempt's evidence stayed unchanged. The integration whitespace
+check passed, and application, test, Android and native source did not change.
+No tests were repeated for these evidence-only changes. The acceptance delegate
+has finished. Further Android actions await working Device panel inspection.
 
 During the authorized boo-zyx1 and boo-737n acceptance attempt at main 0643cebc on local/emulator-5556 (bookfin-api36), device_open and bound agent-device open dev.bookfin.bookfin --foreground succeeded. device_screenshot failed twice with: Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened. Between attempts, the advised device_list reported the host ready and the emulator booted and already open. The agent stopped device work after the single retry. No build, install, network setting change, playback test, or speech window ran. No existing app data was cleared. Prior boo-gxm8 evidence records the same first failure with a successful retry; this attempt did not recover. Evidence: docs/evidence/android-survey-20261112/acceptance.md.
 

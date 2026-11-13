@@ -12,7 +12,7 @@ tags: [survey-1112]
 ---
 # Make sure that the CPU has the instructions that the speech library needs before the model loads
 
-## Active acceptance continuation — 2026-11-13
+## Acceptance continuation — stopped at screen inspection, 2026-11-13
 
 The user authorized a new attempt. The original acceptance delegate resumed in
 its own session after a parent app-open reported DEVICE_IN_USE. No session was
@@ -26,7 +26,7 @@ borrowed or closed. Evidence of the parent attempt:
 - Branch: `t3/verify-android-device-fixes`.
 - Source to merge and test: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
 - Stages: screen inspection, controlled Android acceptance, evidence, parent integration.
-- Launch accepted. Screen inspection and product acceptance remain unverified.
+- The continuation completed with two new screenshot failures. Product acceptance remains unverified.
 
 ## Original finding and prior work
 
