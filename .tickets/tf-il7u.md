@@ -85,3 +85,42 @@ Astra xhigh lead launched from 403b803d24b5e20a9a249ca094dff477fba90eac. Running
 - taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-tf-il7u-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-tf-il7u-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-tf-il7u-astra-20261113-1>
+
+## Ticket lead investigation and checks — 2026-11-13
+
+Worktree `/Users/alexispurslane/.t3/worktrees/bookfin/t3-db20027d`, branch
+`t3/fix-idle-layout-frame-flake`, started clean at original base
+`403b803d24b5e20a9a249ca094dff477fba90eac`. The ticket was already in progress.
+No inherited collection changes were edited.
+
+The unchanged frame suite reproduced the original assertion failure. A traced
+PageSource run admitted no layout before the first frame. Instead, each later
+idle callback ran before Redraws requested its next frame, with no frame
+pending at execution. A controlled three-step job reproduced that order and
+failed the old completion assertion. Completion can be legal; it does not
+prove execution while a frame was pending. Historic logs did not trace their
+callbacks, so the investigation does not reconstruct every earlier run.
+
+Only the frame test file changes. A test observer counts real scheduler
+callbacks. The corrected assertion checks at most one idle callback per frame
+and none while a frame is pending or frames are disabled. Two controlled tests
+cover both post-frame callback orders and release after a hold. Animation,
+background and urgent behavior remains covered. Production, fixture sizes,
+layout budgets and existing timing limits remain unchanged.
+
+A single deliberate negative control removed the pending-frame guard. Five
+of seven tests failed, including eleven callbacks where at most one is allowed
+and a callback during the controlled hold. The original production file was
+restored exactly. Five subsequent seven-test runs passed. Reader/crossing
+regressions passed 1,714 tests with 21 skips; full Flutter tests passed 3,676
+with 27 skips. Affected EPUB analysis found no issues. Changed-file formatting
+and original-base whitespace/production-diff checks passed. All build, test, analysis and format commands use
+Nix; Flutter concurrency is two, with one heavy command at a time. No command
+was interrupted or stopped.
+
+Full evidence, exact commands, original failures, diagnostic patches, hashes,
+skips and limits: `tool/evidence/tf-il7u/handoff.md` and its archived logs.
+One fresh Astra high read-only review follows this implementation commit.
+Parent owns integration, acceptance, hardening and closure. No product fork.
+Device/browser blockers t1-dth0 and t7-3j9c were not retried. t5-rplx remains
+unexplained. No collection CPU work, coverage or general mutation campaign.

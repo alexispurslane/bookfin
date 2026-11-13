@@ -41,6 +41,25 @@ class TaskPolls {
   int count = 0;
 }
 
+/// Observes real idle layout callbacks without changing their scheduling.
+class LayoutSteps {
+  int idle = 0;
+  int idleWhileHeld = 0;
+
+  void schedule(void Function() step, {required bool urgent}) {
+    PageSource.scheduleBetweenFrames(() {
+      if (!urgent) {
+        idle++;
+        final binding = SchedulerBinding.instance;
+        if (binding.hasScheduledFrame || !binding.framesEnabled) {
+          idleWhileHeld++;
+        }
+      }
+      step();
+    }, urgent: urgent);
+  }
+}
+
 /// A widget that animates for as long as it is shown.
 const animation = Center(child: CircularProgressIndicator());
 
@@ -71,11 +90,15 @@ void main() {
   setUpAll(loadReaderFont);
 
   late PageSource source;
+  late LayoutSteps steps;
 
   /// A page source with the default scheduler over one long section, and
   /// that section prepared.
   Future<PreparedSection> open(WidgetTester tester) async {
-    source = PageSource(book([paragraphs(200)]))..settings = readerPage;
+    steps = LayoutSteps();
+    source = PageSource(book([paragraphs(200)]), schedule: steps.schedule)
+      ..settings = readerPage;
+    addTearDown(source.dispose);
     return (await tester.runAsync(() => source.section(0)))!;
   }
 
@@ -111,6 +134,7 @@ void main() {
     }
 
     expect(polls.count - before, lessThanOrEqualTo(frames + 1));
+    expect(steps.idle, 0);
     expect(far(), isFalse, reason: 'idle layout ran during the animation');
     await close(tester);
   });
@@ -129,6 +153,7 @@ void main() {
     }
 
     expect(shown(), isTrue);
+    expect(steps.idleWhileHeld, 0);
     await close(tester);
   });
 
@@ -142,6 +167,7 @@ void main() {
       await tester.pump(frame);
     }
     expect(far(), isFalse, reason: 'idle layout ran during the animation');
+    expect(steps.idle, 0);
 
     await tester.pumpWidget(const SizedBox());
     for (var i = 0; i < 10 && !far(); i++) {
@@ -158,10 +184,14 @@ void main() {
     TaskPolls();
     final far = completes(source.pageAt(placeIn(section, .9), anchored: false));
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    addTearDown(() {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    });
     for (var i = 0; i < 10; i++) {
       await tester.pump(frame);
     }
     expect(far(), isFalse, reason: 'idle layout ran in the background');
+    expect(steps.idle, 0);
 
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     for (var i = 0; i < 10 && !far(); i++) {
@@ -178,14 +208,23 @@ void main() {
     final polls = TaskPolls();
     final far = completes(source.pageAt(placeIn(section, .9), anchored: false));
     await tester.pumpWidget(const Redraws());
+    expect(tester.binding.hasScheduledFrame, isTrue);
+    expect(steps.idle, 0);
     final before = polls.count;
     const frames = 10;
     for (var i = 0; i < frames; i++) {
+      final beforeStep = steps.idle;
       await tester.pump(frame);
+      expect(tester.binding.hasScheduledFrame, isTrue);
+      expect(steps.idle - beforeStep, lessThanOrEqualTo(1));
     }
 
     expect(polls.count - before, lessThanOrEqualTo(frames + 1));
-    expect(far(), isFalse, reason: 'idle steps ran in a row between frames');
+    // A waiting idle callback can precede Redraws' next post-frame callback.
+    // It may run then: the next frame has not been requested yet. Enough
+    // such legal steps can finish this page, depending on layout speed.
+    expect(steps.idle, greaterThan(0));
+    expect(steps.idleWhileHeld, 0);
 
     await tester.pumpWidget(const SizedBox());
     for (var i = 0; i < 10 && !far(); i++) {
@@ -193,5 +232,61 @@ void main() {
     }
     expect(far(), isTrue);
     await close(tester);
+  });
+
+  testWidgets('idle work waits when each frame requests the next before '
+      'its idle callback, then resumes when the requests stop', (tester) async {
+    final steps = LayoutSteps();
+    final polls = TaskPolls();
+    var redraw = true;
+    void afterFrame(Duration _) {
+      if (!redraw) return;
+      tester.binding.scheduleFrame();
+      tester.binding.addPostFrameCallback(afterFrame);
+    }
+
+    // Register first so every held callback sees the next frame pending.
+    tester.binding.addPostFrameCallback(afterFrame);
+    addTearDown(() => redraw = false);
+    var done = false;
+    steps.schedule(() => done = true, urgent: false);
+    await tester.pumpWidget(const SizedBox());
+    final before = polls.count;
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(frame);
+      expect(tester.binding.hasScheduledFrame, isTrue);
+      expect(steps.idle, 0);
+      expect(done, isFalse);
+    }
+    expect(polls.count - before, lessThanOrEqualTo(11));
+
+    redraw = false;
+    await tester.pump(frame);
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    expect(steps.idle, 1);
+    expect(steps.idleWhileHeld, 0);
+    expect(done, isTrue);
+  });
+
+  testWidgets('idle work can finish before late redraw callbacks request '
+      'another frame', (tester) async {
+    final steps = LayoutSteps();
+    var remaining = 3;
+    void step() {
+      remaining--;
+      if (remaining > 0) steps.schedule(step, urgent: false);
+    }
+
+    steps.schedule(step, urgent: false);
+    await tester.pumpWidget(const Redraws());
+    expect(steps.idle, 0);
+    for (var i = 0; i < 3; i++) {
+      await tester.pump(frame);
+      expect(steps.idle, i + 1);
+      expect(steps.idleWhileHeld, 0);
+      expect(tester.binding.hasScheduledFrame, isTrue);
+    }
+    expect(remaining, 0);
+    await tester.pumpWidget(const SizedBox());
   });
 }
