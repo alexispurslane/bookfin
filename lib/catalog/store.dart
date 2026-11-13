@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -6,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'catalog_files.dart';
 import 'jellyfin.dart';
 import 'model.dart';
 
@@ -157,15 +159,95 @@ class CatalogCache {
   }
 }
 
+/// Owns native catalog files and the transfer from legacy preferences. The app
+/// keeps one instance for its lifetime and calls [migrateLegacy] after restore
+/// and a frame. Browsers retain their existing preference-backed storage.
+///
+/// Each account's reads, writes and migrations execute in request order. A
+/// committed file is authoritative; legacy text is a fallback only when no file
+/// exists. Migration removes a legacy key only after a readable file exists.
+/// Failed operations release their queue position without hiding the failure.
 class LocalCatalogStore implements CatalogStore {
+  /// [files] supplies the filesystem owner. By default the native host provides
+  /// application-private files; the browser uses preferences.
+  LocalCatalogStore({CatalogFiles? files})
+    : _files = files ?? createCatalogFiles();
+
+  final CatalogFiles? _files;
   late final _preferences = SharedPreferencesAsync();
-  @override
-  Future<String?> read(AccountScope scope) =>
-      _preferences.getString(_key(scope));
+  final _pending = <String, Future<void>>{};
+  Future<void>? _migration;
 
   @override
-  Future<void> write(AccountScope scope, String text) =>
-      _preferences.setString(_key(scope), text);
+  Future<String?> read(AccountScope scope) {
+    final key = _key(scope);
+    return _ordered(
+      key,
+      () async => await _files?.read(key) ?? await _preferences.getString(key),
+    );
+  }
+
+  @override
+  Future<void> write(AccountScope scope, String text) {
+    final key = _key(scope);
+    return _ordered(key, () async {
+      if (_files case final files?) {
+        await files.write(key, text);
+      } else {
+        await _preferences.setString(key, text);
+      }
+    });
+  }
+
+  /// Transfers all retained legacy accounts, including inactive ones, without
+  /// interpreting their text. Concurrent calls join the owned migration. Every
+  /// account is attempted; after failures the first exception is reported to
+  /// the caller. Failed keys remain available for a later call or next launch.
+  Future<void> migrateLegacy() =>
+      _migration ??= _migrateLegacy().whenComplete(() {
+        _migration = null;
+      });
+
+  Future<void> _migrateLegacy() async {
+    final files = _files;
+    if (files == null) return;
+    Object? failure;
+    StackTrace? trace;
+    // SharedPreferencesAsync can filter exact keys, but not prefixes. Enumerate
+    // names only; never load values belonging to unrelated preferences.
+    final keys = await _preferences.getKeys();
+    for (final key in keys.where(
+      (key) => key.startsWith('bookfin.catalog.v1.'),
+    )) {
+      try {
+        await _ordered(key, () async {
+          if (await files.read(key) == null) {
+            final text = await _preferences.getString(key);
+            if (text == null) return;
+            await files.write(key, text);
+          }
+          await _preferences.remove(key);
+        });
+      } on Exception catch (error, stack) {
+        failure ??= error;
+        trace ??= stack;
+      }
+    }
+    if (failure != null) Error.throwWithStackTrace(failure, trace!);
+  }
+
+  Future<T> _ordered<T>(String key, Future<T> Function() operation) async {
+    final previous = _pending[key];
+    final done = Completer<void>();
+    _pending[key] = done.future;
+    try {
+      await previous;
+      return await operation();
+    } finally {
+      done.complete();
+      if (identical(_pending[key], done.future)) _pending.remove(key);
+    }
+  }
 
   String _key(AccountScope scope) =>
       'bookfin.catalog.v1.${base64Url.encode(utf8.encode(scope.key))}';

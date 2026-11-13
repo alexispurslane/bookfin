@@ -255,15 +255,15 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    final localStore = widget.catalog == null ? LocalCatalogStore() : null;
     _catalog =
         widget.catalog ??
         CatalogController(
           credentials: SecureCredentialStore(),
-          store: LocalCatalogStore(),
+          store: localStore!,
         );
-    if (widget.catalog == null && !widget.gallery) {
-      // The saved library shows first. The refresh runs in the background.
-      unawaited(_catalog.restore().then((_) => _catalog.refresh()));
+    if (localStore != null && !widget.gallery) {
+      unawaited(_restoreCatalog(localStore));
     }
     _binding = _bind();
     // Kept copies of damaged records are read again in the background,
@@ -274,6 +274,26 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     });
     WidgetsBinding.instance.addObserver(this);
     _showAppearance(_appearance);
+  }
+
+  Future<void> _restoreCatalog(LocalCatalogStore store) async {
+    await _catalog.restore();
+    // The saved library shows first. Refresh and legacy migration proceed
+    // independently; inactive accounts never delay the restored library.
+    unawaited(_catalog.refresh());
+    await WidgetsBinding.instance.endOfFrame;
+    try {
+      await store.migrateLegacy();
+    } on Exception catch (error, stack) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'catalog storage',
+          context: ErrorDescription('while transferring legacy catalog files'),
+        ),
+      );
+    }
   }
 
   AccountBinding _bind() => AccountBinding(
