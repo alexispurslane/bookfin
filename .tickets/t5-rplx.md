@@ -1,6 +1,6 @@
 ---
 id: t5-rplx
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-13T03:25:09Z
@@ -136,3 +136,7 @@ under `/tmp/t5-rplx-logs`. No wider claim is made. The final committed-head
 checks are recorded in `/tmp/t5-rplx-logs/final-checks.json`.
 
 The ticket remains in progress for parent integration and closure.
+
+**2026-11-13T21:04:31Z**
+
+Parent integrated implementation as 19e53518 and original review as 0e1b21da. Inspected the complete diff, controlled proof, negative control and all 40 original manifest artifacts; hashes matched. Preserved 45 original artifacts, including final checks, under docs/evidence/t5-rplx/archive/ with raw/archive hashes. Only appended ticket notes conflicted; both histories are retained. Production and test trees match child 1dfaccc exactly. Parent focused run: 5 passed; analysis: no issues; format: zero changes; integrated diff: whitespace-clean. Lead full run: 3692 passed, 27 skipped, on identical code/test bytes; no duplicate full run. docs/evidence/t5-rplx/integration.json records commit mapping, exact checks and limits. No production defect was established; the test now waits for successful real-save completion. Historical schedules, device persistence and optional skips remain unverified. Integrated work is complete; general hardening stays separate.

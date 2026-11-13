@@ -1,0 +1,60 @@
+{
+  "ticket": "t5-rplx",
+  "integratedHead": "0e1b21dae484bf18488ca999e26edbe1ef55bd2d",
+  "childHead": "1dfaccc0783aea73d7647c8e24730abd8d1dd53e",
+  "commits": [
+    {
+      "child": "6ca08dabb20c847ddf9e557aaca9cf522a27f47b",
+      "main": "19e53518d254996efa7affba4d89f76d2e8eac58"
+    },
+    {
+      "child": "1dfaccc0783aea73d7647c8e24730abd8d1dd53e",
+      "main": "0e1b21dae484bf18488ca999e26edbe1ef55bd2d"
+    }
+  ],
+  "inspection": "Complete original-base diff, owner/caller code, original review, controlled proof, negative control and retained artifact hashes inspected.",
+  "conflictResolution": "Only appended ticket notes conflicted. Parent launch record and child investigation were both retained. No production or test edits during integration.",
+  "checks": [
+    {
+      "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/reader/unread_records_test.dart",
+      "exitCode": 0,
+      "result": "5 passed, no skips",
+      "log": "docs/evidence/t5-rplx/focused.log",
+      "sha256": "3853d4416915304257289881123e140454df8ebab37f4383cc04d68cf505f27f"
+    },
+    {
+      "command": "nix develop --command bash -c 'dart analyze test/reader/unread_records_test.dart && dart format --output=none --set-exit-if-changed test/reader/unread_records_test.dart'",
+      "exitCode": 0,
+      "result": "No issues; 1 file checked, zero changes",
+      "log": "docs/evidence/t5-rplx/analysis-format.log",
+      "sha256": "cc35c467abc6cbd240a07b6fa3c0e86b469da0f669ac6c06b692e74eab2cb700"
+    },
+    {
+      "command": "git diff --exit-code 1dfaccc0783aea73d7647c8e24730abd8d1dd53e HEAD -- lib test integration_test android native",
+      "exitCode": 0,
+      "log": "docs/evidence/t5-rplx/source-equality.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff ed852b6e..HEAD --check",
+      "exitCode": 0,
+      "log": "docs/evidence/t5-rplx/integrated-whitespace.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "archive": "archive.json",
+  "archivedArtifacts": 45,
+  "fullSuite": {
+    "passed": 3692,
+    "skipped": 27,
+    "source": "Lead execution; code and test trees match integrated HEAD exactly.",
+    "rerun": "Not repeated for ticket-only integration conflict resolution."
+  },
+  "limits": [
+    "Historical failure schedules cannot be reconstructed without traces.",
+    "Mocked preferences do not establish device persistence or OS-process restart.",
+    "Existing optional test skips remain excluded.",
+    "General hardening and device acceptance remain separate work."
+  ],
+  "review": "Original report preserved unchanged at docs/evidence/t5-rplx-review-original.json; all three assessments pass, no findings or material blocking gaps."
+}
