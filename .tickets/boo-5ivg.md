@@ -21,3 +21,12 @@ Required result: admitted-record header decode, validation, text-resource splitt
 Verification must show the production reopen path uses worker execution and retains publication facts; use real saved records and controlled boundary evidence, not a wall-clock threshold or a test of an unused helper. Run admitted-books/publication/platform/MOBI and affected download/speech/reader checks, affected analysis/format, and the full Flutter suite through Nix at concurrency two, one heavy command at a time. No Android speed claims. Exactly one fresh read-only Astra high reviewer; implementation/direct fixes Astra xhigh. No devices, browser, coverage, mutations, push, PR, merge or closure. Parent integrates and closes. Avoid EPUB preparation/places/pager work owned by boo-hd47.
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: confirmed on the UI isolate, size estimated. lib/reader/epub/publication.dart:243-268, called from lib/reader/admitted_books.dart:280. Each reopen decodes the JSON header of the record (the text of every style sheet, the contents list, the image sizes) and copies every text file, 2 to 10 MB, on the UI isolate while the kept page already accepts taps. Do the decode and the split in the worker hop that reads the record, and return the bytes through `Isolate.exit`. Related: t6-0yez (measurement), t0-r8ii.
+
+## Launch — 2026-11-13
+
+Astra xhigh lead launched from e72d2335b1197080464e2381b923b9b310429da2; running, stage uncertain. One fresh read-only Astra high reviewer authorized. Audit existing production worker ownership before deciding whether implementation is needed.
+
+- clientRequestId: bookfin-boo-5ivg-astra-20261113-1
+- taskId: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-5ivg-astra-20261113-1
+- childThreadId: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-5ivg-astra-20261113-1
+- Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-5ivg-astra-20261113-1>
