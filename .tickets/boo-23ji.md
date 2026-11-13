@@ -19,3 +19,12 @@ Keep the existing document, survey and session owners. Make cleanup release all 
 Prove meaningful failures with controlled completion/failure tests, including a non-Exception Error, once-only disposal, later successful open/close, and survey failure retention. Inspect existing contract semantics explicitly. Required checks: focused regressions, reader/crossings/speech affected suites, full Flutter suite, changed-file analysis/format and diff checks. Nix, concurrency two, one heavy command at a time. No devices, coverage, mutation testing, push or PR. One fresh read-only Astra high reviewer; direct Astra xhigh fixes with red-green evidence. Parent integrates and closes.
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: path confirmed, trigger plausible (it needs an Error that is not an Exception). lib/reader/pdf.dart:1108-1118, lib/reader/session.dart:663-669, lib/reader/book_survey.dart:279-338. `_dispose` awaits `survey.close()` before its `try`, so an Error from the survey skips `_document.dispose()` and leaks the PDFium handle. The `_closing` chain of the session handles only Exception, so it stays failed: every later open reports "could not be opened" and every later document leaks. The survey does not add the failing page to `_failed`, so each page turn runs the failing analysis again. Put the release in a `finally`, keep the chain going after any failed close, and mark the page failed before the Error propagates.
+
+## Launch — 2026-11-13
+
+Astra xhigh ticket lead launched from 7704c364011c83e52aabc43e6d9d74011db2d162. Status running, stage uncertain. Exactly one Astra high read-only reviewer authorized.
+
+- clientRequestId: bookfin-boo-23ji-astra-20261113-1
+- taskId: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-23ji-astra-20261113-1
+- childThreadId: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-23ji-astra-20261113-1
+- Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-23ji-astra-20261113-1>
