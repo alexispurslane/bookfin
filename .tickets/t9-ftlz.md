@@ -1,6 +1,6 @@
 ---
 id: t9-ftlz
-status: open
+status: in_progress
 deps: [boo-hwoz]
 links: [boo-hwoz]
 created: 2026-11-13T16:04:25Z
