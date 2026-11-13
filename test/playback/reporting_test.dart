@@ -82,6 +82,24 @@ void main() {
     },
   );
 
+  test(
+    'same-token sign-in keeps reports independent of an obsolete rejection',
+    () async {
+      reports.observe(session, first, 1000, playing: true, speed: 1);
+      await reports.idle;
+      final replacement = JellyfinSession.fromJson(session.toJson());
+      reports.observe(replacement, first, 2000, playing: true, speed: 1);
+      await reports.idle;
+      session.rejectCredential();
+      final before = requests.length;
+      reports.observe(replacement, first, 15000, playing: true, speed: 1);
+      await reports.idle;
+      expect(requests, hasLength(before + 1));
+      expect(requests.last['body']['PositionTicks'], 150000000);
+      expect(replacement.needsSignIn, isFalse);
+    },
+  );
+
   for (final retire in [false, true]) {
     test(
       'queued reports are discarded after ${retire ? 'retirement' : 'failure'}',

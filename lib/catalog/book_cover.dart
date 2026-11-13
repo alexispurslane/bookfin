@@ -51,7 +51,7 @@ class CoverScope extends InheritedModel<CoverAspect> implements InheritedTheme {
   bool _coversChanged(CoverScope old) =>
       old.covers != covers ||
       old.session?.scope.key != session?.scope.key ||
-      old.session?.credentialChanges != session?.credentialChanges;
+      old.session?.credentialIdentity != session?.credentialIdentity;
 
   @override
   bool updateShouldNotify(CoverScope oldWidget) =>
@@ -130,7 +130,7 @@ class CoverImage extends ImageProvider<CoverImage> {
       other is CoverImage &&
       other.covers == covers &&
       other.session.scope.key == session.scope.key &&
-      other.session.credentialChanges == session.credentialChanges &&
+      other.session.credentialIdentity == session.credentialIdentity &&
       other.cover == cover &&
       other.size == size;
 
@@ -138,7 +138,7 @@ class CoverImage extends ImageProvider<CoverImage> {
   int get hashCode => Object.hash(
     covers,
     session.scope.key,
-    session.credentialChanges,
+    session.credentialIdentity,
     cover,
     size,
   );

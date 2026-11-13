@@ -531,6 +531,39 @@ void main() {
     },
   );
 
+  for (final user in ['alice', 'bob']) {
+    test(
+      'rejection during secure replacement with $user keeps the replacement after restart',
+      () async {
+        await signIn();
+        final previous = controller.session!;
+        final replacement = JellyfinSession.fromJson({
+          ...account(user).toJson(),
+          'token': 'renewed-$user',
+        });
+        client.pendingSignIn = Completer()..complete(replacement);
+        credentials.writeGate = Completer();
+        credentials.writeStarted = Completer();
+        final connecting = controller.connect(
+          'https://books.example',
+          user,
+          'password',
+        );
+        await credentials.writeStarted!.future;
+        previous.rejectCredential();
+        credentials.writeGate!.complete();
+        expect(await connecting, isTrue);
+        expect(controller.session!.token, 'renewed-$user');
+        await controller.restore();
+        expect(controller.session!.scope.userId, user);
+        expect(controller.session!.token, 'renewed-$user');
+        expect(controller.session!.needsSignIn, isFalse);
+        expect(controller.books, isNotEmpty);
+        controller.checkInvariants();
+      },
+    );
+  }
+
   test(
     'obsolete credential rejection cannot change its replacement account',
     () async {

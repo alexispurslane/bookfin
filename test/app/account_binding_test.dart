@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/catalog/transport.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -100,9 +102,8 @@ class _Sync extends RecordSync {
   Future<void> synchronize() async => calls.add('synchronize');
 }
 
-/// Like the real client, it answers each validation with a new session
-/// object that equals the one it checked. A test can hold validation open
-/// with [validateGate].
+/// Uses real policy validation, which returns a new session snapshot of
+/// the same credential. A test can hold it open with [validateGate].
 class _Client extends FixtureClient {
   _Client(super.server);
   Completer<void>? validateGate;
@@ -110,13 +111,44 @@ class _Client extends FixtureClient {
   Future<JellyfinSession> validate(JellyfinSession session) async {
     await validateGate?.future;
     final checked = await super.validate(session);
-    return JellyfinSession(
-      scope: checked.scope,
-      token: checked.token,
-      username: checked.username,
-      canDownload: checked.canDownload,
+    final validator = JellyfinClient(
+      server,
+      deviceId: 'test',
+      transport: _PolicyTransport(checked),
     );
+    try {
+      return await validator.validate(checked);
+    } finally {
+      validator.close();
+    }
   }
+}
+
+class _PolicyTransport implements JsonTransport {
+  _PolicyTransport(this.session);
+  final JellyfinSession session;
+  @override
+  Future<Map<String, dynamic>> send(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async => uri.path.endsWith('/Public')
+      ? {'Id': session.scope.serverId}
+      : {
+          'Id': session.scope.userId,
+          'Name': session.username,
+          'Policy': {'EnableContentDownloading': session.canDownload},
+        };
+  @override
+  Future<Uint8List> fetchBody(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) => throw UnimplementedError();
+  @override
+  void close() {}
 }
 
 void main() {

@@ -20,7 +20,7 @@ class LiveReports {
   }
   final MediaPolicy policy;
   final JellyfinClient Function(JellyfinSession) _clientFactory;
-  final _clients = <String, JellyfinClient>{};
+  final _clients = <Object, JellyfinClient>{};
   Future<void> _pending = Future.value();
   _LiveSession? _live;
   JellyfinSession? _account;
@@ -53,7 +53,7 @@ class LiveReports {
     bool completed = false,
   }) {
     if (_closed) return;
-    if (_account?.credentialChanges != session.credentialChanges) {
+    if (_account?.credentialIdentity != session.credentialIdentity) {
       _account?.credentialChanges.removeListener(_networkChanged);
       _account = session;
       session.credentialChanges.addListener(_networkChanged);
@@ -66,7 +66,7 @@ class LiveReports {
     if (_live != null &&
         (_live!.account.scope.key != session.scope.key ||
             _live!.file.key != file.key ||
-            _live!.account.token != session.token)) {
+            _live!.account.credentialIdentity != session.credentialIdentity)) {
       stop();
     }
     if (_live == null) {
@@ -99,7 +99,7 @@ class LiveReports {
 
   void _send(String event, _LiveSession live) {
     final generation = _generation;
-    final clientKey = '${live.account.scope.key}:${live.account.token}';
+    final clientKey = live.account.credentialIdentity;
     final client = _clients.putIfAbsent(
       clientKey,
       () => _clientFactory(live.account),

@@ -129,6 +129,11 @@ class JellyfinSession {
   /// valid. Only a successful sign-in supplies a new usable credential.
   bool get needsSignIn => _credential.value;
 
+  /// The lifetime of this credential, independent of its token text.
+  /// Policy validation preserves it; successful authentication replaces it.
+  /// Consumers use this identity for subscriptions and unfinished requests.
+  Object get credentialIdentity => _credential;
+
   /// True once a request rejects this credential, including after restore.
   ValueListenable<bool> get credentialChanges => _credential;
 

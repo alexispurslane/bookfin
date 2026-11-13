@@ -24,9 +24,9 @@ class DiskCovers implements Covers {
     : _fetch = fetch ?? _httpFetch;
   final Directory root;
   final CoverFetch _fetch;
-  final _loading = <String, Future<Uint8List?>>{};
-  final _blurring = <String, Future<Uri?>>{};
-  final _missing = <String>{};
+  final _loading = <String, ({Object credential, Future<Uint8List?> done})>{};
+  final _blurring = <String, ({Object credential, Future<Uri?> done})>{};
+  final _missing = <(String, Object)>{};
 
   /// The kept cover file of [cover] in [session]'s account directory.
   File _file(JellyfinSession session, CoverRef cover) {
@@ -45,8 +45,17 @@ class DiskCovers implements Covers {
     final directory = file.parent;
     final item = _safe(cover.itemId);
     final key = file.path;
-    if (_missing.contains(key)) return Future.value();
-    return _loading[key] ??= () async {
+    final missingKey = (key, session.credentialIdentity);
+    if (_missing.contains(missingKey)) return Future.value();
+    final loading = _loading[key];
+    if (loading != null) {
+      // Keep writes to this file serialized. A replacement can use a saved
+      // result, but retries its own credential after an obsolete failure.
+      return loading.credential == session.credentialIdentity
+          ? loading.done
+          : loading.done.then((_) => load(session, cover));
+    }
+    final done = () async {
       try {
         if (await file.exists()) return await file.readAsBytes();
         if (session.needsSignIn) return null;
@@ -63,7 +72,7 @@ class DiskCovers implements Covers {
           return null;
         }
         if (bytes == null || bytes.isEmpty) {
-          _missing.add(key);
+          _missing.add(missingKey);
           return null;
         }
         await directory.create(recursive: true);
@@ -86,6 +95,8 @@ class DiskCovers implements Covers {
         _loading.remove(key);
       }
     }();
+    _loading[key] = (credential: session.credentialIdentity, done: done);
+    return done;
   }
 
   /// Kept beside the cover as `<item>@<tag>.blur.png`. The first call for a
@@ -94,7 +105,13 @@ class DiskCovers implements Covers {
   @override
   Future<Uri?> blurred(JellyfinSession session, CoverRef cover) {
     final blurred = File('${_file(session, cover).path}.blur.png');
-    return _blurring[blurred.path] ??= () async {
+    final blurring = _blurring[blurred.path];
+    if (blurring != null) {
+      return blurring.credential == session.credentialIdentity
+          ? blurring.done
+          : blurring.done.then((_) => this.blurred(session, cover));
+    }
+    final done = () async {
       try {
         if (await blurred.exists()) return blurred.uri;
         final bytes = await load(session, cover);
@@ -111,6 +128,11 @@ class DiskCovers implements Covers {
         _blurring.remove(blurred.path);
       }
     }();
+    _blurring[blurred.path] = (
+      credential: session.credentialIdentity,
+      done: done,
+    );
+    return done;
   }
 
   @override

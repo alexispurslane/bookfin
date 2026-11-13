@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:bookfin/app/account_binding.dart';
+import 'package:bookfin/catalog/controller.dart';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 
@@ -14,6 +18,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../playback/playback_test.dart' as audio;
+import '../catalog/controller_test.dart'
+    show FixtureClient, MemoryCredentials, MemoryCatalogStore;
 import 'fixture.dart';
 
 void main() {
@@ -143,6 +149,53 @@ void main() {
         expect(player.position!.milliseconds, 3400);
         sync.checkInvariants();
       });
+
+      test(
+        'same-token sign-in rebinds sync before an obsolete rejection',
+        () async {
+          final replacement = JellyfinSession.fromJson(
+            fixture.session.toJson(),
+          );
+          final client = FixtureClient(fixture.session.scope.server)
+            ..pendingSignIn = (Completer<JellyfinSession>()
+              ..complete(replacement));
+          final catalog = CatalogController(
+            credentials: MemoryCredentials()..value = fixture.session,
+            store: MemoryCatalogStore(),
+            clientFactory: (_, _) => client,
+          );
+          addTearDown(client.close);
+          addTearDown(catalog.dispose);
+          await catalog.restore();
+          final binding = AccountBinding(catalog: catalog, sync: sync);
+          addTearDown(binding.dispose);
+          expect(
+            await catalog.connect(
+              fixture.session.scope.server.toString(),
+              'alice',
+              'password',
+            ),
+            isTrue,
+          );
+          await sync.synchronize();
+          fixture.session.rejectCredential();
+          engine.emit(0, 4500);
+          await player.pause();
+          await player.flush();
+          final requests = fixture.requests;
+          expect(
+            await records.pendingUploads(replacement.scope.key),
+            isNotEmpty,
+          );
+          await sync.syncNow();
+          expect(fixture.requests, greaterThan(requests));
+          expect(await records.pendingUploads(replacement.scope.key), isEmpty);
+          expect(player.position!.milliseconds, 4500);
+          expect(catalog.session!.needsSignIn, isFalse);
+          binding.checkInvariants();
+          sync.checkInvariants();
+        },
+      );
 
       for (final chosen in [900, 100]) {
         test(

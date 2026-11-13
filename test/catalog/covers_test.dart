@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -65,6 +66,59 @@ void main() {
       expect(await covers.load(session, const CoverRef('missing', 'v1')), [4]);
     },
   );
+
+  for (final blurred in [false, true]) {
+    test(
+      'replacement ${blurred ? 'blurred' : 'plain'} cover does not inherit a pending old rejection',
+      () async {
+        final old = JellyfinSession.fromJson(session.toJson());
+        final replacement = JellyfinSession.fromJson(session.toJson());
+        final pending = Completer<Uint8List?>();
+        final started = Completer<void>();
+        final bytes = img.encodePng(img.Image(width: 8, height: 12));
+        var fetches = 0;
+        covers = DiskCovers(
+          root: root,
+          fetch: (_, _) {
+            if (++fetches == 1) {
+              started.complete();
+              return pending.future;
+            }
+            return Future.value(bytes);
+          },
+        );
+        Future<Object?> load(JellyfinSession account) => blurred
+            ? covers.blurred(account, const CoverRef('graft', 'v1'))
+            : covers.load(account, const CoverRef('graft', 'v1'));
+        final obsolete = load(old);
+        await started.future;
+        final current = load(replacement);
+        pending.completeError(
+          const CatalogFailure(CatalogFailureKind.unauthorized),
+        );
+        expect(await obsolete, isNull);
+        final result = await current;
+        expect(result, isNotNull);
+        expect(fetches, 2);
+        expect(old.needsSignIn, isTrue);
+        expect(replacement.needsSignIn, isFalse);
+        final restarted = DiskCovers(
+          root: root,
+          fetch: (_, _) async => throw const SocketException('offline'),
+        );
+        expect(
+          await restarted.load(replacement, const CoverRef('graft', 'v1')),
+          bytes,
+        );
+        if (blurred) {
+          expect(
+            img.decodeImage(await File.fromUri(result! as Uri).readAsBytes()),
+            isNotNull,
+          );
+        }
+      },
+    );
+  }
 
   test('a cover loaded once still shows offline', () async {
     expect(await covers.load(session, const CoverRef('graft', 'v1')), [

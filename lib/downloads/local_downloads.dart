@@ -217,7 +217,7 @@ class LocalDownloads extends Downloads {
     _editionSources = editionSources;
     final accountChanged = _session?.scope.key != session?.scope.key;
     final credentialChanged =
-        _session?.credentialChanges != session?.credentialChanges;
+        _session?.credentialIdentity != session?.credentialIdentity;
     if (credentialChanged) {
       _session?.credentialChanges.removeListener(_networkChanged);
       ++_networkGeneration;

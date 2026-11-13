@@ -140,9 +140,7 @@ class RecordSync {
 
   void bind(JellyfinSession? session) {
     if (_disposed) return;
-    if (_session?.scope.key == session?.scope.key &&
-        _session?.token == session?.token &&
-        _session?.needsSignIn == session?.needsSignIn) {
+    if (_session?.credentialIdentity == session?.credentialIdentity) {
       return;
     }
     ++_generation;

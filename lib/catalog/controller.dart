@@ -99,6 +99,7 @@ class CatalogAccount {
   @override
   int get hashCode => Object.hash(
     session?.scope.key,
+    session?.credentialIdentity,
     restoring,
     accessBlocked,
     needsSignIn,
@@ -111,7 +112,7 @@ class CatalogAccount {
       (left != null &&
           right != null &&
           left.scope.key == right.scope.key &&
-          left.token == right.token &&
+          left.credentialIdentity == right.credentialIdentity &&
           left.username == right.username &&
           left.canDownload == right.canDownload);
 }
@@ -684,13 +685,18 @@ class CatalogController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _writeCredentials(JellyfinSession? value) {
+  /// Serializes storage and adoption together. Later credential changes
+  /// see the account that a successful replacement made authoritative.
+  Future<void> _changeCredentials(Future<void> Function() change) {
     final next = (_credentialWrites ?? Future<void>.value()).then(
-      (_) => _credentials.write(value),
+      (_) => change(),
     );
     _credentialWrites = next.catchError((Object _) {});
     return next;
   }
+
+  Future<void> _writeCredentials(JellyfinSession? value) =>
+      _changeCredentials(() => _credentials.write(value));
 
   /// Writes catalog text and records whether storage still matches the
   /// active cache, even if the operation that requested the write ended.
@@ -749,7 +755,10 @@ class CatalogController extends ChangeNotifier {
     _message = const CatalogFailure(CatalogFailureKind.unauthorized).message;
     _notify();
     unawaited(
-      _writeCredentials(session).catchError((Object error) {
+      _changeCredentials(() async {
+        if (_session?.credentialIdentity != session.credentialIdentity) return;
+        await _credentials.write(session);
+      }).catchError((Object error) {
         if (_current(generation)) {
           _message = 'Sign in again. The expired sign-in could not be saved on this device.';
           _notify();
@@ -865,12 +874,16 @@ class CatalogController extends ChangeNotifier {
       if (signedIn.scope.server != address) {
         throw const CatalogFailure(CatalogFailureKind.unauthorized);
       }
-      await _writeCredentials(signedIn);
-      if (!_current(generation)) return false;
       final sameAccount = _session?.scope.key == signedIn.scope.key;
-      if (!sameAccount) _clearVisible();
-      _setSession(signedIn);
-      accepted = true;
+      await _changeCredentials(() async {
+        if (!_current(generation)) return;
+        await _credentials.write(signedIn);
+        if (!_current(generation)) return;
+        if (!sameAccount) _clearVisible();
+        _setSession(signedIn);
+        accepted = true;
+      });
+      if (!_current(generation)) return false;
       _reach = CatalogReach.reached;
       _notify();
       final operation = _operation(request: generation);
