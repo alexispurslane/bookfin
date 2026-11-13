@@ -67,3 +67,16 @@ One ticket lead builds/fixes; exactly one fresh read-only reviewer assesses the
 complete diff and evidence for correctness, fulfillment and design. Parent owns
 integration, acceptance, coverage, mutation testing and closure. No device or
 browser interaction, PR, push, deployment or worktree removal.
+
+## Parent launch record — 2026-11-13
+
+Original base: `5c8c92ecd348a7fb7c51ab176da6e616cfd2aa1c`.
+Lead: codex/gpt-6-astra, xhigh. Sole fresh read-only reviewer: same model, high.
+Client request ID: `bookfin-te-c2tc-astra-20261113-1`.
+Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-te-c2tc-astra-20261113-1`.
+Child thread ID: `thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-te-c2tc-astra-20261113-1`.
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-te-c2tc-astra-20261113-1>
+
+Launch accepted. T3 owns the new worktree; branch not yet reported. Lead builds,
+starts one read-only review, resolves findings and returns evidence. Parent owns
+integration and closure. No result or acceptance is claimed at launch.
