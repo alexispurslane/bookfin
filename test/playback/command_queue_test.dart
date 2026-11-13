@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart';
 
-/// An audio engine whose next pause or seek fails with [failure].
+/// An audio engine whose next pause, seek or speed change fails with
+/// [failure].
 class _FailingEngine extends TestEngine {
   Object? failure;
 
@@ -25,6 +26,12 @@ class _FailingEngine extends TestEngine {
   Future<AudioSample> seek(int fileIndex, int position) async {
     _failOnce();
     return super.seek(fileIndex, position);
+  }
+
+  @override
+  Future<void> speed(double value) async {
+    _failOnce();
+    return super.speed(value);
   }
 }
 
@@ -50,6 +57,8 @@ void main() {
     downloads.dispose();
   });
 
+  // Each test of this group also states that the future of the failed
+  // command carries the bug to its caller.
   group('after a command that failed with a bug', () {
     test('a later command still runs', () async {
       engine.failure = StateError('A bug in the seek.');
@@ -69,12 +78,6 @@ void main() {
 
       expect(engine.closed, isTrue);
     });
-  });
-
-  test('the future of a command that failed with a bug carries the bug', () async {
-    engine.failure = StateError('A bug in the seek.');
-
-    await expectLater(playback.seekEdition(75000), throwsStateError);
   });
 
   test('a bug in a command that nothing awaits is reported once', () async {
@@ -156,5 +159,36 @@ void main() {
     expect(engine.isPlaying, isFalse);
     expect(playback.active, isFalse);
     expect(playback.message, contains('Cannot play'));
+  });
+
+  test('a speed change whose engine call fails stops the audio and says that the file cannot play', () async {
+    engine.failure = Exception('The decoder failed.');
+
+    await playback.setSpeed(1.5);
+
+    expect(engine.isPlaying, isFalse);
+    expect(playback.playing, isFalse);
+    expect(playback.active, isFalse);
+    expect(playback.message, contains('Cannot play'));
+  });
+
+  group('a records command that was queued before the account changed', () {
+    test('does not run', () async {
+      final queued = playback.setJumps(15, 45);
+      final bound = playback.bind(account(user: 'bob'), [title]);
+      await queued;
+      await bound;
+
+      expect(playback.backwardSeconds, 10);
+      expect(playback.forwardSeconds, 30);
+    });
+
+    test('completes normally, even with an argument that it refuses', () async {
+      final queued = playback.setJumps(0, 0);
+      final bound = playback.bind(account(user: 'bob'), [title]);
+
+      await queued;
+      await bound;
+    });
   });
 }

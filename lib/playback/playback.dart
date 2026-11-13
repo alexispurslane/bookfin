@@ -8,6 +8,7 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../crossings/crossings.dart' show AudioLanding;
 import '../downloads/downloads.dart';
+import '../foundation/serial_queue.dart';
 import '../foundation/time.dart' show audioTime;
 import 'audio_outline.dart';
 import 'reporting.dart';
@@ -186,9 +187,7 @@ class Playback extends ChangeNotifier {
   }) {
     _samples = engine.samples.listen(
       _accept,
-      onError: (Object error) {
-        unawaited(_enqueue(_audioFailed));
-      },
+      onError: (Object error) => unawaited(_sampleStreamFailed()),
     );
   }
   final Downloads downloads;
@@ -223,8 +222,11 @@ class Playback extends ChangeNotifier {
   Timer? _sleepCountdown;
   DateTime? _sleepDeadline;
   Duration? _sleepTimer;
-  Future<void> _operations = Future.value();
-  Future<void> _writes = Future.value();
+  // The command queue. Only [_inCommandOrder] adds to it.
+  final _operations = SerialQueue();
+  // The saves of the personal records, in the order of their changes. Only
+  // [_save] and [flush] add to it.
+  final _writes = SerialQueue();
   Future<void> _binding = Future.value();
   // The personal records. A change replaces a whole list, never changes it
   // in place, so the lists derived from them can be cached by the identity
@@ -539,7 +541,7 @@ class Playback extends ChangeNotifier {
     AudioPosition? position,
     String? title,
     String? note,
-  }) => _enqueue(() async {
+  }) => _recordsCommand(() async {
     if (!_restored || _position == null) return;
     final target = position ?? _position!;
     if (!target.fits(_edition!)) {
@@ -560,7 +562,7 @@ class Playback extends ChangeNotifier {
   });
 
   Future<void> editBookmark(String id, {String? title, String? note}) =>
-      _enqueue(() async {
+      _recordsCommand(() async {
         if (!_restored) return;
         final index = _bookmarks.indexWhere((bookmark) => bookmark.id == id);
         if (index < 0) {
@@ -581,22 +583,22 @@ class Playback extends ChangeNotifier {
         await _saveRecords();
       });
 
-  Future<void> deleteBookmark(String id) => _enqueue(() async {
+  Future<void> deleteBookmark(String id) => _recordsCommand(() async {
     if (!_restored) return;
     _removeBookmark(id);
     await _saveRecords();
   });
 
-  Future<void> deleteHistory(String id) => _enqueue(() async {
+  Future<void> deleteHistory(String id) => _recordsCommand(() async {
     if (!_restored) return;
     _removeHistory(id);
     if (_undo?.id == id) _undo = null;
     await _saveRecords();
   });
 
-  Future<void> refreshPersonalRecords() => _enqueue(() async {
+  Future<void> refreshPersonalRecords() => _recordsCommand(() async {
     final account = _session?.scope.key;
-    await _writes;
+    await _writes.idle;
     if (account == null || !_restored || _pendingWrites.containsKey(account)) {
       return;
     }
@@ -652,7 +654,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> _saveRecords() async {
     _save();
-    await _writes;
+    await _writes.idle;
     _notify();
   }
 
@@ -888,52 +890,42 @@ class Playback extends ChangeNotifier {
     return found;
   }
 
+  /// The queue primitive under the command entry points. No command calls
+  /// it directly, because it does not say what an [Exception] from [action]
+  /// means. A command uses [_audioCommand] or [_recordsCommand].
+  ///
   /// Runs [action] after every command queued before it, so that one command
   /// runs at a time. [action] runs only while Playback is open and bound as
-  /// it was when the command was queued.
+  /// it was when the command was queued. Otherwise it does not run, and the
+  /// returned future completes normally.
   ///
   /// The returned future completes as [action] completed. A failure goes
   /// only there: to the caller, or to the zone when nothing listens. The
-  /// queue itself never fails, so a failed command never stops a later one.
-  ///
-  /// A command states the kind of failure that it can have by how it is
-  /// queued:
-  /// - An audio command drives the audio engine. It uses [_audioCommand],
-  ///   where an [Exception] is an engine failure.
-  /// - A records command reads or changes only the personal records, the
-  ///   settings or the sleep timer. It uses this method, where an
-  ///   [Exception] is a records failure. That failure goes to the caller,
-  ///   who started the command and reports it, and the audio plays on. A
-  ///   failed save never gets here, because [_persistChanges] keeps it as
-  ///   the save status.
-  ///
-  /// An [Error] that is not an [Exception] is a bug in a command of either
-  /// kind. It goes to the caller as any failure does, and nothing turns it
-  /// into a message.
-  Future<void> _enqueue(Future<void> Function() action) {
+  /// queue itself never fails ([SerialQueue]), so a failed command never
+  /// stops a later one.
+  Future<void> _inCommandOrder(Future<void> Function() action) {
     final generation = _generation;
     final binding = _binding;
-    final result = Completer<void>();
-    _operations = _operations.then((_) async {
-      try {
-        await binding;
-        if (!_closed && generation == _generation) await action();
-        result.complete();
-      } catch (error, stack) {
-        // This hands the failure to the caller. It does not recover from it.
-        result.completeError(error, stack);
-      }
+    return _operations.run(() async {
+      await binding;
+      if (!_closed && generation == _generation) await action();
     });
-    return result.future;
   }
 
-  /// Queues [action] as an audio command, as [_enqueue] says. An [Exception]
-  /// from it is an engine failure: the audio stops, Playback shows that the
-  /// file cannot play ([_audioFailed]), and the returned future completes
-  /// normally. The failed command of an earlier binding shows nothing.
+  /// Queues [action] as an audio command: a command that drives the audio
+  /// engine. It runs in the order and under the binding rule of
+  /// [_inCommandOrder].
+  ///
+  /// An [Exception] from [action] is an engine failure. The audio stops,
+  /// Playback shows that the file cannot play ([_audioFailed]), and the
+  /// returned future completes normally. The failed command of an earlier
+  /// binding shows nothing.
+  ///
+  /// An [Error] that is not an [Exception] is a bug. It goes to the caller,
+  /// and nothing turns it into a message.
   Future<void> _audioCommand(Future<void> Function() action) {
     final generation = _generation;
-    return _enqueue(() async {
+    return _inCommandOrder(() async {
       try {
         await action();
       } on Exception {
@@ -941,6 +933,33 @@ class Playback extends ChangeNotifier {
       }
     });
   }
+
+  /// Queues [action] as a records command: a command that reads or changes
+  /// only the personal records, the settings or the sleep timer, and never
+  /// drives the audio engine. It runs in the order and under the binding
+  /// rule of [_inCommandOrder].
+  ///
+  /// An [Exception] from [action] is a records failure. It goes to the
+  /// caller, who started the command and reports it. The audio plays on,
+  /// and Playback shows no message. A failed save never gets here, because
+  /// [_persistChanges] keeps it as the save status.
+  ///
+  /// An [Error] that is not an [Exception] is a bug. It goes to the caller,
+  /// and nothing turns it into a message.
+  Future<void> _recordsCommand(Future<void> Function() action) =>
+      _inCommandOrder(action);
+
+  /// Handles an error of the sample stream: an engine failure that no
+  /// command caused. The handling is queued, so that it runs between
+  /// commands and only under the binding that was current when the error
+  /// arrived.
+  ///
+  /// It is neither kind of command, because it is itself the handling of an
+  /// engine failure. As an audio command, an [Exception] from it would run
+  /// [_audioFailed] a second time. [_audioFailed] already handles the engine
+  /// failure of its own pause. Any other failure of it is a bug, which goes
+  /// to the zone.
+  Future<void> _sampleStreamFailed() => _inCommandOrder(_audioFailed);
 
   Future<void> _audioFailed() async {
     _message = 'Cannot play this local audio file. Download it again or choose another edition.';
@@ -1032,14 +1051,14 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     _notify();
     final previousBinding = _binding;
-    final previousOperations = _operations;
+    final previousOperations = _operations.idle;
     final ready = Completer<void>();
     _binding = ready.future;
     try {
       await previousBinding;
       await previousOperations;
       await engine.pause();
-      await _writes;
+      await _writes.idle;
       if (session == null || generation != _generation) return;
       try {
         final pending = _pendingWrites[session.scope.key];
@@ -1361,7 +1380,7 @@ class Playback extends ChangeNotifier {
       _loading = false;
     }
     _save();
-    if (target != null) await _writes;
+    if (target != null) await _writes.idle;
     if (generation != _generation) return false;
     _notify();
     if (autoplay) await engine.play();
@@ -1479,7 +1498,7 @@ class Playback extends ChangeNotifier {
     }
     _playing = false;
     _save();
-    await _writes;
+    await _writes.idle;
     _notify();
   }
 
@@ -1503,7 +1522,7 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     reports?.stop();
     _save();
-    await _writes;
+    await _writes.idle;
     _notify();
   }
 
@@ -1637,7 +1656,7 @@ class Playback extends ChangeNotifier {
     _record(kind, previous, _position!, counterpart: counterpart);
     _accept(confirmed);
     _save();
-    await _writes;
+    await _writes.idle;
     _notify();
     return generation == _generation;
   }
@@ -1652,7 +1671,7 @@ class Playback extends ChangeNotifier {
     _notify();
   });
 
-  Future<void> setJumps(int backward, int forward) => _enqueue(() async {
+  Future<void> setJumps(int backward, int forward) => _recordsCommand(() async {
     if (backward < 1 || forward < 1 || backward > 300 || forward > 300) {
       throw ArgumentError('Short jumps must be between 1 and 300 seconds.');
     }
@@ -1662,7 +1681,7 @@ class Playback extends ChangeNotifier {
     _notify();
   });
 
-  Future<void> setSleep(Duration? duration) => _enqueue(() async {
+  Future<void> setSleep(Duration? duration) => _recordsCommand(() async {
     if (duration != null && duration <= Duration.zero) {
       throw ArgumentError('Choose a future sleep time.');
     }
@@ -1760,7 +1779,11 @@ class Playback extends ChangeNotifier {
     _changedBookmarks.clear();
     final value = _pendingWrites[accountKey]?.followedBy(changes) ?? changes;
     _pendingWrites[accountKey] = value;
-    _writes = _writes.then((_) => _persistChanges(accountKey, value));
+    // Nothing holds the future of this save. A failed save is the save
+    // status of [_persistChanges]. A bug in the save goes to the zone, and
+    // the queue runs the next save all the same. The changes stay pending,
+    // so the next save and [flush] send them again.
+    unawaited(_writes.run(() => _persistChanges(accountKey, value)));
   }
 
   Future<void> _persistChanges(
@@ -1795,15 +1818,14 @@ class Playback extends ChangeNotifier {
   Future<void> flush() async {
     final generation = _generation;
     await _binding;
-    await _operations;
+    await _operations.idle;
     if (generation != _generation) return;
     if (_decoderAnchor != _recordedDecoderAnchor) _save();
-    await _writes;
+    await _writes.idle;
     final accountKey = _session?.scope.key;
     final pending = _pendingWrites[accountKey];
     if (accountKey != null && pending != null && generation == _generation) {
-      _writes = _writes.then((_) => _persistChanges(accountKey, pending));
-      await _writes;
+      await _writes.run(() => _persistChanges(accountKey, pending));
     }
     await reports?.idle;
   }
