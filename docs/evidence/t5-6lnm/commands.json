@@ -124,5 +124,17 @@
     "exitCode": 0,
     "result": "Complete original-base diff whitespace-clean, including staged new files and evidence",
     "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/21-whitespace.log"
+  },
+  {
+    "command": "nix develop --command git diff --check cce56bd53c5a2cd4c4611c84507f161be9544272 HEAD > .cache/t5-6lnm/22-committed-whitespace.log 2>&1",
+    "exitCode": 0,
+    "result": "Complete original-base-to-implementation-HEAD diff whitespace-clean",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/22-committed-whitespace.log"
+  },
+  {
+    "command": "nix develop --command git diff --check cce56bd53c5a2cd4c4611c84507f161be9544272 > .cache/t5-6lnm/23-review-evidence-whitespace.log 2>&1",
+    "exitCode": 0,
+    "result": "Complete original-base diff whitespace-clean, including staged review report and ticket evidence",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/23-review-evidence-whitespace.log"
   }
 ]
