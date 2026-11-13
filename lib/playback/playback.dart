@@ -1433,28 +1433,27 @@ class Playback extends ChangeNotifier {
     final selected = _selectedEdition();
     if (selected == null) return;
     final (book, edition) = selected;
-    if (_choiceToRestore?['sources'] == editionSources(edition)) {
-      await _open(book, edition, autoplay: false);
-      return;
-    }
+    final restoringChoice =
+        _choiceToRestore?['sources'] == editionSources(edition);
     final resume = _readPosition(edition);
-    if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
+    if (!restoringChoice &&
+        (resume == null || !_resumeFits(edition, _resumeRecord(edition)))) {
       _actionFailed(
         _noticeOrigin(edition.id),
         PlaybackOperation.open,
         'The saved audio source changed. Its resume is kept but was not applied.',
       );
       if (resume != null) _offerReplacement(book, edition, resume);
-    } else {
-      await _runAudio(
-        PlaybackOperation.open,
-        () async {
-          await _open(book, edition, autoplay: false);
-        },
-        editionId: edition.id,
-        generation: _generation,
-      );
+      return;
     }
+    await _runAudio(
+      PlaybackOperation.open,
+      () async {
+        await _open(book, edition, autoplay: false);
+      },
+      editionId: edition.id,
+      generation: _generation,
+    );
   }
 
   /// Whether [a] and [b] describe the same audio: the same edition id, and
@@ -1813,7 +1812,9 @@ class Playback extends ChangeNotifier {
   /// System media controls start locally and leave the question for a screen.
   Future<void> playExternally() {
     if (!_playing && _edition != null) _start(_edition!);
-    return _settleStart(_audioCommand(PlaybackOperation.play, () => _play(external: true)));
+    return _settleStart(
+      _audioCommand(PlaybackOperation.play, () => _play(external: true)),
+    );
   }
 
   Future<void> _play({bool external = false}) async {

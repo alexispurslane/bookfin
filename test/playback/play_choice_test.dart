@@ -93,7 +93,7 @@ void main() {
         await player.refreshPersonalRecords();
       }
 
-      Future<void> abandonAndRestart() async {
+      Future<void> abandonAndRestart({bool failLoad = false}) async {
         final abandoned = player;
         store.fail = true;
         addTearDown(abandoned.close);
@@ -101,10 +101,46 @@ void main() {
         store = _Store(
           openDatabase: sqlite ? () async => phone!.database : null,
         );
-        engine = _Engine();
+        engine = _Engine()..failLoad = failLoad;
         player = Playback(downloads: downloads, engine: engine, store: store);
         await player.bind(audio.account(), [audio.title, otherBook]);
       }
+
+      test(
+        'a failed restart with a saved choice reports only the audio failure',
+        () async {
+          await receive(40000);
+          await player.playExternally();
+          await player.pause();
+          final saved = (await store.read(account))!;
+          expect(saved['playChoice'], isNotNull);
+
+          await abandonAndRestart(failLoad: true);
+
+          final status = player.statusNotifier.value;
+          expect(status.recoveryMessage, isNull);
+          expect(status.actionNotice?.editionId, audio.recording.id);
+          expect(status.actionNotice?.operation, PlaybackOperation.open);
+          expect(status.messagesFor(), isEmpty);
+          expect(
+            status.messagesFor(book: audio.title),
+            contains(contains('Cannot play')),
+          );
+          expect((await store.read(account))!['history'], saved['history']);
+          expect(
+            (await store.read(account))!['playChoice'],
+            saved['playChoice'],
+          );
+          player.checkInvariants();
+
+          engine.failLoad = false;
+          await player.open(audio.title, audio.recording, autoplay: false);
+          expect(player.statusNotifier.value.actionNotice, isNull);
+          expect(player.position!.milliseconds, 11000);
+          expect(player.playChoiceNotifier.value?.remote.milliseconds, 40000);
+          player.checkInvariants();
+        },
+      );
 
       test(
         'refresh completes after the withdrawn question is durable',

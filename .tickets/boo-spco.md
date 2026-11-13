@@ -180,3 +180,19 @@ lint despite exit 0; the braces-only correction is retained and final analysis
 and formatting passed afterward. No behavior changed after the full run. The
 final layout source scan has no findings. These checks do not establish device
 acceptance. Both prerequisite correction files remain unchanged.
+
+## Parent integration — 2026-11-13
+
+Integrated the reviewed implementation and fixes while retaining boo-56h7's
+Ask-at-Play, external Play preservation, marker reconciliation and stale-seek
+restoration. Commands now carry the attempted operation in both external Play
+and choice acceptance. Successful Play clears the action error and still
+publishes any requested choice.
+
+Combined inspection found that restart with a durable listening choice skipped
+the automatic reopen error handler. Two regressions, on preferences and SQLite,
+failed with an account-wide record-recovery error after a decoder load failure.
+The existing automatic-reopen handler now owns both reopen paths. Both tests
+pass and confirm unchanged saved History/choice plus successful recovery of the
+local and remote places. No second review stage was started. Parent evidence is
+being collected under docs/evidence/boo-spco/integration; broad checks pending.
