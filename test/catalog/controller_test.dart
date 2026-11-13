@@ -52,6 +52,9 @@ class MemoryCatalogStore implements CatalogStore {
   bool failReads = false;
   Completer<void>? gate;
 
+  /// Reports that a write reached storage, before [gate] lets it complete.
+  Completer<void>? writeStarted;
+
   /// Holds each read until it completes, when a test sets it.
   Completer<void>? readGate;
   @override
@@ -63,6 +66,9 @@ class MemoryCatalogStore implements CatalogStore {
 
   @override
   Future<void> write(AccountScope scope, String text) async {
+    if (writeStarted case final started? when !started.isCompleted) {
+      started.complete();
+    }
     await gate?.future;
     if (failWrites) throw StateError('disk failure');
     values[scope.key] = text;

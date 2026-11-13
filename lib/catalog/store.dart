@@ -49,6 +49,9 @@ class CatalogCache {
   final Set<String> hidden;
   final List<CatalogEntry> entries;
   final CatalogEdits edits;
+
+  /// The successful refresh recorded in this saved snapshot. The controller
+  /// can complete later unchanged refreshes without rewriting this snapshot.
   final DateTime? completedAt;
   final bool accessBlocked;
 

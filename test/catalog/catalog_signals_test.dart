@@ -634,6 +634,7 @@ void main() {
     test('a refresh whose catalog cannot be saved reached Jellyfin and did not succeed', () async {
       await signIn();
       store.failWrites = true;
+      client.entries = [entry('one', title: 'The River')];
       await controller.refresh();
       final status = controller.statusNotifier.value;
       expect((status.refreshing, status.reach), (false, CatalogReach.reached));
@@ -768,6 +769,165 @@ void main() {
   });
 
   group('the build of the books', () {
+    test('an unchanged response restores access after a denial could not be prepared for storage', () async {
+      var failBuild = false;
+      controller.dispose();
+      controller = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (_, _) => client,
+        hop: <M, R>(FutureOr<R> Function(M) work, M input) async {
+          if (failBuild) throw StateError('worker could not start');
+          return _recordingHop(reports.sendPort, work, input);
+        },
+      );
+      await signIn();
+      final saved = store.values[account('alice').scope.key];
+      failBuild = true;
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      expect(controller.accessBlocked, isTrue);
+      expect(controller.books, isEmpty);
+      expect(controller.cache!.accessBlocked, isFalse);
+      failBuild = false;
+      client.failure = null;
+      await controller.refresh();
+      expect(controller.statusNotifier.value.reach, CatalogReach.reached);
+      expect(controller.books.single.title, 'The Orchard');
+      expect(controller.verified, isTrue);
+      expect(store.values[account('alice').scope.key], same(saved));
+      controller.checkInvariants();
+    });
+
+    test('an unchanged response repairs the saved catalog after a cancelled write finishes', () async {
+      await signIn();
+      client.entries = [entry('one', title: 'Cancelled')];
+      store.gate = Completer();
+      store.writeStarted = Completer();
+      final cancelled = controller.refresh();
+      await store.writeStarted!.future;
+      controller.cancel();
+      store.gate!.complete();
+      await cancelled;
+      client.entries = [entry('one')];
+      await controller.refresh();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.books.single.title, 'The Orchard');
+      expect(controller.books.single.title, 'The Orchard');
+    });
+
+    test('a replacement refresh repairs a superseded save even with unchanged books and libraries', () async {
+      client.views = [
+        const BookLibrary('books', 'Books'),
+        const BookLibrary('empty', 'Empty'),
+      ];
+      await signIn();
+      store.gate = Completer();
+      store.writeStarted = Completer();
+      final superseded = controller.refresh(hidden: {'empty'});
+      await store.writeStarted!.future;
+      final replacement = controller.refresh(hidden: {});
+      store.gate!.complete();
+      await Future.wait([superseded, replacement]);
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.accountNotifier.value.hidden, isEmpty);
+      expect(controller.accountNotifier.value.hidden, isEmpty);
+    });
+
+    test('an unchanged refresh neither builds books nor rewrites their saved catalog', () async {
+      client.entries = _largeLibrary();
+      await signIn();
+      final saved = store.values[account('alice').scope.key];
+      final published = controller.libraryNotifier.value;
+      await settleReports();
+      builds.clear();
+      final here = booksBuilt;
+      await controller.refresh();
+      await settleReports();
+      expect(booksBuilt, here);
+      expect(builds, [('catalog worker', 0)]);
+      expect(store.values[account('alice').scope.key], same(saved));
+      expect(controller.libraryNotifier.value, same(published));
+      expect(controller.verified, isTrue);
+      controller.checkInvariants();
+    });
+
+    test(
+      'an unchanged refresh can succeed when storage cannot accept writes',
+      () async {
+        await signIn();
+        store.failWrites = true;
+        await controller.refresh(byUser: true);
+        expect(controller.verified, isTrue);
+        expect(controller.message, isNull);
+        expect(controller.books.single.title, 'The Orchard');
+      },
+    );
+
+    test(
+      'a library rename is saved without rebuilding unchanged books',
+      () async {
+        await signIn();
+        client.views = [const BookLibrary('books', 'Renamed')];
+        await settleReports();
+        builds.clear();
+        await controller.refresh();
+        await settleReports();
+        expect(builds, [('catalog worker', 0)]);
+        final restarted = newController();
+        addTearDown(restarted.dispose);
+        await restarted.restore();
+        expect(restarted.libraries.single.name, 'Renamed');
+        expect(restarted.books.single.title, 'The Orchard');
+      },
+    );
+
+    test(
+      'hiding an empty library is saved without rebuilding unchanged books',
+      () async {
+        client.views = [
+          const BookLibrary('books', 'Books'),
+          const BookLibrary('empty', 'Empty'),
+        ];
+        await signIn();
+        await settleReports();
+        builds.clear();
+        await controller.refresh(hidden: {'empty'}, byUser: true);
+        await settleReports();
+        expect(builds, [('catalog worker', 0)]);
+        final restarted = newController();
+        addTearDown(restarted.dispose);
+        await restarted.restore();
+        expect(restarted.accountNotifier.value.hidden, {'empty'});
+        expect(restarted.books.single.title, 'The Orchard');
+      },
+    );
+
+    test('an unchanged refresh preserves a correction saved while the request runs', () async {
+      await signIn();
+      client.pendingCatalog = Completer();
+      final refreshing = controller.refresh();
+      await pumpEventQueue();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'My title', author: 'Writer'),
+      );
+      final saved = store.values[account('alice').scope.key];
+      await settleReports();
+      builds.clear();
+      client.pendingCatalog!.complete([entry('one')]);
+      await refreshing;
+      await settleReports();
+      expect(builds, [('catalog worker', 0)]);
+      expect(store.values[account('alice').scope.key], same(saved));
+      expect(controller.books.single.title, 'My title');
+      controller.checkInvariants();
+    });
+
     test('a restore builds the books once, in another isolate', () async {
       client.entries = _largeLibrary();
       await signIn();

@@ -1,15 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
+import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import '../catalog/controller_test.dart'
-    show FixtureClient, MemoryCatalogStore, MemoryCredentials;
+    show FixtureClient, MemoryCatalogStore, MemoryCredentials, account;
+import '../catalog/model_test.dart' show entry;
 import '../real_time.dart';
 
 const _offline = 'Cannot reach Jellyfin. Showing downloaded books.';
@@ -68,6 +71,18 @@ void main() {
     client.refreshes = 0;
   }
 
+  /// Starts from a saved success of [age], without changing the app clock.
+  Future<void> restoreSuccess(WidgetTester tester, Duration? age) async {
+    await signIn(tester);
+    final key = account('alice').scope.key;
+    final saved = jsonDecode(store.values[key]!) as Map<String, dynamic>;
+    saved['completedAt'] = age == null
+        ? null
+        : DateTime.now().toUtc().subtract(age).toIso8601String();
+    store.values[key] = jsonEncode(saved);
+    await finish(tester, catalog.restore());
+  }
+
   /// Runs real and fake time until the catalog's refresh ends.
   Future<void> finishRefresh(WidgetTester tester) =>
       runUntil(tester, () => !catalog.busy);
@@ -97,16 +112,121 @@ void main() {
   }
 
   group('the catalog on return to the screen', () {
-    testWidgets('a return after the app was hidden refreshes it once', (
+    testWidgets('a return keeps a catalog refreshed less than an hour ago', (
       tester,
     ) async {
-      await signIn(tester);
+      await restoreSuccess(tester, const Duration(minutes: 59));
       await show(tester);
       hideAndReturn(tester);
       await finishRefresh(tester);
       await tester.pumpAndSettle();
-      expect(client.refreshes, 1);
+      expect(client.refreshes, 0);
       expect(catalog.statusNotifier.value.message, isNull);
+    });
+
+    for (final age in <Duration?>[const Duration(minutes: 61), null]) {
+      testWidgets(
+        'a return refreshes a catalog whose last success is ${age == null ? 'unknown' : 'older than one hour'}',
+        (tester) async {
+          await restoreSuccess(tester, age);
+          await show(tester);
+          hideAndReturn(tester);
+          await finishRefresh(tester);
+          expect(client.refreshes, 1);
+          expect(catalog.verified, isTrue);
+        },
+      );
+    }
+
+    testWidgets(
+      'an unchanged response starts a new hour without saving the catalog again',
+      (tester) async {
+        await restoreSuccess(tester, const Duration(hours: 2));
+        final saved = store.values[account('alice').scope.key];
+        await show(tester);
+        hideAndReturn(tester);
+        await finishRefresh(tester);
+        expect(client.refreshes, 1);
+        expect(store.values[account('alice').scope.key], same(saved));
+        hideAndReturn(tester);
+        await finishRefresh(tester);
+        expect(client.refreshes, 1);
+        expect(catalog.verified, isTrue);
+        catalog.checkInvariants();
+      },
+    );
+
+    testWidgets('a manual refresh still reads a recent catalog', (
+      tester,
+    ) async {
+      await signIn(tester);
+      await finish(tester, catalog.refresh(byUser: true));
+      expect(client.refreshes, 1);
+      expect(catalog.verified, isTrue);
+    });
+
+    testWidgets('the launch refresh still reads a recent saved catalog', (
+      tester,
+    ) async {
+      await restoreSuccess(tester, const Duration(minutes: 5));
+      await finish(tester, catalog.restore().then((_) => catalog.refresh()));
+      expect(client.refreshes, 1);
+      expect(catalog.verified, isTrue);
+    });
+
+    testWidgets('an incomplete response does not start a new hour', (
+      tester,
+    ) async {
+      await restoreSuccess(tester, const Duration(hours: 2));
+      await show(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+      hideAndReturn(tester);
+      await finishRefresh(tester);
+      expect(catalog.verified, isFalse);
+      client.failure = null;
+      hideAndReturn(tester);
+      await finishRefresh(tester);
+      expect(client.refreshes, 2);
+      expect(catalog.verified, isTrue);
+    });
+
+    testWidgets(
+      'a failed save keeps the old books and does not start a new hour',
+      (tester) async {
+        await restoreSuccess(tester, const Duration(hours: 2));
+        await show(tester);
+        client.entries = [entry('one', title: 'The River')];
+        store.failWrites = true;
+        hideAndReturn(tester);
+        await finishRefresh(tester);
+        expect(catalog.books.single.title, 'The Orchard');
+        expect(catalog.verified, isFalse);
+        store.failWrites = false;
+        hideAndReturn(tester);
+        await finishRefresh(tester);
+        expect(client.refreshes, 2);
+        expect(catalog.books.single.title, 'The River');
+      },
+    );
+
+    testWidgets('a correction after an unchanged response keeps the new hour', (
+      tester,
+    ) async {
+      await restoreSuccess(tester, const Duration(hours: 2));
+      await show(tester);
+      hideAndReturn(tester);
+      await finishRefresh(tester);
+      await finish(
+        tester,
+        catalog.correctBook(
+          'book:one',
+          const BookDetails(title: 'My title', author: 'Writer'),
+        ),
+      );
+      hideAndReturn(tester);
+      await finishRefresh(tester);
+      expect(client.refreshes, 1);
+      expect(catalog.books.single.title, 'My title');
     });
 
     testWidgets('a return from inactive only does not refresh it', (
@@ -123,7 +243,7 @@ void main() {
     testWidgets('a second return without hiding again does not refresh it', (
       tester,
     ) async {
-      await signIn(tester);
+      await restoreSuccess(tester, const Duration(hours: 2));
       await show(tester);
       hideAndReturn(tester);
       await finishRefresh(tester);
@@ -202,6 +322,38 @@ void main() {
       await tester.pumpAndSettle();
       expect(client.refreshes, 0);
       expect(catalog.session, isNull);
+    });
+
+    testWidgets(
+      'another account does not inherit the previous account refresh time',
+      (tester) async {
+        await signIn(tester);
+        credentials.value = account('bob');
+        await finish(tester, catalog.restore());
+        await show(tester);
+        hideAndReturn(tester);
+        await finishRefresh(tester);
+        expect(client.refreshes, 1);
+        expect(catalog.session!.username, 'bob');
+        expect(catalog.verified, isTrue);
+        catalog.checkInvariants();
+      },
+    );
+
+    testWidgets('an expired sign-in stays signed out on return', (
+      tester,
+    ) async {
+      await signIn(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await finish(tester, catalog.refresh());
+      client.refreshes = 0;
+      await show(tester);
+      hideAndReturn(tester);
+      await tester.pumpAndSettle();
+      expect(client.refreshes, 0);
+      expect(catalog.session, isNull);
+      expect(catalog.statusNotifier.value.reach, CatalogReach.signInExpired);
+      catalog.checkInvariants();
     });
 
     testWidgets(

@@ -85,7 +85,7 @@ class CatalogAccount {
       _sameSession(session, other.session) &&
       restoring == other.restoring &&
       accessBlocked == other.accessBlocked &&
-      listEquals(_names(libraries), _names(other.libraries)) &&
+      listEquals(_libraryNames(libraries), _libraryNames(other.libraries)) &&
       setEquals(hidden, other.hidden);
 
   @override
@@ -93,7 +93,7 @@ class CatalogAccount {
     session?.scope.key,
     restoring,
     accessBlocked,
-    Object.hashAll(_names(libraries)),
+    Object.hashAll(_libraryNames(libraries)),
     Object.hashAllUnordered(hidden),
   );
 
@@ -105,11 +105,11 @@ class CatalogAccount {
           left.token == right.token &&
           left.username == right.username &&
           left.canDownload == right.canDownload);
-
-  static List<String> _names(List<BookLibrary> libraries) => [
-    for (final library in libraries) ...[library.id, library.name],
-  ];
 }
+
+List<String> _libraryNames(List<BookLibrary> libraries) => [
+  for (final library in libraries) ...[library.id, library.name],
+];
 
 /// What the catalog is doing.
 enum _Work { idle, restore, refresh }
@@ -127,8 +127,9 @@ class _Refreshing {
 }
 
 /// The catalog state that one isolate hop builds: the cache, the text that
-/// saves it, and the library of its books.
-typedef _Built = ({CatalogCache cache, String text, CatalogLibrary library});
+/// saves it, and the library of its books. A null library reuses the current
+/// books, whose content digest must match.
+typedef _Built = ({CatalogCache cache, String text, CatalogLibrary? library});
 
 /// The smallest saved catalog text, in characters, and the fewest entries
 /// that the catalog builds in another isolate. A smaller catalog builds on
@@ -176,7 +177,9 @@ _Built _reviseCatalog(_Revision revision) {
 
 /// A refresh's answer from Jellyfin for [scope]: its book [libraries], the
 /// [hidden] ones, and the catalog [pages] of the others, not yet decoded.
-/// The catalog keeps [edits].
+/// The catalog keeps [edits]. If its digest matches [previousContent], the
+/// books need no build. [canKeepSavedCatalog] also requires unchanged account
+/// metadata and storage known to hold the current cache.
 typedef _Refresh = ({
   AccountScope scope,
   List<BookLibrary> libraries,
@@ -184,22 +187,32 @@ typedef _Refresh = ({
   CatalogPages pages,
   CatalogEdits? edits,
   DateTime completedAt,
+  String? previousContent,
+  bool canKeepSavedCatalog,
 });
 
 /// Decodes and checks the pages of [refresh], builds its entries, and saves
-/// and builds the result. The pages cross to the worker as block copies, so
-/// a refresh copies no entries. Throws a [CatalogFailure] when the pages are
-/// not one complete catalog.
-_Built _refreshCatalog(_Refresh refresh) => _saveCatalog(
-  CatalogCache(
+/// and builds only changed content. An unchanged catalog that can keep its
+/// saved snapshot returns null: there is nothing to adopt or write. The pages
+/// cross to the worker as block copies, so a refresh copies no entries.
+/// Throws a [CatalogFailure] when the pages are not one complete catalog.
+_Built? _refreshCatalog(_Refresh refresh) {
+  final cache = CatalogCache(
     scope: refresh.scope,
     libraries: refresh.libraries,
     hidden: refresh.hidden,
     entries: catalogEntries(refresh.pages),
     edits: refresh.edits,
     completedAt: refresh.completedAt,
-  ),
-);
+  ).withContent();
+  final unchanged = cache.content == refresh.previousContent;
+  if (unchanged && refresh.canKeepSavedCatalog) return null;
+  return (
+    cache: cache,
+    text: cache.encode(),
+    library: unchanged ? null : _libraryOf(cache),
+  );
+}
 
 /// Adds the content digest to [cache], encodes it and builds its library.
 _Built _saveCatalog(CatalogCache cache) {
@@ -245,6 +258,8 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 ///   to a shown book library: one that the user did not hide.
 /// - The saved text is present exactly when the cache is, and it encodes the
 ///   cache.
+/// - Known saved content requires a cache. A signed-out catalog retains no
+///   successful refresh time from its former account.
 /// - Each source belongs to exactly one edition, and a text edition has one
 ///   source.
 /// - The library view matches its books.
@@ -270,6 +285,17 @@ class CatalogController extends ChangeNotifier {
   /// The text that saves [_cache], or null without a cache. A revision sends
   /// it to the worker instead of the entries.
   String? _text;
+
+  /// Whether storage is known to hold [_text]. A cancelled write can still
+  /// finish, and a failed write can leave its outcome unknown. The next
+  /// refresh must save again in either case, even if its content is unchanged.
+  bool _cacheStored = false;
+
+  /// The latest successful refresh in this account session, including an
+  /// unchanged response. Until then, the saved snapshot's completedAt is
+  /// the last known success. Corrections never move this time. Launch always
+  /// refreshes, so unchanged successes need no separate persistent metadata.
+  DateTime? _lastSuccessfulRefresh;
   List<BookLibrary> _libraries = [];
 
   /// The library of [_cache], or the empty library without a cache.
@@ -350,6 +376,7 @@ class CatalogController extends ChangeNotifier {
         (_cache != null ||
             _built.books.isNotEmpty ||
             _libraries.isNotEmpty ||
+            _lastSuccessfulRefresh != null ||
             _verified)) {
       throw StateError('A signed-out catalog must contain no account data.');
     }
@@ -367,6 +394,9 @@ class CatalogController extends ChangeNotifier {
             CatalogCache.decode(_cache!.scope, _text!).content !=
                 _cache!.content)) {
       throw StateError('The saved text must encode the cache.');
+    }
+    if (_cacheStored && _cache == null) {
+      throw StateError('Known saved content must have a cache.');
     }
     if (_cache case final cache?) {
       final shown = cache.shown;
@@ -401,8 +431,8 @@ class CatalogController extends ChangeNotifier {
 
   /// Builds a catalog with [work] in another isolate, or here when [small]
   /// (see [_hopEntries]).
-  Future<_Built> _build<M>(
-    _Built Function(M) work,
+  Future<R> _build<M, R>(
+    R Function(M) work,
     M input, {
     required bool small,
   }) async => small ? work(input) : _hop(work, input);
@@ -420,11 +450,12 @@ class CatalogController extends ChangeNotifier {
     final previous = _cache;
     _cache = built.cache;
     _text = built.text;
+    _cacheStored = true;
     _accessBlocked = built.cache.accessBlocked;
     if (previous == null ||
         built.cache.content == null ||
         built.cache.content != previous.content) {
-      _built = built.library;
+      _built = built.library!;
     }
   }
 
@@ -457,11 +488,28 @@ class CatalogController extends ChangeNotifier {
     return next;
   }
 
+  /// Writes catalog text and records whether storage still matches the
+  /// active cache, even if the operation that requested the write ended.
+  /// Callers serialize these writes through [_cacheWrites].
+  Future<void> _writeCatalog(AccountScope scope, String text) async {
+    try {
+      await _store.write(scope, text);
+      if (_session?.scope.key == scope.key) {
+        _cacheStored = identical(text, _text);
+      }
+    } catch (_) {
+      if (_session?.scope.key == scope.key) _cacheStored = false;
+      rethrow;
+    }
+  }
+
   void _clearVisible() {
     ++_accountGeneration;
     _session = null;
     _cache = null;
     _text = null;
+    _cacheStored = false;
+    _lastSuccessfulRefresh = null;
     _built = CatalogLibrary.empty;
     _libraries = [];
     _verified = false;
@@ -472,6 +520,8 @@ class CatalogController extends ChangeNotifier {
   /// The saved catalog of [scope], decoded and built, or null when none is
   /// saved.
   Future<_Built?> _readSaved(AccountScope scope) async {
+    // An earlier account operation can still be finishing its disk write.
+    await _cacheWrites;
     final text = await _store.read(scope);
     if (text == null) return null;
     return _build(_restoreCatalog, (
@@ -595,6 +645,24 @@ class CatalogController extends ChangeNotifier {
     return false;
   }
 
+  /// Refreshes after a return from hidden when the last success is older
+  /// than one hour or unknown, or the last request could not reach Jellyfin.
+  /// An active sign-in, restore or refresh keeps running. Launch and manual
+  /// refreshes use [refresh] directly and never wait for staleness.
+  Future<void> resume() {
+    if (busy || _session == null) return Future<void>.value();
+    final completedAt = _lastSuccessfulRefresh ?? _cache?.completedAt;
+    final age = completedAt == null
+        ? null
+        : DateTime.now().toUtc().difference(completedAt);
+    if (_reach == CatalogReach.unreachable ||
+        age == null ||
+        age > const Duration(hours: 1)) {
+      return refresh();
+    }
+    return Future<void>.value();
+  }
+
   /// Reads the account's book libraries from Jellyfin, and the catalog of
   /// each one that shows, then saves and shows them. The future ends when
   /// the refresh ends.
@@ -666,6 +734,7 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
+        final previous = _cache;
         final built = await _build(_refreshCatalog, (
           scope: validated.scope,
           libraries: views,
@@ -673,12 +742,29 @@ class CatalogController extends ChangeNotifier {
           pages: pages,
           edits: _cache?.edits,
           completedAt: DateTime.now().toUtc(),
+          previousContent: previous?.scope.key == validated.scope.key
+              ? previous?.content
+              : null,
+          canKeepSavedCatalog:
+              _cacheStored &&
+              previous != null &&
+              previous.scope.key == validated.scope.key &&
+              !previous.accessBlocked &&
+              setEquals(previous.hidden, hidden) &&
+              listEquals(
+                _libraryNames(previous.libraries),
+                _libraryNames(views),
+              ),
         ), small: pages.items < _hopEntries);
         if (!_current(generation)) return;
-        await _store.write(validated.scope, built.text);
-        if (!_current(generation)) return;
+        if (built != null) {
+          await _writeCatalog(validated.scope, built.text);
+          if (!_current(generation)) return;
+          _adopt(built);
+        }
         _session = validated;
-        _adopt(built);
+        _accessBlocked = false;
+        _lastSuccessfulRefresh = DateTime.now().toUtc();
         _verified = true;
       });
       _cacheWrites = write.catchError((Object _) {});
@@ -776,7 +862,7 @@ class CatalogController extends ChangeNotifier {
               accessBlocked: blocked,
             ));
       if (!_current(generation)) return;
-      await _store.write(scope, saved.text);
+      await _writeCatalog(scope, saved.text);
       if (_current(generation)) _adopt(saved);
     });
     _cacheWrites = write.catchError((Object _) {});
@@ -835,7 +921,7 @@ class CatalogController extends ChangeNotifier {
           accessBlocked: false,
         ));
         if (!currentAccount()) return;
-        await _store.write(previous.scope, built.text);
+        await _writeCatalog(previous.scope, built.text);
         if (!currentAccount()) return;
         _adopt(built);
         _message = null;

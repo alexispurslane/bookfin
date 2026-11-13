@@ -322,11 +322,8 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       widget.reader?.resume();
       unawaited(widget.downloads?.refresh());
       _appearance.resume();
-      // A return after the app was hidden refreshes the catalog in the
-      // background, so a library that could not reach Jellyfin comes back.
-      // It never replaces a sign-in, a refresh or a restore that runs: the
-      // launch refresh follows a restore.
-      if (_hidden && !_catalog.busy) unawaited(_catalog.refresh());
+      // The catalog owns freshness and recovery after an unreachable result.
+      if (_hidden) unawaited(_catalog.resume());
       _hidden = false;
     } else {
       // Record sync keeps its period until the app is hidden.
