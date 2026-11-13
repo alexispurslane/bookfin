@@ -14,3 +14,37 @@ tags: [survey-1112]
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: plausible, it depends on the markup of the book. lib/reader/epub/places.dart:391-399 climbs from an empty note anchor to the nearest ancestor with visible text, which can be the whole notes block or the body. `pager.note` then lays that out on the UI isolate, and `run.pages.single` (lib/reader/epub/pager.dart:357) throws when the block is taller than the note height. Take the content up to the next anchor as the note and set a size limit.
 
+## Parent read-only audit — 2026-11-13
+
+At `27dc49fd`, noteOf in places.dart still climbs from an empty anchor to
+the first ancestor containing visible text. An unmarked body containing
+several empty anchors can therefore be selected as one note. Marked note
+ancestors take priority, and that rule must be preserved. The existing
+places_test.dart case only covers one empty anchor inside its own paragraph;
+it does not cover adjacent notes sharing a body or container.
+
+The survey's pager location and unscheduled-layout description are stale.
+EpubPager.note now asks EpubPageSource.excerpt, which shares section
+measurements and steps between event-loop turns. The fragment still uses
+height 1e6 pixels, and takeExcerpt still reads run.pages.single. An oversized
+fragment is thus a plausible remaining failure, not a reproduced result.
+No test or implementation for this ticket ran during this audit.
+
+ReaderScreen._followLink already follows the original destination when
+pager.note returns null, retaining access to the full note in the book.
+It catches ArgumentError and Exception, but not the StateError from a
+multi-page single getter. Do not substitute a broad catch for bounded note
+selection and owned excerpt cleanup. Existing layout scheduling, settings
+invalidation, image disposal, backlink omission, copying and selection must
+remain under their present owners.
+
+Before implementation, settle how to represent a note range without changing
+the admitted DOM's node identities or copying a fake subtree. The range must
+exclude the next note and surrounding material, retain the simple paragraph
+case and marked-note semantics, and preserve original locations. Size limits
+need an explicit overflow behavior; existing null-to-navigation is an
+available path, not a decision recorded by this audit. Useful callers and
+tests: native-epub-reader.md's implemented note section, places_test.dart's
+note group, pager_test.dart's note/backlink cases, page_source excerpt tests
+and ReaderScreen._followLink. No delegate launched and no product choice
+was settled here.
