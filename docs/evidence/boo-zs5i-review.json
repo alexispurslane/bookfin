@@ -1,0 +1,140 @@
+{
+  "ticket": "boo-zs5i",
+  "reviewed_base": "e5928982036392cf6e59b308841db3666be884cb",
+  "reviewed_head": "45033b1b65124889a58505a8c0bde8a1c2e058c5",
+  "overall_verdict": "pass",
+  "scope": "Complete 33-file base-to-head diff and relevant callers.",
+  "reviewer_executed": {
+    "activities": "Read-only source, diff, caller, instruction and saved-log inspection; log SHA-256 calculation.",
+    "log_integrity": "All 19 hashes listed in the manifest match the saved logs.",
+    "checkout": "HEAD matches the requested commit; working tree remains clean.",
+    "tests_builds_analysis_formatting": "None executed."
+  },
+  "assessments": {
+    "correctness_and_regressions": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "type": "static",
+          "locations": [
+            "lib/sync/record_address.dart:7",
+            "lib/playback/record_codec.dart:129",
+            "test/sync/record_address_test.dart:6",
+            "test/sync/conflict_views_test.dart:217"
+          ],
+          "assessment": "Address validation preserves exact encoded identities, including distinct legacy keys. Future domains and collections remain representable."
+        },
+        {
+          "type": "static",
+          "locations": [
+            "lib/playback/record_codec.dart:40",
+            "lib/playback/record_codec.dart:173",
+            "lib/playback/store.dart:969",
+            "lib/playback/store.dart:984"
+          ],
+          "assessment": "Validation and conflict projection share the existing domain decoders. Returned choices are detached. Resolution still selects current journal originals and preserves their uninterpreted fields; stale identities are rejected."
+        },
+        {
+          "type": "static_and_builder-run",
+          "locations": [
+            "test/sync/conflict_views_test.dart",
+            "test/sync/coordinator_test.dart:237",
+            "test/sync/coordinator_test.dart:262",
+            "test/sync/device_records_test.dart:130"
+          ],
+          "assessment": "Tests cover all six supported domain/collection combinations, deletion, durable resolution, detached ownership, account separation, legacy keys, opaque anchors and retained future records. Coordinator tests cover unchanged-view notifications and same-identity server-copy repair on preferences and SQLite."
+        },
+        {
+          "type": "builder-run",
+          "assessment": "Inspected meaningful repair regression failures: both backends expected one notification and received zero. The subsequent 60-test run passed. Final affected run passed 1437 tests with 3 skips; full run passed 3596 tests with 27 skips."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "External plugin-fixture tests were skipped; live plugin round trips and upgrade behavior were not verified.",
+        "The intermediate t5-rplx failure at test/reader/unread_records_test.dart:97 remains unexplained. Later passing runs do not establish its cause or a fix.",
+        "The new six-kind contract matrix uses preferences storage. SQLite evidence comes from the coordinator, incremental-store and durability suites rather than a duplicate of that entire matrix."
+      ]
+    },
+    "ticket_fulfillment": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "requirement": "One address representation and one supported-value decoding path",
+          "assessment": "Implemented in record_address.dart and record_codec.dart. Journal, store and conflict consumers use the shared address parser; labels no longer decode raw record values."
+        },
+        {
+          "requirement": "Complete consumer migration",
+          "assessment": "Inspected RecordSync, labels, choice, alert and Sync-page consumers, unchanged Settings waitingChoices at lib/settings/screen.dart:141, and callbacks at lib/catalog/book_page.dart:231 and lib/playback/screen.dart:316. Audited test, integration_test and tool callers. Remaining raw conflict access belongs to journal-level tests and research."
+        },
+        {
+          "requirement": "Preserve presentation and interaction",
+          "assessment": "Existing label and widget tests retain device/time fallbacks, duplicate names, catalog titles, chapter and source-revision checks, whole-book audio tracks, deletion choices and bookmark titles. Shared tolerant anchor parsing preserves unavailable previews without tightening record acceptance."
+        },
+        {
+          "requirement": "Preserve journal authority and persistence behavior",
+          "assessment": "No storage or wire-format redesign. Existing pending-write, causal-ordering, recovery and durable-resolution tests remain present. Typed views introduce no persistence-action encoder."
+        },
+        {
+          "requirement": "Required verification and scope boundaries",
+          "assessment": "Builder evidence includes baseline 79, characterization 13, focused 160, final affected and full-suite passes. Final analysis reports no issues; formatting reports 31 files and zero changes. The saved complete-diff whitespace log is empty, with success recorded in the manifest. Excluded playback-command, snapshot, writer and product-feature work is absent."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "Execution provenance is builder-run evidence, not an independent reviewer rerun.",
+        "Device/browser acceptance, coverage and mutation testing were explicitly excluded and remain with the parent.",
+        "The existing external-fixture skips remain acceptance limits; they are not counted as passing integration tests."
+      ]
+    },
+    "software_design_and_code_quality": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "source": "User; Ousterhout",
+          "locations": [
+            "lib/sync/record_address.dart",
+            "lib/playback/record_codec.dart:173",
+            "lib/sync/labels.dart"
+          ],
+          "assessment": "Address syntax has one owner. Supported value decoding has one shared path. Consumers receive domain values instead of repeating wire-field interpretation, reducing the number of places a record-format change must update."
+        },
+        {
+          "source": "User; Ousterhout",
+          "locations": [
+            "lib/playback/record_codec.dart:89",
+            "lib/playback/store.dart:984"
+          ],
+          "assessment": "The journal remains the authoritative state. ConflictVersion's private detached original serves content equality only and is inaccessible to consumers. This preserves recovery notifications without creating a second writer or reconstructing actions from display data."
+        },
+        {
+          "source": "Muratori; User",
+          "locations": [
+            "lib/playback/records.dart:371",
+            "lib/reader/place_words.dart:25",
+            "lib/sync/labels.dart:238"
+          ],
+          "assessment": "The shared anchor-preview parser serves two real consumers while retaining their distinct presentation rules. Existing position, bookmark and history types are reused; no general record framework or speculative extension mechanism was added."
+        },
+        {
+          "source": "User; Ousterhout",
+          "locations": [
+            "lib/playback/store.dart:969",
+            "lib/sync/coordinator.dart:495",
+            "lib/sync/choice.dart:9",
+            "lib/sync/alert.dart:102"
+          ],
+          "assessment": "Nonempty conflict projection uses the existing worker path. Typed callbacks preserve controller ownership of actions. Existing narrow subscriptions remain in place, with content equality preventing notifications solely from reallocated views."
+        }
+      ],
+      "findings": [],
+      "validation_gaps": [
+        "No performance measurement was performed or claimed.",
+        "Design conclusions are static assessments, supported by builder-run behavior tests; they are not device-performance evidence."
+      ]
+    }
+  },
+  "required_changes": [],
+  "user_decision_needed": null,
+  "handoff": "Pass for the settled ticket scope. Parent retains integration, acceptance, hardening and ticket closure."
+}
