@@ -1,0 +1,114 @@
+{
+  "ticket": "t7-3j9c",
+  "originalBase": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "childHead": "361d699d2fcb4a3e230957d9d3eab2209d1ae7af",
+  "integratedHead": "2d984b1b2e7c9d229c01192b19c9b0dddba91602",
+  "commitMapping": [
+    {
+      "child": "e890defe5a02882fa714e7984e27d3aa0d45e7e4",
+      "main": "c6bfd50dadbf1e6f7701a9a58bf86172fd19b7a9"
+    },
+    {
+      "child": "fb943fcc584c6f8c3cf096929ec47dac58d937eb",
+      "main": "092f09e925f7bd891edaba390f32c4b19fd55ad5"
+    },
+    {
+      "child": "361d699d2fcb4a3e230957d9d3eab2209d1ae7af",
+      "main": "2d984b1b2e7c9d229c01192b19c9b0dddba91602"
+    }
+  ],
+  "inspection": [
+    "Complete diff and relevant owners/callers inspected.",
+    "Native measurement body and pure calculation body match the original exactly. Seven calculation tests moved unchanged.",
+    "All 13 command archives and historical archive match original lengths, hashes and raw files. Original review hash matches.",
+    "Only appended ticket notes conflicted; parent launch and child implementation evidence are both preserved.",
+    "Only source/test difference from the reviewed child is the separately integrated t5-rplx test correction."
+  ],
+  "checks": [
+    {
+      "command": "nix develop --command bash test/web_build_test.sh > /tmp/bookfin-t7-3j9c-integration/web-builds.log 2>&1",
+      "exitCode": 0,
+      "result": "Production and gallery both built nonempty JavaScript applications."
+    },
+    {
+      "command": "nix develop --command bash -c 'flutter test --no-pub --concurrency=2 --reporter expanded test/reader/pdf_outline_calculation_test.dart test/reader/pdf_outline_stub_test.dart test/reader/pdf_outline_test.dart test/reader/pdf_document_test.dart test/reader/pdf_close_test.dart test/reader/book_map_test.dart test/reader/text_outline_test.dart test/crossings/crossings_test.dart test/reader/unread_records_test.dart > /tmp/bookfin-t7-3j9c-integration/focused.log 2>&1 && dart analyze lib/reader/pdf_outline.dart lib/reader/pdf_outline_io.dart lib/reader/pdf_outline_stub.dart test/reader/pdf_outline_calculation_test.dart test/reader/pdf_outline_stub_test.dart test/reader/pdf_outline_test.dart > /tmp/bookfin-t7-3j9c-integration/analysis.log 2>&1 && dart format --output=none --set-exit-if-changed lib/reader/pdf_outline.dart lib/reader/pdf_outline_io.dart lib/reader/pdf_outline_stub.dart test/reader/pdf_outline_calculation_test.dart test/reader/pdf_outline_stub_test.dart test/reader/pdf_outline_test.dart > /tmp/bookfin-t7-3j9c-integration/format.log 2>&1 && bash -n test/web_build_test.sh'",
+      "exitCode": 0,
+      "result": "114 passed, no skips; analysis clean; six files checked with zero format changes; Bash syntax passed."
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "361d699d2fcb4a3e230957d9d3eab2209d1ae7af",
+        "HEAD",
+        "--",
+        "lib"
+      ],
+      "exitCode": 0,
+      "log": "tool/evidence/t7-3j9c/integration/reviewed-production-equality.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "57e5d033..HEAD",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "tool/evidence/t7-3j9c/integration/integrated-whitespace.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "logs": [
+    {
+      "originalPath": "/tmp/bookfin-t7-3j9c-integration/web-builds.log",
+      "archive": "tool/evidence/t7-3j9c/integration/web-builds.log.gz",
+      "rawBytes": 2876,
+      "rawSha256": "cc694aa0668d8a5b66907caf6a29e8536c5bb8de502a5cb64afed4fede2bcfcd",
+      "archiveSha256": "deb36a2301528cec52d31aec525e2fe483ac218eb0028aecf7dbb5a00e2e26ef"
+    },
+    {
+      "originalPath": "/tmp/bookfin-t7-3j9c-integration/focused.log",
+      "archive": "tool/evidence/t7-3j9c/integration/focused.log.gz",
+      "rawBytes": 21402,
+      "rawSha256": "033b45224a8d99ce5bb0a3b5e0911240c1dc8d14ddb2c5419cda4f9174d708e4",
+      "archiveSha256": "fa438631e04a9419d03e02a180243ee596666626b8c08c119298ae3772733dee"
+    },
+    {
+      "originalPath": "/tmp/bookfin-t7-3j9c-integration/analysis.log",
+      "archive": "tool/evidence/t7-3j9c/integration/analysis.log.gz",
+      "rawBytes": 177,
+      "rawSha256": "69d7438569017a2be5a384d5cdfe58befb0cb87665f6640ba158418a0fc97a43",
+      "archiveSha256": "98cee09f84e5bddaa64b09e0b32ac8797b3e669b0869f9a0c7b4bb37d84fd35f"
+    },
+    {
+      "originalPath": "/tmp/bookfin-t7-3j9c-integration/format.log",
+      "archive": "tool/evidence/t7-3j9c/integration/format.log.gz",
+      "rawBytes": 47,
+      "rawSha256": "ec27c9bb5a18e95eaf8a026729ee563d5f4f42124e659308761c49ba06babacd",
+      "archiveSha256": "35752607a731a0e0ea94aa5635eb1eb923d6587fce3b38297c0f1ec496f7dfbf"
+    },
+    {
+      "originalPath": "/tmp/bookfin-t7-3j9c/14-final-head-whitespace.log",
+      "archive": "tool/evidence/t7-3j9c/integration/child-final-head-whitespace.log.gz",
+      "rawBytes": 67,
+      "rawSha256": "801855822df7bbaf638d00dc37c5ad09ec9aeb8e57b79538a3beb96d4f46faab",
+      "archiveSha256": "46818b9e822258e7b9f659d50546dfefb2dcff098fc6055e41cb53f030df2882"
+    }
+  ],
+  "fullSuite": {
+    "source": "Retained child execution",
+    "passed": 3693,
+    "skipped": 27,
+    "rerun": "Not repeated: production and changed tests match reviewed/tested child; the sole extra test correction is covered by the combined focused run."
+  },
+  "limits": [
+    "Browser interaction and WebAssembly support remain unverified.",
+    "Browser PDF measurement remains unsupported.",
+    "Existing secure-storage WebAssembly and Cupertino font warnings remain.",
+    "Device acceptance and general coverage/mutation hardening remain separate.",
+    "Original child report says t5-rplx unexplained; later parent integration 293f7e68 closed that investigation without changing this original evidence."
+  ]
+}
