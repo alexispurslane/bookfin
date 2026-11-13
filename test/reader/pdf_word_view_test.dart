@@ -21,6 +21,7 @@ import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/session.dart';
+import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/word_bands.dart';
 import 'package:bookfin/reader/word_pages.dart';
 import 'package:bookfin/reader/word_selection.dart';
@@ -30,6 +31,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
+import 'pdf_test_controller.dart';
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart' show footnotePage;
@@ -312,7 +314,6 @@ void main() {
     PdfAddress? initial,
     double fontSize = 40,
     Reports? reports,
-    ReaderSession? reader,
     EdgeInsets padding = EdgeInsets.zero,
     PdfPageView view = PdfPageView.pageWords,
     double devicePixelRatio = 2.625,
@@ -327,23 +328,20 @@ void main() {
         home: Scaffold(
           body: Padding(
             padding: padding,
-            child: PdfViewport(
+            child: PdfTestController(
               book: book,
               fontSize: fontSize,
               initial: initial,
               view: view,
               onReady: (navigator, contents) {
                 reported.navigator = navigator;
-                reader?.attachDocument(reader.token, navigator, contents);
               },
               onAddress: (place) {
                 reported.places.add(place);
-                reader?.acceptAddress(reader.token, place);
               },
               onRefinedAddress: (place) {
                 reported.places.add(place);
                 reported.refined.add(place);
-                reader?.refineAddress(reader.token, place);
               },
               onCancelRecognition: () => book.textSupply?.cancel(),
               onTap: () {},
@@ -895,7 +893,17 @@ void main() {
       });
       await reader.bind(account(), [fixture.book]);
       await reader.open(fixture.book, fixture.edition);
-      await show(tester, scan, reader: reader);
+      await reader.setPdfView(PdfPageView.pageWords);
+      await reader.setFontSize(40);
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
+      );
       await showsScreen(tester, 1, 0);
       final jump = reader.goToContents('page:2');
       await showsScreen(tester, 2, 0);

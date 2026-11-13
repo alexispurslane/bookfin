@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'native_reader.dart' show finishReader;
+import 'pdf_test_controller.dart';
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
@@ -124,7 +125,7 @@ Widget viewport(
   PdfAddress? initial,
 }) => MaterialApp(
   home: Scaffold(
-    body: PdfViewport(
+    body: PdfTestController(
       book: book,
       fontSize: 20,
       initial: initial,

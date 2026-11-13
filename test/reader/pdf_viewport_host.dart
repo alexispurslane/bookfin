@@ -4,6 +4,8 @@ import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/screen.dart' show ReaderSettingsPanel;
 import 'package:flutter/material.dart';
 
+import 'pdf_test_controller.dart';
+
 /// A [PdfViewport] under a stand-in for the reader screen's controller
 /// part. It keeps the reflow choice, which starts at [view], and offers it
 /// in the reader's settings panel, shown under the viewport. It tells the
@@ -34,7 +36,7 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
   Widget build(BuildContext context) => Column(
     children: [
       Expanded(
-        child: PdfViewport(
+        child: PdfTestController(
           book: widget.book,
           fontSize: widget.fontSize,
           initial: widget.initial,

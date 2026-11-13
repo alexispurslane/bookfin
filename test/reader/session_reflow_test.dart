@@ -261,8 +261,8 @@ void main() {
         await opening;
         await tester.pump();
         final viewport = tester.widget<PdfViewport>(find.byType(PdfViewport));
-        expect(viewport.view, view);
-        expect(viewport.trimMargins, isFalse);
+        expect(viewport.pager.view, view);
+        expect(viewport.pager.trimMargins, isFalse);
         expect(usefulViews, isNotEmpty);
         expect(usefulViews, everyElement((view, false)));
         await tester.pumpWidget(const SizedBox());

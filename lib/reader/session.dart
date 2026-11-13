@@ -19,6 +19,7 @@ import 'epub/publication.dart';
 import 'kept_pages.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
+import 'pdf_pager.dart';
 import 'place_words.dart';
 import 'last_page_settings.dart';
 import 'reading_speed.dart';
@@ -157,8 +158,8 @@ class ReadingChanges {
 /// - Without an account, no document is open and no records are held.
 /// - An open document belongs to a current edition of the account.
 /// - A navigator and a book map exist only while a document is open.
-/// - A pager exists only while an EPUB or MOBI document is open, and every
-///   such document that finished opening has one. The pager's own
+/// - Each pager belongs to its open document's format: EPUB/MOBI or PDF.
+///   Every document that finished opening has its pager. The pager's own
 ///   invariants hold.
 /// - A kept page exists only while a book opens or its pager shows no page
 ///   yet.
@@ -408,6 +409,11 @@ class ReaderSession extends ChangeNotifier {
   /// open. It follows [documentChanges].
   EpubPager? get pager => _pager;
   EpubPager? _pager;
+
+  /// Navigation and prepared content of the open PDF. Its lifetime follows
+  /// the document, not the viewport; page updates use its own narrow signal.
+  PdfPager? get pdfPager => _pdfPager;
+  PdfPager? _pdfPager;
   String? _account;
   String? _credential;
   List<Book> _books = [];
@@ -765,6 +771,8 @@ class ReaderSession extends ChangeNotifier {
     _pager?.bookPages.removeListener(_repage);
     _pager?.dispose();
     _pager = null;
+    _pdfPager?.dispose();
+    _pdfPager = null;
     final previous = _document;
     if (previous is PdfBook) previous.textSupply?.cancel();
     _document = null;
@@ -956,6 +964,21 @@ class ReaderSession extends ChangeNotifier {
       } else if (store.setAside(_account!)) {
         _message ??= 'Saved reading records were damaged. Bookfin kept a copy and restored the places that it could read. The next sync restores the rest.';
       }
+      if (admitted is PdfBook) {
+        final pager = _pdfPager = PdfPager(
+          admitted,
+          initial: _initialAddress as PdfAddress?,
+          view: pdfView,
+          trimMargins: trimMargins,
+          onAddress: (address) => acceptAddress(generation, address),
+          onRefinedAddress: (address) => refineAddress(generation, address),
+          onCancelRecognition: () => admitted.textSupply?.cancel(),
+        );
+        attachDocument(generation, pager, [
+          for (var page = 1; page <= admitted.pageCount; page++)
+            ContentsEntry('Source page $page', 'page:$page'),
+        ]);
+      }
       if (admitted is EpubDocument) {
         final contents = await _contentsOf(admitted.publication);
         if (!_live(generation)) return;
@@ -1101,8 +1124,7 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
-  /// Measures the open [document] for [bookMap], once for each open book. A
-  /// PDF lists its contents again on each page, and its map does not change.
+  /// Measures the open [document] for [bookMap], once for each open book.
   Future<void> _mapBook(
     int eventToken,
     ReaderDocument document,
@@ -1780,6 +1802,7 @@ class ReaderSession extends ChangeNotifier {
       id: {'view': pdfView.name, 'trimMargins': on},
     };
     previews.close();
+    _pdfPager?.configure(view: pdfView, trimMargins: trimMargins);
     _emit();
     await _save();
   }
@@ -1800,6 +1823,7 @@ class ReaderSession extends ChangeNotifier {
       ..._pdfBooks,
       id: {'view': view.name, 'trimMargins': trimMargins},
     };
+    _pdfPager?.configure(view: pdfView, trimMargins: trimMargins);
     _emit();
     await _save();
   }
@@ -2024,9 +2048,11 @@ class ReaderSession extends ChangeNotifier {
         (_bookMap != null && document == null) ||
         (_navigator != null && document == null) ||
         (_pager != null && document is! EpubDocument) ||
+        (_pdfPager != null && document is! PdfBook) ||
         (_keptPage != null &&
             (_pager?.shown.value != null || !_loading && _pager == null)) ||
         (document is EpubDocument && !_loading && _pager == null) ||
+        (document is PdfBook && !_loading && _pdfPager == null) ||
         (position != null && _compatible(position!) == null) ||
         ((_visibleAddress == null) != (position == null)) ||
         (_visibleAddress != null &&
@@ -2042,6 +2068,7 @@ class ReaderSession extends ChangeNotifier {
       );
     }
     _pager?.checkInvariants();
+    _pdfPager?.checkInvariants();
   }
 
   /// Notifies each signal whose part changed, then the session once if any

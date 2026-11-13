@@ -240,8 +240,10 @@ void main() {
             ))!
             as TextLanding;
 
-    // The History opens over the open book before the reader shows it, so
-    // Go to cannot show the landing yet.
+    // The session has attached the PDF contents before a view exists.
+    // History can name its landing now; navigation still needs a frame.
+    final landed = landing.place.part + 1;
+    expect(landed, greaterThan(8));
     final shown = ValueNotifier(false);
     addTearDown(shown.dispose);
     late BuildContext page;
@@ -281,12 +283,12 @@ void main() {
         )
         .first;
     expect(
-      find.descendant(of: after, matching: find.text(audioTime(heardAt))),
+      find.descendant(of: after, matching: find.text('about p. $landed')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: after, matching: find.textContaining('about')),
-      findsNothing,
+      find.descendant(of: after, matching: find.text('The Pendulum')),
+      findsOneWidget,
     );
 
     // The reader shows the book under the sheet.
@@ -297,9 +299,6 @@ void main() {
     await tester.pumpAndSettle();
     final start = reader.position!;
 
-    // The landing's page holds 60% of The Pendulum's characters.
-    final landed = landing.place.part + 1;
-    expect(landed, greaterThan(8));
     expect(
       find.descendant(of: after, matching: find.text('about p. $landed')),
       findsOneWidget,

@@ -141,7 +141,7 @@ void main() {
     final viewports = rebuilt.whereType<PdfViewport>();
     expect(viewports, isNotEmpty);
     expect(
-      viewports.map((viewport) => viewport.view),
+      viewports.map((viewport) => viewport.pager.view),
       everyElement(PdfPageView.pageWords),
     );
     expect(_controlButtons(rebuilt), isEmpty);

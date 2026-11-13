@@ -18,6 +18,7 @@ import 'native_reader.dart' show finishReader;
 import 'book_crop_test.dart' show SplicedBook, analyzedPage, bookOf;
 import 'book_survey_test.dart' show UnreadSurvey;
 import 'ocr_hop_test.dart' show runInWorker;
+import 'pdf_test_controller.dart';
 import 'pdf_viewport_test.dart' show drawn;
 import 'running_lines_test.dart' show marginsBook;
 
@@ -185,7 +186,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: PdfViewport(
+          body: PdfTestController(
             book: book,
             fontSize: 20,
             initial: PdfAddress(page, 0),

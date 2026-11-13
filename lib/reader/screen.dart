@@ -476,19 +476,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final document = reader.document;
     final pager = reader.pager;
     final fontSize = MediaQuery.textScalerOf(context).scale(reader.fontSize);
-    if (document is PdfBook) {
+    if (document is PdfBook && reader.pdfPager != null) {
+      final pdfPager = reader.pdfPager!;
       final viewport = PdfViewport(
         key: ValueKey(token),
-        book: document,
-        initial: reader.initialAddress as PdfAddress?,
+        pager: pdfPager,
         fontSize: fontSize,
-        onReady: (navigator, entries) =>
-            reader.attachDocument(token, navigator, entries),
-        onAddress: (address) => reader.acceptAddress(token, address),
-        onRefinedAddress: (address) => reader.refineAddress(token, address),
-        view: reader.pdfView,
-        trimMargins: reader.trimMargins,
-        onCancelRecognition: () => document.textSupply?.cancel(),
+        onLayout: pdfPager.layout,
+        onWordLayout: pdfPager.words.lay,
+        onAppeared: pdfPager.appeared,
+        onRetry: pdfPager.retryPage,
+        onTouch: pdfPager.words.touch,
+        onCopy: (text) =>
+            unawaited(Clipboard.setData(ClipboardData(text: text))),
         onTap: _toggleFullScreen,
         onTurn: (forward) => unawaited(reader.move(forward)),
       );

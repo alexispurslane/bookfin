@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'native_reader.dart' show finishReader;
+import 'pdf_test_controller.dart';
 import 'pdf_navigation_test.dart' show HeldPdf;
 import 'pdf_viewport_test.dart' show Reports;
 
@@ -46,7 +47,7 @@ Widget _reader(
       child: SizedBox(
         width: width,
         height: height,
-        child: PdfViewport(
+        child: PdfTestController(
           book: book,
           fontSize: fontSize,
           view: PdfPageView.text,

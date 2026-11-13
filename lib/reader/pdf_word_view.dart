@@ -59,8 +59,9 @@ class _OpenPage {
 
 /// The word view of the source page that a [PdfViewport] shows: which of
 /// its screens shows, the place of that screen, and the waits for the
-/// page's words and for its text. The viewport opens each page that it
-/// shows. Each screen that shows reports its place through [onPlace]. When
+/// page's words and for its text. The session's PDF pager owns this state
+/// and opens each requested page. Each screen that shows reports its place
+/// through [onPlace]. When
 /// the page's text attaches to the shown screen, the screen reports its
 /// place again through [onRefinedPlace]: the same place under a better
 /// name.

@@ -8,10 +8,12 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_pager.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const _fixtures = String.fromEnvironment(
   'WORD_FIXTURES',
@@ -31,7 +33,7 @@ class _Probe extends StatefulWidget {
 
 class _ProbeState extends State<_Probe> {
   PdfBook? _book;
-  DocumentNavigator? _navigator;
+  PdfPager? _navigator;
   String _name = 'footnote-page.pdf';
   String? _failure;
   bool _night = false;
@@ -100,9 +102,19 @@ class _ProbeState extends State<_Probe> {
         return;
       }
       final previous = _book;
+      _navigator?.dispose();
       setState(() {
         _book = book;
-        _navigator = null;
+        _navigator = PdfPager(
+          book,
+          view: _view,
+          onAddress: (address) {
+            _address = address;
+            debugPrint('WORD_VIEW ${address.sourcePage}:${address.character}');
+          },
+          onRefinedAddress: (address) => _address = address,
+          onCancelRecognition: () => book.textSupply?.cancel(),
+        );
       });
       if (previous != null) await previous.dispose();
     } catch (error) {
@@ -118,6 +130,7 @@ class _ProbeState extends State<_Probe> {
   void dispose() {
     _request++;
     WidgetsBinding.instance.removeTimingsCallback(_frames);
+    _navigator?.dispose();
     unawaited(_book?.dispose());
     super.dispose();
   }
@@ -161,6 +174,7 @@ class _ProbeState extends State<_Probe> {
                 PdfPageView.pageWords => PdfPageView.text,
                 PdfPageView.text => PdfPageView.original,
               };
+              _navigator?.configure(view: _view, trimMargins: true);
             }),
             icon: const Icon(Icons.chrome_reader_mode_outlined),
           ),
@@ -172,18 +186,15 @@ class _ProbeState extends State<_Probe> {
           ? const Center(child: CircularProgressIndicator())
           : PdfViewport(
               key: ObjectKey(_book),
-              book: _book!,
+              pager: _navigator!,
               fontSize: _fontSize,
-              view: _view,
-              onReady: (navigator, _) => _navigator = navigator,
-              onAddress: (address) {
-                _address = address;
-                debugPrint(
-                  'WORD_VIEW ${address.sourcePage}:${address.character}',
-                );
-              },
-              onRefinedAddress: (address) => _address = address,
-              onCancelRecognition: () => _book?.textSupply?.cancel(),
+              onLayout: _navigator!.layout,
+              onWordLayout: _navigator!.words.lay,
+              onAppeared: _navigator!.appeared,
+              onRetry: _navigator!.retryPage,
+              onTouch: _navigator!.words.touch,
+              onCopy: (text) =>
+                  unawaited(Clipboard.setData(ClipboardData(text: text))),
               onTap: () {},
               onTurn: (forward) => unawaited(_turn(forward)),
             ),

@@ -16,6 +16,7 @@ import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart' show footnotePage;
+import 'pdf_test_controller.dart';
 import 'pdf_word_view_test.dart' show HeldRecognition, HeldWordPdf, settle;
 import 'word_pages_test.dart' show marginsBook, screenPieces;
 
@@ -69,7 +70,7 @@ void main() {
       MaterialApp(
         theme: bookfinTheme(Brightness.light),
         home: Scaffold(
-          body: PdfViewport(
+          body: PdfTestController(
             book: book,
             fontSize: 20,
             initial: PdfAddress(page, 0),
