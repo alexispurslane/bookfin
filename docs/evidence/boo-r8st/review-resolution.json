@@ -79,7 +79,7 @@
     },
     {
       "original": "Final whitespace check and post-fix verification outstanding.",
-      "resolution": "Final command results are recorded in commands.json; handoff remains gated on their completion."
+      "resolution": "Completed: 70 focused passes; 1743 affected passes/21 skips; 3721 full passes/27 skips; no analysis issues; 17 formatted files/0 changes; complete original-base and final-HEAD whitespace checks. Exact commands, raw logs, failed development runs and skip reasons remain in commands.json."
     },
     {
       "original": "Plain-text tests alone did not establish the raised-text content contract.",
@@ -95,5 +95,14 @@
     "Original reviewer report remains changes_required; these are lead resolutions with retained evidence, not a second reviewer verdict.",
     "t5-rplx remains unexplained and tf-il7u remains unchanged.",
     "No hardware performance claim."
-  ]
+  ],
+  "verification": {
+    "sourceCommit": "f2300dc6d52758d365cc3ed678eb25bb517697bd",
+    "manifest": "docs/evidence/boo-r8st/commands.json",
+    "originalReviewSha256": "1f2989bbbd2dc7a2460410650e2ef12510ca7e1f08001cb581482f320ce4f0e2",
+    "requiredChecksPassed": true,
+    "unresolvedFindings": [],
+    "unresolvedMaterialGaps": [],
+    "forks": []
+  }
 }
