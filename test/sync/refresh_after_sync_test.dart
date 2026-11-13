@@ -6,7 +6,7 @@ import 'package:bookfin/sync/coordinator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart'
-    show LocalFiles, MemoryResume, TestEngine, account;
+    show LocalFiles, MemoryResume, TestEngine, account, recording, title;
 
 /// Counts the refreshes that record sync asks Playback for.
 class _Playback extends Playback {
@@ -170,5 +170,58 @@ void main() {
     await sync.synchronize();
     expect(notified, 1);
     expect(sync.conflicts, isEmpty);
+  });
+
+  group('a listening refresh that cannot read the store, while audio plays', () {
+    late TestEngine engine;
+    late MemoryResume store;
+    late Playback playing;
+    late RecordSync sync;
+
+    setUp(() async {
+      engine = TestEngine();
+      store = MemoryResume();
+      playing = Playback(downloads: downloads, engine: engine, store: store);
+      await playing.bind(account(), [title]);
+      await playing.open(title, recording);
+      sync = RecordSync(records: records, playback: playing)..bind(account());
+      // Signing in syncs at once. These tests start after that sync.
+      await pumpEventQueue();
+      records.stale = (listening: true, reading: false);
+      store.failRead = true;
+    });
+    tearDown(() async {
+      sync.dispose();
+      await playing.close();
+    });
+
+    test('ends a background sync as a sync that did not finish', () async {
+      await sync.synchronize();
+
+      expect(sync.lastSyncNotifier.value?.failure, RecordSyncFailure.other);
+    });
+
+    test('leaves the audio playing through a background sync', () async {
+      await sync.synchronize();
+
+      expect(engine.isPlaying, isTrue);
+      expect(playing.playing, isTrue);
+      expect(playing.message, isNull);
+    });
+
+    test('reports nothing after a retry of kept copies', () async {
+      await sync.recoverKept();
+
+      expect(sync.message, isNull);
+      expect(sync.lastSyncNotifier.value?.failure, isNull);
+    });
+
+    test('leaves the audio playing after a retry of kept copies', () async {
+      await sync.recoverKept();
+
+      expect(engine.isPlaying, isTrue);
+      expect(playing.playing, isTrue);
+      expect(playing.message, isNull);
+    });
   });
 }

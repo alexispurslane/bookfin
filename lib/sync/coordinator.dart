@@ -153,19 +153,21 @@ class RecordSync {
   /// reader when records of their domain came back for the signed-in
   /// account. The app starts it after its first frame, in the background. A
   /// failure leaves the records and the kept copies as they were, and the
-  /// next launch tries again, so it reports nothing.
+  /// next launch tries again, so it reports nothing. A refresh that fails
+  /// also reports nothing: its domain stays stale, so the next sync
+  /// refreshes it.
   Future<void> recoverKept() async {
     if (_disposed) return;
     try {
       await records.recoverKept();
+      final session = _session;
+      if (_disposed || session == null) return;
+      final stale = records.staleDomains(session.scope.key);
+      if (stale.listening) await playback?.refreshPersonalRecords();
+      if (stale.reading) await reader?.refreshPersonalRecords();
     } on Exception {
       return;
     }
-    final session = _session;
-    if (_disposed || session == null) return;
-    final stale = records.staleDomains(session.scope.key);
-    if (stale.listening) await playback?.refreshPersonalRecords();
-    if (stale.reading) await reader?.refreshPersonalRecords();
   }
 
   /// Stops the periodic sync while the app is in the background.

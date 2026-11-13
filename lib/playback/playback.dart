@@ -424,7 +424,7 @@ class Playback extends ChangeNotifier {
   AudioReplacement? get replacementStart => _replacementStart;
 
   Future<void> confirmReplacement(AudioReplacement request) =>
-      _enqueue(() async {
+      _audioCommand(() async {
         if (!identical(request, _replacementStart)) return;
         if (request.edition.files.any(
           (file) => file.revision.isEmpty || file.mediaSourceId.isEmpty,
@@ -475,7 +475,7 @@ class Playback extends ChangeNotifier {
   Future<void> finishSliderSeek(int milliseconds) {
     final start = _sliderStart;
     _sliderStart = null;
-    return _enqueue(() async {
+    return _audioCommand(() async {
       if (start != null &&
           start.revision == _sliderRevision &&
           _edition != null &&
@@ -490,7 +490,7 @@ class Playback extends ChangeNotifier {
     _sliderRevision++;
   }
 
-  Future<void> undoSeek() => _enqueue(() async {
+  Future<void> undoSeek() => _audioCommand(() async {
     final event = _undo;
     if (event == null) return;
     if (await _restorePosition(event.before, HistoryAction.undo)) {
@@ -500,7 +500,7 @@ class Playback extends ChangeNotifier {
   });
 
   Future<void> restoreHistory(String id, {bool previous = true}) =>
-      _enqueue(() async {
+      _audioCommand(() async {
         final event = _history.where((event) => event.id == id).firstOrNull;
         if (event == null) {
           throw ArgumentError('Choose history from the current account.');
@@ -519,7 +519,7 @@ class Playback extends ChangeNotifier {
   /// open edition moves nothing.
   Future<bool> goToLanding(AudioLanding landing, HistoryAction kind) {
     var went = false;
-    return _enqueue(() async {
+    return _audioCommand(() async {
       final edition = _edition;
       if (!_restored || edition == null || !landing.place.fits(edition)) {
         return;
@@ -637,7 +637,7 @@ class Playback extends ChangeNotifier {
     _notify();
   });
 
-  Future<void> restoreBookmark(String id) => _enqueue(() async {
+  Future<void> restoreBookmark(String id) => _audioCommand(() async {
     final bookmark = _bookmarks
         .where((bookmark) => bookmark.id == id)
         .firstOrNull;
@@ -888,19 +888,58 @@ class Playback extends ChangeNotifier {
     return found;
   }
 
+  /// Runs [action] after every command queued before it, so that one command
+  /// runs at a time. [action] runs only while Playback is open and bound as
+  /// it was when the command was queued.
+  ///
+  /// The returned future completes as [action] completed. A failure goes
+  /// only there: to the caller, or to the zone when nothing listens. The
+  /// queue itself never fails, so a failed command never stops a later one.
+  ///
+  /// A command states the kind of failure that it can have by how it is
+  /// queued:
+  /// - An audio command drives the audio engine. It uses [_audioCommand],
+  ///   where an [Exception] is an engine failure.
+  /// - A records command reads or changes only the personal records, the
+  ///   settings or the sleep timer. It uses this method, where an
+  ///   [Exception] is a records failure. That failure goes to the caller,
+  ///   who started the command and reports it, and the audio plays on. A
+  ///   failed save never gets here, because [_persistChanges] keeps it as
+  ///   the save status.
+  ///
+  /// An [Error] that is not an [Exception] is a bug in a command of either
+  /// kind. It goes to the caller as any failure does, and nothing turns it
+  /// into a message.
   Future<void> _enqueue(Future<void> Function() action) {
     final generation = _generation;
     final binding = _binding;
-    final operation = _operations
-        .then<void>((_) async {
-          await binding;
-          if (!_closed && generation == _generation) await action();
-        })
-        .onError<Exception>((error, stack) async {
-          if (!_closed && generation == _generation) await _audioFailed();
-        });
-    _operations = operation.onError<ArgumentError>((error, stack) {});
-    return operation;
+    final result = Completer<void>();
+    _operations = _operations.then((_) async {
+      try {
+        await binding;
+        if (!_closed && generation == _generation) await action();
+        result.complete();
+      } catch (error, stack) {
+        // This hands the failure to the caller. It does not recover from it.
+        result.completeError(error, stack);
+      }
+    });
+    return result.future;
+  }
+
+  /// Queues [action] as an audio command, as [_enqueue] says. An [Exception]
+  /// from it is an engine failure: the audio stops, Playback shows that the
+  /// file cannot play ([_audioFailed]), and the returned future completes
+  /// normally. The failed command of an earlier binding shows nothing.
+  Future<void> _audioCommand(Future<void> Function() action) {
+    final generation = _generation;
+    return _enqueue(() async {
+      try {
+        await action();
+      } on Exception {
+        if (!_closed && generation == _generation) await _audioFailed();
+      }
+    });
   }
 
   Future<void> _audioFailed() async {
@@ -951,7 +990,7 @@ class Playback extends ChangeNotifier {
             _offerReplacement(book, edition, resume);
           } else if (resume != null) {
             unawaited(
-              _enqueue(() async {
+              _audioCommand(() async {
                 if (_edition == null &&
                     _selected == edition.id &&
                     _currentEdition(book, edition)) {
@@ -1174,7 +1213,7 @@ class Playback extends ChangeNotifier {
   Future<void> open(Book book, Edition edition, {bool autoplay = true}) {
     if (autoplay) _start(edition);
     return _settleStart(
-      _enqueue(() async {
+      _audioCommand(() async {
         await _open(book, edition, autoplay: autoplay);
       }),
     );
@@ -1375,7 +1414,7 @@ class Playback extends ChangeNotifier {
     if (sample.completed && _active) {
       _active = false;
       _cancelSleep();
-      unawaited(_enqueue(engine.pause));
+      unawaited(_audioCommand(engine.pause));
     }
     if (wasPlaying == _playing && !sample.completed) {
       _publish();
@@ -1398,7 +1437,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> play() {
     if (!_playing && _edition != null) _start(_edition!);
-    return _settleStart(_enqueue(_play));
+    return _settleStart(_audioCommand(_play));
   }
 
   Future<void> _play() async {
@@ -1425,7 +1464,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> pause() {
     _endStart();
-    return _enqueue(_pause);
+    return _audioCommand(_pause);
   }
 
   Future<void> _pause() async {
@@ -1446,7 +1485,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> stop() {
     _endStart();
-    return _enqueue(_stop);
+    return _audioCommand(_stop);
   }
 
   Future<void> _stop() async {
@@ -1469,7 +1508,7 @@ class Playback extends ChangeNotifier {
   }
 
   Future<void> seekEdition(int milliseconds) =>
-      _enqueue(() => _seekEdition(milliseconds));
+      _audioCommand(() => _seekEdition(milliseconds));
 
   Future<void> _seekEdition(
     int milliseconds, {
@@ -1496,7 +1535,7 @@ class Playback extends ChangeNotifier {
   }
 
   Future<void> seekSource(String sourceKey, int milliseconds) =>
-      _enqueue(() => _seekSource(sourceKey, milliseconds));
+      _audioCommand(() => _seekSource(sourceKey, milliseconds));
 
   Future<void> _seekSource(
     String sourceKey,
@@ -1516,7 +1555,7 @@ class Playback extends ChangeNotifier {
     );
   }
 
-  Future<void> jump({required bool forward}) => _enqueue(() async {
+  Future<void> jump({required bool forward}) => _audioCommand(() async {
     final current = editionMilliseconds;
     final amount = (forward ? _forward : -_backward) * 1000;
     if (current != null && durationMilliseconds != null) {
@@ -1603,7 +1642,7 @@ class Playback extends ChangeNotifier {
     return generation == _generation;
   }
 
-  Future<void> setSpeed(double value) => _enqueue(() async {
+  Future<void> setSpeed(double value) => _audioCommand(() async {
     if (!value.isFinite || value < 0.5 || value > 3) {
       throw ArgumentError('Playback speed must be between 0.5 and 3.');
     }
