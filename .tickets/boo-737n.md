@@ -33,3 +33,7 @@ Verification, all through nix develop on macOS arm64:
 - Red evidence: the test of the worker failed with "Expected: false, Actual: <true>" before the Dart change. Seven of the nine CPU tests failed with "Expected: <0>, Actual: <1>" against a stub that accepted every CPU.
 
 Not done. The Android path was compiled and not executed: no run on an ARMv8.0 phone, and no run on the Pixel 8 or the emulator to see that speech still loads there. The 32-bit ARM Android build gets the same -march and has no test of the CPU (td-k7fj).
+
+**2026-11-13T02:06:45Z**
+
+Orchestrator, 2026-11-12: merged into main. A reviewer passed correctness and design by reading: the six bits and their values are right, the arch flag reaches only the ggml-cpu target, and no race exists on the Dart side. Device evidence so far: `grep -m1 Features /proc/cpuinfo` on four running arm64 emulators lists crc32, atomics, fphp, asimdhp, asimdrdm and asimddp, so the test accepts the emulator CPU. The Pixel 8 was not connected. The ticket stays open until one window is heard on a device with no "lacks an instruction" line under the logcat tag bookfin_speech. Follow-ups are in td-k7fj.
