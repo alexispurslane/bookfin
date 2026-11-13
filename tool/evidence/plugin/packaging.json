@@ -15,7 +15,7 @@
     "port7464HasListener": false,
     "port7465HasListener": false
   },
-  "elapsedSeconds": 114.061,
+  "elapsedSeconds": 112.013,
   "limits": [
     "Only Jellyfin 12.4.0 on macOS ARM64 was run",
     "No Android device or UI acceptance",
@@ -23,7 +23,7 @@
     "No server-version migration, disk-full, host power-loss, lifetime bounds or hardening campaign",
     "Backup restoration is a whole stopped-server snapshot, not merging later client activity"
   ],
-  "measuredAtUtc": "2026-11-13T04:56:13.128508+00:00",
+  "measuredAtUtc": "2026-11-13T05:22:34.275695+00:00",
   "milestone": "Reproducible local candidate, fresh install, research-to-package upgrade, restart and stopped backup restore",
   "package": {
     "dllSha256": "61c4ed1c7ba65fff6fc42b89ed54aa0da149956214efcd56d91efdc79b4d573d",
@@ -226,11 +226,11 @@
       "acknowledgmentTransactions": 10,
       "actions": 2400,
       "lostActions": 0,
-      "receiveHostMilliseconds": 224,
+      "receiveHostMilliseconds": 223,
       "receiverDiscoveryRequests": 11,
       "retainedActionsAfterBothClientRestarts": 2400,
       "scope": "Jellyfin 12.4.0 loopback on macOS ARM64; no Android timing claim",
-      "uploadHostMilliseconds": 521,
+      "uploadHostMilliseconds": 525,
       "uploadRequests": 10
     },
     "conflictsDeletionsAudioReadingAndHistoryPreserved": true,
@@ -238,19 +238,19 @@
       "bytes": 1421312,
       "relativePath": "data/bookfin-storage-v1.sqlite",
       "rows": 2430,
-      "sha256": "2bc42378360b44ef8cd56fd682225619ec987beed3b3fa94e216aec1de6a3ec9"
+      "sha256": "7bd30e9dec9fe6ab87f4a2f4f94746ba2472efbb001996a73dadc727db6060ee"
     },
     "databaseBefore": {
       "bytes": 24576,
       "relativePath": "data/bookfin-storage-v1.sqlite",
       "rows": 13,
-      "sha256": "53fbd12aea41a757b4b1ea18b21c70d0b18b4e395b1ca9fb0cbd4d7d6baa35c3"
+      "sha256": "c95c081e89efa2038ebb57992dee7caca9d4a09088bed49287928c400ef0be05"
     },
     "databaseBeforeBackupRestore": {
       "bytes": 1421312,
       "relativePath": "data/bookfin-storage-v1.sqlite",
       "rows": 2430,
-      "sha256": "2bc42378360b44ef8cd56fd682225619ec987beed3b3fa94e216aec1de6a3ec9"
+      "sha256": "7bd30e9dec9fe6ab87f4a2f4f94746ba2472efbb001996a73dadc727db6060ee"
     },
     "durableClientFilesUnchangedAcrossUpgrade": true,
     "existingProductionTransportRegressionPassed": true,

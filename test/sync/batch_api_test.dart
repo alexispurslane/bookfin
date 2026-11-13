@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/transport.dart';
+import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/journal.dart';
 import 'package:bookfin/sync/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +22,7 @@ class BatchApi implements JsonTransport {
   Exception? discoveryFailure;
   String? malformed;
   String? reject;
+  num rejectedStatus = 409;
   String? responseFault;
   bool interruptBatch = false;
 
@@ -51,7 +53,7 @@ class BatchApi implements JsonTransport {
       final results = <Map<String, dynamic>>[
         for (final item in items)
           if (item['Id'] == reject)
-            {'Id': item['Id'], 'Status': 409}
+            {'Id': item['Id'], 'Status': rejectedStatus}
           else
             {
               'Id': item['Id'],
@@ -115,6 +117,18 @@ class BatchApi implements JsonTransport {
   }) => throw UnimplementedError();
   @override
   void close() {}
+}
+
+// Keep the real coordinator and exchange, with the fixture HTTP connection.
+class ConnectedTransport extends RecordTransport {
+  ConnectedTransport(super.records, this.client);
+  final JellyfinClient client;
+
+  @override
+  Future<SyncReport> synchronize(
+    JellyfinSession session,
+    JellyfinClient client,
+  ) => super.synchronize(session, this.client);
 }
 
 void main() {
@@ -344,6 +358,115 @@ void main() {
     expect(await sql.query('set_aside_record_actions'), isNotEmpty);
     await phone.store.checkInvariants();
   });
+
+  for (final batch in [false, true]) {
+    final mode = batch ? 'batch' : 'legacy';
+    test(
+      '$mode sync recovers an oversized damaged action and uploads the surrounding actions',
+      () async {
+        api.version = batch ? '0.2.0.0' : null;
+        final actions = await seed(3);
+        final original = actions[1];
+        final identity = RecordJournal.identity(original);
+        api.put(identity, jsonEncode(original));
+        final damaged = {
+          ...original,
+          'value': {...original['value'] as Map, 'bookTitle': 'é' * 40000},
+        };
+        final sql = await phone.separateConnection();
+        await sql.update(
+          'record_actions',
+          {'payload': jsonEncode(damaged)},
+          where: 'identity = ?',
+          whereArgs: [identity],
+        );
+        await phone.restart();
+
+        final result = await RecordTransport(phone.store)
+            .synchronize(session, client);
+        expect(result.replaced, 1);
+        expect(api.singlePuts, batch ? 0 : 2);
+        expect(
+          api.putSizes.fold(0, (sum, count) => sum + count),
+          batch ? 2 : 0,
+        );
+        expect(api.objects, hasLength(3));
+        expect(
+          jsonDecode(api.objects[identity]!['Payload'] as String),
+          original,
+        );
+        await phone.restart();
+        final saved = (await phone.database.load(account))!['sync'] as Map;
+        expect(saved['actions'], actions);
+        expect(saved['pending'], isEmpty);
+        final kept = await sql.query(
+          'set_aside_record_actions',
+          where: 'identity = ?',
+          whereArgs: [identity],
+        );
+        expect(kept, hasLength(1));
+        expect(jsonDecode(kept.single['payload'] as String), damaged);
+        await phone.store.checkInvariants();
+      },
+    );
+
+    test(
+      '$mode sync retains an oversized action when no server copy can recover it',
+      () async {
+        api.version = batch ? '0.2.0.0' : null;
+        final actions = await seed(1, titleLength: 40000);
+        await expectLater(
+          RecordTransport(phone.store).synchronize(session, client),
+          throwsFormatException,
+        );
+        expect(api.singlePuts, 0);
+        expect(api.putSizes, isEmpty);
+        expect(api.objects, isEmpty);
+        await phone.restart();
+        expect(await phone.store.pendingUploads(account), actions);
+        await phone.store.checkInvariants();
+      },
+    );
+  }
+
+  for (final status in [409.0, 410.0]) {
+    test(
+      'Sync now reports decimal status $status and retains only its unconfirmed action',
+      () async {
+        final actions = await seed(3);
+        final identity = RecordJournal.identity(actions[1]);
+        api.reject = identity;
+        api.rejectedStatus = status;
+        final sync = RecordSync(
+          records: phone.store,
+          transport: ConnectedTransport(phone.store, client),
+        )..suspend();
+        try {
+          sync.bind(session);
+          await sync.syncNow();
+          expect(sync.busy, isFalse);
+          expect(
+            sync.lastSyncNotifier.value?.failure,
+            RecordSyncFailure.pluginMissing,
+          );
+          expect(api.objects, hasLength(2));
+        } finally {
+          sync.dispose();
+        }
+        await phone.restart();
+        expect(
+          (await phone.store.pendingUploads(account))
+              .map(RecordJournal.identity),
+          [identity],
+        );
+        api.reject = null;
+        await RecordTransport(phone.store).synchronize(session, client);
+        expect(await phone.store.pendingUploads(account), isEmpty);
+        expect(api.objects, hasLength(3));
+        await phone.store.checkInvariants();
+      },
+    );
+  }
 
   test('receiving a page rolls back its cursor and actions together before retrying causal gaps in both domains', () async {
     final audio = RecordJournal(account, 'audio-phone');

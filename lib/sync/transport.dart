@@ -47,15 +47,18 @@ class RecordTransport {
     for (var start = 0; start < uploads.length;) {
       var end = start;
       var bytes = 0;
-      final count = batch ? 256 : 4;
+      // Isolate oversized actions so the existing single-action recovery
+      // path can verify their server copy without sending an oversized PUT.
+      final oversized = uploads[start].bytes > 65536;
+      final count = oversized ? 1 : (batch ? 256 : 4);
       while (end < uploads.length && end - start < count) {
         final next = uploads[end].bytes;
-        if (end > start && bytes + next > 1048576) break;
+        if (end > start && (next > 65536 || bytes + next > 1048576)) break;
         bytes += next;
         end++;
       }
       final group = uploads.sublist(start, end);
-      final results = batch
+      final results = batch && !oversized
           ? await _uploadBatch(session, client, group)
           : await Future.wait([
               for (final upload in group) _upload(session, client, upload),
@@ -106,6 +109,11 @@ class RecordTransport {
       final payload = upload.payload;
       Map<String, dynamic> stored;
       try {
+        if (upload.bytes > 65536) {
+          throw const FormatException(
+            'A personal-record upload exceeds the storage contract.',
+          );
+        }
         stored = await client.uploadPersonalRecord(session, identity, payload);
       } on Exception {
         // Only an independently verified server copy recovers a failed PUT.
@@ -203,11 +211,6 @@ List<_Upload> _encodeUploads(List<Map<String, dynamic>> actions) => [
 _Upload _encodeUpload(Map<String, dynamic> action) {
   final payload = jsonEncode(action);
   final bytes = utf8.encode(payload).length;
-  if (bytes > 65536) {
-    throw const FormatException(
-      'A personal-record upload exceeds the storage contract.',
-    );
-  }
   return (
     identity: RecordJournal.identity(action),
     payload: payload,
@@ -272,14 +275,16 @@ _UploadResult _batchConfirmation(
       );
     }
     final value = values.single;
-    if (value['Status'] == 409 || value['Status'] == 410) {
-      throw CatalogFailure(
-        CatalogFailureKind.unavailable,
-        status: value['Status'] as int,
+    final status = value['Status'];
+    if (status is! int) {
+      throw const FormatException(
+        'Invalid personal-record confirmation status.',
       );
     }
-    if (value['Status'] is! int ||
-        (value['Status'] != 200 && value['Status'] != 201) ||
+    if (status == 409 || status == 410) {
+      throw CatalogFailure(CatalogFailureKind.unavailable, status: status);
+    }
+    if ((status != 200 && status != 201) ||
         value['Object'] is! Map<String, dynamic>) {
       throw const FormatException(
         'Invalid personal-record confirmation status.',
