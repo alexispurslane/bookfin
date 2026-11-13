@@ -28,6 +28,8 @@ Future<void> versionThree(String path) async {
       await sql.execute('ALTER TABLE $table DROP COLUMN $column');
     }
   }
+  await sql.execute('DROP TABLE record_objects');
+  await sql.execute('DROP TABLE set_aside_record_objects');
   await sql.execute('PRAGMA user_version = 3');
   await sql.close();
 }

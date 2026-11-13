@@ -33,6 +33,7 @@ class RecordSyncPage extends StatelessWidget {
           lastSync: sync.lastSyncNotifier,
           conflicts: sync.conflictsNotifier,
           kept: sync.records.keptNotifier,
+          unreadable: sync.unreadableNotifier,
           library: library,
           onSync: () => unawaited(sync.syncNow()),
           onResolve: (record, identity, bookmarkTitles) => unawaited(
@@ -85,6 +86,7 @@ class RecordSyncView extends StatelessWidget {
     required this.lastSync,
     required this.conflicts,
     required this.kept,
+    required this.unreadable,
     required this.library,
     required this.onSync,
     required this.onResolve,
@@ -94,6 +96,7 @@ class RecordSyncView extends StatelessWidget {
   final ValueListenable<RecordSyncOutcome?> lastSync;
   final ValueListenable<RecordConflicts> conflicts;
   final ValueListenable<KeptRecords> kept;
+  final ValueListenable<int> unreadable;
   final ValueListenable<CatalogLibrary> library;
   final VoidCallback onSync;
   final ResolveChoice onResolve;
@@ -126,6 +129,19 @@ class RecordSyncView extends StatelessWidget {
             text: message,
           ),
         },
+      ),
+      ValueListenableBuilder(
+        valueListenable: unreadable,
+        builder: (context, count, _) => count == 0
+            ? const SizedBox.shrink()
+            : SyncBanner(
+                quiet: true,
+                icon: Icons.description_outlined,
+                title: count == 1
+                    ? '1 record this version cannot read'
+                    : '$count records this version cannot read',
+                text: 'Kept on this phone for a later version. Other records still sync.',
+              ),
       ),
       ValueListenableBuilder(
         valueListenable: kept,
@@ -172,7 +188,11 @@ class RecordSyncView extends StatelessWidget {
         listenable: Listenable.merge([conflicts, lastSync]),
         select: () => (
           waiting: conflicts.value.isNotEmpty,
-          synced: lastSync.value != null && lastSync.value!.failure == null,
+          synced:
+              lastSync.value != null &&
+              (lastSync.value!.failure == null ||
+                  lastSync.value!.failure ==
+                      RecordSyncFailure.remoteUnreadable),
         ),
         builder: (context, page, _) =>
             page.waiting ? const SizedBox.shrink() : _Calm(synced: page.synced),
@@ -186,7 +206,15 @@ class RecordSyncView extends StatelessWidget {
     ],
   );
 
-  SyncBanner _failureBanner(RecordSyncFailure failure) => switch (failure) {
+  Widget _failureBanner(RecordSyncFailure failure) => switch (failure) {
+    RecordSyncFailure.remoteUnreadable => const SizedBox.shrink(),
+    RecordSyncFailure.invalidResponse => SyncBanner(
+      icon: Icons.sync_problem_rounded,
+      title: 'The sync reply could not be read',
+      text: 'Saved records stay on this phone. Retry after checking the Bookfin Storage plugin.',
+      action: 'Retry',
+      onAction: onSync,
+    ),
     RecordSyncFailure.unreachable => SyncBanner(
       icon: Icons.cloud_off_rounded,
       title: 'Jellyfin cannot be reached',
@@ -271,6 +299,7 @@ class SyncStatusStrip extends StatelessWidget {
                 'Records stay on this phone',
                 'Check again',
               ),
+              RecordSyncFailure.invalidResponse ||
               RecordSyncFailure.unreachable ||
               RecordSyncFailure.unreadable ||
               RecordSyncFailure.other => (
@@ -281,7 +310,9 @@ class SyncStatusStrip extends StatelessWidget {
                 ].join(' · '),
                 'Retry',
               ),
-              null || RecordSyncFailure.refreshFailed when line.waiting > 0 => (
+              null ||
+              RecordSyncFailure.refreshFailed ||
+              RecordSyncFailure.remoteUnreadable when line.waiting > 0 => (
                 line.waiting == 1
                     ? '1 choice waits'
                     : '${line.waiting} choices wait',
@@ -290,18 +321,25 @@ class SyncStatusStrip extends StatelessWidget {
                     : 'Synced ${_when(context, synced)}',
                 'Sync now',
               ),
-              null || RecordSyncFailure.refreshFailed when synced != null => (
+              null ||
+              RecordSyncFailure.refreshFailed ||
+              RecordSyncFailure.remoteUnreadable when synced != null => (
                 'Synced',
                 '${_when(context, synced)} · Jellyfin',
                 'Sync now',
               ),
-              null || RecordSyncFailure.refreshFailed => (
+              null ||
+              RecordSyncFailure.refreshFailed ||
+              RecordSyncFailure.remoteUnreadable => (
                 'Not synced yet',
                 'Records stay on this phone',
                 'Sync now',
               ),
             };
-      final warn = !line.busy && (failure != null || line.waiting > 0);
+      final warn =
+          !line.busy &&
+          ((failure != null && failure != RecordSyncFailure.remoteUnreadable) ||
+              line.waiting > 0);
       return Container(
         constraints: const BoxConstraints(minHeight: 54),
         padding: const EdgeInsets.fromLTRB(18, 5, 5, 5),

@@ -76,6 +76,9 @@ class BatchApi implements JsonTransport {
     }
     if (method == 'PUT') {
       singlePuts++;
+      if (objects[uri.pathSegments.last]?['Deleted'] == true) {
+        throw const CatalogFailure(CatalogFailureKind.unavailable, status: 410);
+      }
       return put(uri.pathSegments.last, body!['Payload'] as String);
     }
     if (uri.pathSegments.length == 4) {
@@ -95,7 +98,13 @@ class BatchApi implements JsonTransport {
     final page = <Map<String, dynamic>>[];
     var bytes = 0;
     for (final object in available.take(limit)) {
-      final size = utf8.encode(object['Payload'] as String).length;
+      final size = utf8
+          .encode(
+            object['Payload'] is String
+                ? object['Payload'] as String
+                : jsonEncode(object['Payload']),
+          )
+          .length;
       if (bytes + size > 1048576) break;
       page.add(object);
       bytes += size;
@@ -447,7 +456,7 @@ void main() {
           expect(sync.busy, isFalse);
           expect(
             sync.lastSyncNotifier.value?.failure,
-            RecordSyncFailure.pluginMissing,
+            RecordSyncFailure.invalidResponse,
           );
           expect(api.objects, hasLength(2));
         } finally {

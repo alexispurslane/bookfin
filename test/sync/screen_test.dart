@@ -130,6 +130,22 @@ void main() {
   }
 
   testWidgets(
+    'the Sync page quietly counts unreadable server records after successful delivery',
+    (tester) async {
+      fixture.objects['unreadable'] = {
+        'Id': 'unreadable',
+        'Sequence': fixture.objects.length + 1,
+        'Deleted': false,
+        'Payload': ' {original broken payload',
+      };
+      await tester.runAsync(() => sync.synchronize());
+      await showFixturePage(tester, ValueNotifier(CatalogLibrary.empty));
+      expect(shownText(tester), contains('1 record this version cannot read'));
+      expect(shownText(tester), isNot(contains('plugin missing')));
+    },
+  );
+
+  testWidgets(
     'conflict choices identify saved books and readable positions instead of raw record addresses',
     (tester) async {
       await showFixturePage(tester, ValueNotifier(CatalogLibrary.empty));
@@ -214,6 +230,7 @@ void main() {
               status: sync.statusNotifier,
               lastSync: sync.lastSyncNotifier,
               conflicts: sync.conflictsNotifier,
+              unreadable: sync.unreadableNotifier,
               kept: ValueNotifier((recovered: 0, kept: false)),
               library: ValueNotifier(CatalogLibrary.empty),
               onSync: () => syncs++,

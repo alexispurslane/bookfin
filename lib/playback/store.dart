@@ -28,6 +28,7 @@ typedef KeptRecords = ({int recovered, bool kept});
 typedef _StoredAccount = ({
   Map<String, dynamic> metadata,
   RecordJournal journal,
+  int objectCount,
 });
 
 /// The snapshot of one domain that a read hands to its writer, and the
@@ -128,9 +129,14 @@ const _inlineMetadataText = 512;
 /// order, and syncs it on unchanged, so it never stops the discovery of the
 /// records after it. No view shows it, no choice between saved versions
 /// offers it, and no writer changes it. A later build that knows its kind
-/// shows it at once, without a new sync. A value of a known kind that does
-/// not decode is still damage. [readableRecord] decides which records this build
-/// reads.
+/// shows it at once, without a new sync. Discovery objects whose JSON,
+/// envelope or value cannot be interpreted stay as original wire objects in
+/// the same account and transaction as the cursor. They supply no causal
+/// coverage. Server tombstones never remove local actions. Explicit retry
+/// can admit a newly understood object, but never deletes its original bytes.
+/// Native restoration reads their count only; retry reads payloads in a worker.
+/// Local malformed action rows still use the damage/recovery path above.
+/// [readableRecord] decides which valid records this build shows.
 ///
 /// Invariants, checked on demand by [checkInvariants]:
 /// - The journal of each cached account satisfies
@@ -355,12 +361,28 @@ class LocalResumeStore
             if (!(journal?.versionsByRecord.containsKey(record) ?? false))
               record: value,
         };
-        if (actions.isEmpty && records.isEmpty) {
+        final database = await _storage();
+        final metadata = stored?.metadata ?? _metadata({});
+        final retained = database != null
+            ? await _storedObjects(account)
+            : [
+                for (final row
+                    in metadata['retainedObjects'] as List? ?? const [])
+                  Map<String, Object?>.from(row as Map),
+              ];
+        final objects = await _hop(_missingObjects, (
+          retained: retained,
+          kept: kept.objects,
+        ));
+        if (actions.isEmpty && records.isEmpty && objects.isEmpty) {
           completed = true;
           return 0;
         }
-        final database = await _storage();
-        final metadata = stored?.metadata ?? _metadata({});
+        if (database != null) {
+          _objectWrites[account] = objects;
+        } else if (objects.isNotEmpty) {
+          metadata['retainedObjects'] = [...retained, ...objects];
+        }
         final sync = journal == null ? null : await _fullSync(account, journal);
         final merged = await _derive(
           _withKept,
@@ -371,6 +393,7 @@ class LocalResumeStore
             actions: actions,
             pending: kept.pending,
             records: records,
+            objects: objects,
             database: database != null,
           ),
           small:
@@ -426,6 +449,9 @@ class LocalResumeStore
   Future<void> _writes = Future.value();
   final Map<String, Map<String, Map<String, dynamic>>> _observed = {};
   final Map<String, _StoredAccount> _accounts = {};
+  // Only the uncommitted page lives here. Native originals stay in SQLite;
+  // file reconstruction must include a page whose write found damage.
+  final _objectWrites = <String, List<Map<String, Object?>>>{};
 
   /// The views of each cached account that a hop derived and no read has
   /// handed out yet, by writer. A change of the account removes them.
@@ -486,7 +512,10 @@ class LocalResumeStore
   /// it from storage. While a rewrite is due, storage lacks the account, so
   /// the cache keeps it with the change that failed, for the rewrite.
   void _forget(String account) {
-    if (!_rewriteDue) _accounts.remove(account);
+    if (!_rewriteDue) {
+      _accounts.remove(account);
+      _objectWrites.remove(account);
+    }
     _forgetViews(account);
   }
 
@@ -689,6 +718,92 @@ class LocalResumeStore
     journal.cursor = cursor;
   });
 
+  /// Keeps uninterpretable wire objects, admits valid actions and advances
+  /// the cursor in one transaction. Tombstones never delete local records.
+  /// An invalid action grants no causal coverage. Valid unknown kinds still
+  /// enter the journal and can unblock their successors without being shown.
+  Future<int> receiveObjects(
+    String account,
+    List<Map<String, dynamic>> objects,
+    int cursor,
+  ) async {
+    final page = await _hop(_interpretObjects, (
+      account: account,
+      objects: objects,
+    ));
+    return _receiveCopies(
+      account,
+      page.actions,
+      cursor: cursor,
+      objects: page.retained,
+      originals: page.originals,
+    );
+  }
+
+  /// How many retained server objects this build cannot read. The native
+  /// query reads an index, never the original payloads or action history.
+  Future<int> unreadableCount(String account) =>
+      _access(account, (stored) async {
+        final database = await _storage();
+        if (database != null) {
+          return _withFileRecovery(
+            database,
+            () => database.unreadableCount(account),
+          );
+        }
+        return (stored?.metadata['retainedObjects'] as List? ?? const [])
+            .where((row) => (row as Map)['unreadable'] == 1)
+            .map((row) => (row as Map)['identity'])
+            .toSet()
+            .length;
+      });
+
+  /// Explicitly retries retained objects with this build's decoders. The
+  /// originals stay even after interpretation succeeds. Normal restoration
+  /// does not run this work; the coordinator requests it after startup.
+  Future<void> retryUnreadable(String account) async {
+    final rows = await _access<List<Map<String, Object?>>>(account, (
+      stored,
+    ) async {
+      final database = await _storage();
+      return database != null
+          ? await _storedObjects(account)
+          : [
+              for (final row
+                  in stored?.metadata['retainedObjects'] as List? ?? const [])
+                Map<String, Object?>.from(row as Map),
+            ];
+    });
+    if (rows.isEmpty) return;
+    final page = await _hop(_retryObjects, (account: account, rows: rows));
+    // A retry has no discovery cursor of its own. Use the queue's current
+    // cursor so a simultaneous discovery or local save cannot be undone.
+    await _receiveCopies(
+      account,
+      page.actions,
+      objects: page.retained,
+      originals: page.originals,
+    );
+  }
+
+  Future<List<Map<String, Object?>>> _storedObjects(
+    String account, [
+    Set<String>? identities,
+  ]) async {
+    final database = (await _storage())!;
+    return _withFileRecovery(database, () async {
+      try {
+        return await _readerHop(_readObjects, (
+          reader: database.reader,
+          account: account,
+          identities: identities,
+        ));
+      } on RecordReaderUnavailable {
+        return database.retainedObjects(account, identities: identities);
+      }
+    });
+  }
+
   /// Replaces each saved action of [account] that has the identity of one
   /// of [copies], the server's copies, by that copy. The server's copy wins,
   /// because an action never changes and the server holds the copy that was
@@ -702,12 +817,53 @@ class LocalResumeStore
   Future<int> takeServerCopies(
     String account,
     List<Map<String, dynamic>> copies,
-  ) {
+  ) => _receiveCopies(account, copies);
+
+  Future<int> _receiveCopies(
+    String account,
+    List<Map<String, dynamic>> incoming, {
+    int? cursor,
+    List<Map<String, Object?>> objects = const [],
+    List<Map<String, Object?>> originals = const [],
+  }) {
     final operation = _writes.then((_) async {
       var completed = false;
       try {
         final stored = await _readAccount(account);
-        final originals = stored == null
+        final journal = stored?.journal ?? _journal(account, {});
+        if (cursor != null && cursor < journal.cursor) {
+          throw RangeError.range(cursor, journal.cursor, null, 'cursor');
+        }
+        if (originals.isNotEmpty) {
+          final previous = await _storage() != null
+              ? await _storedObjects(account, {
+                  for (final row in originals) row['identity'] as String,
+                })
+              : [
+                  for (final row
+                      in stored?.metadata['retainedObjects'] as List? ??
+                          const [])
+                    Map<String, Object?>.from(row as Map),
+                ];
+          await _hop(_verifyObjects, (previous: previous, incoming: originals));
+        }
+        if (cursor != null || originals.isNotEmpty) {
+          final admission = await journal.discoveryActions(
+            incoming,
+            (ids) => _retainedActions(account, ids),
+          );
+          incoming = admission.actions;
+          if (admission.unreadable.isNotEmpty || admission.waiting.isNotEmpty) {
+            objects = await _hop(_retainUnapplied, (
+              retained: objects,
+              originals: originals,
+              unreadable: admission.unreadable,
+              waiting: admission.waiting,
+            ));
+          }
+        }
+        var copies = incoming;
+        final retainedActions = stored == null
             ? <String, Map<String, dynamic>>{}
             : stored.journal.retainedOnDisk
             ? await _retainedActions(
@@ -722,23 +878,56 @@ class LocalResumeStore
               };
         copies = [
           for (final action in copies)
-            if (originals[RecordJournal.identity(action)] case final local?
+            if (retainedActions[RecordJournal.identity(action)]
+                case final local?
                 when !const DeepCollectionEquality().equals(local, action))
               action,
         ];
+        final database = await _storage();
+        final metadata = stored?.metadata ?? _metadata({});
+        if (objects.isNotEmpty) {
+          if (database != null) {
+            _objectWrites[account] = objects;
+          } else {
+            metadata['retainedObjects'] = await _hop(_mergeObjects, (
+              previous: [
+                for (final row
+                    in metadata['retainedObjects'] as List? ?? const [])
+                  Map<String, Object?>.from(row as Map),
+              ],
+              incoming: objects,
+            ));
+          }
+        }
         if (copies.isEmpty) {
+          if (cursor != null || originals.isNotEmpty) {
+            _changedOutsideWriters(
+              account,
+              await journal.receiveStored(
+                incoming,
+                (ids) => _retainedActions(account, ids),
+              ),
+            );
+            journal.cursor = cursor ?? journal.cursor;
+            await _persist(account, metadata, journal);
+          }
           completed = true;
           return 0;
         }
-        final database = await _storage();
         final sync = await _fullSync(account, stored!.journal);
         final restored = await _derive(
           _withServerCopies,
           (
             account: account,
-            metadata: stored.metadata,
+            metadata: metadata,
             sync: sync,
             copies: copies,
+            received: cursor != null || originals.isNotEmpty
+                ? incoming
+                : const <Map<String, dynamic>>[],
+            cursor: cursor,
+            objects: objects,
+            objectCount: stored.objectCount,
             database: database != null,
           ),
           small:
@@ -746,9 +935,15 @@ class LocalResumeStore
               _smallSettings(stored.metadata, domains: true),
         );
         _changedOutsideWriters(account, [
+          for (final action in incoming)
+            if (!const DeepCollectionEquality().equals(
+              journal.versions(action['record'] as String),
+              restored.stored.journal.versions(action['record'] as String),
+            ))
+              action['record'] as String,
           for (final copy in copies) ...[
             copy['record'] as String,
-            originals[RecordJournal.identity(copy)]!['record'] as String,
+            retainedActions[RecordJournal.identity(copy)]!['record'] as String,
           ],
         ]);
         await _adopt(
@@ -981,7 +1176,7 @@ class LocalResumeStore
     String? text,
     bool reported = true,
   }) async {
-    final stored = restored.stored;
+    var stored = restored.stored;
     final database = await _storage();
     if (restored.damaged && database != null) {
       _forgetViews(account);
@@ -991,6 +1186,12 @@ class LocalResumeStore
           keptAt: DateTime.now().millisecondsSinceEpoch,
         );
         stored.journal.persisted(retainedOnDisk: true);
+        _objectWrites.remove(account);
+        stored = (
+          metadata: stored.metadata,
+          journal: stored.journal,
+          objectCount: await database.objectCount(account),
+        );
         _accounts[account] = stored;
       } on RecordFileSetAside {
         _accounts[account] = stored;
@@ -1043,12 +1244,27 @@ class LocalResumeStore
                 ),
                 journal,
                 initialize: !_accounts.containsKey(account),
+                objects: _objectWrites[account] ?? const [],
               ),
         );
         journal.persisted(retainedOnDisk: true);
-        _accounts[account] = (metadata: metadata, journal: journal);
+        final count =
+            (_objectWrites[account]?.isNotEmpty ?? false) ||
+                (commit?.objects.isNotEmpty ?? false)
+            ? await database.objectCount(account)
+            : _accounts[account]?.objectCount ?? 0;
+        _objectWrites.remove(account);
+        _accounts[account] = (
+          metadata: metadata,
+          journal: journal,
+          objectCount: count,
+        );
       } on RecordFileSetAside {
-        _accounts[account] = (metadata: metadata, journal: journal);
+        _accounts[account] = (
+          metadata: metadata,
+          journal: journal,
+          objectCount: _accounts[account]?.objectCount ?? 0,
+        );
         await _rewriteCached(database);
       }
     } else {
@@ -1084,6 +1300,7 @@ class LocalResumeStore
     final restored = await _derive(_recoverAccounts, (
       accounts: Map.of(_accounts),
       reader: database.recoveryReader,
+      objects: Map.of(_objectWrites),
     ), small: _accounts.isEmpty);
     await database.writeCommits([
       for (final account in restored.values) account.commit!,
@@ -1094,6 +1311,7 @@ class LocalResumeStore
       _forgetViews(entry.key);
       _keep(entry.key, entry.value.views);
     }
+    _objectWrites.clear();
     _rewriteDue = false;
   }
 
@@ -1112,6 +1330,7 @@ class LocalResumeStore
         replay?.checkInvariants();
         if (replay != null) journal.checkRetained(replay);
         if (rows == null ||
+            await database.objectCount(entry.key) != entry.value.objectCount ||
             replay == null ||
             replay.replica != journal.replica ||
             replay.cursor != journal.cursor ||
@@ -1144,9 +1363,12 @@ class LocalResumeStore
           );
         }
       }
-      for (final MapEntry(key: writer, value: view) in _views.entries) {
+      for (final MapEntry(key: writer, value: view)
+          in _views.entries.toList()) {
         final account = writer.substring(0, writer.lastIndexOf('/'));
-        final stored = _accounts[account];
+        final stored =
+            _accounts[account] ??
+            (database == null ? await _readAccount(account) : null);
         final derived = stored == null
             ? null
             : _viewsOfVersions((
@@ -1340,7 +1562,12 @@ class LocalResumeStore
           _metadata(
             reading
                 ? {...previous, 'reading': prepared}
-                : {...prepared, 'reading': previous['reading']},
+                : {
+                    ...prepared,
+                    'reading': previous['reading'],
+                    if (previous.containsKey('retainedObjects'))
+                      'retainedObjects': previous['retainedObjects'],
+                  },
           ),
           journal,
         );
@@ -1487,6 +1714,8 @@ String _preferenceText(
     ...recordSnapshot(input.metadata, values, reading: false),
     'reading': recordSnapshot(input.metadata, values, reading: true),
     'sync': input.journal.encode(),
+    if (input.metadata.containsKey('retainedObjects'))
+      'retainedObjects': input.metadata['retainedObjects'],
   });
 }
 
@@ -1562,7 +1791,11 @@ _Restored _readCurrentRows(({String account, AccountRows rows}) input) {
   );
   final metadata = rows['snapshot'] as Map<String, dynamic>;
   return (
-    stored: (metadata: metadata, journal: journal),
+    stored: (
+      metadata: metadata,
+      journal: journal,
+      objectCount: input.rows.objectCount,
+    ),
     views: _views(metadata, journal.values),
     persist: false,
     damaged: false,
@@ -1645,12 +1878,26 @@ Future<Map<String, dynamic>> _readFullSync(
 /// committed state, including deletions and competing versions. An incomplete
 /// replay fails without replacing the cached accounts or their kept file.
 Future<Map<String, _Restored>> _recoverAccounts(
-  ({Map<String, _StoredAccount> accounts, RecordReader reader}) input,
+  ({
+    Map<String, _StoredAccount> accounts,
+    RecordReader reader,
+    Map<String, List<Map<String, Object?>>> objects,
+  })
+  input,
 ) async {
   final result = <String, _Restored>{};
   for (final MapEntry(key: account, value: stored) in input.accounts.entries) {
     final resident = stored.journal.recoveryState();
     final source = await input.reader.rows(account);
+    if ((source.rows?.objects.length ?? 0) < stored.objectCount) {
+      throw const FormatException(
+        'Retained server originals are unavailable. The damaged file is kept for retry.',
+      );
+    }
+    final objects = _mergeObjects((
+      previous: source.rows?.objects ?? const [],
+      incoming: input.objects[account] ?? const [],
+    ));
     final actions = <String, Map<String, dynamic>>{
       if (source.rows case final rows?)
         ..._readableActions(account, _readableRows(rows).actions),
@@ -1674,7 +1921,11 @@ Future<Map<String, _Restored>> _recoverAccounts(
       );
     }
     result[account] = (
-      stored: (metadata: stored.metadata, journal: journal),
+      stored: (
+        metadata: stored.metadata,
+        journal: journal,
+        objectCount: objects.length,
+      ),
       views: _views(stored.metadata, journal.values),
       persist: true,
       damaged: false,
@@ -1683,6 +1934,7 @@ Future<Map<String, _Restored>> _recoverAccounts(
         stored.metadata,
         journal,
         initialize: true,
+        objects: objects,
       ),
     );
   }
@@ -1722,7 +1974,11 @@ _Restored _readRows(({String account, AccountRows rows}) input) {
   journal.persisted();
   final metadata = rows['snapshot'] as Map<String, dynamic>;
   return (
-    stored: (metadata: metadata, journal: journal),
+    stored: (
+      metadata: metadata,
+      journal: journal,
+      objectCount: input.rows.objectCount,
+    ),
     views: _views(metadata, journal.values),
     persist: false,
     damaged: false,
@@ -1755,6 +2011,11 @@ _Restored _readText(({String account, String text, bool database}) input) {
     throw const FormatException('Reading records must be an object.');
   }
   final metadata = _metadata(decoded);
+  final objects = [
+    for (final row in metadata['retainedObjects'] as List? ?? const [])
+      Map<String, Object?>.from(row as Map),
+  ];
+  if (input.database) metadata.remove('retainedObjects');
   final journal = _journal(input.account, decoded);
   // Records move from preferences into the database, or from a format
   // without a journal into one, before anything reads them. A journal
@@ -1763,7 +2024,7 @@ _Restored _readText(({String account, String text, bool database}) input) {
   // next read replaces.
   final persist = input.database || decoded['sync'] == null;
   return (
-    stored: (metadata: metadata, journal: journal),
+    stored: (metadata: metadata, journal: journal, objectCount: objects.length),
     views: _views(metadata, journal.values),
     persist: persist,
     damaged: false,
@@ -1773,6 +2034,7 @@ _Restored _readText(({String account, String text, bool database}) input) {
             metadata,
             journal,
             initialize: true,
+            objects: objects,
           )
         : null,
   );
@@ -1792,6 +2054,7 @@ typedef _Readable = ({
   List<Map<String, dynamic>> actions,
   List<String>? pending,
   Map<String, dynamic> records,
+  List<Map<String, Object?>> objects,
 });
 
 /// What [rows] hold: the settings when they decode, and each action that
@@ -1802,6 +2065,7 @@ _Readable _readableRows(AccountRows rows) => (
   actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
   pending: rows.malformed ? null : rows.pending,
   records: const {},
+  objects: rows.objects,
 );
 
 /// What a saved [text] holds: the settings, and each action of its journal
@@ -1809,12 +2073,17 @@ _Readable _readableRows(AccountRows rows) => (
 _Readable _readableText(String text) {
   final decoded = _decodedObject(text) ?? {};
   final sync = decoded['sync'];
+  final objects = [
+    for (final row in decoded['retainedObjects'] as List? ?? const [])
+      Map<String, Object?>.from(row as Map),
+  ];
   if (sync is! Map<String, dynamic>) {
     return (
       snapshot: decoded,
       actions: const [],
       pending: const [],
       records: decoded,
+      objects: objects,
     );
   }
   final actions = sync['actions'];
@@ -1830,6 +2099,7 @@ _Readable _readableText(String text) {
         ? pending.cast<String>()
         : null,
     records: const {},
+    objects: objects,
   );
 }
 
@@ -1871,6 +2141,10 @@ _Restored _withServerCopies(
     Map<String, dynamic> metadata,
     Map<String, dynamic> sync,
     List<Map<String, dynamic>> copies,
+    List<Map<String, dynamic>> received,
+    int? cursor,
+    List<Map<String, Object?>> objects,
+    int objectCount,
     bool database,
   })
   input,
@@ -1891,8 +2165,14 @@ _Restored _withServerCopies(
         if (!copies.containsKey(identity)) identity,
     ],
   }, validateRecordAction);
+  journal.receive(input.received);
+  journal.cursor = input.cursor ?? journal.cursor;
   return (
-    stored: (metadata: input.metadata, journal: journal),
+    stored: (
+      metadata: input.metadata,
+      journal: journal,
+      objectCount: input.objectCount,
+    ),
     views: _views(input.metadata, journal.values),
     persist: true,
     damaged: true,
@@ -1902,6 +2182,7 @@ _Restored _withServerCopies(
             input.metadata,
             journal,
             initialize: true,
+            objects: input.objects,
           )
         : null,
   );
@@ -1915,6 +2196,7 @@ typedef _Kept = ({
   Map<String, Map<String, dynamic>> actions,
   Set<String> pending,
   Map<String, Map<String, dynamic>> records,
+  List<Map<String, Object?>> objects,
 });
 
 /// What the kept copies of damaged records hold that the record file lacks,
@@ -1945,8 +2227,9 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
   for (final (:account, :copy) in copies) {
     final kept = accounts.putIfAbsent(
       account,
-      () => (actions: {}, pending: {}, records: {}),
+      () => (actions: {}, pending: {}, records: {}, objects: []),
     );
+    kept.objects.addAll(copy.objects);
     final holds = held[account];
     final pending = copy.pending?.toSet();
     for (final MapEntry(key: identity, value: action) in _readableActions(
@@ -1965,7 +2248,8 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
     }
   }
   accounts.removeWhere(
-    (_, kept) => kept.actions.isEmpty && kept.records.isEmpty,
+    (_, kept) =>
+        kept.actions.isEmpty && kept.records.isEmpty && kept.objects.isEmpty,
   );
   return (
     kept: (found?.kept ?? false) || input.texts.isNotEmpty,
@@ -1989,6 +2273,7 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
     Set<String> pending,
     Map<String, Map<String, dynamic>> records,
     bool database,
+    List<Map<String, Object?>> objects,
   })
   input,
 ) {
@@ -2044,6 +2329,7 @@ Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
             input.metadata,
             journal,
             initialize: input.sync == null,
+            objects: input.objects,
           )
         : null,
   );
@@ -2071,13 +2357,15 @@ _Restored _salvageText(({String account, String text, bool database}) input) =>
 /// until a sync brings the lost one. The account is saved before anything
 /// reads it, as [_readText] explains for a new identity.
 _Restored _salvaged(String account, _Readable copy, {required bool database}) {
-  final (:snapshot, :actions, :pending, :records) = copy;
+  final (:snapshot, :actions, :pending, :records, :objects) = copy;
   final metadata = _metadata({
     ...snapshot,
     'reading': snapshot['reading'] is Map<String, dynamic>
         ? snapshot['reading']
         : null,
   });
+  if (!database && objects.isNotEmpty) metadata['retainedObjects'] = objects;
+  if (database) metadata.remove('retainedObjects');
   final readable = _readableActions(account, actions);
   final replica = _replica();
   RecordJournal journal;
@@ -2105,7 +2393,7 @@ _Restored _salvaged(String account, _Readable copy, {required bool database}) {
     }
   }
   return (
-    stored: (metadata: metadata, journal: journal),
+    stored: (metadata: metadata, journal: journal, objectCount: objects.length),
     views: _views(metadata, journal.values),
     persist: true,
     damaged: true,
@@ -2115,6 +2403,7 @@ _Restored _salvaged(String account, _Readable copy, {required bool database}) {
             metadata,
             journal,
             initialize: true,
+            objects: objects,
           )
         : null,
   );
@@ -2164,3 +2453,174 @@ RecordJournal _journal(String account, Map<String, dynamic> combined) {
 /// Copies the whole upload snapshot away from the store's retained actions.
 List<Map<String, dynamic>> _copyActions(List<Map<String, dynamic>> actions) =>
     (jsonDecode(jsonEncode(actions)) as List).cast<Map<String, dynamic>>();
+
+/// Original JSON text is nested unchanged inside the stored wire object.
+/// Parsing and classification run together in a worker, never on the UI isolate.
+typedef _InterpretedObjects = ({
+  List<Map<String, dynamic>> actions,
+  List<Map<String, Object?>> retained,
+  List<Map<String, Object?>> originals,
+});
+
+_InterpretedObjects _interpretObjects(
+  ({String account, List<Map<String, dynamic>> objects}) input,
+) {
+  final actions = <Map<String, dynamic>>[];
+  final retained = <Map<String, Object?>>[];
+  final originals = <Map<String, Object?>>[];
+  for (final object in input.objects) {
+    var unreadable = true;
+    try {
+      if (object['Deleted'] == false && object['Payload'] is String) {
+        final action = jsonDecode(object['Payload'] as String);
+        if (action is Map<String, dynamic> &&
+            RecordJournal.identity(action) == object['Id']) {
+          RecordJournal.validateAction(input.account, action);
+          validateRecordAction(action);
+          actions.add(action);
+          unreadable = !readableRecord(
+            action['record'] as String,
+            action['value'] as Map<String, dynamic>?,
+          );
+        }
+      }
+    } on FormatException {
+      // This object's JSON, envelope or value cannot be interpreted. It is
+      // retained verbatim and supplies no invented causal coverage.
+    }
+    final row = _objectRow(input.account, object, unreadable);
+    originals.add(row);
+    if (unreadable) retained.add(row);
+  }
+  return (actions: actions, retained: retained, originals: originals);
+}
+
+Map<String, Object?> _objectRow(
+  String account,
+  Map<String, dynamic> object,
+  bool unreadable,
+) => {
+  'account': account,
+  'identity': object['Id'] as String,
+  'sequence': object['Sequence'] as int,
+  'body': jsonEncode({
+    for (final key in object.keys.toList()..sort()) key: object[key],
+  }),
+  'unreadable': unreadable ? 1 : 0,
+};
+
+_InterpretedObjects _retryObjects(
+  ({String account, List<Map<String, Object?>> rows}) input,
+) {
+  final objects = [
+    for (final row in input.rows)
+      jsonDecode(row['body'] as String) as Map<String, dynamic>,
+  ];
+  final page = _interpretObjects((account: input.account, objects: objects));
+  final status = {
+    for (final row in page.originals)
+      (row['identity'], row['sequence']): row['unreadable'],
+  };
+  final retained = [
+    for (final row in input.rows)
+      <String, Object?>{
+        ...row,
+        'unreadable': status[(row['identity'], row['sequence'])],
+      },
+  ];
+  return (actions: page.actions, retained: retained, originals: retained);
+}
+
+List<Map<String, Object?>> _mergeObjects(
+  ({List<Map<String, Object?>> previous, List<Map<String, Object?>> incoming})
+  input,
+) {
+  final result = {
+    for (final row in input.previous) (row['identity'], row['sequence']): row,
+  };
+  for (final row in input.incoming) {
+    final key = (row['identity'], row['sequence']);
+    if (result[key] case final previous? when previous['body'] != row['body']) {
+      throw const FormatException(
+        'An immutable retained server object changed.',
+      );
+    }
+    result[key] = row;
+  }
+  return result.values.toList();
+}
+
+Future<List<Map<String, Object?>>> _readObjects(
+  ({RecordReader reader, String account, Set<String>? identities}) input,
+) => input.reader.objects(input.account, input.identities);
+
+/// A stored uninterpretable original cannot be silently replaced by a newly
+/// readable payload of the same identity. A tombstone is a separate server
+/// event; it never authorizes replacing the immutable action payload.
+void _verifyObjects(
+  ({List<Map<String, Object?>> previous, List<Map<String, Object?>> incoming})
+  input,
+) {
+  final previous = <String, List<Map<String, dynamic>>>{};
+  for (final row in input.previous) {
+    previous
+        .putIfAbsent(row['identity'] as String, () => [])
+        .add(jsonDecode(row['body'] as String) as Map<String, dynamic>);
+  }
+  for (final row in input.incoming) {
+    final object = jsonDecode(row['body'] as String) as Map<String, dynamic>;
+    final originals = previous.putIfAbsent(row['identity'] as String, () => []);
+    for (final original in originals) {
+      if (original['Sequence'] == object['Sequence']
+          ? !const DeepCollectionEquality().equals(original, object)
+          : original['Deleted'] == false &&
+                object['Deleted'] == false &&
+                !const DeepCollectionEquality().equals(
+                  original['Payload'],
+                  object['Payload'],
+                )) {
+        throw const FormatException(
+          'An immutable retained server object changed.',
+        );
+      }
+    }
+    originals.add(object);
+  }
+}
+
+List<Map<String, Object?>> _retainUnapplied(
+  ({
+    List<Map<String, Object?>> retained,
+    List<Map<String, Object?>> originals,
+    Set<String> unreadable,
+    Set<String> waiting,
+  })
+  input,
+) => _mergeObjects((
+  previous: input.retained,
+  incoming: [
+    for (final row in input.originals)
+      if (input.unreadable.contains(row['identity']) ||
+          input.waiting.contains(row['identity']))
+        {
+          ...row,
+          'unreadable': input.unreadable.contains(row['identity']) ? 1 : 0,
+        },
+  ],
+));
+
+List<Map<String, Object?>> _missingObjects(
+  ({List<Map<String, Object?>> retained, List<Map<String, Object?>> kept})
+  input,
+) {
+  final held = {
+    for (final row in input.retained) (row['identity'], row['sequence']),
+  };
+  return _mergeObjects((
+    previous: const [],
+    incoming: [
+      for (final row in input.kept)
+        if (!held.contains((row['identity'], row['sequence']))) row,
+    ],
+  ));
+}

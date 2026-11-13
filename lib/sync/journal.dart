@@ -130,6 +130,87 @@ class RecordJournal {
     Future<Map<String, Map<String, dynamic>>> Function(Set<String>) read,
   ) => _withOriginals(actions, read, () => receive(actions));
 
+  /// Separates actions whose preserved conflict versions can be verified
+  /// from malformed references and references that have not arrived yet.
+  /// Neither excluded group supplies causal coverage. The store retains their
+  /// wire originals and retries them after discovery supplies more originals.
+  Future<
+    ({
+      List<Map<String, dynamic>> actions,
+      Set<String> unreadable,
+      Set<String> waiting,
+    })
+  >
+  discoveryActions(
+    List<Map<String, dynamic>> actions,
+    Future<Map<String, Map<String, dynamic>>> Function(Set<String>) read,
+  ) async {
+    final needed = <String>{
+      for (final action in actions)
+        ...(action['preserve'] as List).cast<String>(),
+    };
+    if (needed.isEmpty) {
+      return (actions: actions, unreadable: <String>{}, waiting: <String>{});
+    }
+    final originals = <String, Map<String, dynamic>>{
+      for (final id in needed) id: ?_actions[id],
+      for (final action in actions) identity(action): action,
+    };
+    if (_stored) {
+      originals.addAll(await read(needed.difference(originals.keys.toSet())));
+    }
+    return compute(_classifyDiscovery, (
+      actions: actions,
+      originals: originals,
+    ));
+  }
+
+  static ({
+    List<Map<String, dynamic>> actions,
+    Set<String> unreadable,
+    Set<String> waiting,
+  })
+  _classifyDiscovery(
+    ({
+      List<Map<String, dynamic>> actions,
+      Map<String, Map<String, dynamic>> originals,
+    })
+    input,
+  ) {
+    final accepted = <Map<String, dynamic>>[];
+    final unreadable = <String>{};
+    final waiting = <String>{};
+    for (final action in input.actions) {
+      final id = identity(action);
+      for (final preserved in (action['preserve'] as List).cast<String>()) {
+        final match = RegExp(r'^action\.([a-zA-Z0-9_-]{1,80})\.([1-9][0-9]*)$')
+            .firstMatch(preserved);
+        final sequence = match == null ? null : int.tryParse(match[2]!);
+        if (sequence == null ||
+            sequence > ((action['context'] as Map)[match![1]] as int? ?? 0)) {
+          unreadable.add(id);
+        } else if (input.originals[preserved] case final previous?) {
+          if (!_validPreserved(action, previous)) unreadable.add(id);
+        } else {
+          waiting.add(id);
+        }
+      }
+      if (!unreadable.contains(id) && !waiting.contains(id)) {
+        accepted.add(action);
+      }
+    }
+    waiting.removeAll(unreadable);
+    return (actions: accepted, unreadable: unreadable, waiting: waiting);
+  }
+
+  static bool _validPreserved(
+    Map<String, dynamic> action,
+    Map<String, dynamic> previous,
+  ) =>
+      previous['record'] == action['record'] &&
+      (previous['sequence'] as int) <=
+          ((action['context'] as Map)[previous['replica']] as int? ?? 0);
+
   /// Changes a local record with the same retained-original checks as a
   /// received page: a local action can release held remote actions too.
   Future<void> changeStored(
@@ -442,10 +523,7 @@ class RecordJournal {
       final preserved = (action['preserve'] as List).cast<String>();
       for (final id in preserved) {
         final previous = _actions[id];
-        if (previous == null ||
-            previous['record'] != action['record'] ||
-            (previous['sequence'] as int) >
-                (context[previous['replica']] ?? 0)) {
+        if (previous == null || !_validPreserved(action, previous)) {
           throw const FormatException(
             'A preserved conflict must be an observed version of the same record.',
           );

@@ -235,23 +235,19 @@ void main() {
       );
     });
 
-    test(
-      'of a known kind that does not decode still counts as damage',
-      () async {
-        final phone = await Phone.open('malformed-event');
-        _NewerBuild(server, 'newer').upload([
-          'audio',
-          'history',
-          'broken',
-        ], {..._event('broken', 'seek')}..remove('before'));
+    test('of a known kind that does not decode is retained without stopping discovery', () async {
+      final phone = await Phone.open('malformed-event');
+      _NewerBuild(server, 'newer').upload([
+        'audio',
+        'history',
+        'broken',
+      ], {..._event('broken', 'seek')}..remove('before'));
 
-        await expectLater(
-          RecordTransport(phone.store)
-              .synchronize(server.session, server.client),
-          throwsFormatException,
-        );
-        expect(_ids(await phone.store.read(account), 'history'), isEmpty);
-      },
-    );
+      await RecordTransport(phone.store)
+          .synchronize(server.session, server.client);
+      expect(await phone.store.unreadableCount(account), 1);
+      expect(await phone.store.discoveryCursor(account), 1);
+      expect(_ids(await phone.store.read(account), 'history'), isEmpty);
+    });
   });
 }

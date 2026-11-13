@@ -24,6 +24,8 @@ typedef AccountRows = ({
   List<String> identities,
   List<String> payloads,
   List<String> pending,
+  List<Map<String, Object?>> objects,
+  int objectCount,
   Map<String, String> versions,
   Map<String, int> coverage,
 });
@@ -50,6 +52,7 @@ typedef RecordCommit = ({
   bool initialize,
   Map<String, Object?> values,
   List<Map<String, Object?>> actions,
+  List<Map<String, Object?>> objects,
   List<String> acknowledged,
   List<Map<String, Object?>> versions,
   List<Map<String, Object?>> coverage,
@@ -71,6 +74,7 @@ const _accountTables = {
     'sequence',
     'record',
   ],
+  'record_objects': ['account', 'identity', 'sequence', 'body', 'unreadable'],
   'record_versions': ['account', 'record', 'identities'],
   'record_coverage': ['account', 'replica', 'sequence'],
 };
@@ -175,6 +179,15 @@ final class RecordReader {
       database,
       () => RecordDatabase._actions(database, account, identities),
     ),
+  );
+
+  /// Original server objects, read only for explicit retry or a bounded
+  /// duplicate check. Normal current-state restore never reads their bodies.
+  Future<List<Map<String, Object?>>> objects(
+    String account,
+    Set<String>? identities,
+  ) => _lookup(
+    (database) => RecordDatabase._objects(database, account, identities),
   );
 
   /// The last action this installation made on a record, including one
@@ -522,7 +535,7 @@ class RecordDatabase {
       files.openDatabase(
         name,
         options: OpenDatabaseOptions(
-          version: 4,
+          version: 5,
           onConfigure: (database) async {
             await database.rawQuery('PRAGMA journal_mode=WAL');
             await database.execute('PRAGMA synchronous=FULL');
@@ -532,16 +545,89 @@ class RecordDatabase {
               'CREATE TABLE accounts (account TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)',
             );
             await _createRows(database);
+            await _createObjects(database);
             await _createSetAside(database);
             await _createActionIndexes(database);
           },
           onUpgrade: (database, previous, _) async {
             if (previous < 2) await _createRows(database);
+            if (previous < 5) await _createObjects(database);
             if (previous < 3) await _createSetAside(database);
+            if (previous >= 3 && previous < 5) {
+              await database.execute(
+                'CREATE TABLE set_aside_record_objects (kept_at, account, identity, sequence, body, unreadable)',
+              );
+            }
             if (previous < 4) await _createActionIndexes(database);
           },
         ),
       );
+
+  static Future<void> _createObjects(DatabaseExecutor database) async {
+    await database.execute(
+      'CREATE TABLE record_objects (account TEXT NOT NULL, identity TEXT NOT NULL, sequence INTEGER NOT NULL, body TEXT NOT NULL, unreadable INTEGER NOT NULL CHECK(unreadable IN (0, 1)), PRIMARY KEY (account, identity, sequence))',
+    );
+    await database.execute(
+      'CREATE INDEX record_objects_unreadable ON record_objects(account, identity) WHERE unreadable = 1',
+    );
+  }
+
+  /// Count only retained objects that this build cannot interpret, without
+  /// reading their payloads or the retained action history.
+  Future<int> unreadableCount(String account) => _guarded(
+    (database) async =>
+        (await database.rawQuery(
+              'SELECT COUNT(DISTINCT identity) AS count FROM record_objects WHERE account = ? AND unreadable = 1',
+              [account],
+            )).single['count']
+            as int,
+  );
+
+  /// The number of retained wire originals, including interpreted ones.
+  /// Reconstruction uses it to detect missing original rows.
+  Future<int> objectCount(String account) => _guarded(
+    (database) async =>
+        (await database.rawQuery(
+              'SELECT COUNT(*) AS count FROM record_objects WHERE account = ?',
+              [account],
+            )).single['count']
+            as int,
+  );
+
+  /// Retained wire originals for explicit retry. Ordinary restore never
+  /// reads them. Their interpretation status is derived, their bytes immutable.
+  Future<List<Map<String, Object?>>> retainedObjects(
+    String account, {
+    Set<String>? identities,
+  }) => _guarded((database) => _objects(database, account, identities));
+
+  static Future<List<Map<String, Object?>>> _objects(
+    DatabaseExecutor database,
+    String account,
+    Set<String>? identities,
+  ) async {
+    if (identities == null) {
+      return database.query(
+        'record_objects',
+        where: 'account = ?',
+        whereArgs: [account],
+      );
+    }
+    final ids = identities.toList();
+    final rows = <Map<String, Object?>>[];
+    for (var offset = 0; offset < ids.length; offset += 256) {
+      final group = ids.skip(offset).take(256).toList();
+      rows.addAll(
+        await database.query(
+          'record_objects',
+          where:
+              'account = ? AND identity IN (${List.filled(group.length, '?').join(',')})',
+          whereArgs: [account, ...group],
+        ),
+      );
+    }
+    return rows;
+  }
 
   static Future<void> _createRows(DatabaseExecutor database) async {
     await database.execute(
@@ -852,6 +938,8 @@ class RecordDatabase {
           row['record'] as String: head.versions[row['record']]!,
       },
       coverage: head.coverage,
+      objects: const <Map<String, Object?>>[],
+      objectCount: head.objectCount,
     );
   }
 
@@ -885,17 +973,30 @@ class RecordDatabase {
     final actionQuery = includeActions
         ? 'UNION ALL SELECT 1, rowid, identity, pending, payload FROM ${prefix}record_actions WHERE $where '
         : '';
+    final hasObjects =
+        !includeActions ||
+        (await database.rawQuery(
+          "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+          ['${prefix}record_objects'],
+        )).isNotEmpty;
+    final objectQuery = hasObjects && includeActions
+        ? 'UNION ALL SELECT 4, sequence, identity, unreadable, body FROM ${prefix}record_objects WHERE $where '
+        : '';
     final rows = await database.rawQuery(
       'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM ${prefix}record_accounts WHERE $where '
       '$actionQuery'
       'UNION ALL SELECT 2, rowid, record, NULL, identities FROM ${prefix}record_versions WHERE $where '
       'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM ${prefix}record_coverage WHERE $where '
+      '$objectQuery'
+      '${hasObjects ? 'UNION ALL SELECT 5, NULL, NULL, COUNT(*), NULL FROM ${prefix}record_objects WHERE $where ' : ''}'
       'ORDER BY kind, position',
       [
         ...arguments,
         if (includeActions) ...arguments,
         ...arguments,
         ...arguments,
+        if (hasObjects && includeActions) ...arguments,
+        if (hasObjects) ...arguments,
       ],
     );
     if (rows.isEmpty || rows.first['kind'] != 0) return null;
@@ -922,6 +1023,8 @@ class RecordDatabase {
     final identities = <String>[];
     final payloads = <String>[];
     final pending = <String>[];
+    final objects = <Map<String, Object?>>[];
+    var objectCount = 0;
     final versions = <String, String>{};
     final coverage = <String, int>{};
     for (final row in rows.skip(1)) {
@@ -942,6 +1045,16 @@ class RecordDatabase {
           versions[text(row['name'])] = text(row['content']);
         case 3:
           coverage[text(row['name'])] = number(row['number']);
+        case 4:
+          objects.add({
+            'account': account,
+            'identity': text(row['name']),
+            'sequence': number(row['position']),
+            'body': text(row['content']),
+            'unreadable': number(row['number']),
+          });
+        case 5:
+          objectCount = number(row['number']);
       }
     }
     return (
@@ -951,6 +1064,8 @@ class RecordDatabase {
       identities: identities,
       payloads: payloads,
       pending: pending,
+      objects: objects,
+      objectCount: objectCount,
       versions: versions,
       coverage: coverage,
       malformed: malformed,
@@ -1038,11 +1153,13 @@ class RecordDatabase {
     Map<String, dynamic> metadata,
     RecordJournal journal, {
     bool initialize = false,
+    List<Map<String, Object?>> objects = const [],
   }) => encodeCommitWithMetadataText(
     account,
     jsonEncode(metadata),
     journal,
     initialize: initialize,
+    objects: objects,
   );
 
   /// Encodes the changed journal rows without encoding [metadataText] again.
@@ -1052,6 +1169,7 @@ class RecordDatabase {
     String metadataText,
     RecordJournal journal, {
     bool initialize = false,
+    List<Map<String, Object?>> objects = const [],
   }) {
     if (journal.account != account || journal.cursor < 0) {
       throw ArgumentError(
@@ -1079,6 +1197,7 @@ class RecordDatabase {
             'pending': journal.pending.contains(entry.key) ? 1 : 0,
           },
       ],
+      objects: objects,
       acknowledged: List.of(journal.acknowledged),
       versions: [
         for (final record in journal.changedRecords)
@@ -1128,6 +1247,7 @@ class RecordDatabase {
             'INSERT INTO set_aside_$table SELECT ?, ${columns.join(', ')} FROM $table WHERE account = ? ORDER BY rowid',
             [keptAt, commit.account],
           );
+          if (table == 'record_objects') continue;
           await transaction.delete(
             table,
             where: 'account = ?',
@@ -1155,6 +1275,31 @@ class RecordDatabase {
       );
       if (updated != 1) {
         throw StateError('The retained account must exist before updating it.');
+      }
+    }
+    for (final object in commit.objects) {
+      if (object['account'] != account) {
+        throw ArgumentError('Object account differs from its commit.');
+      }
+      final previous = await transaction.query(
+        'record_objects',
+        where: 'account = ? AND identity = ? AND sequence = ?',
+        whereArgs: [account, object['identity'], object['sequence']],
+      );
+      if (previous.isEmpty) {
+        await transaction.insert('record_objects', object);
+      } else {
+        if (previous.single['body'] != object['body']) {
+          throw const FormatException(
+            'An immutable retained server object changed.',
+          );
+        }
+        await transaction.update(
+          'record_objects',
+          {'unreadable': object['unreadable']},
+          where: 'account = ? AND identity = ? AND sequence = ?',
+          whereArgs: [account, object['identity'], object['sequence']],
+        );
       }
     }
     final batch = transaction.batch();

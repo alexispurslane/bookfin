@@ -10,6 +10,12 @@ import 'journal.dart';
 /// of the same action and were replaced by it during one exchange.
 typedef SyncReport = ({int replaced});
 
+/// A whole reply violates the wire contract. Individual unreadable objects
+/// are retained by the store and never use this failure.
+class RecordProtocolFailure extends FormatException {
+  const RecordProtocolFailure(super.message);
+}
+
 typedef _UploadResult = ({
   String identity,
   Map<String, dynamic>? copy,
@@ -44,6 +50,8 @@ class RecordTransport {
     final uploads = pending.isEmpty
         ? <_Upload>[]
         : await compute(_encodeUploads, pending);
+    Exception? uploadError;
+    StackTrace? uploadStack;
     for (var start = 0; start < uploads.length;) {
       var end = start;
       var bytes = 0;
@@ -73,9 +81,17 @@ class RecordTransport {
       ]);
       for (final result in results) {
         if (result.error case final error?) {
-          Error.throwWithStackTrace(error, result.stack!);
+          if (error is CatalogFailure && error.status == 410) {
+            uploadError ??= error;
+            uploadStack ??= result.stack;
+          } else {
+            Error.throwWithStackTrace(error, result.stack!);
+          }
         }
       }
+      // A server tombstone leaves its local action pending, but cannot
+      // strand discovery. Other upload failures retain their existing behavior.
+      if (uploadError != null) break;
     }
     for (var request = 0; request < 128; request++) {
       final after = await records.discoveryCursor(account);
@@ -87,10 +103,16 @@ class RecordTransport {
                   : await client.personalRecordChanges(session, after),
               after: after,
             ));
-      final actions = page.actions;
-      replaced += await records.takeServerCopies(account, actions);
-      await records.receivePage(account, actions, page.cursor);
+      replaced += await records.receiveObjects(
+        account,
+        page.objects,
+        page.cursor,
+      );
       if (!page.hasMore) {
+        await records.retryUnreadable(account);
+        if (uploadError != null) {
+          Error.throwWithStackTrace(uploadError, uploadStack!);
+        }
         return (replaced: replaced);
       }
     }
@@ -110,7 +132,7 @@ class RecordTransport {
       Map<String, dynamic> stored;
       try {
         if (upload.bytes > 65536) {
-          throw const FormatException(
+          throw const RecordProtocolFailure(
             'A personal-record upload exceeds the storage contract.',
           );
         }
@@ -199,7 +221,7 @@ class RecordTransport {
 /// Encoded once off the UI isolate; bytes count the opaque payload's UTF-8.
 typedef _Upload = ({String identity, String payload, int bytes});
 typedef _Page = ({
-  List<Map<String, dynamic>> actions,
+  List<Map<String, dynamic>> objects,
   int cursor,
   bool hasMore,
 });
@@ -222,10 +244,14 @@ bool _supportsBatches(Map<String, dynamic> page) {
   if (!page.containsKey('PluginVersion')) return false;
   final version = page['PluginVersion'];
   if (version is! String || !RegExp(r'^0\.\d+\.\d+\.\d+$').hasMatch(version)) {
-    throw const FormatException('Unsupported Bookfin Storage plugin version.');
+    throw const RecordProtocolFailure(
+      'Unsupported Bookfin Storage plugin version.',
+    );
   }
   final minor = int.tryParse(version.split('.')[1]);
-  if (minor == null) throw const FormatException('Invalid plugin version.');
+  if (minor == null) {
+    throw const RecordProtocolFailure('Invalid plugin version.');
+  }
   return minor >= 2;
 }
 
@@ -235,7 +261,7 @@ void _verifyConfirmation(_Upload upload, Map<String, dynamic> stored) {
       stored['Deleted'] != false ||
       stored['Sequence'] is! int ||
       (stored['Sequence'] as int) < 1) {
-    throw const FormatException(
+    throw const RecordProtocolFailure(
       'The server did not confirm the pending personal record.',
     );
   }
@@ -246,7 +272,9 @@ List<_UploadResult> _batchConfirmations(
 ) {
   final values = input.reply['Results'];
   if (values is! List) {
-    throw const FormatException('Invalid personal-record batch response.');
+    throw const RecordProtocolFailure(
+      'Invalid personal-record batch response.',
+    );
   }
   final expected = {for (final upload in input.uploads) upload.identity};
   final byIdentity = <String, List<Map<String, dynamic>>>{};
@@ -254,7 +282,9 @@ List<_UploadResult> _batchConfirmations(
     if (value is! Map<String, dynamic> ||
         value['Id'] is! String ||
         !expected.contains(value['Id'])) {
-      throw const FormatException('Unexpected personal-record batch identity.');
+      throw const RecordProtocolFailure(
+        'Unexpected personal-record batch identity.',
+      );
     }
     byIdentity.putIfAbsent(value['Id'] as String, () => []).add(value);
   }
@@ -270,14 +300,14 @@ _UploadResult _batchConfirmation(
 ) {
   try {
     if (values == null || values.length != 1) {
-      throw const FormatException(
+      throw const RecordProtocolFailure(
         'Missing or repeated personal-record confirmation.',
       );
     }
     final value = values.single;
     final status = value['Status'];
     if (status is! int) {
-      throw const FormatException(
+      throw const RecordProtocolFailure(
         'Invalid personal-record confirmation status.',
       );
     }
@@ -286,7 +316,7 @@ _UploadResult _batchConfirmation(
     }
     if ((status != 200 && status != 201) ||
         value['Object'] is! Map<String, dynamic>) {
-      throw const FormatException(
+      throw const RecordProtocolFailure(
         'Invalid personal-record confirmation status.',
       );
     }
@@ -302,42 +332,50 @@ _Page _decodePage(({Map<String, dynamic> page, int after}) input) {
   if (page['Objects'] is! List ||
       page['Cursor'] is! int ||
       page['HasMore'] is! bool) {
-    throw const FormatException('Invalid personal-record discovery response.');
+    throw const RecordProtocolFailure(
+      'Invalid personal-record discovery response.',
+    );
   }
   final objects = page['Objects'] as List;
   if (objects.length > 256) {
-    throw const FormatException('Oversized discovery page.');
+    throw const RecordProtocolFailure('Oversized discovery page.');
   }
   var previous = input.after;
   var bytes = 0;
-  final actions = <Map<String, dynamic>>[];
+  final received = <Map<String, dynamic>>[];
   for (final value in objects) {
     if (value is! Map<String, dynamic> ||
         value['Sequence'] is! int ||
         (value['Sequence'] as int) <= previous ||
-        value['Deleted'] != false ||
-        value['Payload'] is! String) {
-      throw const FormatException(
+        value['Id'] is! String ||
+        (value['Id'] as String).isEmpty ||
+        value['Deleted'] is! bool) {
+      throw const RecordProtocolFailure(
         'Personal-record discovery is incomplete or contains retired actions.',
       );
     }
     previous = value['Sequence'] as int;
-    bytes += utf8.encode(value['Payload'] as String).length;
+    bytes += utf8
+        .encode(
+          value['Payload'] is String
+              ? value['Payload'] as String
+              : jsonEncode(value['Payload']),
+        )
+        .length;
     if (bytes > 1048576) {
-      throw const FormatException('Oversized discovery page.');
+      throw const RecordProtocolFailure('Oversized discovery page.');
     }
-    final decoded = jsonDecode(value['Payload'] as String);
-    if (decoded is! Map<String, dynamic> ||
-        value['Id'] != RecordJournal.identity(decoded)) {
-      throw const FormatException('Invalid personal-record object identity.');
-    }
-    actions.add(decoded);
+    received.add(value);
   }
   if (page['Cursor'] != previous ||
       (page['HasMore'] == true && objects.isEmpty)) {
-    throw const FormatException(
+    throw const RecordProtocolFailure(
       'Personal-record discovery did not advance safely.',
     );
   }
-  return (actions: actions, cursor: previous, hasMore: page['HasMore'] as bool);
+  return (
+    objects: received,
+    cursor: previous,
+    hasMore: page['HasMore'] as bool,
+  );
 }

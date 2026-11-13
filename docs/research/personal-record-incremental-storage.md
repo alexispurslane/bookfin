@@ -314,3 +314,66 @@ action described above. The SQL instruction count stays at 8,577 across these
 profiles. Index depth, filesystem state and host load can still affect elapsed
 time. The largest one-time upgrade takes about three seconds on this host; it
 is not included in the normalized restore time.
+
+## November 13: continue discovery past unreadable objects (boo-3y46)
+
+A structurally valid discovery page can contain an object this build cannot
+interpret. The store retains that object's complete wire fields, including the
+unchanged payload string, in `record_objects`. Schema five adds this table and
+its account/count index. A page commits its retained originals, admitted actions,
+current state and cursor together. A repair that accepts a server copy belongs
+to that same transaction, including the archive of the rejected local copy.
+No original is deleted, coalesced or expired.
+
+The existing owners keep their responsibilities. RecordTransport validates page
+boundaries and wire ordering. LocalResumeStore owns admission, raw retention,
+transactions, retries and recovery. RecordJournal decides causal admission and
+whether a preserved conflict version belongs to the same record and was observed.
+RecordSync owns scheduling and the account's narrow count signal. The Sync page
+subscribes to that signal and shows a quiet count of server identities this build
+cannot read. Repeated delivery does not increase the count. Distinct server events
+for the same identity remain retained separately, including tombstones.
+
+A valid unknown record kind still enters the journal, advances real causal
+coverage and stays hidden. Malformed JSON, an unsupported envelope version or an
+invalid known value supplies no causal coverage. A malformed preserved-version
+reference is retained without admission. A preserved version whose original has
+not arrived yet waits in retained storage without being called unreadable; the
+end-of-discovery retry admits it once the original arrives. Other absent causal
+predecessors retain the journal's existing waiting behavior. A server tombstone
+never deletes local actions, history, bookmarks or pending writes.
+
+Native startup restores the committed journal state and a count of retained
+wire events. It does not read their bodies. The quiet unreadable-identity count
+uses the table's index. Explicit retry, requested after startup and after completed
+discovery, reads and interprets retained bodies in a worker. Successful
+interpretation changes only the derived unreadable flag, keeps the original bytes
+and admits the action through the journal. The preference fallback keeps the same
+originals in its existing atomic account value. Migration moves them into SQLite.
+
+The existing kept-copy and authoritative-file recovery paths also carry these
+originals. Cached native accounts remember how many wire events they retained.
+Reconstruction must recover at least those originals as well as reproduce current
+versions and coverage. Missing original pages fail reconstruction; the cached
+records and damaged file stay available for retry. Normal account repair copies
+wire originals to its archive and leaves them in the live account too. Archived
+objects never replace a live original with the same identity and server sequence.
+
+Unreadable remote records have their own outcome. A completed exchange still
+records its completion time. If an upload finds that its immutable identity was
+retired on the server (HTTP 410), the action stays pending and discovery continues
+before the upload failure is reported. That failed exchange does not advance the
+last successful sync time or schedule an immediate retry. Other upload failures
+keep their existing behavior. Missing plugin routes, malformed whole replies,
+unsafe cursors, local storage failures and contract failures remain distinct;
+contract failures are never caught as recoverable object formats.
+
+The regression suite includes both legacy and batch discovery, later pages and
+the next sync, exact retained payloads after SQLite reopen, unknown kinds and
+versions, malformed JSON and value types, tombstones, duplicate delivery,
+account isolation, pending uploads, transaction rollback, server-copy repair,
+causal gaps and conflicts, future interpretation, kept-file recovery and refusal
+of incomplete reconstruction. A query-observation test confirms that reopening
+and showing the count reads no retained wire body. The required full host checks
+and review evidence are recorded in `.tickets/boo-3y46.md`. No plugin API or source
+change, device check, deployment, coverage or mutation run is part of this ticket.

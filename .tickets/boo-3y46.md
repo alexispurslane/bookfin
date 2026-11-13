@@ -41,3 +41,114 @@ Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889a
 Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-3y46-astra-20261113-1
 Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-3y46-astra-20261113-1>
 Launch returned running on codex/gpt-6-astra with reasoningEffort xhigh. Stage and branch not yet reported. Completion delivery is automatic.
+
+## Implementation evidence — November 13
+
+Initial identity: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-4c5cb12a`, branch
+`t3/continue-record-discovery`, clean HEAD and original review base
+`374390da6e2b37415ed98807ac962b05a9f68ea0`. The checkout was supplied by T3. No
+checkout creation, switch or reset occurred. The parent had already started this
+ticket. It remains in progress for parent integration and closure.
+
+### Result
+
+Schema five adds account-scoped retained wire originals to the existing database.
+The store commits originals, admitted actions and cursor together; accepted
+server-copy repair and its archive are part of the same page transaction. Native
+startup reads the count without reading wire bodies. A dedicated quiet signal
+feeds the Sync page, including after a reopen before any exchange. Retry changes
+only interpretation status and never removes originals. The count is by server
+identity; separate wire events, including tombstones, keep their own original bytes.
+
+RecordJournal owns preserved-version validation and causal waiting. Unknown valid
+kinds still enter the journal; invalid envelopes/values do not grant coverage.
+Missing preserved originals wait for end-of-discovery retry. Malformed preserved
+references do not stop independent records. Local pending actions survive every
+retention and rollback path. A pending action whose server identity was retired
+stays pending while discovery continues, then reports `remoteUnreadable`; it never
+becomes `pluginMissing` or schedules an immediate retry loop. All other upload
+failures preserve their previous behavior and grouped acknowledgments.
+
+Kept-copy and authoritative-file recovery carry the originals. Reconstruction
+refuses to commit if known retained originals are unavailable, just as it already
+refuses to lose current deletion or conflict state. Preference migration keeps
+originals too. The research document records the ownership, storage and retry model.
+No plugin file or protocol was changed.
+
+### Red-green and intermediate evidence
+
+All Flutter commands use Nix and concurrency two. Logs are under `/tmp`.
+
+| Evidence | Observed result |
+| --- | --- |
+| `boo-3y46-red.log` | Nine meaningful failures: malformed JSON/value, unsupported version and tombstone stopped discovery in both protocols, plus the superseded old stop test. |
+| `boo-3y46-status-red.log` | Three meaningful failures: the distinct outcome and quiet UI count were absent. |
+| `boo-3y46-recovery-red.log` | Preference migration omitted originals; a changed readable payload reused an unreadable identity. An initial raw-page test damaged the table while its count still read a healthy index; that fixture expectation was corrected. |
+| `boo-3y46-recovery-damage-red.log` | Two meaningful failures: damage to original bodies did not enter the owner's reconstruction path. |
+| `boo-3y46-retention-check.log` | Four meaningful failures: kept-file recovery omitted originals and retry rewrote wire field order instead of retaining exact stored bytes. |
+| `boo-3y46-preserve-red.log` | Two meaningful failures: a malformed preserved-version reference stopped discovery. |
+| `boo-3y46-page-repair-red.log` | Two meaningful failures: repairing an audio original failed to mark newly received reading records stale. |
+| `boo-3y46-retired-upload-red.log` | Two meaningful failures: a server tombstone for a pending local action stranded discovery. |
+| `boo-3y46-count-red.log` | Two meaningful failures: separate wire events for one identity inflated the quiet record count. |
+| `boo-3y46-discovery-final.log` | All 54 discovery, retention, recovery, causal, count and boundary tests pass. |
+
+The first test invocation lacked package configuration. `flutter pub get` completed
+in the pinned shell (`boo-3y46-pub-get.log`); that setup failure is not red evidence.
+Early green attempts contained Dart type-inference/compiler errors and lint errors,
+which were corrected. The startup-observation fixture briefly queried an empty
+second account through a deliberately narrow observer without a transaction
+method (`boo-3y46-bounds.log`); the observation now stays on its seeded account.
+Account isolation remains covered separately. None of these fixture/setup errors
+is claimed as a behavioral red.
+
+The first sync/durability run reached 391 passes and three opt-in skips, with five
+scheduling failures before waiting in a sixth scheduling test. Its fake store did
+not supply the new durable-count operation. Only that run's verified process tree
+was terminated (PIDs 14693, 14718, 14719, 15037, 15101); the owning command exited
+143. The fake now supplies empty count/retry results. No process was stopped by
+name. A later run found three old upload-failure cursor expectations changed by
+an over-broad discovery continuation. Continuation was narrowed to server
+retirement (HTTP 410), preserving ordinary failure behavior. The focused retry,
+batch acknowledgment and discovery run then passed 50 tests in
+`boo-3y46-retired-upload-green.log`.
+
+The retained-view invariant check now reads preference-backed accounts when
+checking their views. The added count query exposed this existing gap through the
+server-copy regressions (`boo-3y46-preserve-green.log`); the subsequent focused run
+passed all 53 tests (`boo-3y46-focused-final.log`). This supplies a direct fix for
+the behavior tracked by tc-eri9u, without closing that ticket here.
+
+### Required final verification
+
+The sequential script `/tmp/boo-3y46-final-checks.sh` runs in the pinned Nix
+shell. Its commands, with each command's output redirected to the named log:
+
+```sh
+dart format --output=none --set-exit-if-changed lib/playback/database.dart lib/playback/record_codec.dart lib/playback/store.dart lib/sync/coordinator.dart lib/sync/journal.dart lib/sync/screen.dart lib/sync/transport.dart test/research/current_restore_measurement_test.dart test/sync/alert_test.dart test/sync/batch_api_test.dart test/sync/schedule_test.dart test/sync/screen_test.dart test/sync/status_test.dart test/sync/transport_test.dart test/sync/unknown_records_test.dart test/sync/unreadable_discovery_test.dart
+flutter analyze --no-pub lib/playback lib/sync test/sync test/durability test/playback test/app test/research/current_restore_measurement_test.dart
+flutter test --no-pub --concurrency=2 test/sync test/durability test/playback test/app test/reader/persistence_test.dart test/reader/records_test.dart test/reader/history_pages_test.dart test/reader/dock_history_test.dart test/reader/unread_records_test.dart test/reader/reading_moves_test.dart --reporter expanded
+flutter test --no-pub --concurrency=2 --reporter expanded
+```
+
+Actual outer command (the lint fix and formatting completed before the checks):
+
+```sh
+nix develop --command bash -c 'dart fix --apply --code=curly_braces_in_flow_control_structures test/sync/unreadable_discovery_test.dart > /tmp/boo-3y46-final-lint-fix.log 2>&1 && dart format test/sync/unreadable_discovery_test.dart >> /tmp/boo-3y46-final-lint-fix.log 2>&1 && bash /tmp/boo-3y46-final-checks.sh'
+```
+
+| Check | Result | Log |
+| --- | --- | --- |
+| Changed-file formatting | 16 files, zero changes | `/tmp/boo-3y46-format-final.log` |
+| Affected analysis | No issues | `/tmp/boo-3y46-analysis-final.log` |
+| Required affected suites | 994 passed, 3 existing opt-in skips, zero failures | `/tmp/boo-3y46-affected-final.log` |
+| Full Flutter suite | 3,370 passed, 27 existing opt-in/external-fixture skips, zero failures; 5m00s | `/tmp/boo-3y46-full-final.log` |
+| Diff whitespace | Clean | `git diff --check` |
+
+Before the one fresh review, `orchestrator_capabilities` confirmed the supplied
+`codex/gpt-6-astra` target supports `reasoningEffort: high`. No model was substituted.
+The complete sequential command exited zero; all build/test commands finished
+before review delegation. The review will assess the committed diff from the
+original base above. No reviewer has been reused.
+
+Parent owns integration, acceptance, hardening and ticket closure. No device or
+browser work, coverage, mutations, deployment, push or PR work was performed.

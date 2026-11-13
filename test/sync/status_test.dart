@@ -142,21 +142,21 @@ void main() {
     );
 
     test(
-      'a storage answer outside the plugin contract reports the plugin missing',
+      'a storage answer outside the plugin contract reports an invalid reply',
       () async {
         expect(
           await failWith(
-            const FormatException(
+            const RecordProtocolFailure(
               'Invalid personal-record discovery response.',
             ),
           ),
-          RecordSyncFailure.pluginMissing,
+          RecordSyncFailure.invalidResponse,
         );
         expect(
           await failWith(
             const CatalogFailure(CatalogFailureKind.invalidResponse),
           ),
-          RecordSyncFailure.pluginMissing,
+          RecordSyncFailure.invalidResponse,
         );
       },
     );
@@ -277,6 +277,8 @@ void main() {
 
 /// Personal records whose sync can wait on [gate], fail, and find [found].
 class ControlledRecords extends LocalResumeStore {
+  @override
+  Future<int> unreadableCount(String account) async => 0;
   @override
   Future<bool> hasPendingUploads(String account) async => false;
 

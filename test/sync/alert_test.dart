@@ -311,6 +311,7 @@ void main() {
                       lastSync: sync.lastSyncNotifier,
                       conflicts: sync.conflictsNotifier,
                       kept: records.kept,
+                      unreadable: sync.unreadableNotifier,
                       library: ValueNotifier(CatalogLibrary.build([book])),
                       onSync: () {},
                       onResolve: (record, identity, bookmarkTitles) =>

@@ -209,7 +209,7 @@ void main() {
     );
   });
 
-  test('a malformed remote record cannot advance discovery or replace local records', () async {
+  test('a malformed remote record is kept while discovery advances', () async {
     final store = LocalResumeStore();
     await store.write(session.scope.key, snapshot('one'));
     final remote = RecordJournal(session.scope.key, 'remote');
@@ -221,10 +221,9 @@ void main() {
       'Payload': jsonEncode(action),
       'Deleted': false,
     };
-    await expectLater(
-      RecordTransport(store).synchronize(session, client),
-      throwsFormatException,
-    );
+    await RecordTransport(store).synchronize(session, client);
+    expect(await store.discoveryCursor(session.scope.key), greaterThan(0));
+    await RecordTransport(store).synchronize(session, client);
     final saved = (await store.read(session.scope.key))!;
     expect((saved['bookmarks'] as List).map((value) => value['id']), ['one']);
   });

@@ -26,6 +26,13 @@ enum RecordSyncFailure {
   /// follow the storage contract.
   pluginMissing,
 
+  /// The exchange finished, but some retained server objects cannot be
+  /// interpreted by this build. Later pages still arrived.
+  remoteUnreadable,
+
+  /// The server answered outside the discovery or upload contract.
+  invalidResponse,
+
   /// The sync could not read the personal records on this phone.
   unreadable,
 
@@ -123,6 +130,7 @@ class RecordSync {
   final _status = ValueNotifier<RecordSyncStatus>(_idle);
   final _lastSync = ValueNotifier<RecordSyncOutcome?>(null);
   final _conflicts = ValueNotifier<RecordConflicts>(const {});
+  final _unreadable = ValueNotifier<int>(0);
   static const RecordSyncStatus _idle = (busy: false, message: null);
 
   /// The status of the action that the user started.
@@ -133,6 +141,10 @@ class RecordSync {
 
   /// The records with saved versions to choose between, by record address.
   ValueListenable<RecordConflicts> get conflictsNotifier => _conflicts;
+
+  /// The current account's durable count, independent of the latest network
+  /// outcome. Only the small notice subscribes to this signal.
+  ValueListenable<int> get unreadableNotifier => _unreadable;
 
   bool get busy => _status.value.busy;
   String? get message => _status.value.message;
@@ -162,6 +174,10 @@ class RecordSync {
     _status.value = _idle;
     _lastSync.value = null;
     _conflicts.value = const {};
+    _unreadable.value = 0;
+    if (session != null) {
+      unawaited(_restoreUnreadable(session.scope.key, _generation));
+    }
     if (!_suspended) unawaited(synchronize());
   }
 
@@ -176,6 +192,15 @@ class RecordSync {
     _client = null;
     _running = null;
     _status.value = _idle;
+  }
+
+  Future<void> _restoreUnreadable(String account, int generation) async {
+    try {
+      final count = await records.unreadableCount(account);
+      if (_current(generation)) _unreadable.value = count;
+    } on Exception {
+      // A later sync reports storage failures. Startup remains cache-first.
+    }
   }
 
   /// Tries again to read the kept copies of damaged records, as
@@ -195,6 +220,14 @@ class RecordSync {
     }
     final session = _session;
     if (_disposed || session == null) return;
+    final generation = _generation;
+    try {
+      await records.retryUnreadable(session.scope.key);
+      await _restoreUnreadable(session.scope.key, generation);
+    } on Exception {
+      // Retained originals stay available for the next launch's retry.
+    }
+    if (!_current(generation)) return;
     await records.refreshWriters(session.scope.key);
   }
 
@@ -388,6 +421,9 @@ class RecordSync {
         report = await transport.synchronize(session, client);
       }
       if (!_current(generation)) return null;
+      final unreadable = await records.unreadableCount(session.scope.key);
+      if (!_current(generation)) return null;
+      _unreadable.value = unreadable;
       final refreshed = await records.refreshWriters(session.scope.key);
       if (!_current(generation)) return null;
       final conflicts = await records.conflicts(session.scope.key);
@@ -404,8 +440,13 @@ class RecordSync {
       // The sync itself succeeded. A refresh that failed after it changes
       // only the failure, to its own kind.
       return _ended(
-        failure: refreshed ? null : RecordSyncFailure.refreshFailed,
+        failure: !refreshed
+            ? RecordSyncFailure.refreshFailed
+            : unreadable > 0
+            ? RecordSyncFailure.remoteUnreadable
+            : null,
         replaced: report.replaced,
+        exchanged: true,
       );
     } on Exception catch (error) {
       if (error is CatalogFailure &&
@@ -414,6 +455,9 @@ class RecordSync {
       }
       if (!_current(generation)) return null;
       try {
+        final unreadable = await records.unreadableCount(session.scope.key);
+        if (!_current(generation)) return null;
+        _unreadable.value = unreadable;
         final conflicts = await records.conflicts(session.scope.key);
         if (!_current(generation)) return null;
         _publish(conflicts);
@@ -430,9 +474,15 @@ class RecordSync {
   /// Jellyfin, never from a refresh, which
   /// [LocalResumeStore.refreshWriters] handles.
   static RecordSyncFailure _cause(Exception error) => switch (error) {
-    CatalogFailure(kind: CatalogFailureKind.unavailable, status: 404) ||
-    CatalogFailure(kind: CatalogFailureKind.invalidResponse) ||
-    FormatException() => RecordSyncFailure.pluginMissing,
+    CatalogFailure(kind: CatalogFailureKind.unavailable, status: 404) =>
+      RecordSyncFailure.pluginMissing,
+    CatalogFailure(kind: CatalogFailureKind.unavailable, status: 410) =>
+      RecordSyncFailure.remoteUnreadable,
+    RecordProtocolFailure() ||
+    CatalogFailure(
+      kind: CatalogFailureKind.invalidResponse,
+    ) => RecordSyncFailure.invalidResponse,
+    FormatException() => RecordSyncFailure.unreadable,
     CatalogFailure(kind: CatalogFailureKind.unavailable) =>
       RecordSyncFailure.unreachable,
     _ => RecordSyncFailure.other,
@@ -447,18 +497,16 @@ class RecordSync {
 
   /// Records how this sync ended: its [failure], or else success, and the
   /// number of damaged records that it [replaced].
-  _Result _ended({RecordSyncFailure? failure, int replaced = 0}) {
+  _Result _ended({
+    RecordSyncFailure? failure,
+    int replaced = 0,
+    bool exchanged = false,
+  }) {
     final at = now();
     _lastSync.value = (
       at: at,
       failure: failure,
-      synced: switch (failure) {
-        null || RecordSyncFailure.refreshFailed => at,
-        RecordSyncFailure.unreachable ||
-        RecordSyncFailure.pluginMissing ||
-        RecordSyncFailure.unreadable ||
-        RecordSyncFailure.other => _lastSync.value?.synced,
-      },
+      synced: exchanged ? at : _lastSync.value?.synced,
       replaced: replaced,
     );
     return (message: null);
@@ -475,7 +523,8 @@ class RecordSync {
         (busy ||
             message != null ||
             _lastSync.value != null ||
-            _conflicts.value.isNotEmpty)) {
+            _conflicts.value.isNotEmpty ||
+            _unreadable.value != 0)) {
       throw StateError('A signed-out record sync must hold no sync state.');
     }
   }
@@ -491,5 +540,6 @@ class RecordSync {
     _status.dispose();
     _lastSync.dispose();
     _conflicts.dispose();
+    _unreadable.dispose();
   }
 }

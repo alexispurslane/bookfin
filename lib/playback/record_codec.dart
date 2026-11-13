@@ -107,7 +107,9 @@ Map<String, dynamic> recordSnapshot(
   final snapshot = <String, dynamic>{
     ...reading
         ? metadata['reading'] as Map<String, dynamic>
-        : (Map.of(metadata)..remove('reading')),
+        : (Map.of(metadata)
+            ..remove('reading')
+            ..remove('retainedObjects')),
     'bookmarks': <dynamic>[],
     'history': <dynamic>[],
     'resumes': reading ? <dynamic>[] : <String, dynamic>{},

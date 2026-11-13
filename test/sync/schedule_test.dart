@@ -198,6 +198,12 @@ class LifecycleSync extends RecordSync {
 
 class CountingRecords extends LocalResumeStore {
   @override
+  Future<int> unreadableCount(String account) async => 0;
+
+  @override
+  Future<void> retryUnreadable(String account) async {}
+
+  @override
   Future<bool> hasPendingUploads(String account) async => false;
 
   late final transport = ControlledTransport(this, synchronize);
