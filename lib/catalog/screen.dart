@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../foundation/listenable_selector.dart';
@@ -224,7 +225,12 @@ class _CatalogHomeState extends State<CatalogHome> {
               child: TabPage(
                 catalog: _catalog,
                 playback: playback,
-                child: _SignInForm(catalog: _catalog),
+                child: SignInForm(
+                  status: _catalog.statusNotifier,
+                  onSubmit: _catalog.connect,
+                  onCancel: _catalog.cancel,
+                  onRetrySignOut: () => unawaited(_catalog.signOut()),
+                ),
               ),
             ),
             _Tab.downloads => TabFrame(
@@ -465,17 +471,35 @@ class TabPage extends StatelessWidget {
   }
 }
 
-class _SignInForm extends StatefulWidget {
-  const _SignInForm({required this.catalog});
-  final CatalogController catalog;
+/// The shared sign-in fields. It owns only text entry; its screen owns
+/// authentication, cancellation, and navigation.
+class SignInForm extends StatefulWidget {
+  const SignInForm({
+    super.key,
+    required this.status,
+    required this.onSubmit,
+    required this.onCancel,
+    this.onRetrySignOut,
+    this.server = '',
+    this.username = '',
+    this.inSheet = false,
+  });
+  final ValueListenable<CatalogStatus> status;
+  final Future<bool> Function(String server, String username, String password)
+  onSubmit;
+  final VoidCallback onCancel;
+  final VoidCallback? onRetrySignOut;
+  final String server;
+  final String username;
+  final bool inSheet;
   @override
-  State<_SignInForm> createState() => _SignInFormState();
+  State<SignInForm> createState() => _SignInFormState();
 }
 
-class _SignInFormState extends State<_SignInForm> {
+class _SignInFormState extends State<SignInForm> {
   final _form = GlobalKey<FormState>();
-  final _server = TextEditingController();
-  final _username = TextEditingController();
+  late final _server = TextEditingController(text: widget.server);
+  late final _username = TextEditingController(text: widget.username);
   final _password = TextEditingController();
   @override
   void dispose() {
@@ -486,26 +510,33 @@ class _SignInFormState extends State<_SignInForm> {
   }
 
   Future<void> _submit() async {
-    if (!_form.currentState!.validate() || widget.catalog.busy) return;
+    if (!_form.currentState!.validate() || widget.status.value.refreshing) {
+      return;
+    }
     FocusScope.of(context).unfocus();
-    await widget.catalog.connect(_server.text, _username.text, _password.text);
+    final accepted = await widget.onSubmit(
+      _server.text,
+      _username.text,
+      _password.text,
+    );
     if (!mounted) return;
     // A password manager offers to save only a login that worked.
-    TextInput.finishAutofillContext(shouldSave: widget.catalog.session != null);
+    TextInput.finishAutofillContext(shouldSave: accepted);
     _password.clear();
   }
 
   @override
   // The form shows the catalog's progress and its sign-in errors.
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.catalog,
-    builder: (context, _) => ListView(
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: widget.status,
+    builder: (context, status, _) => ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Text(
-          'Your library starts here.',
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
+        if (!widget.inSheet)
+          Text(
+            'Your library starts here.',
+            style: Theme.of(context).textTheme.displaySmall,
+          ),
         const SizedBox(height: 24),
         Form(
           key: _form,
@@ -514,7 +545,7 @@ class _SignInFormState extends State<_SignInForm> {
               children: [
                 TextFormField(
                   controller: _server,
-                  enabled: !widget.catalog.busy,
+                  enabled: !status.refreshing,
                   keyboardType: TextInputType.url,
                   autofillHints: const [AutofillHints.url],
                   autocorrect: false,
@@ -534,7 +565,7 @@ class _SignInFormState extends State<_SignInForm> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _username,
-                  enabled: !widget.catalog.busy,
+                  enabled: !status.refreshing,
                   autofillHints: const [AutofillHints.username],
                   autocorrect: false,
                   decoration: const InputDecoration(labelText: 'Username'),
@@ -545,7 +576,7 @@ class _SignInFormState extends State<_SignInForm> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _password,
-                  enabled: !widget.catalog.busy,
+                  enabled: !status.refreshing,
                   obscureText: true,
                   autofillHints: const [AutofillHints.password],
                   autocorrect: false,
@@ -555,21 +586,22 @@ class _SignInFormState extends State<_SignInForm> {
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: widget.catalog.busy ? null : _submit,
+                  onPressed: status.refreshing ? null : _submit,
                   child: const Text('Sign in'),
                 ),
-                if (widget.catalog.busy)
+                if (status.refreshing && !widget.inSheet)
                   TextButton(
-                    onPressed: () => unawaited(widget.catalog.signOut()),
+                    onPressed: widget.onCancel,
                     child: const Text('Cancel'),
                   ),
               ],
             ),
           ),
         ),
-        if (widget.catalog.message?.contains('Secure sign-out') == true)
+        if (widget.inSheet && status.message != null) Text(status.message!),
+        if (status.message?.contains('Secure sign-out') == true)
           TextButton(
-            onPressed: () => unawaited(widget.catalog.signOut()),
+            onPressed: widget.onRetrySignOut,
             child: const Text('Retry sign-out'),
           ),
       ],

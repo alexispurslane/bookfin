@@ -89,7 +89,7 @@ typedef _Result = ({String? message});
 /// Invariants, which [checkInvariants] proves:
 /// - A signed-out coordinator is idle and holds no message, no outcome and
 ///   no conflicts.
-/// - A signed-out or disposed coordinator retains no scheduled upload event.
+/// - A signed-out, rejected or disposed coordinator retains no scheduled upload event.
 class RecordSync {
   static const _period = Duration(seconds: 30);
 
@@ -141,18 +141,21 @@ class RecordSync {
   void bind(JellyfinSession? session) {
     if (_disposed) return;
     if (_session?.scope.key == session?.scope.key &&
-        _session?.token == session?.token) {
+        _session?.token == session?.token &&
+        _session?.needsSignIn == session?.needsSignIn) {
       return;
     }
     ++_generation;
     _cancelUploads();
     _timer?.cancel();
     _client?.close();
+    _session?.credentialChanges.removeListener(_credentialRejected);
     _session = session;
+    session?.credentialChanges.addListener(_credentialRejected);
     // A sync of the earlier account stops at its next step, so the new
     // account does not wait for it.
     _running = null;
-    _client = session == null
+    _client = session == null || session.needsSignIn
         ? null
         : JellyfinClient(session.scope.server, deviceId: 'bookfin-record-sync');
     _periodStart = null;
@@ -162,6 +165,19 @@ class RecordSync {
     _lastSync.value = null;
     _conflicts.value = const {};
     if (!_suspended) unawaited(synchronize());
+  }
+
+  bool get _serverReady => _session != null && !_session!.needsSignIn;
+
+  void _credentialRejected() {
+    if (_disposed || _serverReady) return;
+    ++_generation;
+    _cancelUploads();
+    _timer?.cancel();
+    _client?.close();
+    _client = null;
+    _running = null;
+    _status.value = _idle;
   }
 
   /// Tries again to read the kept copies of damaged records, as
@@ -210,7 +226,7 @@ class RecordSync {
   // A short debounce combines a pause, stop and lifecycle transition. A
   // hidden app keeps this one-shot timer; only its idle polling stops.
   void _requestUpload(String account) {
-    if (_disposed || _session?.scope.key != account) return;
+    if (_disposed || !_serverReady || _session?.scope.key != account) return;
     _uploadAgain = true;
     _uploadTimer?.cancel();
     _uploadTimer = Timer(const Duration(milliseconds: 250), () {
@@ -222,7 +238,7 @@ class RecordSync {
   // Keep one event-driven exchange queued behind any sync or user choice.
   // Events during that exchange cause another check, even after a failure.
   Future<void> _uploadPending() async {
-    if (_disposed || _session == null || _uploadQueued) return;
+    if (_disposed || !_serverReady || _uploadQueued) return;
     final generation = _generation;
     _uploadQueued = true;
     try {
@@ -248,7 +264,7 @@ class RecordSync {
 
   void _schedule() {
     _timer?.cancel();
-    _timer = _session == null || _suspended || _disposed
+    _timer = !_serverReady || _suspended || _disposed
         ? null
         : Timer.periodic(_period, (_) => unawaited(synchronize()));
   }
@@ -359,7 +375,7 @@ class RecordSync {
   Future<_Result?> _sync({bool onlyPending = false}) async {
     final session = _session;
     final client = _client;
-    if (_disposed || session == null || client == null) return null;
+    if (_disposed || session == null) return null;
     final generation = _generation;
     try {
       await records.flushWriters();
@@ -368,14 +384,20 @@ class RecordSync {
         final pending = await records.hasPendingUploads(session.scope.key);
         if (!_current(generation) || !pending) return null;
       }
-      _periodStart = now();
-      final report = await transport.synchronize(session, client);
+      SyncReport? report;
+      if (_serverReady && client != null) {
+        _periodStart = now();
+        report = await transport.synchronize(session, client);
+      }
       if (!_current(generation)) return null;
       final refreshed = await records.refreshWriters(session.scope.key);
       if (!_current(generation)) return null;
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
       _publish(conflicts);
+      // Local choices and restored conflicts remain usable without claiming
+      // that the server accepted anything.
+      if (report == null) return null;
       // The transport sent a snapshot. Actions saved during the exchange
       // need a later pass; a failed exchange never schedules this retry.
       final pending = await records.hasPendingUploads(session.scope.key);
@@ -388,6 +410,10 @@ class RecordSync {
         replaced: report.replaced,
       );
     } on Exception catch (error) {
+      if (error is CatalogFailure &&
+          error.kind == CatalogFailureKind.unauthorized) {
+        session.rejectCredential();
+      }
       if (!_current(generation)) return null;
       try {
         final conflicts = await records.conflicts(session.scope.key);
@@ -443,7 +469,7 @@ class RecordSync {
   bool _current(int generation) => !_disposed && generation == _generation;
 
   void checkInvariants() {
-    if ((_disposed || _session == null) &&
+    if ((_disposed || !_serverReady) &&
         (_uploadTimer != null || _uploadQueued || _uploadAgain)) {
       throw StateError('Retired record sync cannot retain upload events.');
     }
@@ -457,6 +483,7 @@ class RecordSync {
   }
 
   void dispose() {
+    _session?.credentialChanges.removeListener(_credentialRejected);
     _disposed = true;
     ++_generation;
     _cancelUploads();

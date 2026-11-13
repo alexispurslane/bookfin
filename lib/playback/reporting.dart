@@ -23,13 +23,15 @@ class LiveReports {
   final _clients = <String, JellyfinClient>{};
   Future<void> _pending = Future.value();
   _LiveSession? _live;
+  JellyfinSession? _account;
   int _generation = 0;
   int _sequence = 0;
   bool _closed = false;
   DateTime? _retryAfter;
   bool get _allowed =>
-      policy.network == MediaNetwork.wifi ||
-      policy.network == MediaNetwork.mobile;
+      _account?.needsSignIn != true &&
+      (policy.network == MediaNetwork.wifi ||
+          policy.network == MediaNetwork.mobile);
 
   void _networkChanged() {
     _retryAfter = null;
@@ -51,6 +53,11 @@ class LiveReports {
     bool completed = false,
   }) {
     if (_closed) return;
+    if (_account?.credentialChanges != session.credentialChanges) {
+      _account?.credentialChanges.removeListener(_networkChanged);
+      _account = session;
+      session.credentialChanges.addListener(_networkChanged);
+    }
     if (!_allowed) {
       _networkChanged();
       return;
@@ -120,7 +127,11 @@ class LiveReports {
       if (event == 'start') live.started = true;
       try {
         await client.reportPlayback(live.account, event, body);
-      } catch (_) {
+      } catch (error) {
+        if (error is CatalogFailure &&
+            error.kind == CatalogFailureKind.unauthorized) {
+          live.account.rejectCredential();
+        }
         live.failed = true;
         if (generation == _generation && _live?.id == live.id) {
           _live = null;
@@ -145,6 +156,7 @@ class LiveReports {
     _closed = true;
     _live = null;
     _generation++;
+    _account?.credentialChanges.removeListener(_networkChanged);
     policy.removeListener(_networkChanged);
     for (final client in _clients.values) {
       client.close();

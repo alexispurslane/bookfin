@@ -1,4 +1,7 @@
 import 'dart:convert';
+
+import 'package:bookfin/catalog/jellyfin.dart';
+
 import 'dart:io';
 
 import 'package:bookfin/playback/playback.dart';
@@ -89,6 +92,57 @@ void main() {
                 .single['milliseconds']
             as int;
       }
+
+      test('a saved conflict choice remains usable while the credential is rejected', () async {
+        fixture.session.rejectCredential();
+        final conflict = sync.conflicts.entries.single;
+        final chosen = conflict.value.singleWhere(
+          (action) => action['value']['milliseconds'] == 900,
+        );
+        final requests = fixture.requests;
+        await sync.resolve(conflict.key, RecordJournal.identity(chosen));
+        expect(await savedMilliseconds(), 900);
+        expect(sync.conflicts, isEmpty);
+        expect(
+          await records.pendingUploads(fixture.session.scope.key),
+          isNotEmpty,
+        );
+        expect(fixture.requests, requests);
+      });
+
+      test('401 suspends sync while local actions remain durable and replacement uploads them', () async {
+        fixture.rejectCredential = true;
+        await sync.syncNow();
+        final requests = fixture.requests;
+        expect(fixture.session.needsSignIn, isTrue);
+        engine.emit(0, 3400);
+        await player.pause();
+        await player.flush();
+        sync.suspend();
+        sync.resume();
+        await sync.synchronize();
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        expect(fixture.requests, requests);
+        expect(player.position!.milliseconds, 3400);
+        expect(
+          (await records.pendingUploads(fixture.session.scope.key))
+              .where((action) => action['value']?['milliseconds'] == 3400),
+          isNotEmpty,
+        );
+        fixture.rejectCredential = false;
+        final replacement = JellyfinSession.fromJson({
+          ...fixture.session.toJson(),
+          'needsSignIn': false,
+        });
+        sync.bind(replacement);
+        await sync.synchronize();
+        expect(
+          await records.pendingUploads(fixture.session.scope.key),
+          isEmpty,
+        );
+        expect(player.position!.milliseconds, 3400);
+        sync.checkInvariants();
+      });
 
       for (final chosen in [900, 100]) {
         test(

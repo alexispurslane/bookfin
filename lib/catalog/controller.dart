@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -29,7 +30,7 @@ enum CatalogReach {
   /// so it stays while a retry runs.
   unreachable,
 
-  /// Jellyfin no longer accepts the sign-in, so the account is signed out.
+  /// Jellyfin rejected the credential. The local account stays usable.
   signInExpired,
 
   /// Jellyfin denies this account access to its book libraries, so the
@@ -56,7 +57,7 @@ typedef CatalogStatus = ({
   bool verified,
 });
 
-/// The signed-in account and what it may read: its session, whether access
+/// The local account and what it may read: its retained session, whether access
 /// is blocked, its Jellyfin book libraries, and the ids of the ones that the
 /// user hid. Every other book library shows. Two accounts are equal when
 /// these values are equal, so a refresh of the same account does not change
@@ -71,6 +72,7 @@ class CatalogAccount {
   const CatalogAccount({
     this.session,
     this.accessBlocked = false,
+    this.needsSignIn = false,
     this.libraries = const [],
     this.hidden = const {},
     this.restoring = false,
@@ -78,6 +80,9 @@ class CatalogAccount {
   final JellyfinSession? session;
   final bool restoring;
   final bool accessBlocked;
+
+  /// Snapshot of credential rejection for this narrow account signal.
+  final bool needsSignIn;
   final List<BookLibrary> libraries;
   final Set<String> hidden;
 
@@ -87,6 +92,7 @@ class CatalogAccount {
       _sameSession(session, other.session) &&
       restoring == other.restoring &&
       accessBlocked == other.accessBlocked &&
+      needsSignIn == other.needsSignIn &&
       listEquals(_libraryNames(libraries), _libraryNames(other.libraries)) &&
       setEquals(hidden, other.hidden);
 
@@ -95,6 +101,7 @@ class CatalogAccount {
     session?.scope.key,
     restoring,
     accessBlocked,
+    needsSignIn,
     Object.hashAll(_libraryNames(libraries)),
     Object.hashAllUnordered(hidden),
   );
@@ -114,7 +121,7 @@ List<String> _libraryNames(List<BookLibrary> libraries) => [
 ];
 
 /// What the catalog is doing.
-enum _Work { idle, restore, refresh }
+enum _Work { idle, restore, signIn, refresh }
 
 /// A refresh that runs: its [generation], the [hidden] libraries that it
 /// was asked to save, or null to keep the saved ones, when it is [done],
@@ -446,13 +453,18 @@ class CatalogController extends ChangeNotifier {
     session: _session,
     restoring: _work == _Work.restore,
     accessBlocked: _accessBlocked,
+    needsSignIn: _session?.needsSignIn ?? false,
     libraries: _libraries,
     hidden: _choices?.hidden ?? const {},
   );
 
   CatalogStatus get _status => (
-    refreshing: _work == _Work.refresh,
-    reach: _accessBlocked ? CatalogReach.accessRevoked : _reach,
+    refreshing: _work == _Work.refresh || _work == _Work.signIn,
+    reach: _accessBlocked
+        ? CatalogReach.accessRevoked
+        : _session?.needsSignIn == true
+        ? CatalogReach.signInExpired
+        : _reach,
     message: _message ?? _choices?.notice,
     verified: _verified,
   );
@@ -716,9 +728,39 @@ class CatalogController extends ChangeNotifier {
     }
   }
 
+  /// Changes the local account's credential subscription. An obsolete
+  /// credential can still be rejected, but it cannot change this account.
+  void _setSession(JellyfinSession? session) {
+    _session?.credentialChanges.removeListener(_credentialRejected);
+    _session = session;
+    session?.credentialChanges.addListener(_credentialRejected);
+  }
+
+  void _credentialRejected() {
+    final session = _session;
+    if (_disposed || session == null || !session.needsSignIn) return;
+    // Retire a refresh that uses this credential. Local restoration and
+    // authentication of a replacement credential must finish independently.
+    final generation = _work == _Work.refresh
+        ? _begin(work: _Work.idle)
+        : _generation;
+    _verified = false;
+    _reach = CatalogReach.signInExpired;
+    _message = const CatalogFailure(CatalogFailureKind.unauthorized).message;
+    _notify();
+    unawaited(
+      _writeCredentials(session).catchError((Object error) {
+        if (_current(generation)) {
+          _message = 'Sign in again. The expired sign-in could not be saved on this device.';
+          _notify();
+        }
+      }),
+    );
+  }
+
   void _clearVisible() {
     ++_accountGeneration;
-    _session = null;
+    _setSession(null);
     _cache = null;
     _choices = null;
     _choicesStored = false;
@@ -763,7 +805,7 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return;
       if (restored != null) {
         // The account shows at once, and its saved library when it is built.
-        _session = restored;
+        _setSession(restored);
         _notify();
         final operation = _operation(request: generation);
         final saved = await _readSaved(operation);
@@ -792,10 +834,12 @@ class CatalogController extends ChangeNotifier {
   /// does: every book library that the user did not hide. A new account
   /// hides none, so it shows every book library. A saved catalog that
   /// cannot be read stays as it is until the user asks for a refresh.
-  Future<void> connect(String server, String username, String password) async {
-    if (await _signIn(server, username, password) && !_disposed) {
-      await refresh(byUser: true);
-    }
+  /// Returns true when sign-in succeeded and the catalog could be read.
+  /// A failed or cancelled attempt retains the current local account.
+  Future<bool> connect(String server, String username, String password) async {
+    final signedIn = await _signIn(server, username, password);
+    if (signedIn && !_disposed) await refresh(byUser: true);
+    return signedIn;
   }
 
   /// Signs in, and returns whether the catalog can be read now: the
@@ -803,11 +847,14 @@ class CatalogController extends ChangeNotifier {
   /// absent. A refresh replaces the saved catalog, so a saved catalog that
   /// cannot be read waits for the user to ask for a refresh.
   Future<bool> _signIn(String server, String username, String password) async {
-    final generation = _begin();
-    _clearVisible();
+    // Finish any cancelled credential write before authenticating another
+    // candidate. The local account remains authoritative until success.
+    if (_work == _Work.signIn) cancel();
+    final generation = _begin(work: _Work.signIn);
+    var accepted = false;
     _notify();
     try {
-      await _writeCredentials(null);
+      await _credentialWrites;
       final address = parseServer(server);
       final device = await _credentials.deviceId();
       if (!_current(generation)) return false;
@@ -815,18 +862,24 @@ class CatalogController extends ChangeNotifier {
       _active = client;
       final signedIn = await client.signIn(username.trim(), password);
       if (!_current(generation)) return false;
-      _reach = CatalogReach.reached;
       if (signedIn.scope.server != address) {
         throw const CatalogFailure(CatalogFailureKind.unauthorized);
       }
       await _writeCredentials(signedIn);
       if (!_current(generation)) return false;
-      _session = signedIn;
+      final sameAccount = _session?.scope.key == signedIn.scope.key;
+      if (!sameAccount) _clearVisible();
+      _setSession(signedIn);
+      accepted = true;
+      _reach = CatalogReach.reached;
+      _notify();
       final operation = _operation(request: generation);
       _Built? saved;
       var readable = true;
       try {
-        saved = await _readSaved(operation);
+        if (!sameAccount || _cache == null) {
+          saved = await _readSaved(operation);
+        }
       } on AssertionError {
         rethrow;
       } catch (_) {
@@ -859,9 +912,12 @@ class CatalogController extends ChangeNotifier {
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
-          await _failure(error, generation, report: true);
+          if (accepted) {
+            await _failure(error, generation, report: true);
+          } else {
+            _message = error.message;
+          }
         } else {
-          _clearVisible();
           _message = 'The account could not be saved in secure storage. Sign in again.';
         }
       }
@@ -881,7 +937,9 @@ class CatalogController extends ChangeNotifier {
   /// An active sign-in, restore or refresh keeps running. Launch and manual
   /// refreshes use [refresh] directly and never wait for staleness.
   Future<void> resume() {
-    if (busy || _session == null) return Future<void>.value();
+    if (busy || _session == null || _session!.needsSignIn) {
+      return Future<void>.value();
+    }
     final completedAt = _lastSuccessfulRefresh ?? _cache?.completedAt;
     final age = completedAt == null
         ? null
@@ -950,6 +1008,9 @@ class CatalogController extends ChangeNotifier {
   Future<void> refresh({Set<String>? hidden, bool byUser = false}) {
     if (_work == _Work.restore) {
       return _restoring!.then((_) => refresh(hidden: hidden, byUser: byUser));
+    }
+    if (_work == _Work.signIn || _session?.needsSignIn == true) {
+      return Future<void>.value();
     }
     final running = _refreshing;
     if (running != null &&
@@ -1053,7 +1114,7 @@ class CatalogController extends ChangeNotifier {
           if (!_current(generation)) return;
           _adopt(operation, built);
         }
-        _session = validated;
+        _setSession(validated);
         _accessBlocked = false;
         _lastSuccessfulRefresh = DateTime.now().toUtc();
         _verified = true;
@@ -1145,18 +1206,15 @@ class CatalogController extends ChangeNotifier {
       // The request did not reach Jellyfin, so it says nothing new.
       CatalogFailureKind.cancelled ||
       CatalogFailureKind.invalidServer => _reach,
-      // Jellyfin answered. An expired sign-in is set below, with sign-out.
+      // Jellyfin answered. A rejected credential is retired below.
       _ => CatalogReach.reached,
     };
     if (failure.kind == CatalogFailureKind.unauthorized) {
-      _clearVisible();
-      _reach = CatalogReach.signInExpired;
-      try {
-        await _writeCredentials(null);
-      } on AssertionError {
-        rethrow;
-      } catch (_) {
-        if (_current(generation)) _message = 'Secure sign-out could not be saved. Retry sign-out before leaving this device.';
+      if (_session case final session?) {
+        session.rejectCredential();
+        await _credentialWrites;
+      } else {
+        _reach = CatalogReach.signInExpired;
       }
     } else if (failure.kind == CatalogFailureKind.forbidden) {
       _accessBlocked = true;
@@ -1231,6 +1289,11 @@ class CatalogController extends ChangeNotifier {
   }
 
   void cancel() {
+    if (_work == _Work.signIn) {
+      // A secure write already in flight cannot be cancelled. Queue the
+      // still-current account after it, so cancellation is durable too.
+      unawaited(_writeCredentials(_session).catchError((Object _) {}));
+    }
     _active?.close();
     _active = null;
     ++_generation;
@@ -1443,6 +1506,7 @@ class CatalogController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _session?.credentialChanges.removeListener(_credentialRejected);
     ++_generation;
     _active?.close();
     _librarySignal.dispose();

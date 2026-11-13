@@ -37,6 +37,40 @@ void main() {
     await root.delete(recursive: true);
   });
 
+  test('rejected credentials keep verified files and suspend queued transfers until replacement', () async {
+    final session = fixture.session();
+    await downloads.bind(session, fixture.books);
+    await downloads.request(fixture.text);
+    await downloads.idle;
+    final local = await downloads.localFile(fixture.text.files.single);
+    expect(local, isNotNull);
+    session.rejectCredential();
+    final requests = fixture.requests.length;
+    await downloads.request(fixture.audio);
+    await downloads.idle;
+    expect(fixture.requests.length, requests);
+    expect(await downloads.localFile(fixture.text.files.single), local);
+    // Restart from the durable credential and download manifests.
+    downloads.dispose();
+    await downloads.idle;
+    downloads = LocalDownloads(
+      root: root,
+      freeBytes: () async => capacity,
+      policy: policy,
+    );
+    await downloads.bind(
+      JellyfinSession.fromJson(session.toJson()),
+      fixture.books,
+    );
+    await downloads.idle;
+    expect(fixture.requests.length, requests);
+    expect(await downloads.localFile(fixture.text.files.single), local);
+    await downloads.bind(fixture.session(), fixture.books);
+    await downloads.idle;
+    expect(downloads.status(fixture.audio).phase, DownloadPhase.downloaded);
+    downloads.checkInvariants();
+  });
+
   for (final sourceKind in [
     'alternate',
     'listed empty',

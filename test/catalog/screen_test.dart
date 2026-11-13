@@ -205,6 +205,53 @@ void main() {
     },
   );
 
+  testWidgets('account replacement can be cancelled without signing out', (
+    tester,
+  ) async {
+    await signIn(tester);
+    await show(tester);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign in to another account'));
+    await tester.pumpAndSettle();
+    expect(controller.session?.scope.userId, 'alice');
+    expect(find.byType(TextFormField), findsNWidgets(3));
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(controller.session?.scope.userId, 'alice');
+    expect(find.byType(TextFormField), findsNothing);
+  });
+
+  testWidgets('expired account offers a usable sign-in form in Settings', (
+    tester,
+  ) async {
+    await signIn(tester);
+    await show(tester);
+    client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+    await finish(tester, controller.refresh());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign in again'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNWidgets(3));
+    expect(find.widgetWithText(TextFormField, 'alice'), findsOneWidget);
+    client.failure = null;
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'password',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await finish(
+      tester,
+      Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNothing);
+    expect(controller.verified, isTrue);
+    expect(controller.books, isNotEmpty);
+  });
+
   group('the catalog keeps its own messages', () {
     testWidgets('an expired sign-in says so and offers no Retry', (
       tester,
@@ -647,6 +694,24 @@ void main() {
     expect(find.text('Correct book details'), findsNothing);
     expect(find.text('The Orchard'), findsNothing);
     expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
+  });
+
+  testWidgets('expired sign-in keeps an open book and its correction form', (
+    tester,
+  ) async {
+    await signIn(tester);
+    await show(tester);
+    await tester.tap(find.text('The Orchard'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correct book details'));
+    await tester.pumpAndSettle();
+    client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+    await finish(tester, controller.refresh());
+    await tester.pumpAndSettle();
+    expect(find.text('Correct book details'), findsOneWidget);
+    expect(controller.books, isNotEmpty);
   });
 
   testWidgets('revoked library access dismisses an open book correction', (

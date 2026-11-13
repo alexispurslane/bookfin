@@ -49,7 +49,9 @@ class CoverScope extends InheritedModel<CoverAspect> implements InheritedTheme {
   );
 
   bool _coversChanged(CoverScope old) =>
-      old.covers != covers || old.session?.scope.key != session?.scope.key;
+      old.covers != covers ||
+      old.session?.scope.key != session?.scope.key ||
+      old.session?.credentialChanges != session?.credentialChanges;
 
   @override
   bool updateShouldNotify(CoverScope oldWidget) =>
@@ -95,7 +97,8 @@ enum CoverSize {
 }
 
 /// A cover image that Flutter's image cache keys by account, image version
-/// and size class.
+/// and size class. A replacement credential retries failed images, while
+/// policy validation of the same credential retains the image-cache key.
 class CoverImage extends ImageProvider<CoverImage> {
   const CoverImage(this.covers, this.session, this.cover, this.size);
   final Covers covers;
@@ -127,11 +130,18 @@ class CoverImage extends ImageProvider<CoverImage> {
       other is CoverImage &&
       other.covers == covers &&
       other.session.scope.key == session.scope.key &&
+      other.session.credentialChanges == session.credentialChanges &&
       other.cover == cover &&
       other.size == size;
 
   @override
-  int get hashCode => Object.hash(covers, session.scope.key, cover, size);
+  int get hashCode => Object.hash(
+    covers,
+    session.scope.key,
+    session.credentialChanges,
+    cover,
+    size,
+  );
 }
 
 const _palettes = [

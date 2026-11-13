@@ -97,6 +97,8 @@ class LocalDownloads extends Downloads {
       _hash(jsonEncode([source.key, source.revision]));
   static final _idPattern = RegExp(r'^[a-f0-9]{64}$');
   bool get _remoteAllowed =>
+      _session != null &&
+      !_session!.needsSignIn &&
       policy.choose(verifiedLocal: false) == MediaLocation.remote;
 
   /// The catalog that the latest bind call selects: its generation and its
@@ -119,7 +121,6 @@ class LocalDownloads extends Downloads {
         for (final edition in book.editions) edition.id: edition,
     };
     final account = session?.scope.key;
-    final token = session?.token;
     // Send only the four facts of each source. Sending the editions would
     // also copy every chapter list, which costs more than hashing here.
     final identities = <Object?>[
@@ -138,12 +139,12 @@ class LocalDownloads extends Downloads {
     // so a library of fewer than 16 sources binds here, at once, when no
     // earlier plan waits to apply.
     if (_waitingPlans == 0 && identities.length < 16 * 4) {
-      final (:ids, :signature) = _plan(account, token, identities);
+      final (:ids, :signature) = _plan(account, identities);
       return _apply(session, editions, ids, signature, accepted);
     }
     _waitingPlans++;
     final previous = _planned;
-    final plan = _hop(account, token, identities);
+    final plan = _hop(account, identities);
     late final Future<void> binding;
     final applied = () async {
       try {
@@ -163,17 +164,15 @@ class LocalDownloads extends Downloads {
   /// with an instance, so the hop copies only its arguments.
   static Future<({List<String> ids, String signature})> _hop(
     String? account,
-    String? token,
     List<Object?> identities,
-  ) => Isolate.run(() => _plan(account, token, identities));
+  ) => Isolate.run(() => _plan(account, identities));
 
   /// The id of each source in [identities], which holds four facts per
   /// source: key, revision, size and kind. The signature covers [account],
-  /// [token] and each distinct source's id, size and kind, so an unchanged
+  /// and each distinct source's id, size and kind, so an unchanged
   /// library skips restoration.
   static ({List<String> ids, String signature}) _plan(
     String? account,
-    String? token,
     List<Object?> identities,
   ) {
     final ids = <String>[];
@@ -186,7 +185,6 @@ class LocalDownloads extends Downloads {
     final signature = _hash(
       jsonEncode([
         account,
-        token,
         for (final MapEntry(:key, :value) in distinct.entries) [key, ...value],
       ]),
     );
@@ -217,20 +215,29 @@ class LocalDownloads extends Downloads {
     }
     _editions = editions;
     _editionSources = editionSources;
+    final accountChanged = _session?.scope.key != session?.scope.key;
+    final credentialChanged =
+        _session?.credentialChanges != session?.credentialChanges;
+    if (credentialChanged) {
+      _session?.credentialChanges.removeListener(_networkChanged);
+      ++_networkGeneration;
+      _client?.close(force: true);
+    }
+    _session = session;
+    if (credentialChanged) {
+      session?.credentialChanges.addListener(_networkChanged);
+    }
     if (_signature == signature) {
       // The same sources can form other editions, which changes their status.
       updateWatches();
+      _schedule();
       return _binding ?? Future.value();
     }
-    final accountChanged =
-        _session?.scope.key != session?.scope.key ||
-        _session?.token != session?.token;
     _signature = signature;
     _retainedBinding = Object();
     _ready = false;
     final generation = ++_generation;
     _client?.close(force: true);
-    _session = session;
     _sources = sources;
     _queued.clear();
     _records.clear();
@@ -1228,6 +1235,7 @@ class LocalDownloads extends Downloads {
     headers.forEach(request.headers.set);
     final response = await request.close().timeout(const Duration(seconds: 20));
     guard();
+    if (response.statusCode == 401) session.rejectCredential();
     if (response.statusCode == 401 || response.statusCode == 403) {
       throw const _MediaError(
         'Jellyfin denied this download. Check account access and sign in again.',
@@ -1660,6 +1668,7 @@ class LocalDownloads extends Downloads {
   void dispose() {
     _disposed = true;
     ++_generation;
+    _session?.credentialChanges.removeListener(_networkChanged);
     policy.removeListener(_networkChanged);
     _client?.close(force: true);
     _leftovers?.dispose();

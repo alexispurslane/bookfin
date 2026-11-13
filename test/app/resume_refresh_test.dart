@@ -340,21 +340,23 @@ void main() {
       },
     );
 
-    testWidgets('an expired sign-in stays signed out on return', (
-      tester,
-    ) async {
-      await signIn(tester);
-      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
-      await finish(tester, catalog.refresh());
-      client.refreshes = 0;
-      await show(tester);
-      hideAndReturn(tester);
-      await tester.pumpAndSettle();
-      expect(client.refreshes, 0);
-      expect(catalog.session, isNull);
-      expect(catalog.statusNotifier.value.reach, CatalogReach.signInExpired);
-      catalog.checkInvariants();
-    });
+    testWidgets(
+      'an expired sign-in keeps the local account without refreshing on return',
+      (tester) async {
+        await signIn(tester);
+        client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+        await finish(tester, catalog.refresh());
+        client.refreshes = 0;
+        await show(tester);
+        hideAndReturn(tester);
+        await tester.pumpAndSettle();
+        expect(client.refreshes, 0);
+        expect(catalog.session, isNotNull);
+        expect(catalog.books, isNotEmpty);
+        expect(catalog.statusNotifier.value.reach, CatalogReach.signInExpired);
+        catalog.checkInvariants();
+      },
+    );
 
     testWidgets(
       'a return that reaches Jellyfin brings back the full library after it was offline',

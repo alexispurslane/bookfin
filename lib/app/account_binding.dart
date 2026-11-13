@@ -19,7 +19,8 @@ import '../sync/coordinator.dart';
 ///
 /// Only a new account or blocked access unbinds the sources. A refresh that
 /// cannot reach the server changes neither, so the saved library, saved
-/// places and history stay bound.
+/// places and history stay bound. Rejected credentials also keep local
+/// sources bound; each server worker follows the shared credential signal.
 ///
 /// Invariant, checked by [checkInvariants]: the account and books last
 /// handed out are the catalog's current ones, unless the binding is disposed.
@@ -63,8 +64,10 @@ class AccountBinding {
   // comes before the account without a session. Its getters hold the new
   // state of every signal, so the binding reads them for the account and
   // the books.
-  CatalogAccount get _visibleAccount =>
-      CatalogAccount(session: catalog.accessBlocked ? null : catalog.session);
+  CatalogAccount get _visibleAccount => CatalogAccount(
+    session: catalog.accessBlocked ? null : catalog.session,
+    needsSignIn: catalog.session?.needsSignIn ?? false,
+  );
 
   void checkInvariants() {
     if (_disposed) return;

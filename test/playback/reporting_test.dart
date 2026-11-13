@@ -59,6 +59,29 @@ void main() {
     HttpOverrides.global = null;
   });
 
+  test(
+    'credential rejection stops live reports while local playback can continue',
+    () async {
+      reports.observe(session, first, 1000, playing: true, speed: 1);
+      await reports.idle;
+      session.rejectCredential();
+      reports.observe(session, first, 12000, playing: true, speed: 1);
+      reports.stop();
+      policy.network = MediaNetwork.mobile;
+      reports.observe(session, first, 23000, playing: true, speed: 1);
+      await reports.idle;
+      expect(requests, hasLength(1));
+      final replacement = JellyfinSession.fromJson({
+        ...session.toJson(),
+        'needsSignIn': false,
+      });
+      reports.observe(replacement, first, 23000, playing: true, speed: 1);
+      await reports.idle;
+      expect(requests, hasLength(2));
+      expect(requests.last['body']['PositionTicks'], 230000000);
+    },
+  );
+
   for (final retire in [false, true]) {
     test(
       'queued reports are discarded after ${retire ? 'retirement' : 'failure'}',

@@ -33,6 +33,8 @@ class SyncFixture {
   /// When set, Jellyfin has no Bookfin Storage plugin: its routes are not
   /// found.
   bool pluginMissing = false;
+  bool rejectCredential = false;
+  int requests = 0;
 
   static Future<SyncFixture> open() async =>
       SyncFixture._(await HttpServer.bind(InternetAddress.loopbackIPv4, 0));
@@ -53,6 +55,12 @@ class SyncFixture {
   }
 
   Future<void> _respond(HttpRequest request) async {
+    requests++;
+    if (rejectCredential) {
+      request.response.statusCode = 401;
+      await request.response.close();
+      return;
+    }
     Object value;
     if (request.uri.path == '/System/Info/Public') {
       value = {'Id': 'server'};

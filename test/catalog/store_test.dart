@@ -137,6 +137,19 @@ void main() {
   );
 
   test(
+    'secure storage keeps rejection and the token together across restart',
+    () async {
+      final storage = MemorySecureStorage();
+      final session = account('alice')..rejectCredential();
+      await SecureCredentialStore(storage: storage).write(session);
+      final restored = await SecureCredentialStore(storage: storage).read();
+      expect(restored!.needsSignIn, isTrue);
+      expect(restored.token, 'token-alice');
+      expect(restored.scope.userId, 'alice');
+    },
+  );
+
+  test(
     'one device identity is retained through secure session replacement',
     () async {
       final storage = MemorySecureStorage();

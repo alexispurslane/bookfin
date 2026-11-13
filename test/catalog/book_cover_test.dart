@@ -44,6 +44,13 @@ class _FixedCovers implements Covers {
   Future<void> clear() async {}
 }
 
+class _CredentialCovers extends _FixedCovers {
+  _CredentialCovers(super.bytes);
+  @override
+  Future<Uint8List?> load(JellyfinSession session, CoverRef cover) async =>
+      session.needsSignIn ? null : bytes;
+}
+
 /// Paints a cover of four flat quadrants, [width] by 1.5 [width] pixels.
 Future<Uint8List> quadrantCover(int width) async {
   final height = width * 3 ~/ 2;
@@ -98,6 +105,51 @@ Future<int?> decodedWidth(CoverImage cover, int sourceWidth) async {
 
 void main() {
   final covers = _FixedCovers(Uint8List(4));
+
+  testWidgets('signing in again retries a missing cover in the current view', (
+    tester,
+  ) async {
+    final png = (await tester.runAsync(() => quadrantCover(32)))!;
+    final covers = _CredentialCovers(png);
+    Future<void> show(JellyfinSession account) => tester.pumpWidget(
+      CoverScope(
+        covers: covers,
+        session: account,
+        child: const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: SizedBox(
+              width: 100,
+              child: BookCover(title: 'Graft', cover: ref),
+            ),
+          ),
+        ),
+      ),
+    );
+    final rejected = JellyfinSession.fromJson({
+      ...session.toJson(),
+      'needsSignIn': true,
+    });
+    await show(rejected);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widgetList<RawImage>(find.byType(RawImage))
+          .any((image) => image.image != null),
+      isFalse,
+    );
+    await show(JellyfinSession.fromJson(session.toJson()));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widgetList<RawImage>(find.byType(RawImage))
+          .any((image) => image.image != null),
+      isTrue,
+    );
+  });
 
   test('each cover size class has its own place in the image cache', () {
     expect(

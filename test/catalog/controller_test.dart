@@ -26,6 +26,8 @@ JellyfinSession account(
 class MemoryCredentials implements CredentialStore {
   JellyfinSession? value;
   bool failWrites = false;
+  Completer<void>? writeGate;
+  Completer<void>? writeStarted;
 
   /// Holds each read until it completes, when a test sets it.
   Completer<void>? readGate;
@@ -37,6 +39,8 @@ class MemoryCredentials implements CredentialStore {
 
   @override
   Future<void> write(JellyfinSession? session) async {
+    if (writeStarted?.isCompleted == false) writeStarted!.complete();
+    await writeGate?.future;
     if (failWrites) throw StateError('vault failure');
     value = session;
   }
@@ -117,12 +121,14 @@ class FixtureClient extends JellyfinClient {
 
   /// How many catalog reads reached this client.
   int catalogReads = 0;
+  int validations = 0;
   Completer<JellyfinSession>? pendingSignIn;
   @override
   Future<JellyfinSession> signIn(String username, String password) async =>
       pendingSignIn?.future ?? account(username, server: server.toString());
   @override
   Future<JellyfinSession> validate(JellyfinSession session) async {
+    validations++;
     if (failure != null) throw failure!;
     return session;
   }
@@ -405,13 +411,161 @@ void main() {
     expect(credentials.value, isNull);
   });
 
-  test('revoked authorization hides cached books without deleting the complete cache', () async {
+  test(
+    'a rejected credential retains the local account and complete catalog',
+    () async {
+      await signIn();
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      expect(controller.books, isNotEmpty);
+      expect(credentials.value?.token, 'token-alice');
+      expect(store.values, isNotEmpty);
+    },
+  );
+
+  test(
+    'a rejected credential stays suspended after restart and resume',
+    () async {
+      await signIn();
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      final validations = client.validations;
+      final restarted = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (_, _) => client,
+      );
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.books, isNotEmpty);
+      expect(restarted.statusNotifier.value.reach, CatalogReach.signInExpired);
+      await restarted.refresh();
+      await restarted.resume();
+      expect(client.validations, validations);
+      restarted.checkInvariants();
+    },
+  );
+
+  test(
+    'cancelled replacement sign-in retains the account and ignores its answer',
+    () async {
+      await signIn();
+      final books = controller.books;
+      client.pendingSignIn = Completer();
+      final connecting = controller.connect(
+        'https://books.example',
+        'bob',
+        'password',
+      );
+      await pumpEventQueue();
+      expect(controller.books, same(books));
+      controller.cancel();
+      client.pendingSignIn!.complete(account('bob'));
+      await connecting;
+      expect(controller.session?.scope.userId, 'alice');
+      expect(credentials.value?.token, 'token-alice');
+      expect(controller.books, same(books));
+    },
+  );
+
+  test('cancelling an in-flight secure replacement preserves the prior account on restart', () async {
+    await signIn();
+    credentials.writeGate = Completer();
+    credentials.writeStarted = Completer();
+    final connecting = controller.connect(
+      'https://books.example',
+      'bob',
+      'password',
+    );
+    await credentials.writeStarted!.future;
+    controller.cancel();
+    credentials.writeGate!.complete();
+    await connecting;
+    await controller.restore();
+    expect(controller.session!.scope.userId, 'alice');
+    expect(credentials.value!.scope.userId, 'alice');
+    expect(controller.books, isNotEmpty);
+  });
+
+  test(
+    'a rejection during local catalog restore does not cancel the restore',
+    () async {
+      await signIn();
+      store.readGate = Completer();
+      final restoring = controller.restore();
+      await pumpEventQueue();
+      expect(controller.session, isNotNull);
+      controller.session!.rejectCredential();
+      store.readGate!.complete();
+      await restoring;
+      expect(controller.books, isNotEmpty);
+      expect(controller.session!.needsSignIn, isTrue);
+    },
+  );
+
+  test(
+    'rejection of the old token does not cancel replacement authentication',
+    () async {
+      await signIn();
+      final previous = controller.session!;
+      client.pendingSignIn = Completer();
+      final connecting = controller.connect(
+        'https://books.example',
+        'alice',
+        'password',
+      );
+      await pumpEventQueue();
+      previous.rejectCredential();
+      client.pendingSignIn!.complete(
+        JellyfinSession(
+          scope: previous.scope,
+          token: 'renewed',
+          username: 'alice',
+          canDownload: true,
+        ),
+      );
+      await connecting;
+      expect(controller.session!.token, 'renewed');
+      expect(controller.verified, isTrue);
+      expect(credentials.value!.token, 'renewed');
+    },
+  );
+
+  test(
+    'obsolete credential rejection cannot change its replacement account',
+    () async {
+      await signIn();
+      final obsolete = controller.session!;
+      await controller.connect('https://books.example', 'bob', 'password');
+      obsolete.rejectCredential();
+      await pumpEventQueue();
+      expect(controller.session!.scope.userId, 'bob');
+      expect(controller.verified, isTrue);
+      expect(credentials.value!.scope.userId, 'bob');
+      expect(controller.books, isNotEmpty);
+      controller.checkInvariants();
+    },
+  );
+
+  test('failed replacement sign-in preserves the rejected account', () async {
     await signIn();
     client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
     await controller.refresh();
-    expect(controller.books, isEmpty);
-    expect(credentials.value, isNull);
-    expect(store.values, isNotEmpty);
+    client.pendingSignIn = Completer();
+    final connecting = controller.connect(
+      'https://books.example',
+      'bob',
+      'wrong',
+    );
+    await pumpEventQueue();
+    client.pendingSignIn!.completeError(
+      const CatalogFailure(CatalogFailureKind.invalidCredentials),
+    );
+    await connecting;
+    expect(controller.session?.scope.userId, 'alice');
+    expect(credentials.value?.token, 'token-alice');
+    expect(controller.statusNotifier.value.reach, CatalogReach.signInExpired);
+    expect(controller.books, isNotEmpty);
   });
 
   test(
@@ -540,6 +694,18 @@ void main() {
     expect(store.values, isNotEmpty);
   });
 
+  test('same-account sign-in keeps an unreadable restored catalog for explicit refresh', () async {
+    await signIn();
+    final key = controller.session!.scope.key;
+    store.values[key] = 'unreadable catalog';
+    await controller.restore();
+    expect(controller.books, isEmpty);
+    await signIn();
+    expect(controller.session!.scope.userId, 'alice');
+    expect(store.values[key], 'unreadable catalog');
+    expect(controller.message, contains('could not be read'));
+  });
+
   test(
     'an unreadable catalog does not discard successful secure sign-in',
     () async {
@@ -553,17 +719,14 @@ void main() {
     },
   );
 
-  test(
-    'an invalid account switch cannot restore the old token on restart',
-    () async {
-      await signIn();
-      await controller.connect('http://untrusted.example', 'bob', 'password');
-      expect(controller.session, isNull);
-      expect(controller.books, isEmpty);
-      expect(credentials.value, isNull);
-      expect(store.values, isNotEmpty);
-    },
-  );
+  test('an invalid account switch keeps the current local account', () async {
+    await signIn();
+    await controller.connect('http://untrusted.example', 'bob', 'password');
+    expect(controller.session?.scope.userId, 'alice');
+    expect(controller.books, isNotEmpty);
+    expect(credentials.value?.token, 'token-alice');
+    expect(store.values, isNotEmpty);
+  });
 
   test(
     'separating the first file preserves the chosen order of remaining files',

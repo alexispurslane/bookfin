@@ -49,12 +49,17 @@ class DiskCovers implements Covers {
     return _loading[key] ??= () async {
       try {
         if (await file.exists()) return await file.readAsBytes();
+        if (session.needsSignIn) return null;
         final Uint8List? bytes;
         try {
           bytes = await _fetch(coverUri(session, cover), {
             'X-Emby-Token': session.token,
           });
-        } catch (_) {
+        } catch (error) {
+          if (error is CatalogFailure &&
+              error.kind == CatalogFailureKind.unauthorized) {
+            session.rejectCredential();
+          }
           return null;
         }
         if (bytes == null || bytes.isEmpty) {
@@ -171,6 +176,9 @@ Future<Uint8List?> _httpFetch(Uri uri, Map<String, String> headers) async {
   }
   if (response.statusCode != 200) {
     await response.drain<void>();
+    if (response.statusCode == 401) {
+      throw const CatalogFailure(CatalogFailureKind.unauthorized);
+    }
     throw HttpException('cover ${response.statusCode}', uri: uri);
   }
   final bytes = BytesBuilder(copy: false);

@@ -415,7 +415,6 @@ class ReaderSession extends ChangeNotifier {
   PdfPager? get pdfPager => _pdfPager;
   PdfPager? _pdfPager;
   String? _account;
-  String? _credential;
   List<Book> _books = [];
   final List<TextPosition> _resumes = [];
   // NOTE: Replace this list on each change, never change it in place.
@@ -597,8 +596,7 @@ class ReaderSession extends ChangeNotifier {
   Future<void> bind(JellyfinSession? account, List<Book> books) async {
     if (_disposed) return;
     _books = List.unmodifiable(books);
-    final changed =
-        _account != account?.scope.key || _credential != account?.token;
+    final changed = _account != account?.scope.key;
     if (!changed) {
       if (edition != null && !_current(edition!)) {
         _clear();
@@ -612,7 +610,6 @@ class ReaderSession extends ChangeNotifier {
     }
     _clear();
     _account = account?.scope.key;
-    _credential = account?.token;
     _resumes.clear();
     _bookmarks = const [];
     _history = const [];

@@ -45,6 +45,27 @@ void main() {
     if (await root.exists()) await root.delete(recursive: true);
   });
 
+  test(
+    'rejected credentials read kept covers without fetching missing ones',
+    () async {
+      final saved = const CoverRef('graft', 'v1');
+      await covers.load(session, saved);
+      final rejected = JellyfinSession.fromJson({
+        ...session.toJson(),
+        'needsSignIn': true,
+      });
+      final before = requests.length;
+      expect(await covers.load(rejected, saved), [1, 2, 3]);
+      expect(
+        await covers.load(rejected, const CoverRef('missing', 'v1')),
+        isNull,
+      );
+      expect(requests.length, before);
+      server['missing'] = Uint8List.fromList([4]);
+      expect(await covers.load(session, const CoverRef('missing', 'v1')), [4]);
+    },
+  );
+
   test('a cover loaded once still shows offline', () async {
     expect(await covers.load(session, const CoverRef('graft', 'v1')), [
       1,

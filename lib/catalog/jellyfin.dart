@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
+
 import 'model.dart';
 import 'transport.dart';
 
@@ -99,15 +101,40 @@ class AccountScope {
   );
 }
 
+/// A local account identity and its retained server credential. Validation
+/// updates user policy while sharing the credential's rejection signal.
+/// Replacing credentials requires successful authentication; rejecting them
+/// never removes identity or changes which account owns local data.
 class JellyfinSession {
-  const JellyfinSession({
+  JellyfinSession({
     required this.scope,
-    required this.token,
+    required String token,
+    required this.username,
+    required this.canDownload,
+    bool needsSignIn = false,
+  }) : _credential = _Credential(token, needsSignIn);
+
+  JellyfinSession._(
+    this._credential, {
+    required this.scope,
     required this.username,
     required this.canDownload,
   });
+
   final AccountScope scope;
-  final String token;
+  final _Credential _credential;
+  String get token => _credential.token;
+
+  /// Whether this credential was rejected. Local identity and files remain
+  /// valid. Only a successful sign-in supplies a new usable credential.
+  bool get needsSignIn => _credential.value;
+
+  /// True once a request rejects this credential, including after restore.
+  ValueListenable<bool> get credentialChanges => _credential;
+
+  /// Retires this credential after a 401. All requests holding it observe
+  /// the same state, including requests started before a policy refresh.
+  void rejectCredential() => _credential.value = true;
   final String username;
   final bool canDownload;
   Map<String, dynamic> toJson() => {
@@ -115,6 +142,7 @@ class JellyfinSession {
     'token': token,
     'username': username,
     'canDownload': canDownload,
+    'needsSignIn': needsSignIn,
   };
   factory JellyfinSession.fromJson(Map<String, dynamic> json) =>
       JellyfinSession(
@@ -122,9 +150,17 @@ class JellyfinSession {
         token: json['token'] as String,
         username: json['username'] as String,
         canDownload: json['canDownload'] == true,
+        needsSignIn: json['needsSignIn'] == true,
       );
   @override
   String toString() => 'JellyfinSession(<redacted>)';
+}
+
+/// One credential's lifetime, shared by the sessions that validate its user
+/// policy. Rejection is monotonic; replacement creates another credential.
+class _Credential extends ValueNotifier<bool> {
+  _Credential(this.token, super.value);
+  final String token;
 }
 
 class BookLibrary {
@@ -335,9 +371,9 @@ class JellyfinClient {
     if (user['Id'] != session.scope.userId) {
       throw const CatalogFailure(CatalogFailureKind.unauthorized);
     }
-    return JellyfinSession(
+    return JellyfinSession._(
+      session._credential,
       scope: session.scope,
-      token: session.token,
       username: user['Name'] as String? ?? session.username,
       canDownload:
           (user['Policy'] as Map?)?['EnableContentDownloading'] == true,
@@ -569,7 +605,9 @@ class JellyfinClient {
   }
 
   void _guard(JellyfinSession session) {
-    if (session.scope.server != server || session.token.isEmpty) {
+    if (session.needsSignIn ||
+        session.scope.server != server ||
+        session.token.isEmpty) {
       throw const CatalogFailure(CatalogFailureKind.unauthorized);
     }
   }
@@ -580,14 +618,23 @@ class JellyfinClient {
     JellyfinSession? session,
     Map<String, String>? query,
     Map<String, dynamic>? body,
-  }) {
+  }) async {
     if (session != null) _guard(session);
-    return _transport.send(
-      _uri(segments, query),
-      method: method,
-      headers: _headers(session),
-      body: body,
-    );
+    try {
+      final result = await _transport.send(
+        _uri(segments, query),
+        method: method,
+        headers: _headers(session),
+        body: body,
+      );
+      if (session != null) _guard(session);
+      return result;
+    } on CatalogFailure catch (error) {
+      if (error.kind == CatalogFailureKind.unauthorized) {
+        session?.rejectCredential();
+      }
+      rethrow;
+    }
   }
 
   /// Like [_send] for a GET request, but returns the response body undecoded.
@@ -595,13 +642,22 @@ class JellyfinClient {
     List<String> segments, {
     required JellyfinSession session,
     required Map<String, String> query,
-  }) {
+  }) async {
     _guard(session);
-    return _transport.fetchBody(
-      _uri(segments, query),
-      method: 'GET',
-      headers: _headers(session),
-    );
+    try {
+      final result = await _transport.fetchBody(
+        _uri(segments, query),
+        method: 'GET',
+        headers: _headers(session),
+      );
+      _guard(session);
+      return result;
+    } on CatalogFailure catch (error) {
+      if (error.kind == CatalogFailureKind.unauthorized) {
+        session.rejectCredential();
+      }
+      rethrow;
+    }
   }
 
   Uri _uri(List<String> segments, Map<String, String>? query) => server.replace(

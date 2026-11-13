@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../catalog/glass.dart' show confirmAction;
+import '../catalog/glass.dart'
+    show confirmAction, showGlassSheet, GlassSheetAction;
 import '../catalog/controller.dart';
 import '../catalog/layout.dart';
-import '../catalog/screen.dart' show LibrarySelector;
+import '../catalog/screen.dart' show LibrarySelector, SignInForm;
 import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../sync/coordinator.dart';
@@ -60,10 +61,17 @@ class SettingsTab extends StatelessWidget {
                 title: Text(session.username),
                 subtitle: Text(session.scope.server.host),
               ),
+              if (account.needsSignIn)
+                ListTile(
+                  title: const Text('Sign in again'),
+                  subtitle: const Text(
+                    'Downloaded books and saved places are still available',
+                  ),
+                  onTap: () => _signIn(context, sameAccount: true),
+                ),
               ListTile(
                 title: const Text('Sign in to another account'),
-                subtitle: const Text('Signs out of this account first'),
-                onTap: () => unawaited(catalog.signOut()),
+                onTap: () => _signIn(context, sameAccount: false),
               ),
               ListTile(
                 title: const Text('Sign out'),
@@ -201,6 +209,41 @@ class SettingsTab extends StatelessWidget {
       ),
     ),
   );
+
+  Future<void> _signIn(
+    BuildContext context, {
+    required bool sameAccount,
+  }) async {
+    final previous = catalog.session;
+    var finished = false;
+    await showGlassSheet<void>(
+      context,
+      title: sameAccount ? 'Sign in again' : 'Sign in to another account',
+      action: GlassSheetAction('Cancel', onPressed: catalog.cancel),
+      isScrollControlled: true,
+      builder: (sheetContext) => SizedBox(
+        height: MediaQuery.sizeOf(sheetContext).height * 0.7,
+        child: SignInForm(
+          status: catalog.statusNotifier,
+          server: previous?.scope.server.toString() ?? '',
+          username: sameAccount ? previous?.username ?? '' : '',
+          inSheet: true,
+          onCancel: catalog.cancel,
+          onSubmit: (server, username, password) async {
+            final accepted = await catalog.connect(server, username, password);
+            if (accepted) {
+              finished = true;
+              if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+            }
+            return accepted;
+          },
+        ),
+      ),
+    );
+    if (!finished && identical(catalog.session, previous) && catalog.busy) {
+      catalog.cancel();
+    }
+  }
 
   /// Resets the corrections of [account] after the user confirms, unless
   /// another account signed in meanwhile.

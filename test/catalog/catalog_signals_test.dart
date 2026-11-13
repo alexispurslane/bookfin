@@ -311,7 +311,8 @@ void main() {
         final status = controller.statusNotifier.value;
         expect(status.reach, CatalogReach.signInExpired);
         expect(status.message, contains('expired'));
-        expect(controller.accountNotifier.value.session, isNull);
+        expect(controller.accountNotifier.value.session, isNotNull);
+        expect(controller.accountNotifier.value.needsSignIn, isTrue);
       },
     );
 

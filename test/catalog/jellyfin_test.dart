@@ -106,6 +106,64 @@ void main() {
     isA<CatalogFailure>().having((failure) => failure.kind, 'kind', kind),
   );
 
+  test(
+    'a response received after credential rejection is not accepted',
+    () async {
+      final started = Completer<void>();
+      final release = Completer<void>();
+      respond = (request) async {
+        started.complete();
+        await release.future;
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(jsonEncode({'Items': []}));
+        await request.response.close();
+      };
+      final pending = client.libraries(session);
+      await started.future;
+      session.rejectCredential();
+      release.complete();
+      await expectLater(pending, throwsA(isA<CatalogFailure>()));
+    },
+  );
+
+  test(
+    'a 401 retires the shared credential before another request can start',
+    () async {
+      respond = (request) async {
+        request.response.statusCode = 401;
+        await request.response.close();
+      };
+      await expectLater(
+        client.libraries(session),
+        throwsA(isA<CatalogFailure>()),
+      );
+      final anotherClient = JellyfinClient(
+        session.scope.server,
+        deviceId: 'other',
+      );
+      addTearDown(anotherClient.close);
+      await expectLater(
+        anotherClient.libraries(session),
+        throwsA(isA<CatalogFailure>()),
+      );
+      expect(requests, hasLength(1));
+      expect(session.token, 'test-token');
+      expect(JellyfinSession.fromJson(session.toJson()).needsSignIn, isTrue);
+    },
+  );
+
+  test('a 403 does not reject the server credential', () async {
+    respond = (request) async {
+      request.response.statusCode = 403;
+      await request.response.close();
+    };
+    await expectLater(
+      client.libraries(session),
+      throwsA(isA<CatalogFailure>()),
+    );
+    expect(session.needsSignIn, isFalse);
+  });
+
   test('sign-in sends password only in the JSON body and preserves a server subpath', () async {
     respond = (request) {
       request.response.write(
