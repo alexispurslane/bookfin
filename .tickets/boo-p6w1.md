@@ -1,8 +1,8 @@
 ---
 id: boo-p6w1
 status: open
-deps: []
-links: []
+deps: [boo-hwoz]
+links: [boo-hwoz]
 created: 2026-11-12T23:41:00Z
 type: task
 priority: 2
@@ -88,3 +88,31 @@ queries, advance through the counted source pages; do not end pagination
 because a filtered page is short or empty. Keep recursive semantics unchanged
 unless a separate equivalence test establishes that changing them preserves
 membership. No runtime proof is claimed by this source audit.
+
+## Version correction and freshness choice — 2026-11-13
+
+The earlier source audit is specifically Jellyfin 10.11.0, named in the
+original plan. It is not the current research-server version. The pinned
+research shell uses Jellyfin 12.4; docs/research/jellyfin.md pins its inspected
+source at `83d0d0e7f76e23e2e085c8ff67d28b772d35967d`.
+
+Inspected those same five source files at that immutable revision. Captures
+and hashes: `/tmp/bookfin-jellyfin-collection-audit-12.4/sources.json`.
+ItemsController.cs:290-308 captures a supplied library parent as
+linkedChildAncestorIds before clearing parentId, and passes the derived
+filter to InternalItemsQuery at line 454. Library-scoped collection lookup
+is therefore supported in this newer source. Folder.cs:1140-1162 no longer
+passes pagination into the inner child lookup; it filters first and then
+sorts/pages. Both differences supersede the earlier limitations for 12.4.
+ItemFields still has no Id option, and DtoService.cs:1177 still assigns the
+core Id unconditionally. This is static source evidence; no live server
+request or latency measurement has run.
+
+The parent presented two freshness designs and asked the user to choose:
+fetch collection membership on every automatic/manual refresh (recommended,
+retains current freshness), or reuse saved membership on automatic refreshes
+until the user pulls to refresh (fewer requests but stale series membership).
+Both keep narrowed queries, correct paging, account separation, and the saved
+library at launch. The question is pending. Do not infer a choice from time.
+The shared query improvement may proceed independently. Do not add a retained
+membership map or change refresh cadence until the choice is settled.
