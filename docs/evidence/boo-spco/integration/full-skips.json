@@ -1,0 +1,331 @@
+{
+  "passed": 3831,
+  "skipped": 27,
+  "failed": 0,
+  "explicitReasons": [
+    {
+      "precedingTestLine": "01:59 +1078: /Users/alexispurslane/Development/bookfin/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+      "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run",
+      "line": 1137
+    },
+    {
+      "precedingTestLine": "01:59 +1079 ~1: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+      "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run",
+      "line": 1141
+    },
+    {
+      "precedingTestLine": "02:00 +1095 ~2: /Users/alexispurslane/Development/bookfin/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+      "line": 1184
+    },
+    {
+      "precedingTestLine": "02:05 +1144 ~4: /Users/alexispurslane/Development/bookfin/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run",
+      "line": 1238
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~5: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+      "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here.",
+      "line": 1291
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~6: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+      "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here.",
+      "line": 1294
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~7: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here.",
+      "line": 1297
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~8: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+      "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here.",
+      "line": 1300
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~9: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+      "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here.",
+      "line": 1303
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~10: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+      "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here.",
+      "line": 1306
+    },
+    {
+      "precedingTestLine": "02:16 +1194 ~11: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+      "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here.",
+      "line": 1309
+    },
+    {
+      "precedingTestLine": "02:25 +1242 ~12: /Users/alexispurslane/Development/bookfin/test/reader/epub/step_budget_test.dart: the step budget",
+      "reason": "set BOOKFIN_EPUB_STEPS=1 to run",
+      "line": 1360
+    },
+    {
+      "precedingTestLine": "02:29 +1293 ~13: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+      "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run",
+      "line": 1414
+    },
+    {
+      "precedingTestLine": "02:31 +1307 ~14: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+      "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run",
+      "line": 1431
+    },
+    {
+      "precedingTestLine": "02:34 +1424 ~15: /Users/alexispurslane/Development/bookfin/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+      "line": 1551
+    },
+    {
+      "precedingTestLine": "02:34 +1431 ~16: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1",
+      "line": 1561
+    },
+    {
+      "precedingTestLine": "02:36 +1460 ~17: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_test.dart: the corpus run",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 to run",
+      "line": 1593
+    },
+    {
+      "precedingTestLine": "02:38 +1505 ~18: /Users/alexispurslane/Development/bookfin/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run",
+      "line": 1644
+    },
+    {
+      "precedingTestLine": "02:47 +1650 ~19: /Users/alexispurslane/Development/bookfin/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+      "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files",
+      "line": 1792
+    },
+    {
+      "precedingTestLine": "02:51 +1681 ~21: /Users/alexispurslane/Development/bookfin/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+      "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement.",
+      "line": 1827
+    },
+    {
+      "precedingTestLine": "02:52 +1683 ~23: /Users/alexispurslane/Development/bookfin/test/research/epub_layout_cache_test.dart: the layout cache survey",
+      "reason": "set BOOKFIN_LAYOUT_CACHE=1",
+      "line": 1833
+    },
+    {
+      "precedingTestLine": "04:20 +3196 ~24: /Users/alexispurslane/Development/bookfin/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "reason": "Run tool/plugin/prove.py in the pinned shells.",
+      "line": 3386
+    },
+    {
+      "precedingTestLine": "04:25 +3277 ~25: /Users/alexispurslane/Development/bookfin/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell.",
+      "line": 3469
+    },
+    {
+      "precedingTestLine": "04:30 +3353 ~26: /Users/alexispurslane/Development/bookfin/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+      "reason": "Run tool/sync_fixture.py in the pinned shells.",
+      "line": 3549
+    }
+  ],
+  "scope": "Optional corpus, benchmark and integration gates. No test was disabled by integration.",
+  "counterTransitions": [
+    {
+      "before": "01:59 +1078: /Users/alexispurslane/Development/bookfin/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+      "after": "01:59 +1078 ~1: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_source_test.dart: the order of work around the shown page after the shown section, the sections after it are laid out in order to the right and the sections before it in order to the left",
+      "line": 1138,
+      "explicitReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+    },
+    {
+      "before": "01:59 +1079 ~1: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+      "after": "01:59 +1079 ~2: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_source_test.dart: the order of work around the shown page the sections after the shown one do not wait for a large section before it",
+      "line": 1142,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+    },
+    {
+      "before": "02:00 +1095 ~2: /Users/alexispurslane/Development/bookfin/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+      "after": "02:00 +1095 ~3: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_source_test.dart: the order of work around the shown page the two directions take turns, so the sections after the shown one do not wait for the main run of a large section before it",
+      "line": 1185,
+      "explicitReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "before": "02:04 +1133 ~3: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_source_test.dart: the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "after": "02:04 +1133 ~4: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_source_test.dart: (tearDownAll)",
+      "line": 1224,
+      "explicitReason": null
+    },
+    {
+      "before": "02:05 +1144 ~4: /Users/alexispurslane/Development/bookfin/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+      "after": "02:05 +1144 ~5: /Users/alexispurslane/Development/bookfin/test/reader/epub/whole_book_pages_test.dart: the page label when every section is laid out the label shows whole-book numbers",
+      "line": 1239,
+      "explicitReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "before": "02:16 +1194 ~5: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+      "after": "02:16 +1194 ~6: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1292,
+      "explicitReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~6: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+      "after": "02:16 +1194 ~7: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1295,
+      "explicitReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~7: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "after": "02:16 +1194 ~8: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1298,
+      "explicitReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~8: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+      "after": "02:16 +1194 ~9: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1301,
+      "explicitReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~9: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+      "after": "02:16 +1194 ~10: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1304,
+      "explicitReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~10: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+      "after": "02:16 +1194 ~11: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1307,
+      "explicitReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+    },
+    {
+      "before": "02:16 +1194 ~11: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+      "after": "02:16 +1194 ~12: /Users/alexispurslane/Development/bookfin/test/reader/epub/layout_run_test.dart: a place in raised text stays on the line that raises it",
+      "line": 1310,
+      "explicitReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+    },
+    {
+      "before": "02:25 +1242 ~12: /Users/alexispurslane/Development/bookfin/test/reader/epub/step_budget_test.dart: the step budget",
+      "after": "02:25 +1242 ~13: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: a jump into a seeded section finds its page without a line search",
+      "line": 1361,
+      "explicitReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+    },
+    {
+      "before": "02:29 +1293 ~13: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+      "after": "02:29 +1293 ~14: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: every place of a seeded section opens the true page that holds it, as with no kept map",
+      "line": 1415,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+    },
+    {
+      "before": "02:31 +1307 ~14: /Users/alexispurslane/Development/bookfin/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+      "after": "02:31 +1307 ~15: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page",
+      "line": 1432,
+      "explicitReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+    },
+    {
+      "before": "02:34 +1424 ~15: /Users/alexispurslane/Development/bookfin/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "after": "02:34 +1424 ~16: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page",
+      "line": 1552,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "before": "02:34 +1431 ~16: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+      "after": "02:34 +1431 ~17: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: a place after the last shown place of a kept page opens on the next page",
+      "line": 1562,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS=1"
+    },
+    {
+      "before": "02:36 +1460 ~17: /Users/alexispurslane/Development/bookfin/test/reader/epub/corpus_test.dart: the corpus run",
+      "after": "02:36 +1460 ~18: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: a jump into the middle of a kept table does not measure the whole table",
+      "line": 1594,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+    },
+    {
+      "before": "02:38 +1505 ~18: /Users/alexispurslane/Development/bookfin/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "after": "02:38 +1505 ~19: /Users/alexispurslane/Development/bookfin/test/reader/epub/page_map_open_test.dart: the scrub bar names the page under the finger in a seeded section",
+      "line": 1645,
+      "explicitReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "before": "02:47 +1650 ~19: /Users/alexispurslane/Development/bookfin/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+      "after": "02:47 +1650 ~20: /Users/alexispurslane/Development/bookfin/test/reader/epub/pager_test.dart: preview draws the true page of a place, and each previous and next place is held by exactly one page",
+      "line": 1793,
+      "explicitReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+    },
+    {
+      "before": "02:50 +1675 ~20: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: the word view of the margins book shows no running header and no folio, and shows every other word and region, such as its footnotes and its figure",
+      "after": "02:50 +1675 ~21: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: the word view of the margins book shows no running header and no folio, and shows every other word and region, such as its footnotes and its figure",
+      "line": 1819,
+      "explicitReason": null
+    },
+    {
+      "before": "02:51 +1681 ~21: /Users/alexispurslane/Development/bookfin/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+      "after": "02:51 +1681 ~22: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: the word pages that the viewport draws leave out the running headers and folios that the frozen profile marks",
+      "line": 1828,
+      "explicitReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+    },
+    {
+      "before": "02:51 +1682 ~22: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: a shown word column stays unchanged when the book profile freezes and a text size change then uses the frozen profile",
+      "after": "02:52 +1682 ~23: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: a shown word column stays unchanged when the book profile freezes and a text size change then uses the frozen profile",
+      "line": 1830,
+      "explicitReason": null
+    },
+    {
+      "before": "02:52 +1683 ~23: /Users/alexispurslane/Development/bookfin/test/research/epub_layout_cache_test.dart: the layout cache survey",
+      "after": "02:52 +1683 ~24: /Users/alexispurslane/Development/bookfin/test/reader/column_running_lines_test.dart: returning to a page after the profile freezes replaces its old running-header column",
+      "line": 1834,
+      "explicitReason": "set BOOKFIN_LAYOUT_CACHE=1"
+    },
+    {
+      "before": "04:20 +3196 ~24: /Users/alexispurslane/Development/bookfin/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "after": "04:20 +3196 ~25: /Users/alexispurslane/Development/bookfin/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync",
+      "line": 3387,
+      "explicitReason": "Run tool/plugin/prove.py in the pinned shells."
+    },
+    {
+      "before": "04:25 +3277 ~25: /Users/alexispurslane/Development/bookfin/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "after": "04:25 +3277 ~26: /Users/alexispurslane/Development/bookfin/test/sync/stale_reading_actions_test.dart: a stale reading history before does nothing after sync deletes its record",
+      "line": 3470,
+      "explicitReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+    },
+    {
+      "before": "04:30 +3353 ~26: /Users/alexispurslane/Development/bookfin/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+      "after": "04:30 +3353 ~27: /Users/alexispurslane/Development/bookfin/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync advances the last successful sync time despite the failed refresh",
+      "line": 3550,
+      "explicitReason": "Run tool/sync_fixture.py in the pinned shells."
+    }
+  ],
+  "booleanGates": [
+    {
+      "file": "test/reader/epub/page_source_test.dart",
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "gateLines": [
+        [
+          1407,
+          "}, skip: Platform.environment['BOOKFIN_PAGE_SOURCE_BENCHMARK'] != '1');"
+        ]
+      ],
+      "sourceGateUnchanged": true,
+      "identification": "Named by structured child full-suite inventory; parent expanded log retains counter transition without an explicit reason."
+    },
+    {
+      "file": "test/reader/epub/pager_test.dart",
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "gateLines": [
+        [
+          1468,
+          "}, skip: Platform.environment['BOOKFIN_PAGER_BENCHMARK'] != '1');"
+        ]
+      ],
+      "sourceGateUnchanged": true,
+      "identification": "Named by structured child full-suite inventory; parent expanded log retains counter transition without an explicit reason."
+    },
+    {
+      "file": "test/research/current_restore_measurement_test.dart",
+      "name": "measure current restoration against complete retained replay on this host",
+      "gateLines": [
+        [
+          254,
+          "skip: output == null,"
+        ]
+      ],
+      "sourceGateUnchanged": true,
+      "identification": "Named by structured child full-suite inventory; parent expanded log retains counter transition without an explicit reason."
+    }
+  ],
+  "expandedLogLimit": "Concurrent expanded output does not name two skipped tests at their counter increment. Their unchanged boolean gates and names come from the archived structured child inventory; not inferred from the other active test shown on that line."
+}

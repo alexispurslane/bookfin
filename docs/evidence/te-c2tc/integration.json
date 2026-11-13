@@ -1,0 +1,40 @@
+{
+  "sourceHead": "266773a571a5e63cd9fe269b48d21e66aa238751",
+  "latestTrackingHead": "c1e5a10dee1d459f2c01867d66812fd4fbae9d1d",
+  "sourceUnchangedSinceTests": true,
+  "combinedChecks": "docs/evidence/boo-spco/integration/commands.jsonl",
+  "combinedFullSuite": {
+    "passed": 3831,
+    "skipped": 27,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "browserBuilds": "Production and gallery JavaScript entry points both build with nonempty output. Existing WebAssembly/font warnings retained; no browser interaction claim.",
+  "analysis": "No issues: lib, test, integration_test, tool/showcase_fixture.dart, tool/showcase_media.dart.",
+  "format": "48 Dart files checked, zero changes.",
+  "whitespace": "Complete 5339f0f6-to-HEAD diff checked successfully before evidence/closure commit. Final committed-HEAD check follows closure; its result is retained in /tmp/bookfin-boo-spco-integration/commands.jsonl and parent tool output.",
+  "parentOwnedCommandsFinished": true,
+  "hardening": "Coverage and general mutation testing await acceptance. No competing hardening run.",
+  "limits": [
+    "27 optional skips remain exclusions; complete reasons/gates and expanded-log attribution limits in full-skips.json.",
+    "No Android, physical ARM, TalkBack or iOS execution in this integration.",
+    "No live-server/device/browser acceptance, release packaging or deployment.",
+    "No second reviewer; original reviewer verdicts preserved unchanged."
+  ],
+  "ticket": "te-c2tc",
+  "childHead": "c54efb76d8dda30366ba14c400febd28b503bed1",
+  "commitMapping": {
+    "60115c14377f6397decff61e4e73ce35f575314a": "8600fe29",
+    "c54efb76d8dda30366ba14c400febd28b503bed1": "266773a5"
+  },
+  "inspection": "All seven source changes and diagnostic cause controls inspected; 54 evidence hashes and 32 compressed artifacts verified. Structured logs independently confirm child counts.",
+  "reviewDisposition": "All three original verdicts pass. Nonblocking F1 inventory correction verified; original report unchanged.",
+  "merge": "Only ticket conflict required manual resolution; retained parent launch and child evidence. The shared page_source_test fixture edit matches reviewed added/removed/context lines, alongside note tests.",
+  "protection": "Production code unchanged by fixture integration; payloads/order, named fixture identities, source-change and corruption checks preserved.",
+  "limitsAdditional": [
+    "Controlled clock evidence proves a cause, not historical test scheduling.",
+    "Four isolated research creators are separate follow-up td-bz4y, now delegated."
+  ],
+  "status": "Integrated and verified; implementation ticket closed with this record.",
+  "skipInventory": "docs/evidence/boo-spco/integration/full-skips.json"
+}

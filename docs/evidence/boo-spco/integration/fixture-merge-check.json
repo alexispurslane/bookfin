@@ -1,0 +1,7 @@
+{
+  "verified": true,
+  "comparison": "Exact added/removed/context lines; Git blob ids and hunk offsets excluded.",
+  "reason": "The integrated note tests change blob identity and move the same fixture hunk by one line.",
+  "earlierInspectionCorrection": "A raw git-diff byte comparison failed on index metadata and hunk offsets, not fixture code.",
+  "diffSha256": "cf9dbfbb2691342845da8e4e14513500334f312693a2412040b120611fde15e9"
+}

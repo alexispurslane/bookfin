@@ -1,6 +1,6 @@
 ---
 id: te-c2tc
-status: in_progress
+status: closed
 deps: []
 links: [t3-5o5r, td-bz4y]
 created: 2026-11-09T23:25:19Z
@@ -123,3 +123,21 @@ The lead checked both writer sites and corrected only `inventory.json`. The
 resolution and updated hashes are retained. No runtime source changed after
 the passing final checks, so no broad/full suite was repeated. Ready for parent
 integration; acceptance, hardening and closure remain parent-owned.
+
+## Parent closure — 2026-11-13
+
+Integrated 8600fe29 and 266773a5. Combined source at 266773a5 passed 3,831 tests
+with 27 existing skips and zero failures. Both production and gallery
+JavaScript builds pass. Analysis of lib, test, integration_test and both
+showcase tools reports no issues. All 48 combined changed Dart files pass
+format verification with zero changes. No runtime source changed after tests.
+
+Integration inspection, commit mapping, original review dispositions and
+limits: docs/evidence/te-c2tc/integration.json. Parent preserves all
+command logs, the two expected restart behavioral failures, the corrected
+nonexistent focused-test path, and all skip reasons/gates. Original review
+verdicts remain unchanged. No second review or competing hardening run.
+
+Remaining tracked work: td-bz4y (separate isolated research follow-up). Android acceptance remains blocked by
+t1-dth0; real TalkBack also requires t2-u76g. Coverage and general mutation
+testing await acceptance. Closing implementation does not claim those checks.

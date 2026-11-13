@@ -1,0 +1,38 @@
+{
+  "sourceHead": "266773a571a5e63cd9fe269b48d21e66aa238751",
+  "latestTrackingHead": "c1e5a10dee1d459f2c01867d66812fd4fbae9d1d",
+  "sourceUnchangedSinceTests": true,
+  "combinedChecks": "docs/evidence/boo-spco/integration/commands.jsonl",
+  "combinedFullSuite": {
+    "passed": 3831,
+    "skipped": 27,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "browserBuilds": "Production and gallery JavaScript entry points both build with nonempty output. Existing WebAssembly/font warnings retained; no browser interaction claim.",
+  "analysis": "No issues: lib, test, integration_test, tool/showcase_fixture.dart, tool/showcase_media.dart.",
+  "format": "48 Dart files checked, zero changes.",
+  "whitespace": "Complete 5339f0f6-to-HEAD diff checked successfully before evidence/closure commit. Final committed-HEAD check follows closure; its result is retained in /tmp/bookfin-boo-spco-integration/commands.jsonl and parent tool output.",
+  "parentOwnedCommandsFinished": true,
+  "hardening": "Coverage and general mutation testing await acceptance. No competing hardening run.",
+  "limits": [
+    "27 optional skips remain exclusions; complete reasons/gates and expanded-log attribution limits in full-skips.json.",
+    "No Android, physical ARM, TalkBack or iOS execution in this integration.",
+    "No live-server/device/browser acceptance, release packaging or deployment.",
+    "No second reviewer; original reviewer verdicts preserved unchanged."
+  ],
+  "ticket": "boo-spco",
+  "childHead": "0e4f06a8a84a7e5cff55950bb3a975a5c415a34d",
+  "commitMapping": {
+    "3903711325358a4b95a9b28d9f0e19d475b74323": "6b5d9aa7",
+    "ca0488a8b21ab2fe7c37bc516ebf8a8dd3af4c96": "4e07e3ee",
+    "0e4f06a8a84a7e5cff55950bb3a975a5c415a34d": "8d7fcb0b"
+  },
+  "integrationFix": "a229eada: shared automatic-reopen error handling covers a durable listening choice. Meaningful red and green on both storage backends.",
+  "inspection": "inspection.json",
+  "reviewDisposition": "Original correctness, fulfillment and design verdicts remain changes-required. Parent inspected F1/F2/F3 resolutions, meaningful failures, caller behavior and combined verification; all material in-scope findings resolved.",
+  "acceptedResult": "Action errors remain scoped to their source/book/action, successful playback clears them, independent record-recovery/save notices remain. Ask-at-Play and deferred external choices preserved.",
+  "acceptanceTicket": "boo-hxmd",
+  "status": "Integrated and verified; implementation ticket closed with this record.",
+  "skipInventory": "docs/evidence/boo-spco/integration/full-skips.json"
+}

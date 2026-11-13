@@ -1,0 +1,250 @@
+{
+  "headAtInspection": "c1e5a10dee1d459f2c01867d66812fd4fbae9d1d",
+  "testedSourceHead": "266773a571a5e63cd9fe269b48d21e66aa238751",
+  "sourceFiles": [
+    {
+      "path": "lib/catalog/book_page.dart",
+      "sha256": "4e9cbf9c05dba4aa006bca5ac63dda5f26c6a41ecba0f10ece14f74b5bce6434"
+    },
+    {
+      "path": "lib/catalog/screen.dart",
+      "sha256": "486c0ba565fa7db2c03940ec82566406aa1f6a5b8ce2610b61b17d5cfd1910f7"
+    },
+    {
+      "path": "lib/development/gallery.dart",
+      "sha256": "9ef9733f4c15fd2c5ad8a4dc14cc754783178b4617bd0d0000bf51897ed429b9"
+    },
+    {
+      "path": "lib/playback/playback.dart",
+      "sha256": "7a02d05fa80f595fcc514d4100c3627dc502a2b820d5fb2c251a61f53c2d57d3"
+    },
+    {
+      "path": "lib/playback/recent.dart",
+      "sha256": "78e5cdd7761efeb2a1213cc596953641f8edde189f7bb6ea03f5e77597e6bf8b"
+    },
+    {
+      "path": "lib/playback/records_screen.dart",
+      "sha256": "20c6cb2f5ab4f1b774d91cd9c6ffa9ead7abe1e8f2165619f5a7eeb2c1e0c11a"
+    },
+    {
+      "path": "lib/playback/screen.dart",
+      "sha256": "2dbbd32ea52e197fd709c435760e6db8de40fbfcb49bfe8cfbcc53333f25db28"
+    },
+    {
+      "path": "lib/playback/timeline.dart",
+      "sha256": "444e06d4edbdc8f52410a856042f4c4814e2504f950e791c175078a238a2b8c7"
+    },
+    {
+      "path": "lib/reader/epub/dom.dart",
+      "sha256": "e3857932db7ece63c685bfe75b0fcad1b331ec7d6b5a75a739672b6b6f3f19eb"
+    },
+    {
+      "path": "lib/reader/epub/layout.dart",
+      "sha256": "7a4eeaabd444c0f9635815be9a4187ae9c609ef78b7a604130cc4acb07bd94e0"
+    },
+    {
+      "path": "lib/reader/epub/page_source.dart",
+      "sha256": "000da489e38c54cb79930ed2990558013ad3166aa9a6d5e7dc25a4aea59eadbf"
+    },
+    {
+      "path": "lib/reader/epub/pager.dart",
+      "sha256": "36c2ad9837e71e3920e12a7fb62d3ce850b50623a2c1eadbaa28133fd32c3ce9"
+    },
+    {
+      "path": "lib/reader/epub/places.dart",
+      "sha256": "709578c3eb397bbc3ff65eba5b4b6809dcaa6dad3a65b6542b84ad0e9bc98a62"
+    },
+    {
+      "path": "lib/reader/epub/prepare.dart",
+      "sha256": "de728a1cbd9080eb5edfa32c0b089d0a77b3c18189e61f38b6903ae2fce4fad6"
+    },
+    {
+      "path": "lib/reader/epub/semantics.dart",
+      "sha256": "f9e4a3a0eea8913d936d7d424e689698d21093037bf9eb6be0ea63674210eab9"
+    },
+    {
+      "path": "lib/reader/screen.dart",
+      "sha256": "772cdcdbfc96b9eec9c80078e0b40f589027e5852913a2dbdb844f16554ae970"
+    },
+    {
+      "path": "test/catalog/book_page_test.dart",
+      "sha256": "a678768aa492b220c50d60f825bdb8a2d2231e9248345a0bc01bfb44a0d5eb22"
+    },
+    {
+      "path": "test/development/gallery_test.dart",
+      "sha256": "42c4fe926666e1667ce06e7571f891815a61e5a2181810cc5fb84d35736a1530"
+    },
+    {
+      "path": "test/playback/command_queue_test.dart",
+      "sha256": "41d384be17914e8dae31820aae4d7bf75f03609d8e14c0fb107a04db2860d226"
+    },
+    {
+      "path": "test/playback/history_test.dart",
+      "sha256": "37c67a2dcc64dbb68d9760e7a1432f5cad6de32494cfc1d8b861fd7cf769ab0f"
+    },
+    {
+      "path": "test/playback/incremental_save_test.dart",
+      "sha256": "9f8dbf360df23c0520ed9e8a278f0ced9e4548470ccd6ca1e52b348ab8155a67"
+    },
+    {
+      "path": "test/playback/notices_test.dart",
+      "sha256": "1bf92ddacecbe34ee0a9be1adf9163c8a5b0a3ea5013f97de8f279a649dce11d"
+    },
+    {
+      "path": "test/playback/notices_widget_test.dart",
+      "sha256": "e9769e9b4c30389f5274e57a2121fc337e5154f729adc4190f7c92f320e67ad7"
+    },
+    {
+      "path": "test/playback/play_choice_test.dart",
+      "sha256": "2f982d15ccd9e4c67004941a486e0b085f19ba62bae2aec035a2b841108e56da"
+    },
+    {
+      "path": "test/playback/play_start_test.dart",
+      "sha256": "a042350f598d28921148c62fe1ea1d33bfac1c4c0cc97d9495c401b801e77f1a"
+    },
+    {
+      "path": "test/playback/playback_test.dart",
+      "sha256": "1f2ec6c35df53b55deb2a90d51f534567715b3e11e5326c171b14ca58849e74e"
+    },
+    {
+      "path": "test/playback/player_controls_test.dart",
+      "sha256": "3c9a086518999bb8ae41889082eb3b82dcd87d5b7de313ebbe4317b7a2937fd7"
+    },
+    {
+      "path": "test/playback/replacement_test.dart",
+      "sha256": "59facd4c63d7c7a1e27b71d7d4970299dc9da53279afd47463d44b573d786bf6"
+    },
+    {
+      "path": "test/playback/save_queue_test.dart",
+      "sha256": "6680b144f307ee6541241f411c2ecc5aec2252df90b5f78cc48381a244375474"
+    },
+    {
+      "path": "test/playback/signals_test.dart",
+      "sha256": "b10f8e0b1ea5eefcb44a8572f105aa9e19dc672dfd6723f90202b22165ad7118"
+    },
+    {
+      "path": "test/reader/epub/admission_test.dart",
+      "sha256": "560a295e4ef1295cebb7d366810444c2b7113fd2391784f152985f74035615e6"
+    },
+    {
+      "path": "test/reader/epub/chapter_titles_test.dart",
+      "sha256": "6cfd410ae812a4cbbfdfb3561c94f323d55fac6c5e1d27351d287c32b75e9dc7"
+    },
+    {
+      "path": "test/reader/epub/corpus/book.dart",
+      "sha256": "e1c9d28989987c555718115d2afe5e30ff8d549b022a8d830edd7c3ab1a5d920"
+    },
+    {
+      "path": "test/reader/epub/damaged_chapters_test.dart",
+      "sha256": "bc742470587a7bb09d177c2e232ed8df287bd1d373d9a94760fa9fa275e45b91"
+    },
+    {
+      "path": "test/reader/epub/epubjs_fixtures.dart",
+      "sha256": "5af24932458b68435f470fc4a950079c432a8340daded0b0dab4bb9f56489353"
+    },
+    {
+      "path": "test/reader/epub/layout_run_test.dart",
+      "sha256": "7430b11f50a5bf7d711a9fc1af1db78fc817894c43e683079d5c4cb1a9391831"
+    },
+    {
+      "path": "test/reader/epub/page_map_open_test.dart",
+      "sha256": "d696592b8c258345cbab66fb87be176c4625811664c68375d6d47b9bc3f22ab2"
+    },
+    {
+      "path": "test/reader/epub/page_source_test.dart",
+      "sha256": "a502b49ffb76f27b90237b3e6989653b2879bedfdcdfc95cfaffc61e3e1118c2"
+    },
+    {
+      "path": "test/reader/epub/pager_test.dart",
+      "sha256": "a317967a11334118d4b3007101bde61bb6c955fdea798f2913b349ef54fed147"
+    },
+    {
+      "path": "test/reader/epub/places_test.dart",
+      "sha256": "d78493ffdb31fdc22dc40911ec0a702f54c369f8252bb2982e8b2fd9754dc35b"
+    },
+    {
+      "path": "test/reader/epub/prepare_test.dart",
+      "sha256": "5ecf937aa566088476f0b2160f58a0b9d6e186b9d8a4959982c19d3894cf4164"
+    },
+    {
+      "path": "test/reader/epub/section_styles_test.dart",
+      "sha256": "b4cf79c094349ea7c5be7205d985d3a8aa34cd774255f6fa89b27c81024dbb62"
+    },
+    {
+      "path": "test/reader/epub/viewport_test.dart",
+      "sha256": "2a7c92247fc60f08325c7a6230e25db663f2e171690c384d82c78e438bf2cb57"
+    },
+    {
+      "path": "test/reader/records_test.dart",
+      "sha256": "f8d2f90cf5f45e53e3643879e52501958e780cbaa5222558bd7708fa95085503"
+    },
+    {
+      "path": "test/reader/screen_test.dart",
+      "sha256": "243668a26f09f3d16b4b5dbd514cfa3f0fd817c4ff4ccc76b6bc68c5d893cdc0"
+    },
+    {
+      "path": "test/sync/playback_refresh_test.dart",
+      "sha256": "91df5b84ac28bc613ba79f82b7242a3debf50f9500ae32fb5c0310b815900ab7"
+    },
+    {
+      "path": "test/sync/refresh_after_sync_test.dart",
+      "sha256": "d9ec71e465f10ea2563172f8d4c02e3c1553f2ce0796872878556a44e5e32090"
+    },
+    {
+      "path": "tool/showcase_media.dart",
+      "sha256": "a1f1908730bc07738e26825ba54fa276cb0dd7d6954c02de0a6c5211e2b34d95"
+    }
+  ],
+  "childEvidenceChecks": {
+    "boo-spco": {
+      "archiveAndRawLogPairsVerified": 42,
+      "finalSourceHashesVerified": 24,
+      "originalReviewerSha256": "7072b2a9ba70dc6c2499a431a232b2809afc4fdb3d233868ff1c1537bd86a63c",
+      "differingIntegratedFiles": [
+        "lib/catalog/screen.dart",
+        "lib/playback/playback.dart",
+        "lib/playback/timeline.dart",
+        "test/playback/playback_test.dart"
+      ],
+      "differences": "Retained Ask-at-Play code, combined command operation arguments and publication, shared reopen error handling plus two new regression cases."
+    },
+    "te-c2tc": {
+      "evidenceHashesVerified": 54,
+      "compressedArtifactsVerified": 32,
+      "confirmedFullSuite": {
+        "passed": 3768,
+        "skipped": 27,
+        "success": true
+      },
+      "differingIntegratedFiles": [
+        "test/reader/epub/page_source_test.dart"
+      ],
+      "differences": "Existing integrated note-preview tests; fixture hunk matches after removing Git blob ids and line-number headers."
+    }
+  },
+  "integrationFix": {
+    "problem": "Saved listening-choice restart bypassed the scoped audio failure handler.",
+    "red": "01-choice-restart-red: 2 expected behavioral failures; records-recovery message was shown for decoder load failure.",
+    "green": "02-choice-restart-green: 2 passed; scoped audio error, unchanged durable History and choice, successful retry restores local 11000ms and remote 40000ms.",
+    "implementationCommit": "a229eada"
+  },
+  "inspectionHelperCorrections": [
+    "The first check-summary print loop used a missing optional result key after completing all 42 archive and source hash assertions; corrected to use an optional lookup.",
+    "A raw fixture diff byte comparison included different Git blob ids and hunk line numbers; the corrected comparison verifies unchanged added/removed/context lines."
+  ],
+  "commandCorrections": [
+    {
+      "command": "04-combined-focused",
+      "result": "304 passed, 8 existing skips, 1 nonexistent test-path loading failure. No behavioral failure.",
+      "resolution": "05-corpus-focused uses the existing corpus directory: 28 passed. Full suite covers all existing selected tests again."
+    }
+  ],
+  "acceptance": {
+    "boo-r8st": "boo-4088",
+    "boo-spco": "boo-hxmd",
+    "deviceAccess": "t1-dth0 remains blocked after authorized repeat failed twice.",
+    "talkBack": "t2-u76g remains open.",
+    "hardening": "boo-gk92 awaits user/device acceptance; no coverage or general mutation campaign."
+  },
+  "reviewTreatment": "Original changes-required verdicts for boo-r8st and boo-spco remain unchanged. All findings have retained lead resolutions inspected by parent. No second review. te-c2tc passes with corrected nonblocking inventory finding F1."
+}

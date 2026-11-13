@@ -1,0 +1,47 @@
+{
+  "sourceHead": "266773a571a5e63cd9fe269b48d21e66aa238751",
+  "latestTrackingHead": "c1e5a10dee1d459f2c01867d66812fd4fbae9d1d",
+  "sourceUnchangedSinceTests": true,
+  "combinedChecks": "docs/evidence/boo-spco/integration/commands.jsonl",
+  "combinedFullSuite": {
+    "passed": 3831,
+    "skipped": 27,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "browserBuilds": "Production and gallery JavaScript entry points both build with nonempty output. Existing WebAssembly/font warnings retained; no browser interaction claim.",
+  "analysis": "No issues: lib, test, integration_test, tool/showcase_fixture.dart, tool/showcase_media.dart.",
+  "format": "48 Dart files checked, zero changes.",
+  "whitespace": "Complete 5339f0f6-to-HEAD diff checked successfully before evidence/closure commit. Final committed-HEAD check follows closure; its result is retained in /tmp/bookfin-boo-spco-integration/commands.jsonl and parent tool output.",
+  "parentOwnedCommandsFinished": true,
+  "hardening": "Coverage and general mutation testing await acceptance. No competing hardening run.",
+  "limits": [
+    "27 optional skips remain exclusions; complete reasons/gates and expanded-log attribution limits in full-skips.json.",
+    "No Android, physical ARM, TalkBack or iOS execution in this integration.",
+    "No live-server/device/browser acceptance, release packaging or deployment.",
+    "No second reviewer; original reviewer verdicts preserved unchanged."
+  ],
+  "ticket": "boo-r8st",
+  "childHead": "f570f3e3440437b99ced290d277cf83ccc5c7b0a",
+  "commitMapping": {
+    "92f6fc1d2432c0ccbac0483487dcb33704fae9b4": "00a5f3bd",
+    "99950ce54add75928e4523eafe37cd166bf9ab3b": "f7d93dba",
+    "00fd427de585f8e180b2346a4de5b36b4583987b": "aee1f272",
+    "f2300dc6d52758d365cc3ed678eb25bb517697bd": "9de33aa0",
+    "f570f3e3440437b99ced290d277cf83ccc5c7b0a": "751642f2"
+  },
+  "childArchive": "docs/evidence/boo-r8st/archive.json: 64 artifacts; all 59 command logs and original review hash verified.",
+  "originalReviewerSha256": "1f2989bbbd2dc7a2460410650e2ef12510ca7e1f08001cb581482f320ce4f0e2",
+  "reviewDisposition": "Original changes_required verdicts preserved. Parent inspected R1/R2/R3 resolutions: raised-text Copy/semantics mapping, bounded divisible table-row work, block-backlink-image omission.",
+  "earlierIntegratedFull": "full.json: 3797 passed, 27 skipped at 751642f2, before playback notices and remaining fixture corrections.",
+  "sourceMerge": "All 17 Dart files matched final child after original integration. The later page_source_test fixture timestamp edit matches te-c2tc, with note behavior/tests retained.",
+  "acceptanceTicket": "boo-4088",
+  "status": "Integrated and verified; implementation ticket closed with this record.",
+  "previewLimits": [
+    "12000 logical-pixel capacity bounds retained preview layout, not source admission/preparation or complete shared column measurements.",
+    "An indivisible tall line or image stays whole.",
+    "Unmarked prose without a later reference/structural boundary ends at its containing element.",
+    "No hardware latency/memory or native accessibility claim."
+  ],
+  "skipInventory": "docs/evidence/boo-spco/integration/full-skips.json"
+}

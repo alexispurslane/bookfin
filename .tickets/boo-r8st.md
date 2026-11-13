@@ -1,6 +1,6 @@
 ---
 id: boo-r8st
-status: in_progress
+status: closed
 deps: []
 links: [boo-4088]
 created: 2026-11-12T23:41:02Z
@@ -181,3 +181,21 @@ in-scope finding and validation gap has a recorded resolution.
 Ready for parent integration after the final evidence commit and clean-state
 check. This ticket remains in progress; only the parent integrates and closes
 it. Device/visual acceptance, coverage and mutation testing remain parent-owned.
+
+## Parent closure — 2026-11-13
+
+Integrated 751642f2. Combined source at 266773a5 passed 3,831 tests
+with 27 existing skips and zero failures. Both production and gallery
+JavaScript builds pass. Analysis of lib, test, integration_test and both
+showcase tools reports no issues. All 48 combined changed Dart files pass
+format verification with zero changes. No runtime source changed after tests.
+
+Integration inspection, commit mapping, original review dispositions and
+limits: docs/evidence/boo-r8st/integration/integration.json. Parent preserves all
+command logs, the two expected restart behavioral failures, the corrected
+nonexistent focused-test path, and all skip reasons/gates. Original review
+verdicts remain unchanged. No second review or competing hardening run.
+
+Remaining tracked work: boo-4088. Android acceptance remains blocked by
+t1-dth0; real TalkBack also requires t2-u76g. Coverage and general mutation
+testing await acceptance. Closing implementation does not claim those checks.

@@ -1,6 +1,6 @@
 ---
 id: boo-spco
-status: in_progress
+status: closed
 deps: []
 links: [boo-hxmd]
 created: 2026-11-08T03:16:28Z
@@ -196,3 +196,21 @@ The existing automatic-reopen handler now owns both reopen paths. Both tests
 pass and confirm unchanged saved History/choice plus successful recovery of the
 local and remote places. No second review stage was started. Parent evidence is
 being collected under docs/evidence/boo-spco/integration; broad checks pending.
+
+## Parent closure — 2026-11-13
+
+Integrated 8d7fcb0b plus integration fix a229eada. Combined source at 266773a5 passed 3,831 tests
+with 27 existing skips and zero failures. Both production and gallery
+JavaScript builds pass. Analysis of lib, test, integration_test and both
+showcase tools reports no issues. All 48 combined changed Dart files pass
+format verification with zero changes. No runtime source changed after tests.
+
+Integration inspection, commit mapping, original review dispositions and
+limits: docs/evidence/boo-spco/integration/integration.json. Parent preserves all
+command logs, the two expected restart behavioral failures, the corrected
+nonexistent focused-test path, and all skip reasons/gates. Original review
+verdicts remain unchanged. No second review or competing hardening run.
+
+Remaining tracked work: boo-hxmd. Android acceptance remains blocked by
+t1-dth0; real TalkBack also requires t2-u76g. Coverage and general mutation
+testing await acceptance. Closing implementation does not claim those checks.

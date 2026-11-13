@@ -1,0 +1,128 @@
+[
+  {
+    "path": "docs/evidence/boo-spco/integration/01-choice-restart-red.log.gz",
+    "rawBytes": 1656,
+    "rawSha256": "9c70fcc7a20459b941cb8e57f9c39750fbf5d3d80599eb50e7e5282111239aae",
+    "archiveBytes": 433,
+    "archiveSha256": "8e9b0078c8649a88678e0e85a4b3c3456620c786a0d954bc64af41277fe3ed44"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/01-choice-restart-red.patch.gz",
+    "rawBytes": 2289,
+    "rawSha256": "ff593eccb084e7d8ec34d4aca5d9c9bfed0a9d5c3b71abbf01f447c8af9dc841",
+    "archiveBytes": 860,
+    "archiveSha256": "48b920f68125b797491dca25d9b412390e265d6b4759614c474ac984c6003712"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/02-choice-restart-green.log.gz",
+    "rawBytes": 525,
+    "rawSha256": "bbb00bd6f32f7580bc939805f8cda1d61dbfa036150c707007e2dceace8cfb9e",
+    "archiveBytes": 263,
+    "archiveSha256": "7782274f9eb3fed57da458121110819f0023f817b504df16d1f21325819e10a1"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/02-choice-restart-green.patch.gz",
+    "rawBytes": 3900,
+    "rawSha256": "38d25f47b33a595066675802b699f7774da7fb23618af89ad68a5981aeaabb9b",
+    "archiveBytes": 1336,
+    "archiveSha256": "7a7441561e8256ca13a2b949ce051a526d81e3cce6d41736ba7e9a278391aed0"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/03-format.log.gz",
+    "rawBytes": 130,
+    "rawSha256": "2c1ec1ef4c1b8ce0171b26838c6006c2e3085723dbef6313962a4734dea060cc",
+    "archiveBytes": 107,
+    "archiveSha256": "2367f53a4ad36f9af2c29468aed35d5da9a9ea5017a2044abbe097325ee0263b"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/03-format.patch.gz",
+    "rawBytes": 3900,
+    "rawSha256": "38d25f47b33a595066675802b699f7774da7fb23618af89ad68a5981aeaabb9b",
+    "archiveBytes": 1336,
+    "archiveSha256": "7a7441561e8256ca13a2b949ce051a526d81e3cce6d41736ba7e9a278391aed0"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/04-combined-focused.log.gz",
+    "rawBytes": 54209,
+    "rawSha256": "1346a9774ffa28106c5b3ef699b45b951c4462c26ffc2952653a96b092832c24",
+    "archiveBytes": 6215,
+    "archiveSha256": "951000480958cb9d966eb299e92c46dcf091f753331c157198967d482097eb1b"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/04-combined-focused.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/05-corpus-focused.log.gz",
+    "rawBytes": 4801,
+    "rawSha256": "872ddedf3f2eef931226f9e49aef202b5348312f76c3cad610e69a13861a0d48",
+    "archiveBytes": 1025,
+    "archiveSha256": "adf74a209186bfb58127dd72669d217a8ec5c68e7ba633d6941e8d98945d77c1"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/05-corpus-focused.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/06-combined-full.log.gz",
+    "rawBytes": 703296,
+    "rawSha256": "d870ffd662bf996a3fda02b746f3bdde9b79ddd063789b0a3e602fd6669ba3e2",
+    "archiveBytes": 62224,
+    "archiveSha256": "9f34ae281dad92571dcacf87d576787b757d33708b3cafd54364658111798e1e"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/06-combined-full.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/07-web-builds.log.gz",
+    "rawBytes": 2876,
+    "rawSha256": "d929771ac38b730c2adf99c5a7179d4230370f29966aa67a73a75fa1eb2ca4fb",
+    "archiveBytes": 692,
+    "archiveSha256": "548b2a43cb3886228165b15a8fc07a6838946d4472246d2bb66b856aaa0f02e0"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/07-web-builds.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/08-analysis.log.gz",
+    "rawBytes": 96,
+    "rawSha256": "5a4fd02f8e568e27dd1eb6cf2ea69f8e311027741a7e657cb904acdb126472ef",
+    "archiveBytes": 75,
+    "archiveSha256": "cee63c15cb22b11ca1d2c1882693cfcec7419ec19e9b99c11084a3ce30dcd0e8"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/08-analysis.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/09-format-check.log.gz",
+    "rawBytes": 48,
+    "rawSha256": "04b52d7c5f670985b76c61fd8229c593bfaec6d883828618c6bfdb7370ecd063",
+    "archiveBytes": 68,
+    "archiveSha256": "d0ff1c6edcdd84b8bb97cd1ffc49684e8b281812efbc5fccf605e29fe3d04564"
+  },
+  {
+    "path": "docs/evidence/boo-spco/integration/09-format-check.patch.gz",
+    "rawBytes": 0,
+    "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archiveBytes": 20,
+    "archiveSha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  }
+]
