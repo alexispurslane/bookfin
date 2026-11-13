@@ -56,7 +56,8 @@ Repository-wide searches also checked tool consumers. `tool/reader/open_benchmar
 - `8c54573abbef63626d9444a7ecbd3ff79e907112` (boo-yjq6, November 11) moved that worker ownership into `AdmittedBooks.load`, including `read` and the caller's publication use, and moved new-record writes after the load result.
 - `18f253a98a9013e75dbed46ec9bef8ef3c984a65` (boo-yjq6) added the current lazy binary ranges and per-resource text copies inside `Publication.decode`, reached within that same worker.
 - `bac5b648ad136b8ca498803268ebb0e2015497b8` retained new records when the worker's use callback throws.
-- `8e659ae5c5a7e116676b3a9d02a19dae531667eb` (boo-sy2d/t4-3o9f) introduced held download preparation and kept speech readers from writing after their download loan ends. `74aa8c3264ce362acd917a9768163d5bd023f190` retained this model in the subsequent review fixes.
+- `8e659ae5c5a7e116676b3a9d02a19dae531667eb` (boo-sy2d/t4-3o9f) introduced held download preparation. `74aa8c3264ce362acd917a9768163d5bd023f190` retained this model in the subsequent review fixes.
+- `5944606e5fa5b76a019f870a491ba322bc80100e` (boo-vh77 review) introduced `_keptOrAdmittedEpub` and `keptMobi` and removed their record-persistence calls, so speech readers cannot write after their download loan ends.
 - Inspection of the survey's own `f9f26500e11de09adcbbe304e66cab162860c158` confirms the same `AdmittedBooks.load` worker. This was a caller-tracing error in the survey, not an outstanding regression on the assigned base.
 
 ### Saved-record proof
@@ -83,4 +84,20 @@ Evidence logs are saved under `/tmp/bookfin-boo-5ivg-evidence/`. All commands ru
 
 Flutter setup printed `xcrun` errors for absent `iphoneos` and `iphonesimulator` SDKs in the test logs; host tests still exited successfully. Dependency resolution noted 38 newer incompatible package versions; no dependency files changed. Full-suite skips are the repository's optional corpus, benchmark and external-environment checks; their skip messages are retained in `full.log`. No failed or interrupted top-level commands occurred. No benchmark flags were enabled, and no timing or Android claim follows from these results.
 
-Exactly one fresh read-only reviewer is required before integration handoff. Its original verdicts, findings and any lead resolutions will be appended here after completion.
+### Completed independent review and lead resolution
+
+Exactly one reviewer ran with shared isolation, async mode, review role, Codex `gpt-6-astra`, `reasoningEffort: high`. It completed without edits, builds, tests, commits or children. Review task: `node:delegated-task:command%3Amcp%3Aeb3aeb40-6346-42fd-88a2-abcdf2308b88%3Adelegate-task%3Aboo-5ivg-review-astra-20261113-1`. Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Aeb3aeb40-6346-42fd-88a2-abcdf2308b88%3Adelegate-task%3Aboo-5ivg-review-astra-20261113-1>.
+
+Original verdicts at reviewed HEAD `e1928da487dfc963b7aab70ff9bec335c62f7d7d`, against base `e72d2335b1197080464e2381b923b9b310429da2`:
+
+| Assessment | Original verdict | Reviewer evidence | Findings | Validation gaps |
+| --- | --- | --- | --- | --- |
+| Correctness | pass | Traced production source, real-record tests and their guard control; inspected preserved facts and saved passing logs | No runtime regression; one low-severity provenance correction below | Tests inspected, not rerun |
+| Ticket fulfillment | pass | Every production entry reaches worker execution; decode and text copies finish there; inspected installed Dart SDK's awaited computation and `Isolate.exit` return | No unmet material requirement | Guard observes record opening; source trace establishes decode/copy location. This combination meets the ticket at the reviewed head, but the guard alone does not detect every possible future relocation of decode |
+| Design | pass | Existing owners retain loading, pending writes, download holds, decode and speech-worker state; the test guard adds no production interface | No substantiated ownership, information-leakage or change-amplification defect | Static assessment; no performance measurement required or performed |
+
+Design sources cited by the reviewer: User's reuse of the existing owner, Ousterhout's information hiding, and Muratori's rule against unnecessary machinery. Overall original verdict: pass, no blocking findings or unverified material requirements.
+
+Finding R1 (low, documentation only): following the speech-reader history from the former line 50 led to `8e659ae5`, which introduced held preparation, rather than the commit that removed speech-record persistence. Remedy: split the attribution and cite `5944606e` for the speech change. Lead resolution: inspected `git show 5944606e5fa5b76a019f870a491ba322bc80100e -- lib/reader/platform_io.dart lib/reader/mobi.dart`, confirmed both renamed helpers and the removed `AdmittedBooks.keep` calls, and corrected the provenance above. No behavior changed, so no new red/fix cycle or test run was warranted. This is the lead's resolution, not a second review or a claim of reapproval.
+
+The reviewer also noted that raw logs alone do not establish shell exit codes or every invocation setting. The lead observed exit 0 for each recorded command; the ticket preserves their exact invocations. Missing iOS SDK messages, expected SQLite failure-path diagnostics and optional skips remain explicit limitations. The original tests and production source are unchanged after review. All lead commands and the reviewer have finished; no findings or forks remain unresolved. Parent integration, acceptance, hardening and ticket closure remain outstanding.
