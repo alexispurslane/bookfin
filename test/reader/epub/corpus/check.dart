@@ -327,7 +327,7 @@ KeptSection _kept(ChapterLayout chapter) {
     firsts: [for (final page in chapter.pages) page.startPlace],
     visible: (starts: visible, length: chapter.section.dom.visibleLength),
     complete: true,
-    measures: measuresOf(chapter.section),
+    measures: chapter.measurements.measuresOf(chapter.section),
   );
 }
 
@@ -470,7 +470,7 @@ ChapterLayout _layOut(
       }
     }
     stepped.checkInvariants();
-    final chapter = layoutSection(section);
+    final chapter = layoutSection(section, measurements: stepped.measurements);
     if (!_same(keys(stepped.pages), keys(chapter.pages))) {
       found.runFailures.add(
         'section ${section.index}: the stepped run cut other pages',
@@ -571,7 +571,9 @@ Future<void> _checkKeptPlaces(
     };
     for (final place in places) {
       found.keptPlaces++;
-      final expected = trueIndex(lineStart(section, place));
+      final expected = trueIndex(
+        lineStart(section, place, measurements: chapter.measurements),
+      );
       final line = await keptLineStart(
         dom,
         starts,
@@ -601,8 +603,11 @@ Future<void> _checkKeptPlaces(
 void _checkRuns(ChapterLayout chapter, SettingsReport found, int compared) {
   final main = chapter.pages;
   for (var page = 1; page < main.length; page++) {
-    final run = LayoutRun(chapter.section, from: main[page].start)
-      ..step(const Duration(days: 1), want: compared);
+    final run = LayoutRun(
+      chapter.section,
+      from: main[page].start,
+      measurements: chapter.measurements,
+    )..step(const Duration(days: 1), want: compared);
     found.runs++;
     found.pagesCompared += run.pages.length;
     final expected = main.skip(page).take(run.pages.length);

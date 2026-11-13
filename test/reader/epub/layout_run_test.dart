@@ -120,8 +120,13 @@ List<PreparedSection> sampleSections() => [
 ];
 
 /// The pages of a run of [section] from [from], stepped to its end.
-List<LaidPage> runToEnd(PreparedSection section, {PageStart? from}) {
-  final run = LayoutRun(section, from: from)..step(forever);
+List<LaidPage> runToEnd(
+  PreparedSection section, {
+  PageStart? from,
+  LayoutMeasurements? measurements,
+}) {
+  final run = LayoutRun(section, from: from, measurements: measurements)
+    ..step(forever);
   expect(run.done, isTrue);
   return run.pages;
 }
@@ -161,6 +166,51 @@ bool atOrBefore((int, int) a, (int, int) b) =>
 
 void main() {
   setUpAll(loadReaderFont);
+
+  for (final width in [240.0, readerPage.width]) {
+    test('a note at width $width preserves later page cuts and place search '
+        'inside its shared nested paragraph', () {
+      final section = prepared(
+        '<div class="outer"><aside id="note"><p>The note begins.</p>'
+        '<div class="inner"><p>${prose(120)}</p></div></aside></div>',
+        css: '.outer{padding:0 40px}.inner{padding:0 13px}',
+      );
+      final measurements = LayoutMeasurements();
+      final main = runToEnd(section, measurements: measurements);
+      addTearDown(() => disposeAll(main));
+      final at = main.length * 3 ~/ 4;
+      final place = main[at].startPlace!;
+      final start = lineStart(section, place, measurements: measurements);
+      final excerpt = section.excerpt(
+        section.dom.elementById('note')!,
+        PageSettings(width: width, height: 1e6, fontSize: 20, night: false),
+      )!;
+      expect(
+        excerpt.flow.whereType<ParagraphItem>().last,
+        same(section.flow.whereType<ParagraphItem>().last),
+      );
+      final note = runToEnd(excerpt, measurements: measurements);
+      disposeAll(note);
+
+      final before = LayoutRun.laidOutUnits;
+      final resumed = LayoutRun(
+        section,
+        from: main[at].start,
+        measurements: measurements,
+      )..step(forever, want: 2);
+      addTearDown(() {
+        resumed.dispose();
+        disposeAll(resumed.pages);
+      });
+      expect(keys(resumed.pages.take(2)), keys(main.skip(at).take(2)));
+      expect(lineStart(section, place, measurements: measurements), start);
+      expect(
+        LayoutRun.laidOutUnits - before,
+        lessThan(section.dom.visibleLength ~/ 2),
+      );
+      resumed.checkInvariants();
+    });
+  }
 
   test(
     'a run from any true page start cuts the same pages as the main run',
@@ -322,7 +372,8 @@ void main() {
       (section) => section.settings == smallPage,
     );
     for (final section in small) {
-      final main = runToEnd(section);
+      final measurements = LayoutMeasurements();
+      final main = runToEnd(section, measurements: measurements);
       final dom = section.dom;
       final lines = [
         for (final page in main)
@@ -340,8 +391,11 @@ void main() {
             EpubPlace(section.index, lines[line].node, lines[line].offset + 2),
         ];
         for (final place in places) {
-          final run = LayoutRun(section, from: lineStart(section, place))
-            ..step(forever, want: 1);
+          final run = LayoutRun(
+            section,
+            measurements: measurements,
+            from: lineStart(section, place, measurements: measurements),
+          )..step(forever, want: 1);
           final shown = [
             for (final slice in run.pages.first.slices)
               if (slice.start case final start? when dom.textAt(start) != null)
@@ -729,14 +783,16 @@ void main() {
       text.order,
       text.text.indexOf('line 150'),
     );
-    final search = LineSearch(fresh, place);
+    final measurements = LayoutMeasurements();
+    final search = LineSearch(fresh, place, measurements: measurements);
     var steps = 0;
     while (search.found == null) {
       search.step(Duration.zero);
       steps++;
     }
     expect(steps, greaterThan(2));
-    final run = LayoutRun(fresh, from: search.found)..step(forever, want: 1);
+    final run = LayoutRun(fresh, from: search.found, measurements: measurements)
+      ..step(forever, want: 1);
     final [first, second, ...] = [
       for (final slice in run.pages.first.slices) slice.start!,
     ];
@@ -843,14 +899,16 @@ void main() {
       (text) => text.text.contains('Entry 550'),
     );
     final place = EpubPlace(fresh.index, text.order, 2);
-    final search = LineSearch(fresh, place);
+    final measurements = LayoutMeasurements();
+    final search = LineSearch(fresh, place, measurements: measurements);
     var steps = 0;
     while (search.found == null) {
       search.step(Duration.zero);
       steps++;
     }
     expect(steps, greaterThan(2));
-    final run = LayoutRun(fresh, from: search.found)..step(forever, want: 1);
+    final run = LayoutRun(fresh, from: search.found, measurements: measurements)
+      ..step(forever, want: 1);
     final [first, second, ...] = [
       for (final slice in run.pages.first.slices) slice.start!,
     ];

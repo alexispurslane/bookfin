@@ -1090,7 +1090,8 @@ void main() {
       final place = placeOf(prepared(body), 'Speech 30 passage 1.');
       final expected = lineStart(prepared(body), place);
       final section = prepared(body);
-      final search = LineSearch(section, place);
+      final measurements = LayoutMeasurements();
+      final search = LineSearch(section, place, measurements: measurements);
       var steps = 0;
       while (search.found == null) {
         search.step(Duration.zero);
@@ -1098,7 +1099,14 @@ void main() {
       }
       expect(steps, greaterThanOrEqualTo(40));
       expect(search.found, expected);
-      expect((LineSearch(section, place)..step(Duration.zero)).found, expected);
+      expect(
+        (LineSearch(
+          section,
+          place,
+          measurements: measurements,
+        )..step(Duration.zero)).found,
+        expected,
+      );
     });
 
     test('a run whose table a search measured meanwhile measures the next '
@@ -1118,7 +1126,11 @@ void main() {
       for (var row = 0; row < 4; row++) {
         run.step(Duration.zero);
       }
-      lineStart(section, placeOf(section, 'Antidisestablishmentarianism0'));
+      lineStart(
+        section,
+        placeOf(section, 'Antidisestablishmentarianism0'),
+        measurements: run.measurements,
+      );
       run.step(forever);
       run.dispose();
       expect(keys(run.pages), keys(whole));

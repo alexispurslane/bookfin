@@ -59,6 +59,8 @@ int _cellCount(TableItem table) =>
 
 void main() {
   setUpAll(loadReaderFont);
+  late LayoutMeasurements measurements;
+  setUp(() => measurements = LayoutMeasurements());
 
   group('kept table widths', () {
     late ChapterLayout chapter;
@@ -81,13 +83,16 @@ void main() {
 
     test('a run from a kept start inside a table cuts the same pages with '
         'kept widths as with measured ones', () {
-      final measures = measuresOf(chapter.section);
+      final measures = chapter.measurements.measuresOf(chapter.section);
       final fresh = prepared(_tableSection(80));
-      expect(reuseMeasures(fresh, measures), isTrue);
+      expect(measurements.reuseMeasures(fresh, measures), isTrue);
       final at = pageInTable();
 
-      final run = LayoutRun(fresh, from: chapter.pages[at].start)
-        ..step(const Duration(days: 1), want: 3);
+      final run = LayoutRun(
+        fresh,
+        measurements: measurements,
+        from: chapter.pages[at].start,
+      )..step(const Duration(days: 1), want: 3);
       addTearDown(() {
         for (final page in run.pages) {
           page.dispose();
@@ -102,11 +107,14 @@ void main() {
     test('a jump into the middle of a kept table does not measure the whole '
         'table', () {
       final fresh = prepared(_tableSection(80));
-      reuseMeasures(fresh, measuresOf(chapter.section));
+      measurements.reuseMeasures(
+        fresh,
+        chapter.measurements.measuresOf(chapter.section),
+      );
       final start = chapter.pages[pageInTable()].start;
       final before = LayoutRun.measuredCells;
 
-      final run = LayoutRun(fresh, from: start)
+      final run = LayoutRun(fresh, measurements: measurements, from: start)
         ..step(const Duration(days: 1), want: 1);
       addTearDown(() {
         for (final page in run.pages) {
@@ -129,15 +137,20 @@ void main() {
 
     test('a run that lays out a row whose kept width disagrees with a fresh '
         'one contradicts the kept measures', () {
-      final kept = measuresOf(chapter.section).tables[table]!;
+      final kept = chapter.measurements
+          .measuresOf(chapter.section)
+          .tables[table]!;
       final start = chapter.pages[pageInTable()].start;
       // The narrowest width of the first cell of the page's first row, one
       // pixel wider. Each row has two cells of two widths each.
       final wrong = Float64List.fromList(kept)..[start.line * 4] += 1;
       final fresh = prepared(_tableSection(80));
-      reuseMeasures(fresh, SectionMeasures(tables: {table: wrong}));
+      measurements.reuseMeasures(
+        fresh,
+        SectionMeasures(tables: {table: wrong}),
+      );
 
-      final run = LayoutRun(fresh, from: start)
+      final run = LayoutRun(fresh, measurements: measurements, from: start)
         ..step(const Duration(days: 1), want: 1);
       addTearDown(() {
         for (final page in run.pages) {
@@ -150,17 +163,19 @@ void main() {
     });
 
     test('kept widths that do not fit the section are refused', () {
-      final kept = measuresOf(chapter.section).tables[table]!;
+      final kept = chapter.measurements
+          .measuresOf(chapter.section)
+          .tables[table]!;
 
       expect(
-        reuseMeasures(
+        measurements.reuseMeasures(
           prepared(_tableSection(80)),
           SectionMeasures(tables: {table: Float64List.sublistView(kept, 4)}),
         ),
         isFalse,
       );
       expect(
-        reuseMeasures(
+        measurements.reuseMeasures(
           prepared(_tableSection(80)),
           SectionMeasures(tables: {table - 1: kept}),
         ),
@@ -170,7 +185,9 @@ void main() {
 
     test('the measures of a laid out section hold the widths of each table '
         'cell', () {
-      final widths = measuresOf(chapter.section).tables[table];
+      final widths = chapter.measurements
+          .measuresOf(chapter.section)
+          .tables[table];
 
       expect(
         widths?.length,
@@ -200,7 +217,7 @@ void main() {
     }
 
     List<LaidPage> runFrom(PreparedSection section, PageStart start, int want) {
-      final run = LayoutRun(section, from: start)
+      final run = LayoutRun(section, measurements: measurements, from: start)
         ..step(const Duration(days: 1), want: want);
       addTearDown(() {
         for (final page in run.pages) {
@@ -215,7 +232,13 @@ void main() {
     test('a run from a kept start inside a long paragraph cuts the same '
         'pages with kept line counts as with counted ones', () {
       final fresh = prepared(_paragraphSection());
-      expect(reuseMeasures(fresh, measuresOf(chapter.section)), isTrue);
+      expect(
+        measurements.reuseMeasures(
+          fresh,
+          chapter.measurements.measuresOf(chapter.section),
+        ),
+        isTrue,
+      );
       final at = pageInParagraph();
 
       final pages = runFrom(fresh, chapter.pages[at].start, 3);
@@ -226,7 +249,10 @@ void main() {
     test("a jump into the middle of a kept long paragraph does not count "
         "its earlier segments' lines", () {
       final fresh = prepared(_paragraphSection());
-      reuseMeasures(fresh, measuresOf(chapter.section));
+      measurements.reuseMeasures(
+        fresh,
+        chapter.measurements.measuresOf(chapter.section),
+      );
       final length = _length(fresh.flow[long] as ParagraphItem);
       final before = LayoutRun.laidOutUnits;
 
@@ -237,14 +263,16 @@ void main() {
 
     test('a run that lays out a segment whose kept line count disagrees '
         'with a fresh one contradicts the kept measures', () {
-      final kept = measuresOf(chapter.section).paragraphs[long]!;
+      final kept = chapter.measurements
+          .measuresOf(chapter.section)
+          .paragraphs[long]!;
       final start = chapter.pages[pageInParagraph()].start;
       // The segment of the page's first line, and the lines before the
       // segment after it, one more than they are.
       final segment = kept.lines.lastIndexWhere((lines) => lines <= start.line);
       expect(segment + 1, lessThan(kept.lines.length));
       final fresh = prepared(_paragraphSection());
-      reuseMeasures(
+      measurements.reuseMeasures(
         fresh,
         SectionMeasures(
           paragraphs: {
@@ -256,7 +284,7 @@ void main() {
         ),
       );
 
-      final run = LayoutRun(fresh, from: start)
+      final run = LayoutRun(fresh, measurements: measurements, from: start)
         ..step(const Duration(days: 1), want: 1);
       addTearDown(() {
         for (final page in run.pages) {
@@ -270,7 +298,9 @@ void main() {
 
     test('a run that finds a kept segment end wrong goes on with the '
         'segments that it finds, and cuts the same pages', () {
-      final kept = measuresOf(chapter.section).paragraphs[long]!;
+      final kept = chapter.measurements
+          .measuresOf(chapter.section)
+          .paragraphs[long]!;
       final first = chapter.pages.indexWhere(
         (page) => page.start.item == long && page.start.line > 0,
       );
@@ -279,7 +309,7 @@ void main() {
       // seven code units early.
       final segment = kept.lines.lastIndexWhere((lines) => lines <= start.line);
       final fresh = prepared(_paragraphSection());
-      reuseMeasures(
+      measurements.reuseMeasures(
         fresh,
         SectionMeasures(
           paragraphs: {
@@ -291,7 +321,8 @@ void main() {
         ),
       );
 
-      final run = LayoutRun(fresh, from: start)..step(const Duration(days: 1));
+      final run = LayoutRun(fresh, measurements: measurements, from: start)
+        ..step(const Duration(days: 1));
       addTearDown(() {
         for (final page in run.pages) {
           page.dispose();
@@ -301,12 +332,20 @@ void main() {
 
       expect(run.contradicted, isTrue);
       expect(keys(run.pages), keys(chapter.pages.skip(first)));
-      expect(measuresOf(fresh).paragraphs[long]?.starts, kept.starts);
-      expect(measuresOf(fresh).paragraphs[long]?.lines, kept.lines);
+      expect(
+        measurements.measuresOf(fresh).paragraphs[long]?.starts,
+        kept.starts,
+      );
+      expect(
+        measurements.measuresOf(fresh).paragraphs[long]?.lines,
+        kept.lines,
+      );
     });
 
     test('kept segments that do not fit the section are refused', () {
-      final kept = measuresOf(chapter.section).paragraphs[long]!;
+      final kept = chapter.measurements
+          .measuresOf(chapter.section)
+          .paragraphs[long]!;
       Segments moved(int by) => (
         starts: [for (final start in kept.starts) start + by],
         lines: kept.lines,
@@ -320,7 +359,7 @@ void main() {
         {long: moved(1 << 20)},
       ]) {
         expect(
-          reuseMeasures(
+          measurements.reuseMeasures(
             prepared(_paragraphSection()),
             SectionMeasures(paragraphs: paragraphs),
           ),
@@ -332,11 +371,15 @@ void main() {
 
     test('the measures of a laid out section hold the segments of each '
         'long paragraph', () {
-      final segments = measuresOf(chapter.section).paragraphs[long];
+      final segments = chapter.measurements
+          .measuresOf(chapter.section)
+          .paragraphs[long];
 
       expect(segments?.starts.length, greaterThan(10));
       expect(segments?.lines.length, segments?.starts.length);
-      expect(measuresOf(chapter.section).paragraphs.keys, [long]);
+      expect(chapter.measurements.measuresOf(chapter.section).paragraphs.keys, [
+        long,
+      ]);
     });
   });
 }

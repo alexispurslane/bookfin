@@ -226,6 +226,99 @@ void main() {
     expect(await pageMaps.read(readerPage), sections);
   });
 
+  test('a narrower note preserves a kept later page in its shared long '
+      'paragraph and the map survives reopen', () async {
+    final publication = book([
+      '<p>Read the note.<a epub:type="noteref" href="s1.xhtml#n">1</a></p>',
+      '<aside id="n" epub:type="footnote"><p>The note begins here.</p>'
+          '<p>${prose(300, 'Note')}</p></aside>',
+    ]);
+    final (kept, _) = await layOutWhole(publication);
+    final at = kept[1].starts.length * 3 ~/ 4;
+    final place = kept[1].firsts[at]!;
+    final pageMaps = mapsOf(publication);
+    final source = open(publication, pageMaps: pageMaps);
+    var dropped = 0;
+    source.keptMapDropped.addListener(() => dropped++);
+    final pager = EpubPager(
+      EpubDocument(publication),
+      source: source,
+      onPlace: (_) {},
+      onWarning: (_) {},
+    );
+    addTearDown(pager.dispose);
+    pager.present(readerPage);
+    await scheduler.settle();
+    expect(pager.shown.value, isNotNull);
+
+    for (final width in [240.0, 340.0, 240.0]) {
+      final note = (await scheduler.until(
+        pager.note((href: 'text/s1.xhtml#n', noteref: true), width: width),
+      ))!;
+      expect(note.page.startPlace, isNotNull);
+      note.dispose();
+    }
+
+    final later = await pageAt(source, place);
+    expect(later.startPlace, place);
+    expect(later.start, kept[1].starts[at]);
+    expect(dropped, 0);
+    expect(await pageMaps.read(readerPage), isNotNull);
+    source.checkInvariants();
+    final expected = content(later);
+    pager.dispose();
+
+    final reopened = open(publication, pageMaps: mapsOf(publication));
+    reopened.keptMapDropped.addListener(() => dropped++);
+    expect(content(await pageAt(reopened, place)), expected);
+    expect(dropped, 0);
+    expect(reopened.lineSearches, 0);
+  });
+
+  test('a note that disproves kept table widths drops the map and uses fresh '
+      'widths', () async {
+    final publication = book([
+      '<aside id="n"><p>The note begins.</p><table><tr><td>Speaker</td>'
+          '<td>${prose(12)}</td></tr></table></aside>',
+    ]);
+    final (truth, _) = await layOutWhole(publication);
+    final plain = open(publication);
+    final prepared = await scheduler.until(plain.section(0));
+    final expected = (await plain.excerpt(
+      prepared,
+      prepared.dom.elementById('n')!,
+      width: 240,
+    ))!;
+    addTearDown(expected.dispose);
+
+    final kept = truth.single;
+    final entry = kept.measures.tables.entries.single;
+    final widths = Float64List.fromList(entry.value)
+      ..[0] *= 2
+      ..[1] *= 2;
+    final pageMaps = mapsOf(publication);
+    await pageMaps.write(readerPage, [
+      _measured(kept, SectionMeasures(tables: {entry.key: widths})),
+    ]);
+    final seeded = open(publication, pageMaps: pageMaps);
+    final section = await scheduler.until(seeded.section(0));
+    await _eventually(() async => seeded.bookPages.value.complete);
+    var dropped = 0;
+    seeded.keptMapDropped.addListener(() => dropped++);
+
+    final page = (await seeded.excerpt(
+      section,
+      section.dom.elementById('n')!,
+      width: 240,
+    ))!;
+    addTearDown(page.dispose);
+
+    expect(dropped, 1);
+    expect(pageKey(page), pageKey(expected));
+    await _eventually(() async => await pageMaps.read(readerPage) == null);
+    seeded.checkInvariants();
+  });
+
   test('a second open of a book shows its true page number at once', () async {
     final publication = _sixSections();
     final first = open(publication, pageMaps: mapsOf(publication));

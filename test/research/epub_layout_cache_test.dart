@@ -219,6 +219,7 @@ void _standIn(
   Map<String, Object?> section,
 ) {
   final fresh = prepareSections([source], settings).single;
+  final measurements = LayoutMeasurements();
   final pages = main.pages;
   final middle = pages.length ~/ 2;
 
@@ -229,15 +230,18 @@ void _standIn(
   final place = pages[middle].startPlace;
   if (place != null) {
     var begin = _now();
-    final line = lineStart(fresh, place);
+    final line = lineStart(fresh, place, measurements: measurements);
     section['jumpLineSearchMs'] = _now() - begin;
     begin = _now();
-    final fromCache = LayoutRun(fresh, from: pages[middle].start)
-      ..step(const Duration(days: 1), want: 1);
+    final fromCache = LayoutRun(
+      fresh,
+      measurements: measurements,
+      from: pages[middle].start,
+    )..step(const Duration(days: 1), want: 1);
     section['jumpPageFromCachedStartMs'] = _now() - begin;
     section['jumpLineIsTrueStart'] = line == pages[middle].start;
     begin = _now();
-    final anchored = LayoutRun(fresh, from: line)
+    final anchored = LayoutRun(fresh, measurements: measurements, from: line)
       ..step(const Duration(days: 1), want: 1);
     section['jumpAnchoredPageMs'] = _now() - begin;
     for (final run in [fromCache, anchored]) {
@@ -256,8 +260,11 @@ void _standIn(
   var keyDiffer = 0;
   for (var at = 0; at < pages.length; at++) {
     final begin = _now();
-    final run = LayoutRun(fresh, from: pages[at].start)
-      ..step(const Duration(days: 1), want: 1);
+    final run = LayoutRun(
+      fresh,
+      measurements: measurements,
+      from: pages[at].start,
+    )..step(const Duration(days: 1), want: 1);
     times.add(_now() - begin);
     final page = run.pages.first;
     final next = at + 1 < pages.length ? pages[at + 1].start : null;

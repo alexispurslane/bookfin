@@ -120,10 +120,11 @@ void main() {
     final body = '<pre>${verse(2000)}</pre>';
     for (final settings in _settings) {
       final section = prepared(body, settings: settings);
+      final measurements = LayoutMeasurements();
       late List<LaidPage> pages;
       final slowest = _fastest(() {
         var slowest = Duration.zero;
-        final main = LayoutRun(section);
+        final main = LayoutRun(section, measurements: measurements);
         while (!main.done) {
           final begin = _watch.elapsed;
           main.step(budget);
@@ -137,7 +138,8 @@ void main() {
       final middle = pages[pages.length * 3 ~/ 4].start;
       final fromMiddle = _fastest(() {
         final begin = _watch.elapsed;
-        final run = LayoutRun(section, from: middle)..step(forever, want: 1);
+        final run = LayoutRun(section, measurements: measurements, from: middle)
+          ..step(forever, want: 1);
         final took = _watch.elapsed - begin;
         for (final page in run.pages) {
           page.dispose();
@@ -151,12 +153,15 @@ void main() {
       // Sections that no run laid out yet.
       late LineSearch search;
       late PreparedSection fresh;
+      late LayoutMeasurements freshMeasurements;
       final slowestSearch = _fastest(() {
         fresh = prepared(body, settings: settings);
+        freshMeasurements = LayoutMeasurements();
         final text = fresh.dom.texts.single;
         search = LineSearch(
           fresh,
           EpubPlace(fresh.index, text.order, text.text.indexOf('line 1900')),
+          measurements: freshMeasurements,
         );
         var slowest = Duration.zero;
         while (search.found == null) {
@@ -168,8 +173,11 @@ void main() {
         return slowest;
       });
       final begin = _watch.elapsed;
-      final opened = LayoutRun(fresh, from: search.found)
-        ..step(forever, want: 1);
+      final opened = LayoutRun(
+        fresh,
+        from: search.found,
+        measurements: freshMeasurements,
+      )..step(forever, want: 1);
       final opening = _watch.elapsed - begin;
       for (final page in opened.pages) {
         page.dispose();
@@ -330,10 +338,11 @@ void main() {
     const row = Duration(milliseconds: 30);
     for (final settings in _settings) {
       final section = prepared(body, settings: settings);
+      final measurements = LayoutMeasurements();
       late List<LaidPage> pages;
       final slowest = _fastest(() {
         var slowest = Duration.zero;
-        final main = LayoutRun(section);
+        final main = LayoutRun(section, measurements: measurements);
         while (!main.done) {
           final begin = _watch.elapsed;
           main.step(budget);
@@ -347,7 +356,8 @@ void main() {
       final middle = pages[pages.length ~/ 2].start;
       final fromMiddle = _fastest(() {
         final begin = _watch.elapsed;
-        final run = LayoutRun(section, from: middle)..step(forever, want: 1);
+        final run = LayoutRun(section, measurements: measurements, from: middle)
+          ..step(forever, want: 1);
         final took = _watch.elapsed - begin;
         for (final page in run.pages) {
           page.dispose();
@@ -361,8 +371,11 @@ void main() {
       final place = EpubPlace(section.index, late.order, 0);
       final opening = _fastest(() {
         final begin = _watch.elapsed;
-        final run = LayoutRun(section, from: lineStart(section, place))
-          ..step(forever, want: 1);
+        final run = LayoutRun(
+          section,
+          measurements: measurements,
+          from: lineStart(section, place, measurements: measurements),
+        )..step(forever, want: 1);
         final took = _watch.elapsed - begin;
         for (final page in run.pages) {
           page.dispose();

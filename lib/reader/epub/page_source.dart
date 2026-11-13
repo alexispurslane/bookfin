@@ -102,8 +102,8 @@ class PageRequestStopped implements Exception {
 /// follows it. The map also keeps each section's measures: the widths of
 /// each table's cells and the segments of each long paragraph, which a
 /// run from a start inside the item needs first. Each prepared section of
-/// a seeded section reuses them ([reuseMeasures]). A run measures each
-/// kept table row and lays out each kept segment that it reaches again.
+/// a seeded section reuses them ([LayoutMeasurements.reuseMeasures]). A run
+/// measures each kept table row and lays out each kept segment that it reaches again.
 /// The first page, row or segment that contradicts the map forgets it: the
 /// seeded pages and measures drop, the file goes, and the whole book is
 /// laid out again. A section whose main run ended reuses that run's
@@ -116,7 +116,8 @@ class PageRequestStopped implements Exception {
 /// are those of the shown page when the settings change, or the settings
 /// before the change when they equal the new value or nothing is shown.
 ///
-/// The source owns every page and picture that it returns. A page stays
+/// Except for caller-owned [excerpt] pages, the source owns every page
+/// and picture that it returns. A cached page stays
 /// usable until the cache drops it. The shown page and its two neighbors
 /// never leave the cache, so show a page before keeping it.
 ///
@@ -369,7 +370,7 @@ class PageSource {
       _dropPart(layout);
       layout.part = _Part(prepared);
       if (layout.measures case final measures?
-          when !reuseMeasures(prepared, measures)) {
+          when !layout.measurements.reuseMeasures(prepared, measures)) {
         _contradicted(layout);
       }
     }
@@ -380,6 +381,80 @@ class PageSource {
   Future<PreparedSection> section(int index) {
     final layout = _layoutFor(index, _current);
     return _ask(_Rank.asked, null, (request) => _ready(layout, request));
+  }
+
+  /// Lays out [element] of [section] as one scrolled fragment [width]
+  /// pixels wide, leaving out [omit] as [PreparedSection.excerpt] does.
+  /// Uses the section's measurement owner, with the fragment's actual
+  /// content widths. The caller owns the returned page and must dispose it.
+  /// Returns null when the element has no visible flow. Stops when the
+  /// source has dropped the section's page settings.
+  Future<LaidPage?> excerpt(
+    PreparedSection section,
+    DomElement element, {
+    required double width,
+    List<DomElement> omit = const [],
+  }) async {
+    if (_disposed) throw StateError('The page source is disposed.');
+    if (!(width > 0 && width.isFinite)) {
+      throw ArgumentError.value(width, 'width', 'must be above 0');
+    }
+    final layout = _layouts[(section.index, section.settings)];
+    if (layout == null) {
+      throw const PageRequestStopped('The page settings changed.');
+    }
+    final fragment = section.excerpt(
+      element,
+      PageSettings(
+        width: width,
+        height: 1e6,
+        fontSize: section.settings.fontSize,
+        night: section.settings.night,
+        sizesMainText: section.settings.sizesMainText,
+      ),
+      omit: omit,
+    );
+    if (fragment == null) return null;
+    while (true) {
+      final run = LayoutRun(fragment, measurements: layout.measurements);
+      var accepted = false;
+      try {
+        while (!run.done) {
+          run.step(_stepBudget);
+          if (run.contradicted) break;
+          if (!run.done) await Future<void>.delayed(Duration.zero);
+          if (_disposed) throw StateError('The page source is disposed.');
+        }
+        if (run.contradicted) {
+          // A note checks shared kept measurements too. Stop using them
+          // before rejecting them, then rebuild the note with fresh ones.
+          run.dispose();
+          _contradicted(layout);
+        } else {
+          final page = run.pages.single;
+          accepted = true;
+          return page;
+        }
+      } finally {
+        run.dispose();
+        if (!accepted) {
+          for (final page in run.pages) {
+            page.dispose();
+          }
+        }
+      }
+    }
+  }
+
+  /// The line holding [place], using the same measurements as this
+  /// section's runs. Synchronous and unbudgeted, for on-demand invariant
+  /// checks only; navigation uses the scheduled search in [pageAt].
+  PageStart checkedLineStart(PreparedSection section, EpubPlace place) {
+    final layout = _layouts[(section.index, section.settings)];
+    if (layout == null) {
+      throw const PageRequestStopped('The page settings changed.');
+    }
+    return lineStart(section, place, measurements: layout.measurements);
   }
 
   /// The true page that holds [place] if the main run passed it; else, when
@@ -1101,7 +1176,11 @@ class PageSource {
       case _LineNeed():
         final search = need.search ??= () {
           _lineSearches++;
-          return LineSearch(need.section, need.place);
+          return LineSearch(
+            need.section,
+            need.place,
+            measurements: layout.measurements,
+          );
         }();
         search.step(_stepBudget);
         need.found = search.found;
@@ -1172,7 +1251,7 @@ class PageSource {
     }
     layout.anchored?.run.dispose();
     return layout.anchored = _Run(
-      LayoutRun(section, from: start),
+      LayoutRun(section, from: start, measurements: layout.measurements),
       start,
       section,
       main: false,
@@ -1214,7 +1293,7 @@ class PageSource {
           layout.starts.add(page.start);
         }
         if (page.last) {
-          layout.measures = measuresOf(layout.prepared!);
+          layout.measures = layout.measurements.measuresOf(layout.prepared!);
           _finish(layout, length: layout.prepared!.dom.visibleLength);
         }
       }
@@ -1349,7 +1428,7 @@ class PageSource {
         ..measures = kept.measures;
       _finish(layout, length: kept.visible.length);
       if (layout.prepared case final prepared?
-          when !reuseMeasures(prepared, kept.measures)) {
+          when !layout.measurements.reuseMeasures(prepared, kept.measures)) {
         fits = false;
       }
     }
@@ -1426,11 +1505,11 @@ class PageSource {
     layout.measures = null;
     if (layout.prepared case final prepared?) {
       layout.disposeRuns();
-      forgetMeasures(prepared);
+      layout.measurements.forgetMeasures(prepared);
     }
     if (layout.part case final part?) {
       layout.disposeRuns();
-      forgetMeasures(part.section);
+      layout.measurements.forgetMeasures(part.section);
     }
   }
 
@@ -1552,7 +1631,7 @@ class PageSource {
       _prepared.add(layout);
       _dropPart(layout);
       if (layout.measures case final measures?
-          when !reuseMeasures(prepared, measures)) {
+          when !layout.measurements.reuseMeasures(prepared, measures)) {
         _contradicted(layout);
       }
       _trim();
@@ -1935,6 +2014,9 @@ class _Run {
 /// its runs and what they found.
 class _SectionLayout {
   _SectionLayout(this.index, this.settings);
+
+  /// The owner shared by page runs, note excerpts and place searches.
+  final measurements = LayoutMeasurements();
   final int index;
   final PageSettings settings;
 
@@ -1974,7 +2056,7 @@ class _SectionLayout {
 
   /// What runs of the section measured that a run from a start inside a
   /// flow item needs first: the main run's once it ended, or the kept page
-  /// map's. Each prepared section of it reuses them ([reuseMeasures]).
+  /// map's. Each prepared section reuses them through [measurements].
   SectionMeasures? measures;
 
   /// The start of the page after each page that a run cut, by the page's
@@ -1985,7 +2067,7 @@ class _SectionLayout {
   _Run startMain() {
     final from = starts.lastOrNull;
     return _Run(
-      LayoutRun(prepared!, from: from),
+      LayoutRun(prepared!, from: from, measurements: measurements),
       from ?? const PageStart(0, 0),
       prepared!,
       main: true,

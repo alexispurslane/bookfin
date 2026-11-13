@@ -170,8 +170,11 @@ class _ProbeState extends State<_Probe> {
       run.dispose();
       for (var at = 0; at < section.length; at += 10) {
         watch = Stopwatch()..start();
-        final one = LayoutRun(prepared, from: section[at])
-          ..step(const Duration(days: 1), want: 1);
+        final one = LayoutRun(
+          prepared,
+          from: section[at],
+          measurements: run.measurements,
+        )..step(const Duration(days: 1), want: 1);
         samples.add(_ms(watch));
         for (final page in one.pages) {
           page.dispose();

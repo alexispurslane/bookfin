@@ -274,6 +274,65 @@ void main() {
   setUp(() => scheduler = TestScheduler());
   tearDown(() => source.dispose());
 
+  test(
+    'an excerpt cannot restore a section whose page settings were dropped',
+    () async {
+      open(book(['<aside id="n"><p>The note.</p></aside>']));
+      final section = await scheduler.until(source.section(0));
+      source.settings = smallPage;
+      source.settings = const PageSettings(
+        width: 500,
+        height: 700,
+        fontSize: 22,
+        night: false,
+      );
+
+      await expectLater(
+        source.excerpt(section, section.dom.elementById('n')!, width: 240),
+        throwsA(isA<PageRequestStopped>()),
+      );
+      source.checkInvariants();
+    },
+  );
+
+  test(
+    'disposing the page source stops an excerpt between its layout steps',
+    () async {
+      open(
+        book(['<aside id="n"><p>${prose(100)}</p></aside>']),
+        budget: Duration.zero,
+      );
+      final section = await scheduler.until(source.section(0));
+      final pending = source.excerpt(
+        section,
+        section.dom.elementById('n')!,
+        width: 240,
+      );
+      final stopped = expectLater(pending, throwsStateError);
+      source.dispose();
+      await stopped;
+    },
+  );
+
+  test(
+    'a returned excerpt remains readable after its page source is disposed',
+    () async {
+      open(book(['<aside id="n"><p>The note remains readable.</p></aside>']));
+      final section = await scheduler.until(source.section(0));
+      final page = (await source.excerpt(
+        section,
+        section.dom.elementById('n')!,
+        width: 240,
+      ))!;
+      addTearDown(page.dispose);
+      final expected = content(page);
+      source.dispose();
+
+      expect(content(page), expected);
+      expect(page.startPlace, isNotNull);
+    },
+  );
+
   test('opening deep in a 400,000-character section gives the anchored page '
       'after the prepare, one step for the line and the steps of one page, '
       'long before the main run ends', () async {

@@ -475,12 +475,13 @@ class LaidPage implements PageDrawing {
 class LayoutRun {
   /// A run of [section] from [from], or from the section start. [clock]
   /// gives the time now for the step budget; it defaults to a monotonic
-  /// clock.
+  /// clock. [measurements] shares prior work with other runs and searches;
+  /// when omitted this run owns an independent set.
   ///
   /// A run measures each row of a table for its column widths, once per
   /// table item, one row in each unit of work, unless an earlier layout's
-  /// widths were given to the section ([reuseMeasures]). NOTE: A run that
-  /// starts inside a shrink-to-fit box that holds a table not yet measured,
+  /// widths were given to the section ([LayoutMeasurements.reuseMeasures]).
+  /// NOTE: A run that starts inside a shrink-to-fit box that holds a table not yet measured,
   /// as a table's own box is, measures the whole table here. The page
   /// source starts such runs only at page starts of the main run or of
   /// [lineStart], which measure the table first, in steps, or in sections
@@ -489,7 +490,9 @@ class LayoutRun {
     PreparedSection section, {
     PageStart? from,
     Duration Function()? clock,
-  }) : _section = section,
+    LayoutMeasurements? measurements,
+  }) : measurements = measurements ?? LayoutMeasurements(),
+       _section = section,
        _flow = section.flow,
        _reachesEnd = section.reachesEnd,
        _clock = clock ?? _elapsed,
@@ -516,7 +519,8 @@ class LayoutRun {
     List<FlowItem> flow,
     double left,
     double width,
-  ) : _section = outer._section,
+  ) : measurements = outer.measurements,
+      _section = outer._section,
       _flow = flow,
       _reachesEnd = true,
       _clock = outer._clock,
@@ -539,11 +543,15 @@ class LayoutRun {
   static int measuredCells = 0;
 
   /// Whether a measure that the run found again disagreed with a kept one
-  /// ([reuseMeasures]). The run checks the kept widths of each table row
-  /// that it lays out, and where each segment of a long paragraph that it
+  /// ([LayoutMeasurements.reuseMeasures]). The run checks the kept widths of
+  /// each table row that it lays out, and where each segment of a long paragraph that it
   /// lays out ends.
   bool get contradicted => _contradicted;
   bool _contradicted = false;
+
+  /// Measurements shared by the owner of this run and its searches.
+  /// A standalone run owns a fresh set unless its caller supplies one.
+  final LayoutMeasurements measurements;
 
   final PreparedSection _section;
 
@@ -658,6 +666,8 @@ class LayoutRun {
       if (!holds) throw StateError('LayoutRun: $message');
     }
 
+    measurements.checkInvariants(_section);
+
     if (!_disposed) {
       final held = _held.toSet();
       for (final slice in _pending) {
@@ -711,8 +721,12 @@ class LayoutRun {
         'a paragraph in progress is not the next item',
       );
       check(
-        segments.next < (_found[segments.item]?.starts.length ?? 0),
+        segments.next < segments.found.starts.length,
         'a paragraph in progress has no next segment found',
+      );
+      check(
+        segments.found.width == segments.width,
+        'a segment has another width',
       );
       check(_rows == null, 'a table and a paragraph are both in progress');
     }
@@ -1238,22 +1252,12 @@ class LayoutRun {
 
   // Tables.
 
-  /// The narrowest and the widest content width of each cell of a table
-  /// item, once measured. A table item belongs to one prepared section,
-  /// whose fonts load before it lays out, so its cells measure the same in
-  /// every run of the section.
-  static final _measured = Expando<List<List<GridCell>>>('table extents');
-
-  /// The rows of each table item whose widths came from kept measures
-  /// ([reuseMeasures]) and that no run measured again yet.
-  static final _unchecked = Expando<Set<int>>('kept table rows');
-
   /// Measures row [row] of [table] again when its widths came from kept
   /// measures that no run checked yet, and notes when they disagree. A row
   /// costs about what its layout costs, once per prepared section.
   void _check(TableItem table, int row) {
-    if (_unchecked[table]?.remove(row) != true) return;
-    final kept = _measured[table]![row];
+    if (measurements._unchecked[table]?.remove(row) != true) return;
+    final kept = measurements._tables[table]![row];
     for (final (column, cell) in table.rows[row].indexed) {
       if (_extent(cell, table.width) != kept[column]) _contradicted = true;
     }
@@ -1293,7 +1297,7 @@ class LayoutRun {
         },
       _ => null,
     };
-    return table != null && _measured[table] == null ? table : null;
+    return table != null && measurements._tables[table] == null ? table : null;
   }
 
   /// Measures the next row of [table] that [measured] lacks. Returns the
@@ -1310,7 +1314,7 @@ class LayoutRun {
       ]);
     }
     if (measured.length < table.rows.length) return null;
-    return _measured[table] = List.unmodifiable(measured);
+    return measurements._tables[table] = List.unmodifiable(measured);
   }
 
   /// Lays out the next flow item of a cell of the next row of [rows], or
@@ -1434,7 +1438,7 @@ class LayoutRun {
   /// The narrowest and the widest content width of each cell of [table],
   /// measured once per table item.
   List<List<GridCell>> _extentsOf(TableItem table) =>
-      _measured[table] ??= List.unmodifiable([
+      measurements._tables[table] ??= List.unmodifiable([
         for (final row in table.rows)
           [for (final cell in row) _extent(cell, table.width)],
       ]);
@@ -2093,7 +2097,17 @@ class LayoutRun {
     if (indent >= 0) {
       if (_long(item.text)) {
         _item = index;
-        _segment(_segments = _Segments(item, index, x, width, indent, from));
+        _segment(
+          _segments = _Segments(
+            item,
+            index,
+            x,
+            width,
+            indent,
+            from,
+            measurements._segmentsFor(_section, _flow, index, width),
+          ),
+        );
         return;
       }
       final built = _layOut(item.text, indent, width);
@@ -2144,19 +2158,13 @@ class LayoutRun {
   static bool _long(StyledText text) =>
       _cutAfter(text, 0, _segmentLength) != null;
 
-  /// The segments of each long paragraph item that runs found so far. A
-  /// paragraph item belongs to one prepared section and sits in one
-  /// column, so its segments break the same lines in every run of the
-  /// section.
-  static final _found = Expando<_Segmentation>('segments');
-
   /// Lays out the next segment of [segments] and adds its lines from line
   /// [_Segments.from] on. A line waits until the lines after it decide its
   /// widows rule. A run that starts at a later line skips the segments
   /// that another run found, and finds the others.
   void _segment(_Segments segments) {
     final item = segments.item;
-    final found = _found[item] ??= _Segmentation();
+    final found = segments.found;
     if (segments.next == 0 && segments.from > 0) {
       var known = 0;
       while (known + 1 < found.lines.length &&
@@ -2496,122 +2504,255 @@ bool _same<T>(List<T>? a, List<T> b) {
   return true;
 }
 
-/// The measures that runs of [section] found for its flow items so far: a
-/// main run to the section end finds them all.
-SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
-  tables: {
-    for (final (index, item) in section.flow.indexed)
-      if (item is TableItem)
-        if (LayoutRun._measured[item] case final rows?)
-          index: Float64List.fromList([
-            for (final row in rows)
-              for (final cell in row) ...[cell.min, cell.max],
-          ]),
-  },
-  paragraphs: {
-    for (final (index, item) in section.flow.indexed)
-      if (item is ParagraphItem)
-        if (LayoutRun._found[item] case final found?
-            when found.complete && found.starts.length > 1)
-          index: (
-            starts: List.unmodifiable(found.starts),
-            lines: List.unmodifiable(found.lines),
-          ),
-  },
-);
-
-/// Gives the flow items of [section] the kept [measures], which an earlier
-/// layout of the same section found ([measuresOf]), so that no run finds
-/// them again. An item that a run measured already keeps its own. A part of
-/// the section ([preparePart]) takes the measures of its own items only.
-/// Returns false, and gives nothing, when [measures] do not fit the
-/// section's items.
+/// Measurements owned by a page source's section layout, or by a standalone
+/// layout. Runs, place searches and kept maps use this same owner.
 ///
-/// A run checks each kept table row and each kept segment that it lays
-/// out ([LayoutRun.contradicted]). [forgetMeasures] takes the kept
-/// measures back.
-bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
-  final flow = section.flow;
-  // A part of the section passes by the items that it skipped or left out
-  // after its end.
-  bool passedBy(int index) =>
-      (index >= flow.length && !section.reachesEnd) ||
-      (index >= 0 && index < flow.length && flow[index] is SkippedItem);
-  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
-    if (passedBy(index)) continue;
-    if (index < 0 || index >= flow.length) return false;
-    if (flow[index] case final TableItem table
-        when widths.length ==
-            2 * table.rows.fold(0, (count, row) => count + row.length)) {
-      continue;
+/// Paragraph segments belong to an item's identity and its actual content
+/// width in pixels, after padding and table column sizing. Table extents are
+/// intrinsic to the prepared item, independent of the column width.
+/// Keys are weak: dropping prepared content also releases its measurements.
+/// No text-engine paragraph or image is held here.
+///
+/// The section index is a derived view of the same segment objects for map
+/// export. Imported segments wait there until layout supplies their actual
+/// width; an excerpt has its own index and cannot claim that pending import.
+///
+/// Invariants, checked on demand by [checkInvariants]: each segmentation
+/// starts at code unit and line zero, both counts increase together, and a
+/// bound segmentation has its table key's width. A table's extents and
+/// unchecked rows match its prepared rows. An unbound segment is a kept
+/// import for a paragraph in the section's flow.
+class LayoutMeasurements {
+  final _paragraphs = Expando<Map<double, _Segmentation>>('paragraph widths');
+  final _sections = Expando<Map<int, _Segmentation>>('section segments');
+  final _tables = Expando<List<List<GridCell>>>('table extents');
+  final _unchecked = Expando<Set<int>>('kept table rows');
+
+  /// Checks measurements reachable from [section], including table cells.
+  /// Throws [StateError] on a broken invariant, in every build.
+  void checkInvariants(PreparedSection section) {
+    void check(bool holds, String message) {
+      if (!holds) throw StateError('LayoutMeasurements: $message');
     }
-    return false;
-  }
-  for (final MapEntry(key: index, value: (:starts, :lines))
-      in measures.paragraphs.entries) {
-    if (passedBy(index)) continue;
-    if (index < 0 || index >= flow.length) return false;
-    if (flow[index] case final ParagraphItem paragraph
-        when LayoutRun._long(paragraph.text) &&
-            starts.length == lines.length &&
-            starts.length > 1 &&
-            starts.first == 0 &&
-            lines.first == 0) {
-      // A segment starts after the one before it and holds at least one
-      // line. The last one starts inside the text.
-      final length = paragraph.text.runs.fold(
-        0,
-        (sum, run) => sum + (run is TextRun ? run.text.length : 1),
+
+    void segments(_Segmentation found) {
+      check(
+        found.starts.isNotEmpty && found.starts.length == found.lines.length,
+        'unpaired segments',
       );
-      for (var at = 1; at < starts.length; at++) {
-        if (starts[at] <= starts[at - 1] || lines[at] <= lines[at - 1]) {
-          return false;
+      check(found.starts.first == 0 && found.lines.first == 0, 'no origin');
+      for (var at = 1; at < found.starts.length; at++) {
+        check(
+          found.starts[at] > found.starts[at - 1] &&
+              found.lines[at] > found.lines[at - 1],
+          'segments do not advance',
+        );
+      }
+    }
+
+    void flow(List<FlowItem> items) {
+      for (final item in items) {
+        if (item is ParagraphItem) {
+          for (final entry
+              in _paragraphs[item]?.entries ??
+                  const <MapEntry<double, _Segmentation>>[]) {
+            check(entry.value.width == entry.key, 'another content width');
+            segments(entry.value);
+          }
+        } else if (item is TableItem) {
+          if (_tables[item] case final rows?) {
+            check(rows.length == item.rows.length, 'table row count changed');
+            for (var row = 0; row < rows.length; row++) {
+              check(
+                rows[row].length == item.rows[row].length,
+                'table cell count changed',
+              );
+            }
+          }
+          for (final row in _unchecked[item] ?? const <int>{}) {
+            check(
+              _tables[item] != null && row >= 0 && row < item.rows.length,
+              'unchecked row has no measure',
+            );
+          }
+          for (final row in item.rows) {
+            for (final cell in row) {
+              flow(cell.flow);
+            }
+          }
         }
       }
-      if (starts.last >= length) return false;
-      continue;
     }
-    return false;
-  }
-  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
-    if (passedBy(index)) continue;
-    final table = flow[index] as TableItem;
-    if (LayoutRun._measured[table] != null) continue;
-    var at = 0;
-    LayoutRun._measured[table] = List.unmodifiable([
-      for (final row in table.rows)
-        [
-          for (final cell in row)
-            (span: cell.colspan, min: widths[at++], max: widths[at++]),
-        ],
-    ]);
-    LayoutRun._unchecked[table] = {
-      for (var row = 0; row < table.rows.length; row++) row,
-    };
-  }
-  for (final MapEntry(key: index, value: (:starts, :lines))
-      in measures.paragraphs.entries) {
-    if (passedBy(index)) continue;
-    final paragraph = flow[index] as ParagraphItem;
-    if (LayoutRun._found[paragraph] != null) continue;
-    LayoutRun._found[paragraph] = _Segmentation()
-      ..starts.addAll(starts.skip(1))
-      ..lines.addAll(lines.skip(1))
-      ..complete = true
-      ..kept = true;
-  }
-  return true;
-}
 
-/// Takes back the kept measures that [reuseMeasures] gave [section], so
-/// that runs find them again. Runs in progress must stop first.
-void forgetMeasures(PreparedSection section) {
-  for (final item in section.flow) {
-    if (item is TableItem && LayoutRun._unchecked[item] != null) {
-      LayoutRun._measured[item] = null;
-      LayoutRun._unchecked[item] = null;
-    } else if (item is ParagraphItem && LayoutRun._found[item]?.kept == true) {
-      LayoutRun._found[item] = null;
+    flow(section.flow);
+    for (final entry
+        in _sections[section]?.entries ??
+            const <MapEntry<int, _Segmentation>>[]) {
+      check(
+        entry.key >= 0 &&
+            entry.key < section.flow.length &&
+            section.flow[entry.key] is ParagraphItem,
+        'index has no paragraph',
+      );
+      if (entry.value.width == null) {
+        check(entry.value.kept, 'unbound segments were not imported');
+        segments(entry.value);
+      }
+    }
+  }
+
+  _Segmentation _segmentsFor(
+    PreparedSection section,
+    List<FlowItem> flow,
+    int index,
+    double width,
+  ) {
+    final item = flow[index] as ParagraphItem;
+    final widths = _paragraphs[item] ??= {};
+    final entries = identical(flow, section.flow)
+        ? (_sections[section] ??= {})
+        : null;
+    final found = widths.putIfAbsent(width, () {
+      final pending = entries?[index];
+      return (pending?.width == null ? pending : null) ?? _Segmentation();
+    })..width = width;
+    if (entries != null) entries[index] = found;
+    return found;
+  }
+
+  // A rejection in another excerpt can leave an old index entry. Only
+  // the item/width table is authoritative once an import is bound.
+  _Segmentation? _inSection(PreparedSection section, int index) {
+    final found = _sections[section]?[index];
+    return found != null &&
+            (found.width == null ||
+                identical(
+                  _paragraphs[section.flow[index]]?[found.width],
+                  found,
+                ))
+        ? found
+        : null;
+  }
+
+  /// The measures that runs of [section] found for its flow items so far: a
+  /// main run to the section end finds them all.
+  SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
+    tables: {
+      for (final (index, item) in section.flow.indexed)
+        if (item is TableItem)
+          if (_tables[item] case final rows?)
+            index: Float64List.fromList([
+              for (final row in rows)
+                for (final cell in row) ...[cell.min, cell.max],
+            ]),
+    },
+    paragraphs: {
+      for (final (index, item) in section.flow.indexed)
+        if (item is ParagraphItem)
+          if (_inSection(section, index) case final found?
+              when found.complete && found.starts.length > 1)
+            index: (
+              starts: List.unmodifiable(found.starts),
+              lines: List.unmodifiable(found.lines),
+            ),
+    },
+  );
+
+  /// Gives the flow items of [section] the kept [measures], which an earlier
+  /// layout of the same section found ([measuresOf]), so that no run finds
+  /// them again. An item that a run measured already keeps its own. A part of
+  /// the section ([preparePart]) takes the measures of its own items only.
+  /// Returns false, and gives nothing, when [measures] do not fit the
+  /// section's items.
+  ///
+  /// A run checks each kept table row and each kept segment that it lays
+  /// out ([LayoutRun.contradicted]). [forgetMeasures] takes them back.
+  bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
+    final flow = section.flow;
+    // A part of the section passes by the items that it skipped or left out
+    // after its end.
+    bool passedBy(int index) =>
+        (index >= flow.length && !section.reachesEnd) ||
+        (index >= 0 && index < flow.length && flow[index] is SkippedItem);
+    for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+      if (passedBy(index)) continue;
+      if (index < 0 || index >= flow.length) return false;
+      if (flow[index] case final TableItem table
+          when widths.length ==
+              2 * table.rows.fold(0, (count, row) => count + row.length)) {
+        continue;
+      }
+      return false;
+    }
+    for (final MapEntry(key: index, value: (:starts, :lines))
+        in measures.paragraphs.entries) {
+      if (passedBy(index)) continue;
+      if (index < 0 || index >= flow.length) return false;
+      if (flow[index] case final ParagraphItem paragraph
+          when LayoutRun._long(paragraph.text) &&
+              starts.length == lines.length &&
+              starts.length > 1 &&
+              starts.first == 0 &&
+              lines.first == 0) {
+        // A segment starts after the one before it and holds at least one
+        // line. The last one starts inside the text.
+        final length = paragraph.text.runs.fold(
+          0,
+          (sum, run) => sum + (run is TextRun ? run.text.length : 1),
+        );
+        for (var at = 1; at < starts.length; at++) {
+          if (starts[at] <= starts[at - 1] || lines[at] <= lines[at - 1]) {
+            return false;
+          }
+        }
+        if (starts.last >= length) return false;
+        continue;
+      }
+      return false;
+    }
+    for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+      if (passedBy(index)) continue;
+      final table = flow[index] as TableItem;
+      if (_tables[table] != null) continue;
+      var at = 0;
+      _tables[table] = List.unmodifiable([
+        for (final row in table.rows)
+          [
+            for (final cell in row)
+              (span: cell.colspan, min: widths[at++], max: widths[at++]),
+          ],
+      ]);
+      _unchecked[table] = {
+        for (var row = 0; row < table.rows.length; row++) row,
+      };
+    }
+    for (final MapEntry(key: index, value: (:starts, :lines))
+        in measures.paragraphs.entries) {
+      if (passedBy(index)) continue;
+      final paragraphs = _sections[section] ??= {};
+      if (_inSection(section, index) != null) continue;
+      paragraphs[index] = _Segmentation()
+        ..starts.addAll(starts.skip(1))
+        ..lines.addAll(lines.skip(1))
+        ..complete = true
+        ..kept = true;
+    }
+    return true;
+  }
+
+  /// Takes back the kept measures that [reuseMeasures] gave [section], so
+  /// that runs find them again. Runs in progress must stop first.
+  void forgetMeasures(PreparedSection section) {
+    for (final (index, item) in section.flow.indexed) {
+      if (item is TableItem && _unchecked[item] != null) {
+        _tables[item] = null;
+        _unchecked[item] = null;
+      } else if (item is ParagraphItem) {
+        final found = _sections[section]?[index];
+        if (found?.kept != true) continue;
+        _sections[section]!.remove(index);
+        _paragraphs[item]?.removeWhere((_, value) => identical(value, found));
+      }
     }
   }
 }
@@ -2621,8 +2762,15 @@ void forgetMeasures(PreparedSection section) {
 /// place, and the next one when the place is in white space after it. A
 /// table needs each row measured for its column widths first, once per
 /// table item: [LineSearch] does that in steps.
-PageStart lineStart(PreparedSection section, EpubPlace place) =>
-    (LineSearch(section, place)..step(const Duration(days: 1))).found!;
+PageStart lineStart(
+  PreparedSection section,
+  EpubPlace place, {
+  LayoutMeasurements? measurements,
+}) => (LineSearch(
+  section,
+  place,
+  measurements: measurements,
+)..step(const Duration(days: 1))).found!;
 
 /// The page start of the line that holds [place], by the rule of
 /// [lineStart], found among the true pages of its section with no line
@@ -2714,15 +2862,21 @@ int _firstPageFor(DomSection dom, List<EpubPlace?> firsts, EpubPlace place) {
 /// finds its start needs no disposal.
 class LineSearch {
   /// A search for the page start of the line that holds [place], a place in
-  /// [section].
-  LineSearch(PreparedSection section, EpubPlace place)
-    : _section = section,
-      _place = place {
+  /// [section]. Pass the same [measurements] as its layout runs to reuse
+  /// their work; otherwise this search owns an independent set.
+  LineSearch(
+    PreparedSection section,
+    EpubPlace place, {
+    LayoutMeasurements? measurements,
+  }) : _measurements = measurements ?? LayoutMeasurements(),
+       _section = section,
+       _place = place {
     if (place.section != section.index) {
       throw ArgumentError.value(place, 'place', 'is not in this section');
     }
   }
 
+  final LayoutMeasurements _measurements;
   final PreparedSection _section;
   final EpubPlace _place;
 
@@ -2761,8 +2915,8 @@ class LineSearch {
     var line = 0;
     if (item >= 0) {
       if (_section.flow[item] case final TableItem table
-          when LayoutRun._measured[table] == null) {
-        final measure = LayoutRun(_section);
+          when _measurements._tables[table] == null) {
+        final measure = LayoutRun(_section, measurements: _measurements);
         while (measure._measureRow(table, _rows) == null) {
           if (LayoutRun._elapsed() - begin >= budget) return;
         }
@@ -2790,7 +2944,22 @@ class LineSearch {
     if (!LayoutRun._long(paragraph.text)) return 0;
     final dom = _section.dom;
     final key = _order(dom, _place);
-    final found = LayoutRun._found[paragraph] ??= _Segmentation();
+    var found = _measurements._inSection(_section, item);
+    if (found == null || found.width == null) {
+      final geometry = LayoutRun(
+        _section,
+        from: PageStart(item, 0),
+        measurements: _measurements,
+      );
+      // At the first paragraph, _resume leaves the opening boxes for the
+      // run to enter. Enter them before asking for the content width.
+      while (geometry._item < item) {
+        geometry._layOutItem();
+      }
+      final width = geometry._containing.$2;
+      geometry.dispose();
+      found = _measurements._segmentsFor(_section, _section.flow, item, width);
+    }
     while (true) {
       // The place's segment among those found: the last one whose first
       // place is at or before it.
@@ -2811,7 +2980,11 @@ class LineSearch {
       // A run from the first line of the last segment found lays it out,
       // which finds where the next one starts. A paragraph with a hanging
       // first line lays out in one unit, and is one segment.
-      final run = LayoutRun(_section, from: PageStart(item, found.lines.last));
+      final run = LayoutRun(
+        _section,
+        from: PageStart(item, found.lines.last),
+        measurements: _measurements,
+      );
       final known = found.starts.length;
       while (run._item <= item &&
           found.starts.length == known &&
@@ -2846,7 +3019,11 @@ class LineSearch {
         }
       }
     }
-    final run = LayoutRun(section, from: PageStart(item, math.max(row, line)));
+    final run = LayoutRun(
+      section,
+      from: PageStart(item, math.max(row, line)),
+      measurements: _measurements,
+    );
     try {
       /// Lays out units of work until one adds a line that shows a place,
       /// or to the section end. Returns the page start of the line that
@@ -3075,7 +3252,10 @@ int _compare((int, int) a, (int, int) b) =>
 /// A section laid out by its main run to the end, with lookups over its
 /// pages. Tests and the trial tools use it; the reader lays out in steps.
 class ChapterLayout {
-  ChapterLayout._(this.section, this.pages);
+  ChapterLayout._(this.section, this.pages, this.measurements);
+
+  /// The measurements available for later runs and kept-map export.
+  final LayoutMeasurements measurements;
   final PreparedSection section;
   final List<LaidPage> pages;
 
@@ -3122,13 +3302,16 @@ class ChapterLayout {
 }
 
 /// Lays out [section] in its main run, stepped to the end.
-ChapterLayout layoutSection(PreparedSection section) {
-  final run = LayoutRun(section);
+ChapterLayout layoutSection(
+  PreparedSection section, {
+  LayoutMeasurements? measurements,
+}) {
+  final run = LayoutRun(section, measurements: measurements);
   while (!run.done) {
     run.step(const Duration(days: 1));
   }
   run.dispose();
-  return ChapterLayout._(section, run.pages);
+  return ChapterLayout._(section, run.pages, run.measurements);
 }
 
 /// Where each code unit of a paragraph's text comes from: a text node and
@@ -3258,7 +3441,16 @@ typedef _Line = ({
 /// A long paragraph that a run lays out a segment at a time (see
 /// [LayoutRun._segmentsOf]).
 class _Segments {
-  _Segments(this.item, this.index, this.x, this.width, this.indent, this.from);
+  _Segments(
+    this.item,
+    this.index,
+    this.x,
+    this.width,
+    this.indent,
+    this.from,
+    this.found,
+  );
+  final _Segmentation found;
   final ParagraphItem item;
 
   /// The index of [item] in the flow.
@@ -3284,6 +3476,10 @@ class _Segments {
 /// [LayoutRun._long]). A segment starts where the last line of the segment
 /// before it starts, so runs find the starts as they lay the segments out.
 class _Segmentation {
+  /// The actual content width in pixels once layout binds an import.
+  /// Null only for a kept measure not reached by layout yet.
+  double? width;
+
   /// Where each segment found starts, in code units of the paragraph's
   /// text, and the paragraph's lines before it.
   final starts = <int>[0];
@@ -3293,7 +3489,7 @@ class _Segmentation {
   /// start of every segment.
   bool complete = false;
 
-  /// Whether the segments came from kept measures ([reuseMeasures]). A run
+  /// Whether the segments came from kept measures ([LayoutMeasurements.reuseMeasures]). A run
   /// that lays out a segment checks where the next one starts.
   bool kept = false;
 }

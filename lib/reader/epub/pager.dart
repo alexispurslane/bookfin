@@ -312,17 +312,12 @@ class EpubPager implements DocumentNavigator {
     final prepared = await _source.section(index);
     final target = fragment == null ? null : prepared.dom.elementById(fragment);
     final note = noteOf(target, reference: link.noteref);
-    final excerpt = note == null
+    final page = note == null
         ? null
-        : prepared.excerpt(
+        : await _source.excerpt(
+            prepared,
             note,
-            PageSettings(
-              width: width,
-              height: _noteHeight,
-              fontSize: prepared.settings.fontSize,
-              night: prepared.settings.night,
-              sizesMainText: prepared.settings.sizesMainText,
-            ),
+            width: width,
             omit: [
               for (final back in _linksIn(note))
                 if (isBackLink(back) ||
@@ -330,19 +325,7 @@ class EpubPager implements DocumentNavigator {
                   back,
             ],
           );
-    if (excerpt == null) return null;
-    final run = LayoutRun(excerpt);
-    try {
-      while (!run.done) {
-        run.step(_noteStep);
-        // The next step waits for the event loop, so frames go on.
-        if (!run.done) await Future<void>.delayed(Duration.zero);
-        if (_disposed) throw StateError('The pager is disposed.');
-      }
-    } finally {
-      run.dispose();
-    }
-    final page = run.pages.single;
+    if (page == null) return null;
     final scale =
         ui.PlatformDispatcher.instance.implicitView?.devicePixelRatio ?? 1;
     final images = await decodeImages(
@@ -356,13 +339,6 @@ class EpubPager implements DocumentNavigator {
       images.values,
     );
   }
-
-  /// The page height that a note lays out on, so that one page holds it.
-  static const _noteHeight = 1e6;
-
-  /// The time that one step of a note's layout takes at most, about a
-  /// quarter of a frame.
-  static const _noteStep = Duration(milliseconds: 4);
 
   /// Turns to the page after or before the shown page, and reports it. At
   /// the book's ends it does nothing, and so does a turn that a later
@@ -601,7 +577,7 @@ class EpubPager implements DocumentNavigator {
     if (page.startPlace == null) return;
     final place = _place!;
     check(place.section == page.section, 'the shown place is elsewhere');
-    final line = lineStart(section!, place);
+    final line = _source.checkedLineStart(section!, place);
     check(
       page.start == line ||
           (page.start.compareTo(line) < 0 &&

@@ -226,7 +226,7 @@ Future<KeptSection> _keptSection(CorpusBook book, int index) async {
       firsts: [for (final page in chapter.pages) page.startPlace],
       visible: (starts: visible, length: section.dom.visibleLength),
       complete: true,
-      measures: measuresOf(section),
+      measures: chapter.measurements.measuresOf(section),
     );
   } finally {
     chapter.dispose();
