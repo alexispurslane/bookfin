@@ -131,3 +131,52 @@ The worktree reflog records a branch rename at the original base from
 reset or rename command. The path and base history are unchanged. The current
 branch is `t3/playback-notice-ownership`. The committed original-base whitespace
 check passed and the implementation checkout was clean.
+
+## Single review and fixes — 2026-11-13
+
+The authorized `codex/gpt-6-astra` reviewer completed at high reasoning effort.
+Its original report is preserved unchanged in
+`docs/evidence/boo-spco-review-original.json`. Correctness, fulfillment and
+design each required changes. There is no second review.
+
+- F1: failed Resume and History actions had no visible explanation. Resume
+  now shows the Playback-owned notice with the attempted book. A failed audio
+  restore keeps History open and shows the notice with the attempted entry;
+  successful retry closes History and shows the destination. The entry id is
+  part of the notice scope. Account record notices remain in History's header.
+- F2: a delayed restore and an already-published error could describe a new
+  source under the same edition id. Playback now retains the original account
+  generation and source with its notice. One source-validity rule governs
+  publication, library reconciliation and the on-demand invariant check.
+- F3: rejecting an obsolete error skipped playback cleanup after pausing the
+  decoder. Cleanup now proceeds for the current account even when that notice
+  is suppressed. The retained edition can be played again normally.
+
+`review-red` reproduced all three findings: 22 tests passed and eight behavior
+tests failed. The failures cover both History actions and bookmarks, with a
+retained player and with nothing open, delayed/source-replacement notices, and
+an obsolete failed load while another edition was playing. The first green
+attempt exposed a test wait mistake: `flush` waits for writes, not the audio
+command. The tests now await a following queued command before checking the UI.
+
+Follow-up tests also reproduced Play being labelled Open when reloading, and
+the Resume error being excluded from screen-reader semantics. Play retains
+its initiating operation through reload. The notice is outside the Resume
+button's replaced semantics. A corrected visibility/handle-lifetime test was
+rerun against the old layout and failed meaningfully (`review-red-accessibility`).
+All intermediate failures and fixture corrections remain in the manifest.
+
+The final focused review-fix run passed 130 tests with no skips. Broader final
+results, exact commands, log hashes, review link and finding resolutions are
+recorded in `docs/evidence/boo-spco-verification.json`. Review gaps about missing
+host regressions are covered by these new tests; Android acceptance remains
+excluded under t1-dth0. Parent still owns integration, hardening and closure.
+
+Final review-fix validation: 1,581 affected tests passed with three optional
+skips; the full suite passed 3,724 with 27 optional skips. Analysis of all
+`lib` and `test` reports no issues, and format verification reports 24 files
+with zero changes. A first analysis run reported one info-level missing-braces
+lint despite exit 0; the braces-only correction is retained and final analysis
+and formatting passed afterward. No behavior changed after the full run. The
+final layout source scan has no findings. These checks do not establish device
+acceptance. Both prerequisite correction files remain unchanged.

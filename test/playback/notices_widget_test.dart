@@ -6,6 +6,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
+import 'package:bookfin/playback/recent.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:bookfin/playback/timeline.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,118 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  testWidgets('a failed recent Resume explains the error beside its book', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      final file = missing.editions.single.files.single;
+      await tester.runAsync(() async {
+        downloads.files[file.key] = Uri.file('/missing.m4b');
+        await playback.open(missing, missing.editions.single);
+        await playback.open(
+          available,
+          available.editions.single,
+          autoplay: false,
+        );
+        downloads.files.remove(file.key);
+      });
+      await show(tester, PlayerView(playback: playback));
+      await tester.ensureVisible(find.byTooltip('Resume Missing'));
+      await tester.runAsync(() async {
+        await tester.tap(find.byTooltip('Resume Missing'));
+        await playback.setJumps(10, 30);
+      });
+      await tester.pumpAndSettle();
+      final error = playback.statusNotifier.value.actionNotice!.message;
+      expect(
+        find.descendant(
+          of: find.byType(RecentListeningRow),
+          matching: find.text(error),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(error), findsOneWidget);
+      await tester.ensureVisible(find.text(error));
+      await tester.pumpAndSettle();
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(error))),
+        findsOneWidget,
+      );
+      expect(playback.book, available);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  for (final emptyPlayer in [false, true]) {
+    for (final bookmark in [false, true]) {
+      testWidgets(
+        'failed History ${bookmark ? 'bookmark' : 'action'} stays with its entry with ${emptyPlayer ? 'no' : 'another'} book open',
+        (tester) async {
+          final file = missing.editions.single.files.single;
+          await tester.runAsync(() async {
+            downloads.files[file.key] = Uri.file('/missing.m4b');
+            await playback.open(missing, missing.editions.single);
+            await playback.pause();
+            if (bookmark) await playback.addBookmark(title: 'Missing place');
+            await playback.open(
+              available,
+              available.editions.single,
+              autoplay: false,
+            );
+            if (emptyPlayer) {
+              await playback.bind(null, []);
+              store.values[catalog.session!.scope.key]!['selected'] = null;
+              await playback.bind(catalog.session, catalog.books);
+            }
+            downloads.files.remove(file.key);
+          });
+          await show(
+            tester,
+            Builder(
+              builder: (context) => TextButton(
+                onPressed: () => openHistory(context, playback),
+                child: const Text('Show History'),
+              ),
+            ),
+          );
+          await tester.tap(find.text('Show History'));
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.textContaining(bookmark ? 'Missing place' : 'Paused').first,
+          );
+          await tester.pumpAndSettle();
+          await tester.runAsync(() async {
+            await tester.tap(find.text('GO TO'));
+            await playback.setJumps(10, 30);
+          });
+          await tester.pumpAndSettle();
+          final error = playback.statusNotifier.value.actionNotice!.message;
+          expect(find.byType(HistoryTimeline), findsOneWidget);
+          expect(
+            find.descendant(
+              of: find.byType(HistoryTimeline),
+              matching: find.text(error),
+            ),
+            findsOneWidget,
+          );
+          expect(playback.book, emptyPlayer ? isNull : available);
+
+          downloads.files[file.key] = Uri.file('/missing.m4b');
+          await tester.runAsync(() async {
+            await tester.tap(find.text('GO TO'));
+            await playback.setJumps(10, 30);
+          });
+          await tester.pumpAndSettle();
+          expect(find.byType(HistoryTimeline), findsNothing);
+          expect(playback.book, missing);
+          expect(playback.statusNotifier.value.actionNotice, isNull);
+        },
+      );
+    }
   }
 
   for (final surface in ['tab', 'other book', 'player', 'History']) {

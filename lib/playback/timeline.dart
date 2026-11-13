@@ -27,8 +27,9 @@ import 'screen.dart' show openPlayer;
 // landing in the open edition, which Crossings finds, as a move of the
 // open edition's owner. Any other place goes to the owner of its own
 // medium, which shows it in its own edition, and the screen of that medium
-// comes to the front. It also confirms a delete, closes the sheet before a
-// jump, and names a bookmark through the shared bookmark editor.
+// comes to the front. A successful audio restore closes the sheet; a failed
+// restore stays beside its entry. It also confirms deletion and names a
+// bookmark through the shared bookmark editor.
 
 /// Opens the History of [book] on a glass sheet: the listening moves and
 /// bookmarks of [playback] and, under a [ReaderScope], the reading moves
@@ -56,8 +57,8 @@ void openHistory(
     TextPosition() => reader!.describe(place),
   };
 
-  // The book and the edition under the sheet, if any. A choice that goes
-  // to a place closes the sheet, so they stay while it is open.
+  // The book and edition under the sheet when it opened. These determine
+  // the destination of a crossing until a successful move closes the sheet.
   final (shownBook, shownEdition) = switch (showing) {
     EditionKind.audio => (playback?.book, playback?.edition),
     EditionKind.text => (reader?.book, reader?.edition),
@@ -153,55 +154,47 @@ void openHistory(
           // Shows [place] in its own edition: [restore] moves the owner of
           // its medium there, and the screen of that medium comes to the
           // front.
-          void goAsBefore(Place place, Future<void> Function() restore) {
+          void goAsBefore(Place place, Future<bool> Function() restore) {
             switch (place) {
-              case AudioPosition() when showing == EditionKind.audio:
-                unawaited(restore());
               case AudioPosition():
                 unawaited(() async {
-                  await restore();
-                  if (context.mounted) openPlayer(context, playback!);
+                  final restored = await restore();
+                  if (!restored || !sheet.mounted) return;
+                  Navigator.pop(sheet);
+                  if (showing != EditionKind.audio && context.mounted) {
+                    openPlayer(context, playback!);
+                  }
                 }());
               case TextPosition():
+                Navigator.pop(sheet);
                 // The reader shows a place of its open edition, and opens
-                // the edition of any other place there, as a move with Undo.
+                // another edition there as a move with Undo.
                 if (showing != EditionKind.text) reading!.show(context);
                 unawaited(restore());
             }
           }
 
-          // A choice that goes to a place closes the timeline, so the screen
-          // that shows the place offers Undo. A place of the other medium
-          // goes to its landing in the open edition, as a move of [kind].
+          // A successful move closes the timeline and offers Undo on its
+          // destination. A failed audio restore stays beside its entry.
+          // A place of the other medium goes to its landing in the open
+          // edition, as a move of [kind].
           // Without a landing, it shows the place in its own edition. While
           // the landing is not known yet, as while speech finds it, the
           // sheet stays, [tile] shows a progress state with Cancel, and the
-          // sheet closes when the landing arrives.
+          // sheet closes when the move succeeds.
           void go(
             Place place,
             HistoryAction kind,
-            Future<void> Function() restore,
+            Future<bool> Function() restore,
             GoingTo tile,
           ) {
             final pair = crossingOf(place);
-            if (pair == null) {
-              Navigator.pop(sheet);
-              return goAsBefore(place, restore);
-            }
-            final waits = crossings!.landingNow(
-              place,
-              from: pair.from,
-              into: pair.into,
-            ) is! Settled;
-            if (waits) {
-              going.value = tile;
-            } else {
-              Navigator.pop(sheet);
-            }
+            if (pair == null) return goAsBefore(place, restore);
+            going.value = tile;
             unawaited(() async {
               final Settled landing;
               try {
-                landing = await crossings.landing(
+                landing = await crossings!.landing(
                   place,
                   from: pair.from,
                   into: pair.into,
@@ -211,11 +204,8 @@ void openHistory(
                 if (going.value == tile) going.value = null;
                 rethrow;
               }
-              if (waits) {
-                if (closed || going.value != tile) return;
-                going.value = null;
-                if (sheet.mounted) Navigator.pop(sheet);
-              }
+              if (closed || going.value != tile) return;
+              going.value = null;
               final went = switch (landing) {
                 final AudioLanding landing => await playback!.goToLanding(
                   landing,
@@ -227,7 +217,12 @@ void openHistory(
                 ),
                 NoLanding() => false,
               };
-              if (!went && context.mounted) goAsBefore(place, restore);
+              if (!sheet.mounted) return;
+              if (went) {
+                Navigator.pop(sheet);
+              } else {
+                goAsBefore(place, restore);
+              }
             }());
           }
 
@@ -261,13 +256,20 @@ void openHistory(
             onCancel: () => going.value = null,
             showBooks: book == null,
             header: RecordSaveStatus(playback: playback, reader: reader),
+            noticeBuilder: playback == null
+                ? null
+                : (entry) => PlaybackActionStatus(
+                    status: playback.statusNotifier,
+                    recordId: entry.id,
+                  ),
             scroll: scroll,
             onGoBefore: (event) => go(
               event.before,
               HistoryAction.historyRestore,
               () => switch (event.before) {
                 AudioPosition() => playback!.restoreHistory(event.id),
-                TextPosition() => reader!.restoreHistory(event.id),
+                TextPosition() =>
+                  reader!.restoreHistory(event.id).then((_) => true),
               },
               (entryId: event.id, before: true),
             ),
@@ -280,10 +282,10 @@ void openHistory(
                     event.id,
                     previous: false,
                   ),
-                  TextPosition() => reader!.restoreHistory(
-                    event.id,
-                    previous: false,
-                  ),
+                  TextPosition() =>
+                    reader!
+                        .restoreHistory(event.id, previous: false)
+                        .then((_) => true),
                 },
                 (entryId: event.id, before: false),
               ),
@@ -292,7 +294,8 @@ void openHistory(
                 HistoryAction.bookmarkRestore,
                 () => switch (bookmark.position) {
                   AudioPosition() => playback!.restoreBookmark(bookmark.id),
-                  TextPosition() => reader!.restoreBookmark(bookmark.id),
+                  TextPosition() =>
+                    reader!.restoreBookmark(bookmark.id).then((_) => true),
                 },
                 (entryId: bookmark.id, before: false),
               ),
@@ -433,6 +436,7 @@ class HistoryTimeline extends StatefulWidget {
     this.onCancel,
     this.showBooks = false,
     this.header,
+    this.noticeBuilder,
     this.scroll,
     required this.onGoBefore,
     required this.onGoTo,
@@ -469,6 +473,9 @@ class HistoryTimeline extends StatefulWidget {
 
   /// Shown above the entries, such as the save status of the records.
   final Widget? header;
+
+  /// The action failure for this entry, shown with its open route.
+  final Widget Function(TimelineEntry)? noticeBuilder;
   final ScrollController? scroll;
 
   /// Reports a tap on the Before end of a move: return to
@@ -782,6 +789,7 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
                     builder: (context, _) => _route(entry),
                   ),
                 },
+                if (widget.noticeBuilder case final notice?) notice(entry),
                 if (widget.going case final going?)
                   ValueListenableBuilder(
                     valueListenable: going,

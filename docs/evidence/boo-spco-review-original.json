@@ -1,0 +1,114 @@
+{
+  "originalBase": "c603591b313afbd8e167e83fd5e14e2e13978fad",
+  "head": "ca0488a8b21ab2fe7c37bc516ebf8a8dd3af4c96",
+  "correctness": {
+    "verdict": "changes-required",
+    "evidence": [
+      "Initial and final inspection confirmed the requested worktree, branch t3/playback-notice-ownership, HEAD, and clean status.",
+      "Reviewed the complete original-base-to-HEAD diff, notice writers and consumers, and actual Listen, Play, Recently Listened, History, and save-retry callbacks.",
+      "Read retained failure logs. red-03 records one pass and eight meaningful failures. red-auto-reopen and red-replacement-source record the additional failures described in the brief. red-01 is a compilation failure; red-02 is interrupted and is not a pass.",
+      "Retained logs confirm focused-final: 43 passed; affected-02: 1484 passed and 3 skipped; full-02: 3714 passed and 27 skipped. Also inspected the earlier sync compilation failures and gallery failures.",
+      "Every archived command log matched its manifest SHA-256 and its available raw log. All 22 recorded source/test hashes matched the reviewed files.",
+      "Retained analysis reports no issues; retained formatting reports 22 files and zero changes. These commands were not rerun."
+    ],
+    "findings": [
+      "F1",
+      "F2",
+      "F3"
+    ],
+    "gaps": [
+      "Retained tests do not cover failed Recently Listened actions or failed cross-book History restores through their actual callbacks.",
+      "Retained tests do not cover a missing-file restore result arriving after its source changes within the same account.",
+      "The delayed obsolete-source test starts with nothing open. It does not check failure cleanup when another edition was already playing."
+    ]
+  },
+  "fulfillment": {
+    "verdict": "changes-required",
+    "evidence": [
+      "The original retained-edition Play defect is addressed. Successful open/play clears action notices while recovery and failed-save notices remain independent.",
+      "TabPage, BookPage, player, History, records_screen, and gallery use the migrated status representation. Consumers do not compare message strings or maintain duplicate notice lifetime state.",
+      "Player notices use the existing 24-logical-pixel horizontal inset. Retained widget evidence checks both horizontal bounds against the position control.",
+      "Existing Exception/Error handling, replacement offers, history, Undo, save retries, and narrow notifications have retained affected-suite coverage.",
+      "The two prerequisite test files are unchanged from the original base. The diff does not implement Ask-at-Play.",
+      "The ticket remains in progress. Integration, acceptance, hardening, and closure remain with the parent."
+    ],
+    "findings": [
+      "F1: preserving genuine current errors is incomplete for actions initiated from Recently Listened and History.",
+      "F2: obsolete-source rejection does not cover every notice writer.",
+      "F3: obsolete-source rejection introduces inconsistent playback state."
+    ],
+    "gaps": [
+      "The three findings need behavioral regression evidence before handoff.",
+      "Android inspection remains explicitly excluded under t1-dth0. Host geometry tests and the layout scan do not establish Android visual acceptance.",
+      "The retained whitespace check names implementation commit 3903711325358a4b95a9b28d9f0e19d475b74323. The later documentation-only commit was inspected, but no retained whitespace execution names the final review HEAD."
+    ]
+  },
+  "design": {
+    "verdict": "changes-required",
+    "evidence": [
+      "Playback remains the state owner. PlaybackStatus and PlaybackActionNotice are immutable interface payloads; messagesFor owns display scope; RecordSaveStatus owns retry callbacks; RecordSaveNotice remains a pure view.",
+      "Action failure, record recovery, and pending-save failure have distinct lifetimes. Save failure derives from existing account write state instead of duplicating it in message text.",
+      "The scoped query and shared notice widget serve multiple real consumers without speculative extension points. Public documentation explains account, book, and edition scope.",
+      "API assessment: scope selection provides useful granularity; consumers need no redundant filtering; status subscriptions keep coupling narrow; views retain no second notice state; actions flow through controllers.",
+      "All notice writers were traced. Source validity is still coordinated separately in _open, _restorePosition, and _audioFailed; _actionFailed accepts only an edition identifier and cannot enforce that invariant.",
+      "No performance measurements were run or inferred. The review makes no new speed claim."
+    ],
+    "findings": [
+      "F2: User and Ousterhout — source-validity knowledge is spread across writers rather than enforced by the notice transition. Adding or changing an asynchronous failure path requires coordinating its checks with the other writers.",
+      "F3: User and Ousterhout — the decision to suppress a notice also suppresses the state transition that reconciles Playback with an already-paused decoder."
+    ],
+    "gaps": [
+      "The documented notice invariant checks for a signed-in account, but does not establish that a notice still describes the source that caused it.",
+      "No runtime reproduction is claimed for the design findings; their evidence is the ownership and coordination visible in the source."
+    ]
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "P2",
+      "file": "lib/playback/screen.dart",
+      "line": 324,
+      "trigger": "Unexecuted reproduction: retain listening history for book B, open book A, remove B's downloaded file, then tap Resume B in Recently Listened. A corresponding case is restoring B from all-book History with nothing open.",
+      "expected": "The failed action has a visible explanation associated with B, while A's player content and unrelated surfaces remain free of B's error.",
+      "observedOrPredicted": "The action notice is stored, but no relevant visible surface displays it. The player selects A's edition; Recently Listened rows have no notice input; the nothing-open player requests only account notices. History closes before restoration and can open the retained or empty player after failure.",
+      "evidenceKind": "static reasoning; reproduction not executed",
+      "evidence": "PlayerView._resume calls Playback.open at screen.dart:189. The stage filters notices to the retained edition at screen.dart:324. Recently Listened is wired at screen.dart:197 and :412; recent.dart:94-148 renders rows without notices. timeline.dart:156-164 and :186-189 close/navigate without an outcome-specific failure presentation. Existing widget tests check unrelated History visibility, not a failed History action.",
+      "proposedFix": "Connect these initiating surfaces to Playback-owned scoped notices, showing the failure beside the attempted book or in a book-labelled action surface. Preserve the existing scope query and controller boundaries. Add widget regressions through Resume and History callbacks."
+    },
+    {
+      "id": "F2",
+      "severity": "P2",
+      "file": "lib/playback/playback.dart",
+      "line": 803,
+      "trigger": "Unexecuted reproduction: keep A open, begin restoring a saved position in B, hold B's local-file lookup, refresh the same account with unchanged A and replacement files under B's existing edition identifier, then release the old lookup with no file.",
+      "expected": "The obsolete lookup result must not publish a download error against replacement B.",
+      "observedOrPredicted": "_restorePosition checks only the account generation after the wait and publishes a notice using B's identifier. The same-account refresh leaves that generation unchanged, so messagesFor displays the old source's failure on replacement B. Already-published notices can likewise survive a same-account replacement of a non-open edition because the notice retains no source identity and bind does not invalidate it.",
+      "evidenceKind": "static reasoning; reproduction not executed",
+      "evidence": "playback.dart:791-809 retains the original edition across _savedFiles but checks only generation. bind at :1135-1180 can replace B while retaining unchanged A without advancing generation. _actionFailed at :2115 stores only editionId, operation, and message; messagesFor at :211-216 matches edition identifiers. In contrast, _open rechecks _bound after its lookup and _audioFailed checks _sameEdition.",
+      "proposedFix": "Make Playback's notice transition retain and validate the originating account/source context for every asynchronous failure path. Reconcile existing notices when library sources change. Cover both a delayed restore result and an already-published notice followed by source replacement.",
+      "designSource": "User: one owner for invariant-preserving transitions and one model for existing/new behavior. Ousterhout: hide source-validity decisions instead of requiring each writer to repeat them. The concrete maintenance cost is coordinating _open, _restorePosition, _audioFailed, and bind whenever source-validity rules change."
+    },
+    {
+      "id": "F3",
+      "severity": "P2",
+      "file": "lib/playback/playback.dart",
+      "line": 1123,
+      "trigger": "Unexecuted reproduction: play A, begin opening downloaded B with its engine load held, refresh the same account with unchanged A and a replacement source for B, then fail the held old-B load.",
+      "expected": "Suppress the obsolete B notice, but leave Playback's playing/active state consistent with the stopped decoder.",
+      "observedOrPredicted": "_audioFailed pauses the engine and then returns on the source mismatch before clearing playing and active. During the failed open, decoder samples are ignored because _decoderReady is false. Playback can therefore continue reporting that A is playing although the engine is stopped.",
+      "evidenceKind": "static reasoning; reproduction not executed",
+      "evidence": "playback.dart:1503-1513 disables decoder acceptance before pausing/loading. _accept at :1570 rejects samples while loading or not decoder-ready. _audioFailed pauses at :1113, returns at :1123, and skips state reconciliation at :1126-1132. The existing obsolete-source regression checks an initially empty player, so it cannot expose retained playing state.",
+      "proposedFix": "Separate notice eligibility from failure cleanup. Within the still-current account, reconcile playback state after the engine pause even when the attempted source is obsolete; suppress only the obsolete notice. Add a held-load regression starting with another edition actively playing.",
+      "designSource": "User: orchestration must keep related state coherent behind one transition. Ousterhout: keep distinct decisions separate. Notice eligibility currently controls decoder-state cleanup, so changing source filtering can silently change playback lifecycle behavior."
+    }
+  ],
+  "overall": "changes-required",
+  "unavailableChecks": [
+    "No builds, tests, formatting, analyzers, edits, commits, device/browser interactions, checkout changes, or PR actions were performed by this reviewer.",
+    "The reproduction recipes for F1-F3 were not executed. Retained passing runs do not cover those cases.",
+    "Android visual/device acceptance remains blocked under t1-dth0 and was explicitly excluded from this review.",
+    "The full suite's 27 optional skips include external plugin integration, corpus, benchmark, and research checks. They are not integration passes.",
+    "Host logs report unavailable iphoneos and iphonesimulator SDKs; no iOS acceptance is established.",
+    "Coverage, general mutation testing, and post-integration verification with concurrent Ask-at-Play work remain parent-owned."
+  ]
+}

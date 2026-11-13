@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../catalog/model.dart' show AudioPosition, TextPosition, Book, Edition;
@@ -94,6 +95,33 @@ class RecordSaveNotice extends StatelessWidget {
       ),
     );
   }
+}
+
+/// One action error beside its edition or History entry. The owner supplies
+/// the narrow status signal; this view holds no notice state or callbacks.
+class PlaybackActionStatus extends StatelessWidget {
+  const PlaybackActionStatus({
+    super.key,
+    required this.status,
+    this.edition,
+    this.recordId,
+  });
+  final ValueListenable<PlaybackStatus> status;
+  final Edition? edition;
+  final String? recordId;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: status,
+    builder: (context, value, _) =>
+        switch (value.actionMessageFor(edition: edition, recordId: recordId)) {
+          final message? => Semantics(
+            liveRegion: true,
+            child: StatusMessage(message),
+          ),
+          null => const SizedBox.shrink(),
+        },
+  );
 }
 
 /// Asks for a title and a note for the audio bookmark [bookmark], or for a

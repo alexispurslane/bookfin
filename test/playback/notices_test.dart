@@ -51,6 +51,31 @@ class NoticeStore extends MemoryResume {
   }
 }
 
+class NoticeFiles extends LocalFiles {
+  Completer<void>? lookupEntered;
+  @override
+  Future<Uri?> localFile(SourceFile source) {
+    final entered = lookupEntered;
+    lookupEntered = null;
+    entered?.complete();
+    return super.localFile(source);
+  }
+}
+
+const revisedOtherEdition = Edition(
+  id: 'other-edition',
+  kind: EditionKind.audio,
+  label: 'Replacement narrator',
+  files: [first],
+  memberIds: ['one:m1'],
+);
+const revisedOtherBook = Book(
+  id: 'other-book',
+  title: 'Another journey',
+  author: 'B. Writer',
+  editions: [revisedOtherEdition],
+);
+
 class NoticeEngine extends TestEngine {
   bool failLoad = false;
   bool failPlay = false;
@@ -92,12 +117,12 @@ class NoticeEngine extends TestEngine {
 }
 
 void main() {
-  late LocalFiles downloads;
+  late NoticeFiles downloads;
   late NoticeStore store;
   late Playback playback;
   late NoticeEngine engine;
   setUp(() async {
-    downloads = LocalFiles();
+    downloads = NoticeFiles();
     store = NoticeStore();
     engine = NoticeEngine();
     playback = Playback(downloads: downloads, engine: engine, store: store);
@@ -106,6 +131,113 @@ void main() {
   tearDown(() async {
     await playback.close();
     downloads.dispose();
+  });
+
+  test(
+    'a failed Play that must reload still belongs to the Play action',
+    () async {
+      await playback.open(title, recording, autoplay: false);
+      downloads.files[otherFile.key] = Uri.file('/other.m4b');
+      engine.failLoad = true;
+      await playback.open(otherBook, otherEdition);
+      engine.failLoad = false;
+      downloads.files.clear();
+      await playback.play();
+
+      expect(
+        playback.statusNotifier.value.actionNotice?.editionId,
+        recording.id,
+      );
+      expect(
+        playback.statusNotifier.value.actionNotice?.operation,
+        PlaybackOperation.play,
+      );
+    },
+  );
+
+  test('an equal library refresh keeps a genuine action notice', () async {
+    await playback.open(title, recording, autoplay: false);
+    await playback.open(otherBook, otherEdition);
+    final notice = playback.statusNotifier.value.actionNotice;
+    final sameEdition = Edition(
+      id: otherEdition.id,
+      kind: EditionKind.audio,
+      label: 'Renamed narrator',
+      files: [...otherEdition.files],
+      memberIds: [...otherEdition.memberIds],
+    );
+    final renamedBook = Book(
+      id: otherBook.id,
+      title: 'Renamed book',
+      author: otherBook.author,
+      editions: [sameEdition],
+    );
+    await playback.bind(account(), [title, renamedBook]);
+
+    expect(playback.statusNotifier.value.actionNotice, notice);
+    expect(
+      playback.statusNotifier.value.messagesFor(book: renamedBook),
+      contains(notice!.message),
+    );
+    playback.checkInvariants();
+  });
+
+  test('a delayed restore failure cannot describe replacement audio', () async {
+    downloads.files[otherFile.key] = Uri.file('/other.m4b');
+    await playback.open(otherBook, otherEdition, autoplay: false);
+    await playback.addBookmark(title: 'Other place');
+    final bookmark = playback.bookmarks.single;
+    await playback.open(title, recording, autoplay: false);
+    downloads.files.remove(otherFile.key);
+    final entered = downloads.lookupEntered = Completer<void>();
+    final release = downloads.lookupGate = Completer<void>();
+    final restoring = playback.restoreBookmark(bookmark.id);
+    await entered.future;
+    await playback.bind(account(), [title, revisedOtherBook]);
+    release.complete();
+    await restoring;
+
+    expect(playback.statusNotifier.value.actionNotice, isNull);
+    expect(playback.edition, recording);
+    expect(playback.bookmarks.single, bookmark);
+    playback.checkInvariants();
+  });
+
+  test(
+    'source replacement removes an already-published action notice',
+    () async {
+      await playback.open(title, recording, autoplay: false);
+      await playback.open(otherBook, otherEdition);
+      expect(playback.statusNotifier.value.actionNotice, isNotNull);
+      await playback.bind(account(), [title, revisedOtherBook]);
+
+      expect(playback.statusNotifier.value.actionNotice, isNull);
+      expect(playback.edition, recording);
+      playback.checkInvariants();
+    },
+  );
+
+  test('an obsolete failed load stops the retained playing state', () async {
+    await playback.open(title, recording);
+    expect(playback.playing, isTrue);
+    downloads.files[otherFile.key] = Uri.file('/other.m4b');
+    final entered = engine.loadEntered = Completer<void>();
+    final release = engine.releaseFailedLoad = Completer<void>();
+    final opening = playback.open(otherBook, otherEdition);
+    await entered.future;
+    await playback.bind(account(), [title, revisedOtherBook]);
+    release.complete();
+    await opening;
+
+    expect(engine.isPlaying, isFalse);
+    expect(playback.playing, isFalse);
+    expect(playback.active, isFalse);
+    expect(playback.statusNotifier.value.actionNotice, isNull);
+    expect(playback.edition, recording);
+    playback.checkInvariants();
+    await playback.play();
+    expect(playback.playing, isTrue);
+    expect(engine.isPlaying, isTrue);
   });
 
   test(

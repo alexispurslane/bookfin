@@ -45,6 +45,7 @@ class RecentListeningList extends StatelessWidget {
     required this.open,
     required this.onResume,
     this.empty = const SizedBox.shrink(),
+    this.noticeBuilder,
   });
 
   /// The recently listened books, newest first, with their progress.
@@ -58,6 +59,9 @@ class RecentListeningList extends StatelessWidget {
 
   /// Shown instead when no other book was listened to.
   final Widget empty;
+
+  /// A scoped action notice beside the book that was asked to resume.
+  final Widget Function(RecentListening)? noticeBuilder;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder(
@@ -82,6 +86,7 @@ class RecentListeningList extends StatelessWidget {
               progress: progress,
               now: now,
               onResume: onResume,
+              notice: noticeBuilder?.call(entry),
             ),
         ],
       );
@@ -98,8 +103,12 @@ class RecentListeningRow extends StatelessWidget {
     required this.progress,
     required this.now,
     required this.onResume,
+    this.notice,
   });
   final RecentListening entry;
+
+  /// The action notice supplied by the controller for this edition.
+  final Widget? notice;
 
   /// Where the saved place is in the edition, or null when unknown.
   final ({int elapsedMs, int totalMs})? progress;
@@ -117,7 +126,7 @@ class RecentListeningRow extends StatelessWidget {
         ? null
         : progress.totalMs - progress.elapsedMs;
     void resume() => onResume(entry);
-    return BookRow(
+    final row = BookRow(
       compact: true,
       cover: BookCover.book(entry.book, showText: false),
       title: entry.book.title,
@@ -137,6 +146,12 @@ class RecentListeningRow extends StatelessWidget {
         onPressed: resume,
         icon: const Icon(Icons.play_circle_outline_rounded),
       ),
+    );
+    // BookRow replaces its children's semantics with the Resume label.
+    // Keep the live error outside that button so assistive readers hear it.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [row, ?notice],
     );
   }
 }

@@ -199,10 +199,12 @@ enum PlaybackOperation {
 }
 
 /// A failed operation and the edition it tried to use. Edition ids belong to
-/// the bound account; account replacement discards the notice.
+/// the bound account; account or source replacement discards the notice.
+/// [recordId] identifies the History entry whose restore failed, when any.
 typedef PlaybackActionNotice = ({
   String editionId,
   PlaybackOperation operation,
+  String? recordId,
   String message,
 });
 
@@ -216,15 +218,25 @@ typedef PlaybackStatus = ({
 });
 
 extension PlaybackStatusMessages on PlaybackStatus {
+  /// The action failure for one edition, book, or History entry. Record scope
+  /// selects only the restore of that entry; an unrelated action stays hidden.
+  String? actionMessageFor({Book? book, Edition? edition, String? recordId}) {
+    final notice = actionNotice;
+    if (notice == null) return null;
+    final belongs = recordId != null
+        ? notice.recordId == recordId
+        : edition != null
+        ? notice.editionId == edition.id
+        : book?.editions.any((item) => item.id == notice.editionId) == true;
+    return belongs ? notice.message : null;
+  }
+
   /// Notices for an edition, a book, or account-wide content when neither is
-  /// supplied. An edition narrows a book's scope. History and tabs supply
-  /// neither: audio action errors do not describe their record lists.
+  /// supplied. An edition narrows a book's scope. History's header and tabs
+  /// supply neither; the initiating History entry shows its own action error.
   Iterable<String> messagesFor({Book? book, Edition? edition}) sync* {
-    if (actionNotice case final notice?) {
-      final belongs = edition != null
-          ? notice.editionId == edition.id
-          : book?.editions.any((item) => item.id == notice.editionId) == true;
-      if (belongs) yield notice.message;
+    if (actionMessageFor(book: book, edition: edition) case final message?) {
+      yield message;
     }
     if (recoveryMessage case final message?) yield message;
     if (saveFailed) {
@@ -257,6 +269,12 @@ class ListeningChoice {
 }
 
 enum ListeningPlace { thisPhone, otherDevice }
+
+/// The account binding and exact audio source an action started against.
+/// A missing edition is retained too, so a failed restore of unavailable
+/// records cannot later describe an edition that arrives under the same id.
+typedef _NoticeOrigin = ({int generation, String editionId, Edition? edition});
+typedef _ActionFailure = ({_NoticeOrigin origin, PlaybackActionNotice notice});
 
 class Playback extends ChangeNotifier {
   Playback({
@@ -311,7 +329,8 @@ class Playback extends ChangeNotifier {
   bool _restored = false;
   // See [starting].
   Edition? _starting;
-  PlaybackActionNotice? _actionNotice;
+  _ActionFailure? _actionFailure;
+  PlaybackActionNotice? get _actionNotice => _actionFailure?.notice;
   String? _recoveryMessage;
   double _speed = 1;
   int _backward = 10;
@@ -546,7 +565,7 @@ class Playback extends ChangeNotifier {
           (file) => file.revision.isEmpty || file.mediaSourceId.isEmpty,
         )) {
           _actionFailed(
-            request.edition.id,
+            _noticeOrigin(request.edition.id),
             PlaybackOperation.open,
             'The replacement audio source cannot be identified. Refresh the library before starting it.',
           );
@@ -566,7 +585,7 @@ class Playback extends ChangeNotifier {
     _replacementStart = null;
     if (_actionNotice?.editionId == request.edition.id &&
         _actionNotice?.operation == PlaybackOperation.open) {
-      _actionNotice = null;
+      _actionFailure = null;
     }
     _notify();
   }
@@ -624,23 +643,28 @@ class Playback extends ChangeNotifier {
 
   /// Restores where the history event [id] began, or where it ended when
   /// [previous] is false. If the event is gone when this command runs,
-  /// completes normally without changing anything.
-  Future<void> restoreHistory(String id, {bool previous = true}) =>
-      _audioCommand(
-        PlaybackOperation.restore,
-        () async {
-          final event = _history.where((event) => event.id == id).firstOrNull;
-          if (event == null) return;
-          await _restorePosition(
-            previous ? event.before : event.after,
-            HistoryAction.historyRestore,
-          );
-        },
-        target: () {
-          final event = _history.where((event) => event.id == id).firstOrNull;
-          return (previous ? event?.before : event?.after)?.editionId;
-        },
-      );
+  /// returns false without changing anything. Returns true only after the
+  /// position moved, so a controller keeps failed actions beside their entry.
+  Future<bool> restoreHistory(String id, {bool previous = true}) {
+    var restored = false;
+    return _audioCommand(
+      PlaybackOperation.restore,
+      () async {
+        final event = _history.where((event) => event.id == id).firstOrNull;
+        if (event == null) return;
+        restored = await _restorePosition(
+          previous ? event.before : event.after,
+          HistoryAction.historyRestore,
+          recordId: id,
+        );
+      },
+      target: () {
+        final event = _history.where((event) => event.id == id).firstOrNull;
+        return (previous ? event?.before : event?.after)?.editionId;
+      },
+      recordId: id,
+    ).then((_) => restored);
+  }
 
   /// Plays from [landing], where a place of an ebook edition lands in the
   /// open edition, as a move of [kind] in the listening track from the place
@@ -795,22 +819,29 @@ class Playback extends ChangeNotifier {
   }
 
   /// Restores the bookmark [id]. If it is gone when this command runs,
-  /// completes normally without changing anything.
-  Future<void> restoreBookmark(String id) => _audioCommand(
-    PlaybackOperation.restore,
-    () async {
-      final bookmark = _bookmarks
-          .where((bookmark) => bookmark.id == id)
-          .firstOrNull;
-      if (bookmark == null) return;
-      await _restorePosition(bookmark.position, HistoryAction.bookmarkRestore);
-    },
-    target: () => _bookmarks
-        .where((mark) => mark.id == id)
-        .firstOrNull
-        ?.position
-        .editionId,
-  );
+  /// returns false without changing anything. Returns true only after the
+  /// position moved.
+  Future<bool> restoreBookmark(String id) {
+    var restored = false;
+    return _audioCommand(
+      PlaybackOperation.restore,
+      () async {
+        final bookmark = _bookmarks.where((mark) => mark.id == id).firstOrNull;
+        if (bookmark == null) return;
+        restored = await _restorePosition(
+          bookmark.position,
+          HistoryAction.bookmarkRestore,
+          recordId: id,
+        );
+      },
+      target: () => _bookmarks
+          .where((mark) => mark.id == id)
+          .firstOrNull
+          ?.position
+          .editionId,
+      recordId: id,
+    ).then((_) => restored);
+  }
 
   String? _optionalText(String? value) =>
       value == null || value.trim().isEmpty ? null : value.trim();
@@ -848,27 +879,31 @@ class Playback extends ChangeNotifier {
 
   Future<bool> _restorePosition(
     AudioPosition target,
-    HistoryAction kind,
-  ) async {
+    HistoryAction kind, {
+    String? recordId,
+  }) async {
     if (!_restored) return false;
+    final origin = _noticeOrigin(target.editionId);
     final (book, edition) = _editions[target.editionId] ?? (null, null);
     if (edition == null || !target.fits(edition)) {
       _actionFailed(
-        target.editionId,
+        origin,
         PlaybackOperation.restore,
         'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.',
+        recordId: recordId,
       );
       _notify();
       return false;
     }
     final generation = _generation;
     final saved = await _savedFiles(edition);
-    if (generation != _generation) return false;
+    if (!_originIsCurrent(origin)) return false;
     if (saved == null) {
       _actionFailed(
-        edition.id,
+        origin,
         PlaybackOperation.restore,
         'Download every file in this audio edition before restoring a position.',
+        recordId: recordId,
       );
       _notify();
       return false;
@@ -882,16 +917,24 @@ class Playback extends ChangeNotifier {
         autoplay: wasPlaying,
         target: target,
         action: kind,
+        operation: PlaybackOperation.restore,
+        recordId: recordId,
       );
     }
-    return _moveOpen(
+    final moved = await _moveOpen(
       edition,
       target,
       kind,
       wasPlaying: wasPlaying,
       generation: generation,
       before: before,
+      recordId: recordId,
     );
+    if (moved && _originIsCurrent(origin)) {
+      _actionFailure = null;
+      _notify();
+    }
+    return moved;
   }
 
   /// Moves the open [edition] to [target] as a move of [kind] from
@@ -906,6 +949,7 @@ class Playback extends ChangeNotifier {
     required int generation,
     AudioPosition? before,
     _Counterpart? counterpart,
+    String? recordId,
   }) async {
     final applied = await _seekPosition(
       edition.files.indexWhere((file) => file.key == target.sourceKey),
@@ -913,6 +957,8 @@ class Playback extends ChangeNotifier {
       kind,
       before: before,
       counterpart: counterpart,
+      operation: PlaybackOperation.restore,
+      recordId: recordId,
     );
     if (!applied || generation != _generation) return false;
     if (wasPlaying && !_active) {
@@ -1100,6 +1146,7 @@ class Playback extends ChangeNotifier {
     PlaybackOperation operation,
     Future<void> Function() action, {
     String? Function()? target,
+    String? recordId,
   }) {
     final generation = _generation;
     return _inCommandOrder(
@@ -1108,6 +1155,7 @@ class Playback extends ChangeNotifier {
         action,
         editionId: target == null ? _edition?.id : target(),
         generation: generation,
+        recordId: recordId,
       ),
     );
   }
@@ -1119,13 +1167,14 @@ class Playback extends ChangeNotifier {
     Future<void> Function() action, {
     required String? editionId,
     required int generation,
+    String? recordId,
   }) async {
-    final edition = _editions[editionId]?.$2;
+    final origin = editionId == null ? null : _noticeOrigin(editionId);
     try {
       await action();
     } on Exception {
       if (!_closed && generation == _generation) {
-        await _audioFailed(edition, operation, generation);
+        await _audioFailed(origin, operation, generation, recordId: recordId);
       }
     }
   }
@@ -1158,18 +1207,20 @@ class Playback extends ChangeNotifier {
   Future<void> _sampleStreamFailed() {
     final edition = _edition;
     final generation = _generation;
+    final origin = edition == null ? null : _noticeOrigin(edition.id);
     if (edition == null || _loading || !_decoderReady) return Future.value();
     return _inCommandOrder(() async {
       if (_edition == null || !_sameEdition(edition, _edition!)) return;
-      await _audioFailed(edition, PlaybackOperation.decoder, generation);
+      await _audioFailed(origin, PlaybackOperation.decoder, generation);
     });
   }
 
   Future<void> _audioFailed(
-    Edition? edition,
+    _NoticeOrigin? origin,
     PlaybackOperation operation,
-    int generation,
-  ) async {
+    int generation, {
+    String? recordId,
+  }) async {
     var message =
         'Cannot play this local audio file. Download it again or choose another edition.';
     try {
@@ -1179,12 +1230,10 @@ class Playback extends ChangeNotifier {
           'The audio device failed. Restart Bookfin before listening again.';
     }
     if (_closed || generation != _generation) return;
-    // A library refresh can replace a source without changing accounts while
-    // its first open waits. Never attach that old failure to the new source.
-    if (edition != null) {
-      final current = _editions[edition.id]?.$2;
-      if (current == null || !_sameEdition(edition, current)) return;
-      _actionFailed(edition.id, operation, message);
+    // The decoder is stopped even if the attempted source was replaced.
+    // Only notice publication depends on that source still being current.
+    if (origin != null) {
+      _actionFailed(origin, operation, message, recordId: recordId);
     }
     _playing = false;
     _active = false;
@@ -1200,6 +1249,9 @@ class Playback extends ChangeNotifier {
     _replacementStart = null;
     final changed = _session?.scope.key != session?.scope.key;
     _books = List.unmodifiable(books);
+    if (_actionFailure case final failure?) {
+      if (!_originIsCurrent(failure.origin)) _actionFailure = null;
+    }
     if (!changed) {
       final generation = _generation;
       _session = session;
@@ -1268,7 +1320,7 @@ class Playback extends ChangeNotifier {
     _speed = 1;
     _backward = 10;
     _forward = 30;
-    _actionNotice = null;
+    _actionFailure = null;
     _recoveryMessage = null;
     _cancelSleep();
     _notify();
@@ -1388,7 +1440,7 @@ class Playback extends ChangeNotifier {
     final resume = _readPosition(edition);
     if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
       _actionFailed(
-        edition.id,
+        _noticeOrigin(edition.id),
         PlaybackOperation.open,
         'The saved audio source changed. Its resume is kept but was not applied.',
       );
@@ -1522,7 +1574,10 @@ class Playback extends ChangeNotifier {
     AudioPosition? target,
     HistoryAction? action,
     AudioReplacement? replacement,
+    PlaybackOperation operation = PlaybackOperation.open,
+    String? recordId,
   }) async {
+    final originContext = _noticeOrigin(edition.id);
     var bound = _bound(book, edition);
     if (bound == null ||
         edition.kind != EditionKind.audio ||
@@ -1561,9 +1616,10 @@ class Playback extends ChangeNotifier {
     (book, edition) = bound;
     if (files == null) {
       _actionFailed(
-        edition.id,
-        PlaybackOperation.open,
+        originContext,
+        operation,
         'Download every file in this audio edition before listening.',
+        recordId: recordId,
       );
       _notify();
       return false;
@@ -1581,9 +1637,10 @@ class Playback extends ChangeNotifier {
                 !restoringChoice &&
                 !_resumeFits(edition, _resumeRecord(edition)))) {
       _actionFailed(
-        edition.id,
-        PlaybackOperation.open,
+        originContext,
+        operation,
         'The saved audio source changed. Its resume is kept but was not applied.',
+        recordId: recordId,
       );
       _offerReplacement(book, edition, resume);
       _notify();
@@ -1658,7 +1715,7 @@ class Playback extends ChangeNotifier {
         // phone's own place, which Undo can take back.
         _record(HistoryAction.open, own, _position!, device: known!.device);
       }
-      _actionNotice = null;
+      _actionFailure = null;
       _cancelSleep();
     } finally {
       _loading = false;
@@ -1775,14 +1832,16 @@ class Playback extends ChangeNotifier {
         _edition!,
         autoplay: false,
         target: _position,
+        operation: PlaybackOperation.play,
       );
       if (!loaded || generation != _generation) return;
     }
+    final origin = _noticeOrigin(_edition!.id);
     final saved = await _savedFiles(_edition!);
     if (generation != _generation) return;
     if (saved == null) {
       _actionFailed(
-        _edition!.id,
+        origin,
         PlaybackOperation.play,
         'Download every file in this audio edition before listening.',
       );
@@ -1791,7 +1850,14 @@ class Playback extends ChangeNotifier {
     }
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
-      if (!await _seekPosition(0, 0, HistoryAction.seek)) return;
+      if (!await _seekPosition(
+        0,
+        0,
+        HistoryAction.seek,
+        operation: PlaybackOperation.play,
+      )) {
+        return;
+      }
     }
     if (_playChoice != null && !external) {
       _playChoice!._requested = true;
@@ -1809,7 +1875,7 @@ class Playback extends ChangeNotifier {
     _active = true;
     await engine.play();
     if (generation != _generation) return;
-    _actionNotice = null;
+    _actionFailure = null;
     _notify();
   }
 
@@ -1847,6 +1913,7 @@ class Playback extends ChangeNotifier {
         HistoryAction.open,
         device: choice.device,
         choice: choice,
+        operation: PlaybackOperation.play,
       )) {
         return;
       }
@@ -2036,7 +2103,7 @@ class Playback extends ChangeNotifier {
     final duration = durationMilliseconds;
     if (duration == null) {
       _actionFailed(
-        _edition!.id,
+        _noticeOrigin(_edition!.id),
         PlaybackOperation.seek,
         'Choose a chapter or file. The recording length is not available.',
       );
@@ -2131,6 +2198,8 @@ class Playback extends ChangeNotifier {
     ListeningChoice? choice,
     _SliderGesture? gesture,
     _Counterpart? counterpart,
+    PlaybackOperation operation = PlaybackOperation.seek,
+    String? recordId,
   }) async {
     final generation = _generation;
     final previous = gesture?.origin ?? before ?? _position!;
@@ -2141,6 +2210,8 @@ class Playback extends ChangeNotifier {
         _edition!,
         autoplay: false,
         target: _position,
+        operation: operation,
+        recordId: recordId,
       );
       if (!loaded || generation != _generation) return false;
     }
@@ -2453,15 +2524,41 @@ class Playback extends ChangeNotifier {
     saveFailed: saveFailed,
   );
 
+  _NoticeOrigin _noticeOrigin(String editionId) => (
+    generation: _generation,
+    editionId: editionId,
+    edition: _editions[editionId]?.$2,
+  );
+
+  bool _originIsCurrent(_NoticeOrigin origin) {
+    if (_closed || _session == null || origin.generation != _generation) {
+      return false;
+    }
+    final current = _editions[origin.editionId]?.$2;
+    return switch ((origin.edition, current)) {
+      (null, null) => true,
+      (final before?, final now?) => _sameEdition(before, now),
+      _ => false,
+    };
+  }
+
+  /// Publishes only failures of the account and exact source captured before
+  /// the action waited. Library binding uses the same rule to retire notices.
   void _actionFailed(
-    String editionId,
+    _NoticeOrigin origin,
     PlaybackOperation operation,
-    String message,
-  ) {
-    _actionNotice = (
-      editionId: editionId,
-      operation: operation,
-      message: message,
+    String message, {
+    String? recordId,
+  }) {
+    if (!_originIsCurrent(origin)) return;
+    _actionFailure = (
+      origin: origin,
+      notice: (
+        editionId: origin.editionId,
+        operation: operation,
+        recordId: recordId,
+        message: message,
+      ),
     );
   }
 
@@ -2493,9 +2590,15 @@ class Playback extends ChangeNotifier {
   ///   exposes only requested presentations, never a refresh alone.
   /// - The personal records, the pending writes and the replacement offer
   ///   agree.
-  /// - Action and recovery notices belong to a signed-in binding. Save failure
+  /// - Action notices retain the current source of their signed-in binding;
+  ///   recovery notices belong to a signed-in binding. Save failure
   ///   is derived from that account's unconfirmed writes, never from text.
   void checkInvariants() {
+    if (_actionFailure case final failure?) {
+      if (!_originIsCurrent(failure.origin)) {
+        throw StateError('Action notices require their originating source.');
+      }
+    }
     if (_session == null &&
         (_actionNotice != null || _recoveryMessage != null)) {
       throw StateError('Notices require their signed-in binding.');

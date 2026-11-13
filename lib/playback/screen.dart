@@ -189,6 +189,11 @@ class PlayerView extends StatelessWidget {
   void _resume(RecentListening entry) =>
       unawaited(playback.open(entry.book, entry.edition));
 
+  Widget _resumeNotice(RecentListening entry) => PlaybackActionStatus(
+    status: playback.statusNotifier,
+    edition: entry.edition,
+  );
+
   Widget _nothingOpen(BuildContext context) => ListView(
     padding: EdgeInsets.fromLTRB(20, 16, 20, 32 + floatingBarInset(context)),
     children: [
@@ -198,6 +203,7 @@ class PlayerView extends StatelessWidget {
         recent: recentProgress(playback),
         open: null,
         onResume: _resume,
+        noticeBuilder: _resumeNotice,
         empty: const Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
           child: Text(
@@ -413,6 +419,7 @@ class PlayerView extends StatelessWidget {
                 recent: recentProgress(playback),
                 open: book,
                 onResume: _resume,
+                noticeBuilder: _resumeNotice,
               ),
             ),
           ],
