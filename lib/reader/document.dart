@@ -297,6 +297,12 @@ class PagePreview {
 /// after such a request is the destination's, or a place of a later
 /// request.
 abstract interface class DocumentNavigator {
+  /// Reports the shown place now if its report is pending. The session
+  /// calls this before saving for the background or releasing the book.
+  /// It does not wait for text or navigate to a requested place that has
+  /// not shown yet. A navigator that reports at once has nothing to do.
+  void reportPendingPlace();
+
   /// Turns one page, or in a PDF also scrolls the reflowed text, forward
   /// or back.
   Future<void> move(bool forward);

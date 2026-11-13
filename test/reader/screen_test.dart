@@ -651,6 +651,9 @@ class PopLog extends NavigatorObserver {
 }
 
 class ControlNavigator implements DocumentNavigator {
+  @override
+  void reportPendingPlace() {}
+
   final destinations = <ReadingLocation>[];
 
   /// The section and the progress of each seek, in order.

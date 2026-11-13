@@ -9,6 +9,7 @@ import 'dart:ui' as ui;
 
 import 'package:bookfin/foundation/hop.dart';
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/column_layout.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
@@ -18,6 +19,8 @@ import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
+import 'package:bookfin/reader/platform_io.dart';
+import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/reader/word_bands.dart';
 import 'package:bookfin/reader/word_pages.dart';
 import 'package:bookfin/reader/word_selection.dart';
@@ -27,9 +30,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
+import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart' show footnotePage;
 import 'page_geometry_test.dart' show hocrFixture, layoutFixture;
+import 'pdf_document_test.dart' show pdfSource;
+import 'pdf_session_test.dart' as fixture;
 import 'word_pages_test.dart' show marginsBook, screenPieces;
 
 /// A text supply for scanned pages whose recognized text arrives only when
@@ -306,6 +312,7 @@ void main() {
     PdfAddress? initial,
     double fontSize = 40,
     Reports? reports,
+    ReaderSession? reader,
     EdgeInsets padding = EdgeInsets.zero,
     PdfPageView view = PdfPageView.pageWords,
     double devicePixelRatio = 2.625,
@@ -325,11 +332,19 @@ void main() {
               fontSize: fontSize,
               initial: initial,
               view: view,
-              onReady: (navigator, _) => reported.navigator = navigator,
-              onAddress: reported.places.add,
-              onRefinedAddress: (place) => reported
-                ..places.add(place)
-                ..refined.add(place),
+              onReady: (navigator, contents) {
+                reported.navigator = navigator;
+                reader?.attachDocument(reader.token, navigator, contents);
+              },
+              onAddress: (place) {
+                reported.places.add(place);
+                reader?.acceptAddress(reader.token, place);
+              },
+              onRefinedAddress: (place) {
+                reported.places.add(place);
+                reported.refined.add(place);
+                reader?.refineAddress(reader.token, place);
+              },
               onCancelRecognition: () => book.textSupply?.cancel(),
               onTap: () {},
               onTurn: (forward) => unawaited(reported.navigator!.move(forward)),
@@ -858,6 +873,56 @@ void main() {
     );
     await close(tester, book);
   });
+
+  testWidgets(
+    'History keeps the first word screen of a jump when a turn precedes recognition',
+    (tester) async {
+      final born = await open(tester, marginsBook);
+      final supply = HeldRecognition.gibbon();
+      final scan = CopiedPdf(born, textSupply: supply);
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = Uri.file('/scan.pdf');
+      final reader = ReaderSession(
+        downloads: downloads,
+        store: MemoryResume(),
+        load: loadPublication,
+        loadDocument: (_, _) async => scan,
+      );
+      addTearDown(() {
+        reader.dispose();
+        downloads.dispose();
+        if (!supply.textArrives.isCompleted) supply.textArrives.complete();
+      });
+      await reader.bind(account(), [fixture.book]);
+      await reader.open(fixture.book, fixture.edition);
+      await show(tester, scan, reader: reader);
+      await showsScreen(tester, 1, 0);
+      final jump = reader.goToContents('page:2');
+      await showsScreen(tester, 2, 0);
+      await jump;
+      final landed = reader.history.first;
+      expect(landed.kind, HistoryAction.chapter);
+      expect((reader.visibleAddress as PdfAddress).character, 0);
+
+      await reader.move(true);
+      await showsScreen(tester, 2, 1);
+      expect((reader.visibleAddress as PdfAddress).character, 0);
+      supply.textArrives.complete();
+      await settle(
+        tester,
+        () => (reader.visibleAddress as PdfAddress).character > 0,
+        'recognition names the second screen',
+      );
+      expect(reader.history.first.id, landed.id);
+      expect(
+        reader.history.first.after.anchor,
+        landed.after.anchor,
+        reason: 'The jump landed on the first screen, before the turn.',
+      );
+      reader.checkInvariants();
+      await close(tester, born);
+    },
+  );
 
   testWidgets('the text that attaches to the shown word screen names its '
       'place as a refinement, and a screen turn reports a new place', (
@@ -1418,11 +1483,16 @@ void main() {
     await show(tester, book, fontSize: 40, reports: reports);
     await settle(
       tester,
-      () => reports.places.length > count,
+      () => !identical(shown(tester), before),
       'size 40 returns',
     );
     expect(shown(tester)!.screen, before.screen);
     expect(shown(tester)!.column, same(before.column));
+    expect(
+      reports.places,
+      hasLength(count),
+      reason: 'The same screen and address need no repeated place report.',
+    );
     bandsArrive.complete();
     await close(tester, book);
   });

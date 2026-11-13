@@ -436,9 +436,9 @@ class ReaderSession extends ChangeNotifier {
   /// another. The open of another book drops the jumps that wait.
   Future<void> _jumps = Future.value();
 
-  /// Counts the page turns and the jumps that the person asked for. A jump
-  /// that still waits when the next request comes is older than that
-  /// request, and does not run.
+  /// Counts requested page turns and jumps. A waiting Undo gives up when
+  /// another request follows it. This differs from the book token and
+  /// from the move whose destination has not reported yet.
   int _requests = 0;
   bool _disposed = false;
   bool _recordsReady = false;
@@ -604,9 +604,9 @@ class ReaderSession extends ChangeNotifier {
       await _retryPending();
       return;
     }
+    _clear();
     _account = account?.scope.key;
     _credential = account?.token;
-    _clear();
     _resumes.clear();
     _bookmarks = const [];
     _history = const [];
@@ -752,7 +752,9 @@ class ReaderSession extends ChangeNotifier {
   bool _live(int generation) => !_disposed && generation == token;
   bool _liveAccount(int generation) =>
       !_disposed && generation == _accountGeneration;
-  void _clear() {
+  void _clear({bool closeVisit = false}) {
+    _navigator?.reportPendingPlace();
+    if (closeVisit) _closeVisit();
     _keepShown();
     _dropKeptPage();
     _readingKeptPage = false;
@@ -818,8 +820,7 @@ class ReaderSession extends ChangeNotifier {
     TextPosition? from,
   }) async {
     if (_disposed || _account == null || !_current(selected)) return;
-    if (from == null) _closeVisit();
-    _clear();
+    _clear(closeVisit: from == null);
     _book = book;
     _edition = selected;
     _loading = true;
@@ -1129,6 +1130,7 @@ class ReaderSession extends ChangeNotifier {
 
   void failed(int eventToken, String explanation) {
     if (!_live(eventToken)) return;
+    _navigator?.reportPendingPlace();
     _navigator = null;
     _message = explanation;
     _emit();
@@ -1152,8 +1154,7 @@ class ReaderSession extends ChangeNotifier {
   /// ends its reading visit.
   void closeView(int eventToken) {
     if (!_live(eventToken)) return;
-    _closeVisit();
-    _clear();
+    _clear(closeVisit: true);
   }
 
   void acceptVisible(int eventToken, VisibleLocation location) =>
@@ -1163,15 +1164,10 @@ class ReaderSession extends ChangeNotifier {
   /// the visible place and is saved. The first place after a jump ends the
   /// pending move (see [_endMove]).
   void acceptAddress(int eventToken, ReaderAddress address) {
-    final earlier = _position;
     if (!_place(eventToken, address)) return;
-    final move = _endMove(address);
-    // A report that ends no move and names the place as it was, such as
-    // the report of a change of the view during recognition, keeps the
-    // move that the text of the page can still name.
-    if (move != null || earlier == null || !samePlace(earlier, position!)) {
-      _landed = move;
-    }
+    // A place report means the screen changed, even when an incomplete
+    // address names both screens as character zero on the same page.
+    final move = _landed = _endMove(address);
     unawaited(_save(resumes: [position!], history: {?move?.id: move}));
     _emit();
   }
@@ -1509,6 +1505,8 @@ class ReaderSession extends ChangeNotifier {
             .where((pair) => target.fits(pair.$2) && _current(pair.$2))
             .firstOrNull
         case (final book, final other)?) {
+      // Capture the shown place before it becomes the start of this move.
+      _navigator?.reportPendingPlace();
       await _open(
         book,
         other,
@@ -1527,10 +1525,9 @@ class ReaderSession extends ChangeNotifier {
   /// shown place. Jumps in one book run one after another, so each one
   /// begins where the one before it ended. Completes with whether the
   /// navigator did not fail. A jump that waits when another book opens
-  /// does not run. A jump that waits when the person turns a page or asks
-  /// for another jump does not run either. The newer request replaces it:
-  /// a late jump would take the person away from the page that they turned
-  /// to, or show a place for seconds that they no longer asked for.
+  /// does not run. Only a waiting Undo gives up after a newer request.
+  /// Undo goes back to where the person was. Once they ask to move again,
+  /// that return is no longer wanted. Other jumps still run in order.
   Future<bool> _jump(
     HistoryAction kind,
     Future<void> Function(DocumentNavigator navigator) go, {
@@ -1539,9 +1536,12 @@ class ReaderSession extends ChangeNotifier {
     final generation = token, request = ++_requests;
     final jump = _jumps.then((_) async {
       final navigator = _navigator;
-      if (navigator == null || !_live(generation) || request != _requests) {
+      if (navigator == null ||
+          !_live(generation) ||
+          (kind == HistoryAction.undo && request != _requests)) {
         return false;
       }
+      navigator.reportPendingPlace();
       final before = position;
       // A jump before the book shows a place has no place to begin from,
       // and leaves the start of the visit pending.
@@ -1665,7 +1665,7 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
-  /// Turns one page, forward or back. A jump that still waits for the
+  /// Turns one page, forward or back. An Undo that still waits for the
   /// jump before it does not run after the turn (see [_jump]).
   Future<void> move(bool forward) async {
     final navigator = _navigator;
@@ -1949,6 +1949,7 @@ class ReaderSession extends ChangeNotifier {
   }
 
   Future<void> flush() async {
+    _navigator?.reportPendingPlace();
     await _binding;
     if (!_recordsReady) await _readAgain();
     await _retryPending();
@@ -2057,9 +2058,9 @@ class ReaderSession extends ChangeNotifier {
   @override
   void dispose() {
     _unregisterWriter?.call();
+    _clear();
     _disposed = true;
     speed?.charactersPerMinute.removeListener(_emit);
-    _clear();
     unawaited(_retryPending());
     for (final signal in _signals) {
       signal.dispose();

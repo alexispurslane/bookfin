@@ -345,6 +345,40 @@ void main() {
     expect(json(move.after), json(reader.position!));
   });
 
+  test(
+    'two chapter steps queued behind a running EPUB jump both happen',
+    () async {
+      final reader = await openBook();
+      final held = _HeldJump(reader.pager!);
+      reader.attachDocument(reader.token, held, reader.contents);
+      final running = reader.goToContents('text/s0.xhtml#alder');
+      await held.started.future;
+      final first = reader.moveChapter(true);
+      final second = reader.moveChapter(true);
+      held.release.complete();
+      await Future.wait([running, first, second]);
+      await reader.flush();
+      expect(shownSection(reader), 2);
+      expect(moves(reader).map((move) => reader.describe(move.after).chapter), [
+        'Cedar',
+        'Birch',
+      ]);
+      reader.checkInvariants();
+    },
+  );
+
+  test('two EPUB jumps asked for without an await run in order', () async {
+    final reader = await openBook();
+    final first = reader.goToContents('text/s1.xhtml#birch');
+    final second = reader.goToContents('text/s2.xhtml#cedar');
+    await Future.wait([first, second]);
+    expect(shownSection(reader), 2);
+    expect(moves(reader).map((move) => reader.describe(move.after).chapter), [
+      'Cedar',
+      'Birch',
+    ]);
+  });
+
   test('a jump to the page that already shows records no move', () async {
     final reader = await openBook();
     final start = reader.position!;
@@ -1099,6 +1133,29 @@ void main() {
     });
 
     test(
+      'a queued EPUB landing still lands after a page turn and returns true',
+      () async {
+        final reader = await openBook();
+        final held = _HeldJump(reader.pager!);
+        reader.attachDocument(reader.token, held, reader.contents);
+        final running = reader.goToContents('text/s0.xhtml#alder');
+        await held.started.future;
+        final went = reader.goToLanding(
+          landing(),
+          HistoryAction.historyRestore,
+        );
+        await reader.move(true);
+        held.release.complete();
+        await running;
+        expect(await went, isTrue);
+        expect(shownSection(reader), 2);
+        expect(moves(reader).first.kind, HistoryAction.historyRestore);
+        expect(moves(reader).first.counterpartOf, heard);
+        reader.checkInvariants();
+      },
+    );
+
+    test(
       'Undo after a mapped jump returns to the exact place before it',
       () async {
         final reader = await openBook();
@@ -1185,6 +1242,9 @@ class _ListeningSpy extends MoveStore {
 /// A navigator whose jumps never end.
 class _HangingNavigator implements DocumentNavigator {
   @override
+  void reportPendingPlace() {}
+
+  @override
   Future<void> contents(String href) => Completer<void>().future;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -1193,6 +1253,9 @@ class _HangingNavigator implements DocumentNavigator {
 /// Stands in for the PDF viewport: it shows a source page of a two-page PDF
 /// and reports it at once.
 class _PageNavigator implements DocumentNavigator {
+  @override
+  void reportPendingPlace() {}
+
   _PageNavigator(this.reader);
   final ReaderSession reader;
   int page = 1;
@@ -1216,6 +1279,31 @@ class _PageNavigator implements DocumentNavigator {
       show(int.parse(href.substring('page:'.length)));
   @override
   Future<void> seek(int part, double progress) async => show(part + 1);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Holds the first contents request while the real EPUB pager still turns.
+class _HeldJump implements DocumentNavigator {
+  _HeldJump(this.pager);
+  final EpubPager pager;
+  final started = Completer<void>();
+  final release = Completer<void>();
+  @override
+  Future<void> contents(String href) async {
+    if (!started.isCompleted) {
+      started.complete();
+      await release.future;
+    }
+    await pager.contents(href);
+  }
+
+  @override
+  void reportPendingPlace() => pager.reportPendingPlace();
+  @override
+  Future<void> move(bool forward) => pager.move(forward);
+  @override
+  Future<void> seek(int part, double progress) => pager.seek(part, progress);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -345,6 +345,9 @@ void main() {
 
 /// A navigator that reports each place that the session shows.
 class _Navigator implements DocumentNavigator {
+  @override
+  void reportPendingPlace() {}
+
   _Navigator(this.onDisplay);
   final void Function(ReaderAddress address) onDisplay;
   @override

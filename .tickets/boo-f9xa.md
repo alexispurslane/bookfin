@@ -66,3 +66,38 @@ Verification on 2026-11-12, through nix develop:
 - No device and no emulator was used.
 
 Found work, filed as a ticket: t8-dqir (a page of the text view whose text begins with white space still reports its place twice). td-rbtc and td-ez6p have notes about this change.
+
+**2026-11-13T03:11:34Z**
+
+Applied the second review in the isolated t3/fix-reader-undo-refinements worktree. The two prior commits are a53a7de5 and 0f2e31dd here. Both cherry-picks were clean.
+
+Finding 1. DocumentNavigator.reportPendingPlace() synchronously reports a shown place that still waits for its report. ReaderSession calls it at the start of flush(), before _clear() ends a visit or releases the navigator, and before failed() detaches the navigator. Account changes clear the old book before changing the account key. Disposal clears the book before setting _disposed. The PDF navigator leaves a retained word screen at its old place while the requested page waits. EpubPager reports places at once, so its implementation does nothing. The screen disposal path already calls flush() and closeView(). No widget lifecycle listener was added.
+
+Two related tests found stale History starting points after a turn within the 50 ms wait. The session now collects the pending place before _jump captures its starting point and before _jumpTo captures the starting point for another edition. These tests check the store through a fresh session.
+
+Finding 2. The request counter cancels only a waiting HistoryAction.undo. Ordinary jumps run in order. The comment distinguishes the request counter, the open-book token, and the move that waits for its destination. Both existing tests that cancel a waiting Undo still pass. The Undo offer still appears only after navigation finishes.
+
+Finding 3. Every accepted place report assigns the move that it ends to _landed, including null when it ends no move. The PDF navigator suppresses repeated reports by the reported address and the shown layout and screen index. This keeps a turn between word screens whose incomplete addresses both name character zero. A refinement updates the remembered address and screen. The word-view refinement callback and HistoryEvent.withEnds stay intact.
+
+The former test 'a second report of the same place keeps the move for the refinement' now uses a real viewport and a change of view. It is named 'a repeated view of the same place keeps the move for the refinement'. It still proves that the Opened entry gains the recognized words and stays a visit without a move. The existing jump test for a change of view keeps its outcome. The existing overlapping-size-changes test now waits for the restored screen instead of a repeated place report, and asserts that there is no repeated report.
+
+Red evidence before each fix:
+- Six early-end tests failed with saved page 1 instead of 2. They cover flush, close, screen removal, open, sign out, and edition removal. The disposal test then failed the same way. No fake time passed between the page turn and the end operation.
+- The EPUB chapter-step test ended in section 1 instead of section 2. The consecutive-jump test recorded only Cedar instead of Birch followed by Cedar. The queued EPUB landing returned false.
+- The PDF chapter-choice test recorded destinations [4, 2] instead of [4, 3, 2], newest first. The queued PDF landing returned false.
+- The repeated-view test received two reports instead of one. The real-session word-view test changed the History destination from character 0 to character 232 after the person turned a word screen during recognition.
+- The cross-edition jump and the jump within the same PDF each recorded page 1 instead of page 2 as the starting point.
+
+Verification through the Nix dev shell:
+- Early-end red run: 0 passed and 6 failed. Disposal red run: 0 passed and 1 failed. Early-end green run: 7 passed.
+- The first queue run had 3 expected EPUB assertion failures and 2 load failures because the PDF landing fixture omitted its required chapter argument. That run is not the accepted red evidence. The corrected queue and repeat run had 0 passed and 6 assertion failures. The queue green run, including both waiting-Undo tests, passed 7 tests.
+- The real-session word-view red run had 0 passed and 1 failed. The word-view and repeat green run passed 4 tests.
+- The first complete run of pdf_place_test.dart, pdf_word_view_test.dart, and reading_moves_test.dart passed 129 tests and failed 1. The failure was 'overlapping size changes preserve the word that remained visible instead of a screen that never appeared'. Its wait for a repeated report timed out. The isolated rerun failed the same way. After changing the wait to the restored screen, the isolated test passed.
+- The first required 100-file selection passed 1328 tests and skipped 21, with no failures. The cross-edition red test then failed and its green test passed. The second required selection passed 1329 tests and skipped 21, with no failures.
+- The pending-jump red test failed. After its fix, all of pdf_place_test.dart and reading_moves_test.dart passed, 87 tests total.
+- The required selection is every test file under test/reader whose name starts with pdf_, ocr_, session, reading_, scrub, dock, epub or kept, all of test/reader/epub, all of test/crossings, and all 11 test files that import timeline.dart. It also includes test/reader/screen_test.dart, test/reader/records_test.dart and test/playback/records_test.dart. It runs with --concurrency=2 and --reporter=json. The 21 skips are existing opt-in benchmarks and corpus tests.
+- dart analyze on all 10 changed Dart files reports no issues. Its first pass reported one missing-braces style hint, which was fixed. dart format was applied. No device or emulator was used. No push or ticket closure was done.
+
+A note on boo-0hin names the timer, the reported flag, the pending place and the last reported address and screen that must move with the navigator. That ticket was not started. td-rbtc and t8-dqir remain follow-ups. All three findings were applied. No product decision is pending.
+
+Final verification after both pending-start fixes: the required 100-file selection passed 1330 tests, skipped 21, and failed none. dart analyze on the 10 changed Dart files reported no issues. The final test command ran through nix develop with --concurrency=2 and --reporter=json.

@@ -59,7 +59,8 @@ class PdfViewport extends StatefulWidget {
   final PdfAddress? initial;
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
 
-  /// Reports the place that shows. A page whose text or words arrive
+  /// Reports a changed page, screen or address. An unchanged place gives
+  /// no repeat report. A page whose text or words arrive
   /// promptly reports once, with the place as they name it. A page that
   /// still waits for them 50 ms after it began to show reports the page
   /// itself then, so the owner can save the page while a scanned page is
@@ -161,6 +162,10 @@ class _PdfViewportState extends State<PdfViewport>
   /// Whether the shown page reported its place since it loaded.
   bool _placeReported = false;
 
+  /// The last reported address and screen. The screen distinguishes turns
+  /// within a page whose text still names every screen as character zero.
+  ({PdfAddress address, Object? screen})? _reported;
+
   /// Reports the page-level place of the shown page when its text or its
   /// words are late (see [_reportWhenLate]), or null.
   Timer? _latePlace;
@@ -194,7 +199,7 @@ class _PdfViewportState extends State<PdfViewport>
       },
       onRefinedPlace: (place) {
         _address = place;
-        widget.onRefinedAddress(place);
+        _refine();
       },
       onGiveUp: () => unawaited(_requestText(_generation, _address)),
     );
@@ -390,7 +395,7 @@ class _PdfViewportState extends State<PdfViewport>
     if (_placeReported) {
       // Only this page's own request reaches here ([current]), so the
       // refinement never names a page other than the reported one.
-      widget.onRefinedAddress(_address);
+      _refine();
     } else {
       _publish();
     }
@@ -469,10 +474,46 @@ class _PdfViewportState extends State<PdfViewport>
   /// null to show whole pages.
   BookSurvey? get _crops => widget.trimMargins ? widget.book.survey : null;
 
+  @override
+  void reportPendingPlace() {
+    // A retained word screen is still the place on screen while the
+    // requested page waits for its words.
+    if (_placeReported ||
+        (widget.view == PdfPageView.pageWords &&
+            !_words.showing.value &&
+            _words.screen.value != null)) {
+      return;
+    }
+    _publish();
+  }
+
+  /// The layout and screen index that show, or null for an original page.
+  Object? get _shownScreen {
+    final words = _words.screen.value;
+    if (_usingWords && words != null) {
+      return (words.column.column, words.screen);
+    }
+    final text = _textScreen;
+    if (_usingText && text != null) return (text.layout, text.index);
+    return null;
+  }
+
   void _publish() {
     _latePlace?.cancel();
     _placeReported = true;
+    final previous = _reported, screen = _shownScreen;
+    if (previous != null &&
+        previous.screen == screen &&
+        mapEquals(previous.address.toJson(), _address.toJson())) {
+      return;
+    }
+    _reported = (address: _address, screen: screen);
     widget.onAddress(_address);
+  }
+
+  void _refine() {
+    _reported = (address: _address, screen: _shownScreen);
+    widget.onRefinedAddress(_address);
   }
 
   void _textPlace() {

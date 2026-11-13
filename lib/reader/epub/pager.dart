@@ -73,6 +73,10 @@ class LaidNote {
 /// - The published page number, where known, is the shown page's, unless a
 ///   dropped kept page map gave the shown page a higher one.
 class EpubPager implements DocumentNavigator {
+  // The pager reports each shown place at once, so none waits for a timer.
+  @override
+  void reportPendingPlace() {}
+
   /// The pager of [document]. It opens at [initial] once the first
   /// [present] gives it page settings. [expected] are the page settings
   /// that this phone showed its last page with, if known: the pager starts

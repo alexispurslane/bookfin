@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/crossings/crossings.dart';
 import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
@@ -141,7 +142,11 @@ List<HistoryAction> kindsOf(ReaderSession reader) => [
 ];
 
 /// A reading session on one phone store.
-ReaderSession sessionOn(MemoryResume store, HeldScan scan) {
+ReaderSession sessionOn(
+  MemoryResume store,
+  HeldScan scan, {
+  bool disposeAtTearDown = true,
+}) {
   final downloads = LocalFiles()..files[pdfSource.key] = Uri.file('/scan.pdf');
   final reader = ReaderSession(
     downloads: downloads,
@@ -150,7 +155,7 @@ ReaderSession sessionOn(MemoryResume store, HeldScan scan) {
     loadDocument: (_, _) async => scan,
   );
   addTearDown(() {
-    reader.dispose();
+    if (disposeAtTearDown) reader.dispose();
     downloads.dispose();
   });
   return reader;
@@ -163,8 +168,9 @@ Future<ReaderSession> read(
   HeldScan scan,
   MemoryResume store, {
   PdfPageView view = PdfPageView.text,
+  bool disposeAtTearDown = true,
 }) async {
-  final reader = sessionOn(store, scan);
+  final reader = sessionOn(store, scan, disposeAtTearDown: disposeAtTearDown);
   await reader.bind(account(), [book]);
   await reader.open(book, edition);
   await reader.setPdfView(view);
@@ -311,6 +317,29 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
+    testWidgets(
+      'a change of view during recognition makes no repeated place report',
+      (tester) async {
+        final scan = HeldScan();
+        final reports = Reports();
+        await tester.pumpWidget(
+          viewport(scan, reports, view: PdfPageView.text),
+        );
+        await settle(tester);
+        final before = reports.addresses.length;
+        await tester.pumpWidget(
+          viewport(scan, reports, view: PdfPageView.original),
+        );
+        await settle(tester);
+        await tester.pumpWidget(
+          viewport(scan, reports, view: PdfPageView.text),
+        );
+        await settle(tester);
+        expect(reports.addresses, hasLength(before));
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
     testWidgets('a turn back to a scanned page reports that page first, and '
         'then its end as its text names it', (tester) async {
       final scan = HeldScan()..recognize(2);
@@ -366,6 +395,136 @@ void main() {
       await next.open(book, edition);
       expect((next.initialAddress as PdfAddress).sourcePage, 2);
     });
+
+    for (final ending in [
+      'flush',
+      'close',
+      'pop',
+      'open',
+      'account',
+      'remove',
+      'dispose',
+    ]) {
+      testWidgets('a $ending before the late report saves the scanned page', (
+        tester,
+      ) async {
+        final store = MemoryResume();
+        final scan = HeldScan()..recognize(1);
+        final reader = await read(
+          tester,
+          scan,
+          store,
+          disposeAtTearDown: ending != 'dispose',
+        );
+        unawaited(reader.move(true));
+        // No fake time passes between the turn and the end of the view.
+        await tester.pump();
+        expect(reader.position!.sourcePage, 1);
+        switch (ending) {
+          case 'flush':
+            await reader.flush();
+          case 'close':
+            reader.closeView(reader.token);
+            await reader.flush();
+          case 'pop':
+            await tester.pumpWidget(const SizedBox());
+            await reader.flush();
+          case 'open':
+            await reader.open(book, edition);
+            await reader.flush();
+          case 'account':
+            await reader.bind(null, []);
+          case 'dispose':
+            reader.dispose();
+            await reader.flush();
+          case 'remove':
+            await reader.bind(account(), []);
+        }
+        final next = await restarted(store);
+        await next.open(book, edition);
+        expect((next.initialAddress as PdfAddress).sourcePage, 2);
+        if (ending == 'close' || ending == 'pop' || ending == 'open') {
+          final closed = next.history.firstWhere(
+            (move) => move.kind == HistoryAction.close,
+          );
+          expect(pageOf(closed.after), 2);
+        }
+      });
+    }
+
+    testWidgets(
+      'a jump within the PDF starts History at the pending scanned page',
+      (tester) async {
+        final store = MemoryResume();
+        final scan = HeldScan()
+          ..recognize(1)
+          ..recognize(3);
+        final reader = await read(tester, scan, store);
+        unawaited(reader.move(true));
+        await tester.pump();
+        expect(reader.position!.sourcePage, 1);
+        await reader.goToContents('page:3');
+        await reader.flush();
+        final next = await restarted(store);
+        expect(next.history.first.kind, HistoryAction.chapter);
+        expect(pageOf(next.history.first.before), 2);
+        expect(pageOf(next.history.first.after), 3);
+      },
+    );
+
+    testWidgets(
+      'a jump into another edition starts History at the pending scanned page',
+      (tester) async {
+        const other = Edition(
+          id: 'other-pdf',
+          kind: EditionKind.text,
+          label: 'Other PDF',
+          files: [pdfSource],
+          memberIds: ['other'],
+        );
+        const both = Book(
+          id: 'work',
+          title: 'Two editions',
+          author: 'Writer',
+          editions: [edition, other],
+        );
+        final store = MemoryResume();
+        final scan = HeldScan()
+          ..recognize(1)
+          ..recognize(4);
+        final reader = sessionOn(store, scan);
+        await reader.bind(account(), [both]);
+        await reader.open(both, other);
+        reader.acceptAddress(reader.token, PdfAddress(4, 0));
+        await reader.addBookmark(title: 'Other edition');
+        final bookmark = reader.bookmarks.single.id;
+        await reader.open(both, edition);
+        await reader.setPdfView(PdfPageView.text);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+          ),
+        );
+        addTearDown(() => tester.pumpWidget(const SizedBox()));
+        await settle(tester);
+        unawaited(reader.move(true));
+        await tester.pump();
+        expect(reader.position!.sourcePage, 1);
+
+        await reader.restoreBookmark(bookmark);
+        await settle(tester);
+        final move = reader.history.first;
+        expect(move.kind, HistoryAction.bookmarkRestore);
+        expect(move.before.editionId, edition.id);
+        expect(move.before.sourcePage, 2);
+        expect(move.after.editionId, other.id);
+        expect(move.after.sourcePage, 4);
+        final next = await restarted(store);
+        await next.open(book, edition);
+        expect((next.initialAddress as PdfAddress).sourcePage, 2);
+        reader.checkInvariants();
+      },
+    );
 
     testWidgets('a bookmark added during recognition marks the page that '
         'shows', (tester) async {
@@ -518,6 +677,74 @@ void main() {
       reader.checkInvariants();
     });
 
+    testWidgets(
+      'two PDF chapter choices queued behind a running jump both happen',
+      (tester) async {
+        final scan = HeldScan()
+          ..recognize(1)
+          ..recognize(3)
+          ..recognize(4);
+        final reader = await read(tester, scan, MemoryResume());
+        final running = reader.goToContents('page:2');
+        await settle(tester);
+        final first = reader.goToContents('page:3');
+        final second = reader.goToContents('page:4');
+        scan.recognize(2);
+        await settle(tester);
+        await Future.wait([running, first, second]);
+        expect(reader.position!.sourcePage, 4);
+        expect(
+          reader.history
+              .where((move) => move.kind == HistoryAction.chapter)
+              .map((move) => pageOf(move.after)),
+          [4, 3, 2],
+        );
+        reader.checkInvariants();
+      },
+    );
+
+    testWidgets(
+      'a queued PDF landing still lands after a page turn and returns true',
+      (tester) async {
+        final scan = HeldScan()
+          ..recognize(1)
+          ..recognize(3)
+          ..recognize(4);
+        final reader = await read(tester, scan, MemoryResume());
+        final running = reader.goToContents('page:2');
+        await settle(tester);
+        const heard = AudioPosition(
+          editionId: 'audio',
+          sourceKey: 'audio:one',
+          revision: 'a1',
+          milliseconds: 1000,
+        );
+        final went = reader.goToLanding(
+          TextLanding(
+            heard,
+            (part: 3, progress: 0),
+            into: (
+              editionId: edition.id,
+              sourceKey: pdfSource.key,
+              revision: pdfSource.revision,
+            ),
+            share: .6,
+            chapter: 'Source page 4',
+          ),
+          HistoryAction.historyRestore,
+        );
+        await reader.move(true);
+        scan.recognize(2);
+        await settle(tester);
+        await running;
+        expect(await went, isTrue);
+        expect(reader.position!.sourcePage, 4);
+        expect(reader.history.first.kind, HistoryAction.historyRestore);
+        expect(reader.history.first.counterpartOf, heard);
+        reader.checkInvariants();
+      },
+    );
+
     testWidgets('an Undo that waits behind a jump is dropped when the person '
         'turns the page', (tester) async {
       final scan = CancelableScan()
@@ -623,7 +850,7 @@ void main() {
       unawaited(reader.goToContents('page:3'));
       await settle(tester);
       final moves = reader.history.length;
-      // Each change of the view reports the place of page 3 again.
+      // The view changes while the same place stays on screen.
       await reader.setPdfView(PdfPageView.original);
       await settle(tester);
       await reader.setPdfView(PdfPageView.text);
@@ -787,14 +1014,17 @@ void main() {
       reader.checkInvariants();
     });
 
-    test('a second report of the same place keeps the move for the '
-        'refinement', () async {
-      final scan = HeldScan()..recognize(1);
-      final reader = await opened(scan);
-      reader.acceptAddress(reader.token, PdfAddress(1, 0));
-      // A change of the view during recognition reports the place again.
-      reader.acceptAddress(reader.token, PdfAddress(1, 0));
-      reader.refineAddress(reader.token, named(scan, 1, await scan.text(1)));
+    testWidgets('a repeated view of the same place keeps the move for the '
+        'refinement', (tester) async {
+      final scan = HeldScan();
+      final reader = await read(tester, scan, MemoryResume());
+      // The viewport suppresses the repeat before it reaches the session.
+      await reader.setPdfView(PdfPageView.original);
+      await settle(tester);
+      await reader.setPdfView(PdfPageView.text);
+      await settle(tester);
+      scan.recognize(1);
+      await settle(tester);
       final visit = reader.history.single;
       expect(reader.describe(visit.after).quote, HeldScan.words(1));
       expect(visit.moved, isFalse);

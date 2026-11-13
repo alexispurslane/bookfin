@@ -276,6 +276,9 @@ void main() {
 }
 
 class DeferredSearch implements DocumentNavigator {
+  @override
+  void reportPendingPlace() {}
+
   final calls = <Completer<ReaderSearchReport>>[];
   @override
   Future<ReaderSearchReport> search(String query, int request) {
