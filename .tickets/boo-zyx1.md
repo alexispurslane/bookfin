@@ -30,3 +30,7 @@ New work found: when the audio service creates the engine before any Activity, n
 **2026-11-13T01:47:18Z**
 
 Orchestrator, 2026-11-12: merged into main. A reviewer read the old MainActivity against HostChannels.kt line by line and passed correctness and design, with one comment fix that is applied: the comments now say that an engine that the audio service starts before any Activity has no plugin until an Activity attaches (t0-wedg, raised to priority 1). The ticket stays open until the device check runs: start playback, swipe Bookfin from Recents, reopen it, turn Wi-Fi off and on, and expect a Wi-Fi-only download to pause and then resume. The pendingOffline part moved to t0-5b9b, which needs a user decision.
+
+**2026-11-13T02:59:48Z**
+
+Astra-only Android acceptance started from 0643cebc. Task node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; child thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; clientRequestId bookfin-android-survey-acceptance-astra-20261112-1. Target codex/gpt-6-astra reasoningEffort xhigh. Assigned local emulator-5556 through device_open and the returned agent-device command. Evidence pending; do not treat launch as acceptance.

@@ -37,3 +37,7 @@ Not done. The Android path was compiled and not executed: no run on an ARMv8.0 p
 **2026-11-13T02:06:45Z**
 
 Orchestrator, 2026-11-12: merged into main. A reviewer passed correctness and design by reading: the six bits and their values are right, the arch flag reaches only the ggml-cpu target, and no race exists on the Dart side. Device evidence so far: `grep -m1 Features /proc/cpuinfo` on four running arm64 emulators lists crc32, atomics, fphp, asimdhp, asimdrdm and asimddp, so the test accepts the emulator CPU. The Pixel 8 was not connected. The ticket stays open until one window is heard on a device with no "lacks an instruction" line under the logcat tag bookfin_speech. Follow-ups are in td-k7fj.
+
+**2026-11-13T02:59:48Z**
+
+Astra-only Android acceptance started from 0643cebc. Task node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; child thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1; clientRequestId bookfin-android-survey-acceptance-astra-20261112-1. Target codex/gpt-6-astra reasoningEffort xhigh. Assigned local emulator-5556 through device_open and the returned agent-device command. Evidence pending; do not treat launch as acceptance.
