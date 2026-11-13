@@ -1,6 +1,6 @@
 ---
 id: boo-r8st
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-12T23:41:02Z
@@ -58,3 +58,26 @@ the rest, or navigate directly to the full note. The first option was recommende
 to preserve the current reading page. No answer has arrived. Do not infer one.
 The representation of an original-DOM range is an implementation responsibility,
 not a product question. No implementation or delegate has started.
+
+## User decision and settled scope — 2026-11-13
+
+The user chose a limited preview for an exceptionally large note. Keep the
+current reading page and the existing title-row Go to note action for the full
+note. Normal notes keep their scrolling sheet. The pending-choice note above
+is superseded. Make an omitted remainder understandable to the reader.
+
+Select only the target note from the original admitted DOM. Preserve marked
+note ancestors, simple paragraph notes and original node identities. Exclude
+neighboring notes and unrelated text when an empty anchor shares a container.
+Bound excerpt work and ownership so oversized notes cannot fail through a
+single-page assumption. Preserve scheduled layout, cancellation, settings
+invalidation, backlink omission, images, selection, copying and saved places.
+The existing excerpt owner must release unfinished work and unreturned pages.
+Do not clone a fake subtree or catch programming errors as a fallback.
+
+Prove meaningful original behavior failures, then focused note/place/excerpt
+and actual sheet tests, affected reader/crossing tests, the full suite at
+concurrency at most two, analysis, formatting and complete-diff whitespace
+checks through Nix. Preserve failures, skips and execution evidence. Exactly
+one fresh read-only reviewer assesses correctness, fulfillment and design.
+Parent owns integration, user acceptance, coverage, mutations and closure.

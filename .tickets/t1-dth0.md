@@ -1,6 +1,6 @@
 ---
 id: t1-dth0
-status: open
+status: in_progress
 deps: []
 links: [boo-737n, boo-zyx1]
 created: 2026-11-13T03:01:50Z
@@ -25,3 +25,19 @@ whether Device panel screen inspection now works, with a choice to resume the
 acceptance attempt or continue code work while access remains unavailable.
 The question remains pending. No device retry or bypass occurred. The prior
 host-required stop after two failures remains in force.
+
+## User-authorized resumption — 2026-11-13
+
+The user reports that screen inspection works again and explicitly asks to
+resume Device panel acceptance. Discovery reports local/emulator-5556 ready.
+The parent opened a new binding, but its app-open command failed with
+DEVICE_IN_USE because the earlier acceptance session still owns the emulator.
+The advised session list confirms t3-bdbd965bfc55eb8afbd9f3f6 as that owner.
+The parent did not borrow or close it, retry screenshots, or change app data.
+
+Resume the earlier acceptance delegate in its own thread and session, rather
+than transferring session ownership. It must call device_open again and use
+the returned command. The new authorization permits a fresh inspection
+attempt. The host failure rule still applies to each new failure. Preserve
+both earlier failures and this ownership error as evidence. Both product
+tickets remain unaccepted until their actual requirements run.

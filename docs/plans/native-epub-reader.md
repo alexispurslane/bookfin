@@ -468,6 +468,14 @@ On 2026-11-08 the user chose option B of "Product fork for the user" (tc-406m). 
 - `EpubPager.note` lays the excerpt out on one tall page at the width of the glass sheet's text (`glassSheetTextWidth`), in steps, and draws it without paper. It omits the note's back links: a link that `isBackLink` accepts, or a link that points at a link to the note. In the sheet a back link does nothing (boo-wokk). It moves no place and reports nothing.
 - `ReaderScreen` is the controller. It asks the pager for the note, shows `ReaderNotePanel` on a glass sheet with the open book, and owns the note until the sheet is gone. The sheet's title row holds the heading Note and the quiet action Go to note (boo-2td2). Go to note closes the sheet and calls `goToContents` with the link's destination. A link without a note, or a note that no flow item shows, jumps as before.
 - `EpubNoteView` draws the note. It shares the page's semantics nodes, selection and Copy.
+
+On 2026-11-13, the user chose a limited preview for an exceptionally large
+note (boo-r8st). The note sheet keeps the current reading page and its Go to
+note action. That action opens the full note in the book. Normal notes keep
+scrolling in the sheet. A preview makes clear when more note content follows.
+An empty note anchor must select only its own note from the original document,
+without neighboring notes or unrelated surrounding text.
+
 - Layout draws an arrow that the book's face and the reader font both lack, such as the leftwards arrow with hook (U+21A9) of a back link, with the bundled arrow font, a subset of Noto Sans Math. Without it, Android draws such an arrow with its color emoji font (boo-wokk).
 
 ### MOBI
