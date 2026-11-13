@@ -1,0 +1,118 @@
+{
+  "ticket": "t5-6lnm",
+  "integrationBase": "7b1bd8d76c767ef085d449f9a344835f1330d338",
+  "testedImplementationHead": "c8eb9520879a939cd0160900f8911015069412fa",
+  "headAtEvidenceWriting": "42ab087399a1b348996376a77030798eea0b4266",
+  "commitMapping": [
+    {
+      "child": "2ed2aa7b2b0687838c132b47c406a631f8acac0f",
+      "main": "67ecddfd23488d67113dedda99e383af2bd3534c"
+    },
+    {
+      "child": "7d3247a7761dc33bf6cd517885ae5f4a1a8f94c4",
+      "main": "c8eb9520879a939cd0160900f8911015069412fa"
+    }
+  ],
+  "inspection": [
+    "Complete implementation/test diff, actual queue and editor callers, original review and saved red/green checks inspected.",
+    "Saved child machine-output full suite independently counted: 3622 success, 27 skipped, done.success=true.",
+    "Only ticket-history conflict; retained both parent launch and child evidence.",
+    "All five changed Dart files match the reviewed child exactly. No integration code or test edits were needed.",
+    "Collection-query scope and launch ticket commits made during tests change no production or tests."
+  ],
+  "checks": [
+    {
+      "stage": "format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/playback/playback.dart",
+        "lib/reader/session.dart",
+        "test/playback/history_test.dart",
+        "test/sync/playback_refresh_test.dart",
+        "test/sync/stale_reading_actions_test.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-t5-6lnm-integration/format.log",
+      "elapsedSeconds": 2.39,
+      "sha256": "a222e7c8eb15f9ba7436b4c3de009ba317001248477883d3e469429f62b7df59",
+      "bytes": 47,
+      "result": "Five files; zero changes"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "analyze",
+        "lib",
+        "test",
+        "integration_test",
+        "tool/showcase_fixture.dart"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-t5-6lnm-integration/analysis.log",
+      "elapsedSeconds": 5.46,
+      "sha256": "717f4ce78ef5b801d81b3878a2d0e323686b32492ca116d3f12980377db5e207",
+      "bytes": 81,
+      "result": "No issues found"
+    },
+    {
+      "stage": "affected",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded",
+        "test/playback",
+        "test/sync",
+        "test/durability",
+        "test/app",
+        "test/reader",
+        "test/crossings"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-t5-6lnm-integration/affected.log",
+      "elapsedSeconds": 242.6,
+      "sha256": "2dd53dfc8f1231ebcad1551752f54680b3ea54e52e8c78a090cfff3ed59f951a",
+      "bytes": 537003,
+      "result": "2753 passed, 24 existing skips, zero failures"
+    },
+    {
+      "stage": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "7b1bd8d76c767ef085d449f9a344835f1330d338",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/bookfin-t5-6lnm-integration/diff.log",
+      "elapsedSeconds": 0.02,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "result": "No whitespace errors"
+    }
+  ],
+  "limits": [
+    "Parent ran all required integration-affected suites; no new combined full-suite result is claimed.",
+    "Child full suite preceded a test-only braces correction; final child focused/format/analysis checks followed it. Parent affected checks include that correction and the integrated typed-conflict work.",
+    "Existing skipped cases remain unverified.",
+    "Original single-reviewer assessments remain unchanged. No second review or reapproval.",
+    "No devices/browser, live external-plugin proof, coverage, mutations, latency evidence or timing changes.",
+    "Known t5-rplx and tf-il7u did not recur; their causes remain unresolved.",
+    "Raw parent logs are machine-local; hashes above preserve the captured identity."
+  ]
+}

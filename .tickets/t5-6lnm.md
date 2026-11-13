@@ -1,6 +1,6 @@
 ---
 id: t5-6lnm
-status: in_progress
+status: closed
 deps: [boo-2bl9]
 links: [boo-x1zf]
 created: 2026-11-13T02:08:04Z
@@ -123,3 +123,41 @@ The post-review commit contains only this ticket and review evidence; no
 production or test changes followed review. Required checks are complete.
 The ticket remains in progress for parent integration, acceptance, hardening,
 and closure.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated `2ed2aa7b2b0687838c132b47c406a631f8acac0f` as `67ecddfd`,
+then `7d3247a7761dc33bf6cd517885ae5f4a1a8f94c4` as `c8eb9520`.
+The ticket append was the only conflict; parent launch and child evidence
+both remain. All five changed Dart files match the reviewed child exactly.
+No code or test adaptation was required for the integrated boo-zs5i model.
+
+The parent inspected the full diff, actual callers, tests, original review,
+and saved verification. The child's machine-output full suite independently
+counts 3,622 passed and 27 skipped with done.success=true. The reviewer did
+not execute tests; its original assessments and limits remain unchanged.
+No second review or reapproval is claimed.
+
+Parent checks, one at a time through Nix:
+
+- Formatting of the five changed Dart files: exit 0, zero changes.
+- `dart analyze lib test integration_test tool/showcase_fixture.dart`:
+  exit 0, no issues.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded test/playback
+  test/sync test/durability test/app test/reader test/crossings`:
+  exit 0, 2,753 passed, 24 existing skips, zero failures.
+- Complete integration-base diff check against
+  `7b1bd8d76c767ef085d449f9a344835f1330d338`: exit 0; repeated with staged
+  closure evidence and again after the closure commit.
+
+Exact command arrays, results, mapping and hashes are recorded in
+`docs/evidence/t5-6lnm/integration.json`. Raw logs:
+`/tmp/bookfin-t5-6lnm-integration/`. Collection-query ticket scope and launch
+records were committed during checks; no production or tests changed.
+The parent reran all integration-affected suites; it claims no new combined
+full-suite result. The existing 24 skips remain unverified.
+
+Closed after integration and host checks. Device/browser acceptance,
+coverage, mutations and release hardening remain separate. The known
+intermittent failures did not recur here and remain unexplained. No push,
+PR, deployment or worktree removal occurred.
