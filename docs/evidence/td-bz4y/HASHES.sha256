@@ -1,8 +1,8 @@
 2db506fcdd8b76c23bb01493f68e16b7a19bf010ad59fd496375e4b529d2f4fa  docs/evidence/td-bz4y/09-dart-red-observations.json
 c3d9f8c19a02ff02b9b8add4cb3158aa14a7f83adba3a87488fb947cc7477cb5  docs/evidence/td-bz4y/10-dart-green-observations.json
-b5a9b90c6d8041f6e7dea7a74e5b4f17b37caa41194dacdade2a2621ca6b87ff  docs/evidence/td-bz4y/README.md
+3b025ce1890d51eab7e3e1c03d7adbf6b9a6addc0b42579afb2e57fb8e6dbc06  docs/evidence/td-bz4y/README.md
 a9bcfaefb839f397490588c423fb82712467a37d72fb8edfd712c37de9e6765e  docs/evidence/td-bz4y/checkout.json
-47bbb0463948fc82f2bc7d8c033c8bdd45ea6140cf5dd11d9ef56f32030f8869  docs/evidence/td-bz4y/commands.jsonl
+68be7a1d75e18c7506c1f01b0649fc6e85595afabd046a6ff2cf2af6a51ff36d  docs/evidence/td-bz4y/commands.jsonl
 52b1c43faafeca8a90102021320d6be55322f93c9496141dbfca6f17374d5e6a  docs/evidence/td-bz4y/dart-green-restoration.json
 52b1c43faafeca8a90102021320d6be55322f93c9496141dbfca6f17374d5e6a  docs/evidence/td-bz4y/dart-red-corrected-restoration.json
 52b1c43faafeca8a90102021320d6be55322f93c9496141dbfca6f17374d5e6a  docs/evidence/td-bz4y/dart-red-restoration.json
@@ -23,6 +23,7 @@ ca6d68987e9abb99ea8c0e326506ec08f18afb6b60e9c9447b54fa37f77633e8  docs/evidence/
 64c33593091303949430283ae3c7b935d0ba26c371e6eecc108f59e9fafb7811  docs/evidence/td-bz4y/diagnostic/red-source-instrumented.dart.gz
 507542e86b3a421a764b47c29b7549cc63fb4eb3d661c1408f6510a7991199be  docs/evidence/td-bz4y/diagnostic/sync_suite.py
 e33da1465fca5553b3d02147a585e330319fa2756574b5a51d66409c85372ba8  docs/evidence/td-bz4y/failures.json
+accdee8680399b2fca67ce78e717edecce8becb537e509fc16e3f3f8c2e4d3a1  docs/evidence/td-bz4y/finalize.py
 23a6e4185780b3ecc95ee778db24950ad85f1589098d996c53bccf34cc1d1455  docs/evidence/td-bz4y/inventory.json
 e3bc9869692bbc8d92a9d5d1ef6ee01211ea20f43070eac08ad88e727adf89cb  docs/evidence/td-bz4y/logs/01-environment.log.gz
 7057d4c33cf092117c985a1d81cd99ee8bec9e51a516f557117581b1fda4b285  docs/evidence/td-bz4y/logs/02-python-red.log.gz
@@ -50,6 +51,8 @@ df7554d67730ff6807f20eb0ea3427e931b1854ebae75e4d0d8f4f60495a49e2  docs/evidence/
 2646da94641b1f8f962b0d96d206792d34d3b3aedde931607969d4361c5f09e9  docs/evidence/td-bz4y/logs/24-whitespace.log.gz
 9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/logs/25-ticket-whitespace.log.gz
 9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/logs/26-whitespace-fixed.log.gz
+d8ae1b83248a0d514244ba0b1fd273b95a0a4be5b68cf05cefd5c2fa57e5c8ac  docs/evidence/td-bz4y/logs/27-post-review-evidence.log.gz
+9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/logs/28-final-whitespace.log.gz
 9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/patches/01-environment.patch.gz
 9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/patches/02-python-red.patch.gz
 9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64  docs/evidence/td-bz4y/patches/03-python-clock-inspection.patch.gz
@@ -76,12 +79,17 @@ da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/
 da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/td-bz4y/patches/24-whitespace.patch.gz
 da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/td-bz4y/patches/25-ticket-whitespace.patch.gz
 da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/td-bz4y/patches/26-whitespace-fixed.patch.gz
+da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/td-bz4y/patches/27-post-review-evidence.patch.gz
+da9cd5d7ac92acde009aebe10098e3418bd5faa2de04d8260c4129608d23d158  docs/evidence/td-bz4y/patches/28-final-whitespace.patch.gz
 2dfe9ca14c074ae4791b04371c32c5bf0f6f1647444fbf2deb5687cd1f60efb5  docs/evidence/td-bz4y/preservation-observations.json
 b49fd2ca1a32084c2e53fc390e0228215a59cc9d726ee1b3dc6b057561f99b2f  docs/evidence/td-bz4y/preserved.json
 e16e62a58d08f7e69f65dbe875df9ad12807b22e87be96105032a02d404e9154  docs/evidence/td-bz4y/python-controlled-green.json
 21b088e49f7086478d7c4d24db16e657d47d3d1bf3b29fce5ba139a5ca746dd9  docs/evidence/td-bz4y/python-controlled-red.json
 7f43f8fd612321e760abf8799a159b48cc30d396204840a0e7e452625ab2a767  docs/evidence/td-bz4y/python-red.json
 08661c8d464d97a89a9a29bf010d6fcfe59e796c48277ab71739e4942e1eae19  docs/evidence/td-bz4y/results.json
+ceed7eb971d905b25dc443f41d086ac6809a1d4c27bb38fdba1bfc189b1725e0  docs/evidence/td-bz4y/review-original.json
+2fdb1a1d26c1c99eccedbfede24a5ffb30ce8f44af79db06fd552462d3252ee1  docs/evidence/td-bz4y/review-original.txt.gz
+6c9e676300ea5360fa5f1c0e62e8a0105098b437148221c6b6aed7dc2479671b  docs/evidence/td-bz4y/review-resolutions.json
 270266a4811b6cb8f77b5ed2620e713cabd96e61d3b171044bd08905bd19f3b3  docs/evidence/td-bz4y/run.py
 490ef623ebbe5d9994900e1bce2f7ac81190387c5e688e97f970cc4f151194ee  docs/evidence/td-bz4y/source-inventory.txt
 303cdd1297fddfd8b9a3d1b5ba163042545bfd2b32953c08c17144186f32ada8  docs/evidence/td-bz4y/summarize.py
