@@ -235,6 +235,13 @@
       "result": "Complete staged original-base-to-implementation diff has no whitespace errors.",
       "log": "/tmp/bookfin-boo-r8st-evidence/33-diff-check.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "nix develop --command git diff --check e23662daf2e4e9b737aee4366c418f0ec5591145 HEAD",
+      "exitCode": 0,
+      "result": "Complete original-base-to-HEAD diff has no whitespace errors; rerun after evidence-only commits too.",
+      "log": "/tmp/bookfin-boo-r8st-evidence/34-head-diff-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "skips": [
@@ -452,5 +459,6 @@
       "failed": 0,
       "log": "/tmp/bookfin-boo-r8st-evidence/30-full.log"
     }
-  }
+  },
+  "implementationCommit": "92f6fc1d2432c0ccbac0483487dcb33704fae9b4"
 }
