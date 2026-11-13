@@ -12,6 +12,24 @@ tags: [survey-1112, device-acceptance]
 ---
 # Restore Device panel screen inspection for Android acceptance
 
+## Active acceptance continuation — 2026-11-13
+
+The user authorized a new attempt. The original acceptance delegate resumed in
+its own session after a parent app-open reported DEVICE_IN_USE. No session was
+borrowed or closed. Evidence of the parent attempt:
+`docs/evidence/android-survey-20261113-parent/resume.json`.
+
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Athread-send%3Abookfin-android-survey-resume-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1>.
+- Client request ID: `bookfin-android-survey-resume-astra-20261113-1`.
+- Branch: `t3/verify-android-device-fixes`.
+- Source to merge and test: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
+- Stages: screen inspection, controlled Android acceptance, evidence, parent integration.
+- Launch accepted. Screen inspection and product acceptance remain unverified.
+
+## Original finding and prior work
+
 During the authorized boo-zyx1 and boo-737n acceptance attempt at main 0643cebc on local/emulator-5556 (bookfin-api36), device_open and bound agent-device open dev.bookfin.bookfin --foreground succeeded. device_screenshot failed twice with: Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened. Between attempts, the advised device_list reported the host ready and the emulator booted and already open. The agent stopped device work after the single retry. No build, install, network setting change, playback test, or speech window ran. No existing app data was cleared. Prior boo-gxm8 evidence records the same first failure with a successful retry; this attempt did not recover. Evidence: docs/evidence/android-survey-20261112/acceptance.md.
 
 ## Acceptance Criteria

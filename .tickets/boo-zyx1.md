@@ -12,6 +12,24 @@ tags: [survey-1112]
 ---
 # Own the network event channel for the life of the Flutter engine
 
+## Active acceptance continuation — 2026-11-13
+
+The user authorized a new attempt. The original acceptance delegate resumed in
+its own session after a parent app-open reported DEVICE_IN_USE. No session was
+borrowed or closed. Evidence of the parent attempt:
+`docs/evidence/android-survey-20261113-parent/resume.json`.
+
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Athread-send%3Abookfin-android-survey-resume-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1>.
+- Client request ID: `bookfin-android-survey-resume-astra-20261113-1`.
+- Branch: `t3/verify-android-device-fixes`.
+- Source to merge and test: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
+- Stages: screen inspection, controlled Android acceptance, evidence, parent integration.
+- Launch accepted. Screen inspection and product acceptance remain unverified.
+
+## Original finding and prior work
+
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: confirmed. android/app/src/main/kotlin/dev/bookfin/bookfin/MainActivity.kt:108-112 and 162-188. The ConnectivityManager callback and the event sink of `bookfin/media-network` are fields of the Activity, and `onDestroy` removes them. Under audio_service the engine outlives the Activity, and Dart subscribes once (lib/downloads/platform_io.dart:51), so after the user swipes the app away during playback no network change reaches Dart again. A download then continues on mobile data without the per-session consent, and a download that waits for Wi-Fi does not resume. Commit 5944606e fixed the same class of bug for `bookfin/power`. Register one FlutterPlugin for each engine that owns the connectivity callback and the power receiver. Also give the `pendingOffline` resume flag (lib/playback/playback.dart:763, 1693) a reader and a rule that clears it, or delete it. No production code reads it.
 
 

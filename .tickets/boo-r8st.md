@@ -81,3 +81,16 @@ concurrency at most two, analysis, formatting and complete-diff whitespace
 checks through Nix. Preserve failures, skips and execution evidence. Exactly
 one fresh read-only reviewer assesses correctness, fulfillment and design.
 Parent owns integration, user acceptance, coverage, mutations and closure.
+
+## Parent launch record — 2026-11-13
+
+- Original base: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-r8st-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-r8st-astra-20261113-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Adelegate-task%3Abookfin-boo-r8st-astra-20261113-1>.
+- Client request ID: `bookfin-boo-r8st-astra-20261113-1`.
+- Branch at launch inspection: `t3/bounded-note-previews`.
+- Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c0996feb`.
+- Lead: codex/gpt-6-astra, xhigh. One fresh read-only reviewer: the same model, high.
+- Stages: build, review, fix if needed, then parent integration and acceptance.
+- Launch accepted. No implementation result or acceptance is claimed.

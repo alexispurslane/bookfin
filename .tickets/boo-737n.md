@@ -12,6 +12,24 @@ tags: [survey-1112]
 ---
 # Make sure that the CPU has the instructions that the speech library needs before the model loads
 
+## Active acceptance continuation — 2026-11-13
+
+The user authorized a new attempt. The original acceptance delegate resumed in
+its own session after a parent app-open reported DEVICE_IN_USE. No session was
+borrowed or closed. Evidence of the parent attempt:
+`docs/evidence/android-survey-20261113-parent/resume.json`.
+
+- Task ID: `node:delegated-task:command%3Amcp%3A42e1fbbe-e54d-4e0d-8253-f080c4fbe734%3Athread-send%3Abookfin-android-survey-resume-astra-20261113-1`.
+- Child thread ID: `thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1`.
+- Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-android-survey-acceptance-astra-20261112-1>.
+- Client request ID: `bookfin-android-survey-resume-astra-20261113-1`.
+- Branch: `t3/verify-android-device-fixes`.
+- Source to merge and test: `e23662daf2e4e9b737aee4366c418f0ec5591145`.
+- Stages: screen inspection, controlled Android acceptance, evidence, parent integration.
+- Launch accepted. Screen inspection and product acceptance remain unverified.
+
+## Original finding and prior work
+
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: plausible, the Pixel 8 is not affected. native/speech/CMakeLists.txt:28-32 builds ggml for `armv8.2-a+dotprod+fp16` with no runtime test of the CPU. On an ARMv8.0 phone, the first speech window executes an illegal instruction and the whole process dies, playback included, at each listening session. In `bs_open` (native/speech/bookfin_speech.c:52-73), read `getauxval(AT_HWCAP)` for `HWCAP_ASIMDDP` and `HWCAP_FPHP` and return NULL when one is missing, so speech falls back to matched chapters.
 
 
