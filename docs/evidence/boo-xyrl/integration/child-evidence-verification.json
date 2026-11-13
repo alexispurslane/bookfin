@@ -1,0 +1,253 @@
+{
+  "utc": "2026-11-13T23:57:40.006490+00:00",
+  "childHead": "e5c045fe1785a074ddab9a9454d6a74e8e531784",
+  "verifiedCommandArchives": 39,
+  "verifiedSourceFiles": 497,
+  "sourceManifestSha256": "3eedcd2359413f6eeed80f8284c6cb27cde98de99e95a87e63717962e21eef00",
+  "reviewSha256": "0b02c56f75da31ba7bb75d898103e97bd515d72a2688f2a2655a43f1775d1f3a",
+  "completeDiffCommand": [
+    "git",
+    "diff",
+    "--binary",
+    "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+    "e5c045fe1785a074ddab9a9454d6a74e8e531784"
+  ],
+  "completeDiffSha256": "2c9c11b55b998923effa49591dae0d38dcb04aa3a759f8494d10ae15c497c685",
+  "verificationCorrection": "Initial parent script compared the plain diff to the reported binary-inclusive diff hash and failed. The explicit --binary command matches. All log/archive/source checks had passed.",
+  "commands": [
+    {
+      "label": "01-red-confirmation",
+      "exit": 1,
+      "log_sha256": "ed98a0113946abbbda79c4d345acf0e9ec6c28d415066268e9087f469937b514",
+      "archive_sha256": "d10647ccec1414e65e0f2aa4b75b148e77674fbf0c9f81851823d0092dfbda25"
+    },
+    {
+      "label": "02-red-required-save",
+      "exit": 1,
+      "log_sha256": "f69bf87f909689cdc93c6ee3e503c7237048e8483426de50c75b5a4f16b870b8",
+      "archive_sha256": "3852f0af4f6d538ac4da75fe9468a0234b4130f7d939cbf5767fca914c996857"
+    },
+    {
+      "label": "03-red-owner-guarantees",
+      "exit": 1,
+      "log_sha256": "2e80bf63a62c7de5a437aa360c53f4c42384972e98450e5e0b914f9957c46887",
+      "archive_sha256": "9384ae319c29ba82e6dd4e8ced5247212df32aca12850577a8341f22906e324c"
+    },
+    {
+      "label": "04-red-files",
+      "exit": 1,
+      "log_sha256": "af22d8c8d15f5a04109b2dd81225e04e1b2583fbbf6aa1f2efc8cc0c32eb4dea",
+      "archive_sha256": "3997f5691652c03e6af9eda6d9fbc9368e948761faf19c67d80a88fff7b115a7"
+    },
+    {
+      "label": "05-green-records-catalog",
+      "exit": 1,
+      "log_sha256": "264dc7c8a23c6555070527caee901673c60d01c296bdc35d74f2439c7f34c6d6",
+      "archive_sha256": "0ede598e6c93ea4d705628ede925d5b22b576c85c9f88c0aca347469d30a52c9"
+    },
+    {
+      "label": "06-green-files",
+      "exit": 0,
+      "log_sha256": "393b6e28472fc4d88a55c760abc035ebc4fd18e943f07cd6a0b724b8caddd2c5",
+      "archive_sha256": "af07c522216ea631f470bd59afe2089c52ffb333ea13a70695c782a4188be1f0"
+    },
+    {
+      "label": "07-green-settings",
+      "exit": 1,
+      "log_sha256": "18857fce170166a4fb11d3efc476afd27ccd7537c1a7ba8fe75e08a9605b7a76",
+      "archive_sha256": "4a740d4afbd9b88401fed32b0ab2f615eb1d2f582a7f4178edcc04ff24100ad8"
+    },
+    {
+      "label": "08-settings-integration",
+      "exit": 0,
+      "log_sha256": "ffde35ff140d88c29d4eb5736256c705d55214b2141cf47d580b908f7dd97633",
+      "archive_sha256": "430216c47961c4a6b6c44aebffede509df7afc21c06e046db9c6be283326f485"
+    },
+    {
+      "label": "09-red-empty-retained",
+      "exit": 1,
+      "log_sha256": "e9c2db11791bc7ffa6183e22cc513b57ffb33b36794d077cb4fbd44ea04b7792",
+      "archive_sha256": "56b9535063cd8df43454691c1a59884ee83b3df7268c5da6e4a23c519b8cc6d5"
+    },
+    {
+      "label": "10-green-save-retained",
+      "exit": 0,
+      "log_sha256": "290e88fac87e6d7126cd71cf6b3c43b9c637b94956e55ea62969efff3d979ada",
+      "archive_sha256": "b68e9fd05d8bc1ac57e458d44087eb2bf8b2d9689aa85bda70cbc9500ef992b9"
+    },
+    {
+      "label": "11-settings-errors",
+      "exit": 1,
+      "log_sha256": "86a5747ab0587939812a3a0c62e01508bf502b97c247d6f1a642febeccc794df",
+      "archive_sha256": "fd62506bb7cfa60e712d1fba3587682c69fc4ff9be082a474901f84ab6c948cc"
+    },
+    {
+      "label": "12-catalog-write-order",
+      "exit": 0,
+      "log_sha256": "0b9280e280fde870a0fc8e8f56ff9adaf03cafc910ccbbf0147d709b3b1829d2",
+      "archive_sha256": "09d367a0ef99a7a1984bc6cb2542dc1b84319a695c018b855d4f5c2abf8cf379"
+    },
+    {
+      "label": "13-format",
+      "exit": 0,
+      "log_sha256": "66c4d93f052f2b9c97662d8ad1d892b3804b2c47b5134b50c55afc522ef88114",
+      "archive_sha256": "4d81c6fc9236f60f5243e616fb69c46f948316d48da5bc5e5bad3907eea9071e"
+    },
+    {
+      "label": "14-analyze",
+      "exit": 1,
+      "log_sha256": "6e88bcd2bdcd404b5a14a47aacc95e23abc6d526f60e1f1e8ad4a4936896a202",
+      "archive_sha256": "1e112dd5738a31bb5e9b4708915e48a74309a614d6b9222c0ba0f67582052b6f"
+    },
+    {
+      "label": "15-affected",
+      "exit": 0,
+      "log_sha256": "8841601ec092a9cc94e38250b04d6e695973f6484ec3084cad061b727cf1bfc9",
+      "archive_sha256": "608cfa7e243f670e93d7118f3d5967f6890ee3c491bbb5103a57eaceba797dff"
+    },
+    {
+      "label": "16-red-delayed-records",
+      "exit": 0,
+      "log_sha256": "9e382a285acf3c6f110f938d4512d0e397eb96d4a63e46f03a651853c577a746",
+      "archive_sha256": "6ca27ac2e82277d05ead8213d31365746f5275e60016714fad7b90cef4624158"
+    },
+    {
+      "label": "17-red-after-removal-entry",
+      "exit": 1,
+      "log_sha256": "3081d007c61d5b2ae55a48227b4618a82fd72544768bebcf839b51cbdd3dbf9e",
+      "archive_sha256": "06e2d8806a615c97c8ee27b5bdd60f159c8d990b2906020876509487e77550d2"
+    },
+    {
+      "label": "18-red-derived-wait",
+      "exit": 1,
+      "log_sha256": "2f044287155019592ebf6e69dd148b88d8f395c6553fdd9e3be31c3a63b906c2",
+      "archive_sha256": "b1adcaf14f59191d3b2977e8863ab2798a7349f75e1978d13916ce5dd6b5e60e"
+    },
+    {
+      "label": "19-green-delayed-records",
+      "exit": 0,
+      "log_sha256": "f552fd22c2258db00e3c1a9f74cdd6caf6238d9a948365477011109e05917a51",
+      "archive_sha256": "26609845935525527bcb86114cb4b5aec32d7a527d8a1cb98cbef48bbbb5d0b6"
+    },
+    {
+      "label": "20-format",
+      "exit": 0,
+      "log_sha256": "cb6ba79ae075b7a620f5998895445df0b579611d9299f57cb1b086de818ca006",
+      "archive_sha256": "ab7bf35e46f1b801e79e82e989c057e66917501a8cc4b855420b3707498988d8"
+    },
+    {
+      "label": "21-analyze",
+      "exit": 0,
+      "log_sha256": "611eb247e35317935cb51de55563c6d9ac80c787d15b6cf95664443a4b22fb09",
+      "archive_sha256": "22dab7373618411fe38cb1869a256606b2975a95afe31817b95236ee9c3cd53d"
+    },
+    {
+      "label": "22-affected-final",
+      "exit": 0,
+      "log_sha256": "5622dda9b59c424b2e28cb3aa6e4ef9d9842ad3fb2317e5b5b0c706b49747a3a",
+      "archive_sha256": "65d2948b6e502d22efa8023490e58c30533e7b62b1b5623a4cf642856e9acb6b"
+    },
+    {
+      "label": "23-full-flutter",
+      "exit": 0,
+      "log_sha256": "cfb451ce5f908dd241d0fe3f6e55f68c7f755b3826b5a73f1c7cab24cbf913a9",
+      "archive_sha256": "92aafd027cfa3818c53399fc96b273c7d14d1bf5d5b85a5b37db3ee8f18362f5"
+    },
+    {
+      "label": "24-production-js",
+      "exit": 0,
+      "log_sha256": "d86c8308b729693542946f5a39f67607ea4a17069bd77e679eeb74c4321cab76",
+      "archive_sha256": "d700a9774dd698f90376c4db59e58a3b99884f89d38fb461d7e96867dc04115a"
+    },
+    {
+      "label": "25-gallery-js",
+      "exit": 0,
+      "log_sha256": "b554c6f3af43f5e6a62c731c12b74cc90371c3e87a51ca41076dd0e65b0fe428",
+      "archive_sha256": "249ef261e82533a6e1e2d8fdb85aaac7d3562aea34ba6d97a5803a72546972c0"
+    },
+    {
+      "label": "26-base-diff-whitespace",
+      "exit": 2,
+      "log_sha256": "dd32ff999c7989b881d1ecc7648918bf5862070f084753709ae50ad3beb24387",
+      "archive_sha256": "f2f85d00ded0dcad843ed1550cad61592cc8bf735d1ed0db786ff7a14efdcbb0"
+    },
+    {
+      "label": "27-base-diff-whitespace",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+    },
+    {
+      "label": "28-red-review-ordering",
+      "exit": 1,
+      "log_sha256": "c2ba3dd720cc4303443abc91a39225e9d9bb2a00ecba67795250a9691d30bef7",
+      "archive_sha256": "32325cace16602cbc270237721623da64fb2ba227e94d904fc540257317dbd07"
+    },
+    {
+      "label": "29-red-review-ordering",
+      "exit": 1,
+      "log_sha256": "340c5d74df9e027cd0bf257bf12ef2c743dee7923f75f6162b622044d2830393",
+      "archive_sha256": "71d7632a371d2478aeea2de408dcb6ce16f5973254ef947c51546bccc611e1b3"
+    },
+    {
+      "label": "30-green-review-save",
+      "exit": 0,
+      "log_sha256": "544ec27011dd5a97c234fcac8d3c7b0b9838d36900c054891e520acb3c4e854e",
+      "archive_sha256": "01474ea749b014c418c293e6cb6c354495416ace1b4adb9a50d04b1007096da1"
+    },
+    {
+      "label": "31-green-review-lifetime",
+      "exit": 1,
+      "log_sha256": "799676e4f15f98750b5abae221a557409d0db8227a848a6541749f6115f8956c",
+      "archive_sha256": "b5c8b66da3ce75844c0f578b2bd9c5b11d8c1223462823af0ab4989c0d6fec3d"
+    },
+    {
+      "label": "32-green-review-focused",
+      "exit": 0,
+      "log_sha256": "4f2674196e255d85ff668038afa8f9869dfac00d64ed324413fc99829b9a49e9",
+      "archive_sha256": "7d6ec113e1aad68bf8ecb628dc3c4ebdf456813ca64e692d10b49ef2e2b820ed"
+    },
+    {
+      "label": "33-format-review-fixes",
+      "exit": 0,
+      "log_sha256": "81c95caf78196134f5261282663d5afdb26dd2c32a877a713d9f0b01870d19e1",
+      "archive_sha256": "0c025ef2e12eefe2c354d6fb4cde0f14c0c87fc02ad1818d0c5deef642e3cb12"
+    },
+    {
+      "label": "34-analyze-review-fixes",
+      "exit": 0,
+      "log_sha256": "5ceca9e5993a57c83571ed081c08f39a4c8b5ee2d3bb6c1a98bf3a2edaaaf53b",
+      "archive_sha256": "232321c2a667f6f5012a1555317505dbf908d5d8dd48d7102cf9f334f94fc97e"
+    },
+    {
+      "label": "35-affected-review-fixes",
+      "exit": 0,
+      "log_sha256": "3557da5e0529ce6e5ebac4e10db0eab374fe0c8889523136cbdaa1c061d0465e",
+      "archive_sha256": "a8f7a38ebb2590e8f2020d223c0f5da7199951f3eb53eea11b23c4d5cf6fe9ae"
+    },
+    {
+      "label": "36-full-flutter-review-fixes",
+      "exit": 0,
+      "log_sha256": "2a3d6d82599d60aeba3dee567cf562efdba9b421eaa67a0e31f089d970dde695",
+      "archive_sha256": "8fda069eab0f0e4931f83644746b9601e56ac1001aac742918a2e63f0e9f6d21"
+    },
+    {
+      "label": "37-production-js-review-fixes",
+      "exit": 0,
+      "log_sha256": "10b261a80a74af524f096222a311fc7114315e6fbcc77a915523b7b2f1b3020c",
+      "archive_sha256": "3ef4517493fc5d7882cbc1f216d470928ff5e6b62a3963778168ed011899c060"
+    },
+    {
+      "label": "38-gallery-js-review-fixes",
+      "exit": 0,
+      "log_sha256": "ca8c224890e1fabac4ec08654eb68a794209e72ae211077fbd9510ce3bfbce24",
+      "archive_sha256": "e758ea59816b091831ec32beea5e6eb8f37be6c2a11b7d7ad4c5fdc26ea02845"
+    },
+    {
+      "label": "39-final-base-diff-whitespace",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_sha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+    }
+  ]
+}

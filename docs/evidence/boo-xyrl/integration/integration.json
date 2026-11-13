@@ -1,0 +1,95 @@
+{
+  "utc": "2026-11-13T23:59:32.705287+00:00",
+  "ticket": "boo-xyrl",
+  "status": "integrated; combined playback-removal verification pending",
+  "parentBefore": "02cef2d09cb20143331b4d93ce66e54976c7f99d",
+  "integratedHead": "33837083282fff7c834ef62c6eeb8aa1848ca582",
+  "childHead": "e5c045fe1785a074ddab9a9454d6a74e8e531784",
+  "commits": [
+    "c8cc9e447f6f988d85915ea2cd556183a5fce60f",
+    "33837083282fff7c834ef62c6eeb8aa1848ca582"
+  ],
+  "conflicts": [
+    {
+      "path": ".tickets/boo-xyrl.md",
+      "resolution": "Retained parent launch notes and child implementation/validation notes. No application or test conflict."
+    }
+  ],
+  "inspection": "Parent inspected the complete production and test diff, original review, all recorded finding resolutions, follow-up tickets, and retained red/green execution evidence.",
+  "review": {
+    "originalVerdicts": {
+      "correctness": "fail",
+      "fulfillment": "fail",
+      "design": "fail"
+    },
+    "findings": [
+      "R1: live-writer save failure during upload",
+      "R2: protection lifetime through catalog publication",
+      "R3: overstated source-manifest identity"
+    ],
+    "resolutions": "Original reviewer report preserved; each finding has a recorded ticket-lead resolution with evidence. Parent independently verified artifacts and ran focused integration checks. No second reviewer."
+  },
+  "focused": {
+    "passed": 120,
+    "skipped": 0,
+    "failed": 0,
+    "record": "focused-integration.json",
+    "archive": "focused-integration.log.gz",
+    "rawSha256": "64bd0d99da365c17a860f19d7fc5704710d9aab1095f4f7bd9ec292b2530bbd8",
+    "archiveSha256": "d7573b7e247836a2b791e4be2a1708d4c035d3d64131bb46e78b67a47aa37399"
+  },
+  "childEvidence": "child-evidence-verification.json",
+  "sourceIdentity": "All lib/test files are identical to the child final HEAD; its 3912-pass full run, analysis, and two JavaScript builds cover this same source. Parent did not repeat those broad checks on unchanged source.",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "e5c045fe1785a074ddab9a9454d6a74e8e531784",
+        "HEAD",
+        "--",
+        "lib",
+        "test"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "02cef2d09cb20143331b4d93ce66e54976c7f99d",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "pending": [
+    "Integrate boo-39cu and verify Clear data while a real Playback owns a downloaded audiobook, including required-save failure.",
+    "Combined affected/full/build verification after boo-39cu integration.",
+    "User/device acceptance and later hardening; Android screen inspection remains blocked by t1-dth0."
+  ],
+  "followUps": [
+    "t5-23yk: retained discovery CPU work and programming-error handling.",
+    "td-tswb: acceptance-only DiskCatalog interface migration."
+  ],
+  "ticketClosed": false,
+  "ownedCommandsFinished": true
+}

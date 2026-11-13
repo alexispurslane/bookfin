@@ -1,0 +1,28 @@
+{
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--no-pub",
+    "--concurrency=2",
+    "--reporter=expanded",
+    "test/settings/clear_data_test.dart",
+    "test/settings/screen_test.dart",
+    "test/downloads/clear_account_test.dart",
+    "test/catalog/clear_cache_test.dart",
+    "test/catalog/covers_test.dart",
+    "test/sync/required_upload_test.dart",
+    "test/sync/writer_registration_test.dart",
+    "test/reader/kept_page_session_test.dart"
+  ],
+  "cwd": "/Users/alexispurslane/Development/bookfin",
+  "started": "2026-11-13T23:58:27.432599+00:00",
+  "ended": "2026-11-13T23:58:41.172862+00:00",
+  "head": "33837083282fff7c834ef62c6eeb8aa1848ca582",
+  "sourceIdenticalToChildHead": "e5c045fe1785a074ddab9a9454d6a74e8e531784",
+  "exitCode": 0,
+  "log": "/tmp/bookfin-boo-xyrl-parent/focused-integration.log",
+  "logSha256": "64bd0d99da365c17a860f19d7fc5704710d9aab1095f4f7bd9ec292b2530bbd8"
+}
