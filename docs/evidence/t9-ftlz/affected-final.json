@@ -1,0 +1,63 @@
+{
+  "log": "/tmp/bookfin-t9-ftlz/affected-final.log",
+  "sha256": "a854b6f6ee50fa936040cb02473b6ab9e00a34e7b9853a970ebbb12261ea13d0",
+  "ending": {
+    "success": true,
+    "type": "done",
+    "time": 102096
+  },
+  "counts": {
+    "passed": 1681,
+    "failed": 0,
+    "skipped": 3
+  },
+  "failures": [],
+  "skips": [
+    {
+      "id": 1622,
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "suiteID": 1607,
+      "groupIDs": [
+        1621
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+      },
+      "line": 69,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_upgrade_integration_test.dart"
+    },
+    {
+      "id": 1728,
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "suiteID": 1698,
+      "groupIDs": [
+        1727
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+      },
+      "line": 51,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_batch_integration_test.dart"
+    },
+    {
+      "id": 1848,
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "suiteID": 1818,
+      "groupIDs": [
+        1847
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+      },
+      "line": 18,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_integration_test.dart"
+    }
+  ],
+  "unfinished": []
+}

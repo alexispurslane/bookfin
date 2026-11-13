@@ -1,0 +1,128 @@
+[
+  {
+    "name": "red-boundary",
+    "rawLog": "/tmp/bookfin-t9-ftlz/red-boundary.log",
+    "rawSHA256": "6d1b5277985071ec3bc2471940a03ac10e6238ed8c28c39cf9f536bb8637fa17",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/red-boundary.log.gz",
+    "retainedSHA256": "5f5ceaf57b1ffab93ad5bc1d7d1d2b466d0dce4db3076017c3cd994db9e73941"
+  },
+  {
+    "name": "red-worker-invocation",
+    "rawLog": "/tmp/bookfin-t9-ftlz/red-worker-invocation.log",
+    "rawSHA256": "8989bc35225b784c073bec329ce104cbe8727d9b1c61078e82acfb970d5304ab",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/red-worker-invocation.log.gz",
+    "retainedSHA256": "49270472461a8dcbeac1d68592a1fbb44a7d0a50a49755ca2ac87cc2e53f1e8a"
+  },
+  {
+    "name": "green-worker",
+    "rawLog": "/tmp/bookfin-t9-ftlz/green-worker.log",
+    "rawSHA256": "250684d610255892f93e4adbd0d12ab0ab0c5c4449340a38e0ddefe450a0b846",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/green-worker.log.gz",
+    "retainedSHA256": "6854d99b534ece7d31887bca3a4cd5ce203937e97a3790c383c1e0e23231a754"
+  },
+  {
+    "name": "format",
+    "rawLog": "/tmp/bookfin-t9-ftlz/format.log",
+    "rawSHA256": "f3a7c7e28c383307f9baf9651ed3fe081935ea1db48ca4a1eb6081ae08344f9f",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/format.log.gz",
+    "retainedSHA256": "487ad0d28ae4c79ac3da2e782d3337dff6ccfc467c16d0f58a15a11d4ffe6fc6"
+  },
+  {
+    "name": "focused",
+    "rawLog": "/tmp/bookfin-t9-ftlz/focused.log",
+    "rawSHA256": "0ed0d6c9f689335e5dafe388c6b9f40546df4ff31eea254a79d63c364fedd36e",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/focused.log.gz",
+    "retainedSHA256": "a3004824b95094027aa541989138b5ac6b79a02557d1861347a74e23d142cc5c"
+  },
+  {
+    "name": "affected",
+    "rawLog": "/tmp/bookfin-t9-ftlz/affected.log",
+    "rawSHA256": "4cdd5ad298d06132f95571434b5340a81787329b7d9414908d6459e99728aa57",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/affected.log.gz",
+    "retainedSHA256": "692c56a539cd6de05f81530798730b9e077af1752867bd9191245c8d9a9c3812"
+  },
+  {
+    "name": "format-expanded-tests",
+    "rawLog": "/tmp/bookfin-t9-ftlz/format-expanded-tests.log",
+    "rawSHA256": "6f93ce410448cd6791599fe17895e7d487382957ab755a390161a39b60c15b8d",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/format-expanded-tests.log.gz",
+    "retainedSHA256": "510448d9806330c92d70f21a97cf5ddd7811d4718a6a56d9aa8c963c47dcd3a6"
+  },
+  {
+    "name": "focused-controller",
+    "rawLog": "/tmp/bookfin-t9-ftlz/focused-controller.log",
+    "rawSHA256": "9e86c1c4db646a91381aa4dfc2a0fb5d6434e96e5b56a4a0a9035c28a4f8fad8",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/focused-controller.log.gz",
+    "retainedSHA256": "e68b8936d30fd0234538e65ba85ab47c0f7ad9747d05c038dbb4ba2480638d36"
+  },
+  {
+    "name": "full-suite",
+    "rawLog": "/tmp/bookfin-t9-ftlz/full-suite.log",
+    "rawSHA256": "1935a17547e26fcd250f038ea16139b37c3f5094821ce1a98b0ca3de86543889",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/full-suite.log.gz",
+    "retainedSHA256": "f35329e6ec7e090a3405f2810321d79528478e7b87e18d129c898e983c28d6fd"
+  },
+  {
+    "name": "red-cancel-failure",
+    "rawLog": "/tmp/bookfin-t9-ftlz/red-cancel-failure.log",
+    "rawSHA256": "61a68e4b35a7f58b7b3cc2ee3e9d33a4555911cb084f23ceb8dab9ed1644cb1a",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/red-cancel-failure.log.gz",
+    "retainedSHA256": "73ef72fd8c20398ee1fe082d8e9c61341730043da10bf874305a568edf5b93d9"
+  },
+  {
+    "name": "format-cancellation",
+    "rawLog": "/tmp/bookfin-t9-ftlz/format-cancellation.log",
+    "rawSHA256": "f3a7c7e28c383307f9baf9651ed3fe081935ea1db48ca4a1eb6081ae08344f9f",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/format-cancellation.log.gz",
+    "retainedSHA256": "487ad0d28ae4c79ac3da2e782d3337dff6ccfc467c16d0f58a15a11d4ffe6fc6"
+  },
+  {
+    "name": "green-cancellation",
+    "rawLog": "/tmp/bookfin-t9-ftlz/green-cancellation.log",
+    "rawSHA256": "2ca152df0914a75a30f94bf8f20a41911f3fb897ab6f78d5caa1c1de10ea0d6b",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/green-cancellation.log.gz",
+    "retainedSHA256": "bfc784f47bd4f4748502d780c59e36d7fc488d97a180135f89af83ddab7c291c"
+  },
+  {
+    "name": "affected-final",
+    "rawLog": "/tmp/bookfin-t9-ftlz/affected-final.log",
+    "rawSHA256": "a854b6f6ee50fa936040cb02473b6ab9e00a34e7b9853a970ebbb12261ea13d0",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/affected-final.log.gz",
+    "retainedSHA256": "4a921a7c4d3d256578400d960929742d0e3146f45a2e9033d222e153ac37775a"
+  },
+  {
+    "name": "full-suite-final",
+    "rawLog": "/tmp/bookfin-t9-ftlz/full-suite-final.log",
+    "rawSHA256": "28d24d2e71ab527cc2907acbcde2082a3a96fe3de1e22b3ad68b8f43d97c7e38",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/full-suite-final.log.gz",
+    "retainedSHA256": "e22194169b4b33781abd9accfb907e6d040ba9decd855695d054053570f17f8e"
+  },
+  {
+    "name": "analysis",
+    "rawLog": "/tmp/bookfin-t9-ftlz/analysis.log",
+    "rawSHA256": "6c34fc8f5b5ae2f107e7fc7e1ca0423c752b6163cb1478a6c9ffc84844c3f39f",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/analysis.log.gz",
+    "retainedSHA256": "a4db0bb04f7be0b5cdd4ef155b747fb1bb8f223b4eef3069f087150495a03063"
+  },
+  {
+    "name": "analysis-final",
+    "rawLog": "/tmp/bookfin-t9-ftlz/analysis-final.log",
+    "rawSHA256": "a58f679b44f8fb34715fd8cd7dca915b063d331d4656577c43826288651cd755",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/analysis-final.log.gz",
+    "retainedSHA256": "6a58a1f241c5fc8a1730d47bd0d59655f805aed9505a34e085215e50af3d7d69"
+  },
+  {
+    "name": "format-check",
+    "rawLog": "/tmp/bookfin-t9-ftlz/format-check.log",
+    "rawSHA256": "48119b7f93f88ac166398c1576d4686ff2163286c1e198494980483fef718e84",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/format-check.log.gz",
+    "retainedSHA256": "391f91f9f62ef0ba310ce2fce53a40a49a92e2712875ddc2a5472733ff6888af"
+  },
+  {
+    "name": "staged-whitespace",
+    "rawLog": "/tmp/bookfin-t9-ftlz/staged-whitespace.log",
+    "rawSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "retainedPath": "docs/evidence/t9-ftlz/logs/staged-whitespace.log.gz",
+    "retainedSHA256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+  }
+]

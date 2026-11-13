@@ -1,0 +1,6 @@
+{
+  "lib/catalog/jellyfin.dart": "2bf370b245d604384a7041ccdab5c5d00a2837bba1eadc608cc115defb3b5037",
+  "test/catalog/collection_worker_test.dart": "976fbc073c7b8982b792ccbefd8c6395e5086cb7ed39440b1cdbbcb224c6cf48",
+  "test/catalog/collection_queries_test.dart": "2a0157eddb1e6b082c978cb48d300584bf8c498b9e41c9dbd244def296c17ad0",
+  "lib/catalog/controller.dart": "67e8c66d2ece530191e36ba55ce674d1cd5a4f1b0ee466b662a8af3e681877f7"
+}

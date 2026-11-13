@@ -1,0 +1,480 @@
+{
+  "log": "/tmp/bookfin-t9-ftlz/full-suite-final.log",
+  "sha256": "28d24d2e71ab527cc2907acbcde2082a3a96fe3de1e22b3ad68b8f43d97c7e38",
+  "ending": {
+    "success": false,
+    "type": "done",
+    "time": 294739
+  },
+  "counts": {
+    "passed": 3689,
+    "failed": 1,
+    "skipped": 27
+  },
+  "failures": [
+    {
+      "test": {
+        "id": 1419,
+        "name": "idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled",
+        "suiteID": 1379,
+        "groupIDs": [
+          1406
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 174,
+        "column": 5,
+        "url": "package:flutter_test/src/widget_tester.dart",
+        "root_line": 175,
+        "root_column": 3,
+        "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/page_source_frames_test.dart"
+      },
+      "completion": {
+        "testID": 1419,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 115784
+      },
+      "errors": [
+        {
+          "testID": 1419,
+          "error": "Test failed. See exception logs above.\nThe test description was: idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 115784
+        }
+      ],
+      "prints": [
+        {
+          "testID": 1419,
+          "messageType": "print",
+          "message": "\u2550\u2550\u2561 EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK \u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\nThe following TestFailure was thrown running a test:\nExpected: false\n  Actual: <true>\nidle steps ran in a row between frames\n\nWhen the exception was thrown, this was the stack:\n#4      main.<anonymous closure> (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/page_source_frames_test.dart:188:5)\n<asynchronous suspension>\n#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)\n<asynchronous suspension>\n#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)\n<asynchronous suspension>\n<asynchronous suspension>\n(elided one frame from package:stack_trace)\n\nThis was caught by the test expectation on the following line:\n  file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/page_source_frames_test.dart line 188\nThe test description was:\n  idle layout gives way to each frame that is scheduled, and goes on once no frame is scheduled\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+          "type": "print",
+          "time": 115782
+        }
+      ]
+    }
+  ],
+  "skips": [
+    {
+      "id": 1486,
+      "name": "the part open benchmark",
+      "suiteID": 1482,
+      "groupIDs": [
+        1485
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      },
+      "line": 53,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/part_open_benchmark_test.dart"
+    },
+    {
+      "id": 1490,
+      "name": "the corpus prepare",
+      "suiteID": 1487,
+      "groupIDs": [
+        1489
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      },
+      "line": 81,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/corpus_prepare_test.dart"
+    },
+    {
+      "id": 1514,
+      "name": "the downloaded books open the places that epub.js saved",
+      "suiteID": 1491,
+      "groupIDs": [
+        1494,
+        1513
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 45,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/saved_places_test.dart"
+    },
+    {
+      "id": 1552,
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "suiteID": 1402,
+      "groupIDs": [
+        1404
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1154,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/page_source_test.dart"
+    },
+    {
+      "id": 1594,
+      "name": "body text breaks lines and pages where epub.js broke them",
+      "suiteID": 1586,
+      "groupIDs": [
+        1592
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 24,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/fidelity_test.dart"
+    },
+    {
+      "id": 1667,
+      "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1668,
+      "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1669,
+      "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1670,
+      "name": "the admitted files of a known book stay the same se-frankenstein",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1671,
+      "name": "the admitted files of a known book stay the same se-moby-dick",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1672,
+      "name": "the admitted files of a known book stay the same se-poetry",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1673,
+      "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+      "suiteID": 1657,
+      "groupIDs": [
+        1659,
+        1660
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      },
+      "line": 232,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1737,
+      "name": "the step budget",
+      "suiteID": 1733,
+      "groupIDs": [
+        1736
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+      },
+      "line": 63,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/step_budget_test.dart"
+    },
+    {
+      "id": 1808,
+      "name": "the corpus steps",
+      "suiteID": 1805,
+      "groupIDs": [
+        1807
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      },
+      "line": 92,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/corpus_steps_test.dart"
+    },
+    {
+      "id": 1834,
+      "name": "the admission benchmark",
+      "suiteID": 1831,
+      "groupIDs": [
+        1833
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      },
+      "line": 97,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/admission_benchmark_test.dart"
+    },
+    {
+      "id": 1977,
+      "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "suiteID": 1963,
+      "groupIDs": [
+        1965,
+        1973
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 156,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/zip_test.dart"
+    },
+    {
+      "id": 1990,
+      "name": "the jumps into real books",
+      "suiteID": 1986,
+      "groupIDs": [
+        1989
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/page_map_jump_test.dart"
+    },
+    {
+      "id": 2029,
+      "name": "the corpus run",
+      "suiteID": 2025,
+      "groupIDs": [
+        2028
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/corpus_test.dart"
+    },
+    {
+      "id": 2093,
+      "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "suiteID": 2064,
+      "groupIDs": [
+        2067
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 244,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/image_size_test.dart"
+    },
+    {
+      "id": 2255,
+      "name": "the open of a PDF",
+      "suiteID": 2252,
+      "groupIDs": [
+        2254
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      },
+      "line": 21,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/pdf_open_benchmark_test.dart"
+    },
+    {
+      "id": 2307,
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "suiteID": 2174,
+      "groupIDs": [
+        2177
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1171,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/reader/epub/pager_test.dart"
+    },
+    {
+      "id": 2322,
+      "name": "measure incremental saves and acknowledgments while retaining every original action",
+      "suiteID": 2318,
+      "groupIDs": [
+        2321
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+      },
+      "line": 498,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/research/journal_growth_measurement_test.dart"
+    },
+    {
+      "id": 2327,
+      "name": "measure current restoration against complete retained replay on this host",
+      "suiteID": 2323,
+      "groupIDs": [
+        2326
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 130,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/research/current_restore_measurement_test.dart"
+    },
+    {
+      "id": 2332,
+      "name": "the layout cache survey",
+      "suiteID": 2328,
+      "groupIDs": [
+        2331
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+      },
+      "line": 51,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/research/epub_layout_cache_test.dart"
+    },
+    {
+      "id": 4181,
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "suiteID": 4164,
+      "groupIDs": [
+        4180
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+      },
+      "line": 69,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_upgrade_integration_test.dart"
+    },
+    {
+      "id": 4285,
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "suiteID": 4257,
+      "groupIDs": [
+        4284
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+      },
+      "line": 51,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_batch_integration_test.dart"
+    },
+    {
+      "id": 4407,
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "suiteID": 4377,
+      "groupIDs": [
+        4406
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+      },
+      "line": 18,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442/test/sync/plugin_integration_test.dart"
+    }
+  ],
+  "unfinished": []
+}

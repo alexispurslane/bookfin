@@ -90,3 +90,50 @@ the old frame assertion: record any recurrence with this correction noted,
 without editing the frame test or repeating runs merely to get a pass. Parent
 will verify the combined result at collection integration. t5-rplx remains
 unexplained. Collection CPU work, scope and ownership are unchanged.
+
+## Implementation lead evidence — 2026-11-13
+
+Bound checkout: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442`,
+branch `t3/offload-collection-processing`, original clean HEAD
+`0f1b55762aef7ea17c2460242203cd972d767014`.
+
+Collection reads now use the existing undecoded transport and IsolateHop /
+compute mechanism. Native workers parse and validate each bounded page, then
+reduce discovery and direct membership. JellyfinClient retains request-local
+ownership, network/credential guards and cancellation. Compact page contents
+cross once into each whole-list reduction; no growing accumulation is sent
+per page. Browser compute still has no native isolation. Refresh cadence,
+queries, catalog retention (boo-8xyn) and source-backed loopback fixtures are
+unchanged. Programming Errors propagate; ordinary optional metadata failures
+still drop series names. A separate red test also fixed cancellation precedence
+when a pending worker returns an ordinary infrastructure exception after close.
+
+Meaningful red/green native-worker evidence, transfer/operation counts,
+controlled cancellation and account replacement (including controller adoption
+and persistence), exact commands, hashes, failures and skips are retained in
+`docs/evidence/t9-ftlz/`. The fixture reports eight native worker invocations
+for six pages and two reductions, not latency or total-heap measurements.
+Compact child pages remain in request-local memory until the final reduction.
+
+The first full suite completed with 3,688 passed, 27 skipped and the known
+`tf-il7u` idle-layout failure at page_source_frames_test.dart:188. Its exact
+failure and original-base equality of the frame test and scheduler are saved;
+no cause or correction is claimed. Final verification and the one fresh review
+are recorded alongside the evidence. No device/browser/live-server checks,
+credentials, coverage/mutations, merge, push, PR, deployment or closure.
+Parent owns integration, acceptance, hardening and ticket closure; status
+remains `in_progress`.
+
+Parent update during final verification: the tf-il7u test-only correction is
+already integrated on main as `2a9df513d398ba86f0a6142abe1c7240e43e570e`, with
+evidence `96eb86b5726891b9d6a89e24c72536d3cfbe1109`. This worktree intentionally
+retains the old assertion from its original base; no frame work is edited or
+cherry-picked. Parent verifies the combined changes at integration. Any old
+assertion recurrence is retained, not retried toward green. t5-rplx remains
+separate and unexplained.
+
+Final tests: 39 focused collection passes; 1,681 affected-suite passes and
+three plugin integration skips; full suite 3,689 passes, 27 skips and exactly
+the old tf-il7u assertion failure. All commands finished with no interruptions.
+The full run is explicitly failing, with the parent's integrated test-only
+correction identified above. No t5-rplx failure was observed or claimed fixed.

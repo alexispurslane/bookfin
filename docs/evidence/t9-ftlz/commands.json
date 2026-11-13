@@ -1,0 +1,182 @@
+[
+  {
+    "name": "red-boundary",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart --name 'native workers parse|programming errors do not'",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:23:13.901334+00:00",
+    "finished": "2026-11-13T16:23:26.623002+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/red-boundary.log",
+    "sha256": "6d1b5277985071ec3bc2471940a03ac10e6238ed8c28c39cf9f536bb8637fa17"
+  },
+  {
+    "name": "red-worker-invocation",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart --name 'native workers parse|programming errors do not'",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:23:41.886580+00:00",
+    "finished": "2026-11-13T16:23:49.087694+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/red-worker-invocation.log",
+    "sha256": "8989bc35225b784c073bec329ce104cbe8727d9b1c61078e82acfb970d5304ab"
+  },
+  {
+    "name": "green-worker",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:24:59.505411+00:00",
+    "finished": "2026-11-13T16:25:07.000103+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/green-worker.log",
+    "sha256": "250684d610255892f93e4adbd0d12ab0ab0c5c4449340a38e0ddefe450a0b846"
+  },
+  {
+    "name": "format",
+    "command": "nix develop --command dart format lib/catalog/jellyfin.dart test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:26:01.837432+00:00",
+    "finished": "2026-11-13T16:26:04.890296+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/format.log",
+    "sha256": "f3a7c7e28c383307f9baf9651ed3fe081935ea1db48ca4a1eb6081ae08344f9f"
+  },
+  {
+    "name": "focused",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart test/catalog/collection_queries_test.dart test/catalog/jellyfin_test.dart test/catalog/transport_io_test.dart test/catalog/catalog_signals_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:26:39.381019+00:00",
+    "finished": "2026-11-13T16:26:50.307403+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/focused.log",
+    "sha256": "0ed0d6c9f689335e5dafe388c6b9f40546df4ff31eea254a79d63c364fedd36e"
+  },
+  {
+    "name": "affected",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter json test/catalog test/settings test/app test/downloads test/playback test/sync",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:27:16.241839+00:00",
+    "finished": "2026-11-13T16:29:08.938101+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/affected.log",
+    "sha256": "4cdd5ad298d06132f95571434b5340a81787329b7d9414908d6459e99728aa57"
+  },
+  {
+    "name": "format-expanded-tests",
+    "command": "nix develop --command dart format test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:30:02.513362+00:00",
+    "finished": "2026-11-13T16:30:04.999501+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/format-expanded-tests.log",
+    "sha256": "6f93ce410448cd6791599fe17895e7d487382957ab755a390161a39b60c15b8d"
+  },
+  {
+    "name": "focused-controller",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:30:20.637657+00:00",
+    "finished": "2026-11-13T16:30:28.303987+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/focused-controller.log",
+    "sha256": "9e86c1c4db646a91381aa4dfc2a0fb5d6434e96e5b56a4a0a9035c28a4f8fad8"
+  },
+  {
+    "name": "full-suite",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter json",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:30:48.687786+00:00",
+    "finished": "2026-11-13T16:35:52.228866+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/full-suite.log",
+    "sha256": "1935a17547e26fcd250f038ea16139b37c3f5094821ce1a98b0ca3de86543889"
+  },
+  {
+    "name": "red-cancel-failure",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart --name 'closing while a worker fails'",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:36:14.844246+00:00",
+    "finished": "2026-11-13T16:36:21.995349+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/red-cancel-failure.log",
+    "sha256": "61a68e4b35a7f58b7b3cc2ee3e9d33a4555911cb084f23ceb8dab9ed1644cb1a"
+  },
+  {
+    "name": "format-cancellation",
+    "command": "nix develop --command dart format lib/catalog/jellyfin.dart test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:36:55.708150+00:00",
+    "finished": "2026-11-13T16:36:58.002720+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/format-cancellation.log",
+    "sha256": "f3a7c7e28c383307f9baf9651ed3fe081935ea1db48ca4a1eb6081ae08344f9f"
+  },
+  {
+    "name": "green-cancellation",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/catalog/collection_worker_test.dart test/catalog/collection_queries_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:37:14.189580+00:00",
+    "finished": "2026-11-13T16:37:21.803704+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/green-cancellation.log",
+    "sha256": "2ca152df0914a75a30f94bf8f20a41911f3fb897ab6f78d5caa1c1de10ea0d6b"
+  },
+  {
+    "name": "affected-final",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter json test/catalog test/settings test/app test/downloads test/playback test/sync",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:37:57.201301+00:00",
+    "finished": "2026-11-13T16:39:45.231925+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/affected-final.log",
+    "sha256": "a854b6f6ee50fa936040cb02473b6ab9e00a34e7b9853a970ebbb12261ea13d0"
+  },
+  {
+    "name": "full-suite-final",
+    "command": "nix develop --command flutter test --concurrency=2 --reporter json",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:40:08.851832+00:00",
+    "finished": "2026-11-13T16:45:10.958474+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/full-suite-final.log",
+    "sha256": "28d24d2e71ab527cc2907acbcde2082a3a96fe3de1e22b3ad68b8f43d97c7e38"
+  },
+  {
+    "name": "analysis",
+    "command": "nix develop --command flutter analyze lib/catalog lib/settings lib/app lib/downloads lib/playback lib/sync test/catalog test/settings test/app test/downloads test/playback test/sync",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:45:17.370263+00:00",
+    "finished": "2026-11-13T16:45:30.069729+00:00",
+    "exitCode": 1,
+    "log": "/tmp/bookfin-t9-ftlz/analysis.log",
+    "sha256": "6c34fc8f5b5ae2f107e7fc7e1ca0423c752b6163cb1478a6c9ffc84844c3f39f"
+  },
+  {
+    "name": "analysis-final",
+    "command": "nix develop --command flutter analyze lib/catalog lib/settings lib/app lib/downloads lib/playback lib/sync test/catalog test/settings test/app test/downloads test/playback test/sync",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:46:08.453559+00:00",
+    "finished": "2026-11-13T16:46:17.677944+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/analysis-final.log",
+    "sha256": "a58f679b44f8fb34715fd8cd7dca915b063d331d4656577c43826288651cd755"
+  },
+  {
+    "name": "format-check",
+    "command": "nix develop --command dart format --output=none --set-exit-if-changed lib/catalog/jellyfin.dart test/catalog/collection_worker_test.dart",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:46:30.456615+00:00",
+    "finished": "2026-11-13T16:46:33.361548+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/format-check.log",
+    "sha256": "48119b7f93f88ac166398c1576d4686ff2163286c1e198494980483fef718e84"
+  },
+  {
+    "name": "staged-whitespace",
+    "command": "nix develop --command git diff --check 0f1b55762aef7ea17c2460242203cd972d767014",
+    "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "started": "2026-11-13T16:46:46.436341+00:00",
+    "finished": "2026-11-13T16:46:48.778519+00:00",
+    "exitCode": 0,
+    "log": "/tmp/bookfin-t9-ftlz/staged-whitespace.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]
