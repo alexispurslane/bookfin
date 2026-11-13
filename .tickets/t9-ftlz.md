@@ -16,4 +16,3 @@ Review finding D1 from boo-hwoz at 5055f01314fe443e255efd14fbda49df282304dd. lib
 ## Acceptance Criteria
 
 Large collection discovery and membership reductions execute away from the UI isolate, with meaningful behavior evidence and any performance measurements reported with limits. Preserve direct membership, both source-supported Jellyfin paging shapes, deduplication, optional-metadata fallback, account/credential/cancellation guards and bounded requests. Keep current refresh cadence, no retained membership cache, and the existing catalog-worker retention model unless separately authorized. Preserve all boo-hwoz loopback fixtures and run focused and affected checks through Nix. Do not weaken timing thresholds or infer the cause of tf-il7u.
-

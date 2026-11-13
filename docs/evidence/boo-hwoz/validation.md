@@ -179,3 +179,8 @@ The complete original-base diff is whitespace-checked again with the new
 ticket and review evidence staged, and again after the final commit. Parent
 integration and acceptance must retain the known tf-il7u failure and the
 tracked collection-processing risk. No ticket was closed.
+
+The first review-evidence whitespace check failed because `tk create` left an
+extra blank line at the end of t9-ftlz. The log and failure are retained in
+`commands.json`; the final correction removes that line and records the
+successful complete original-base-to-final-HEAD check separately.

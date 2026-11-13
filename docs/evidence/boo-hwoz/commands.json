@@ -163,8 +163,15 @@
   {
     "command": "nix develop --command git diff --check 0c0984d98f8d2e9b4be7f39e9a10769ddee0bf9c > /tmp/bookfin-boo-hwoz/review-whitespace.log 2>&1",
     "exitCode": 2,
-    "result": "Complete original-base diff including staged follow-up ticket and review evidence passed.",
+    "result": "Failed: tk create produced a new blank line at EOF in .tickets/t9-ftlz.md. Removed in the final evidence correction.",
     "log": "/tmp/bookfin-boo-hwoz/review-whitespace.log",
     "sha256": "bfc97f9ba875c4c619404e78ae8b584707930c933a9ea7cddbb5e7e06fefa0d9"
+  },
+  {
+    "command": "nix develop --command git diff --check 0c0984d98f8d2e9b4be7f39e9a10769ddee0bf9c > /tmp/bookfin-boo-hwoz/final-staged-whitespace.log 2>&1",
+    "exitCode": 0,
+    "result": "Passed after removing the ticket CLI extra blank line and correcting the earlier check record.",
+    "log": "/tmp/bookfin-boo-hwoz/final-staged-whitespace.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 ]
