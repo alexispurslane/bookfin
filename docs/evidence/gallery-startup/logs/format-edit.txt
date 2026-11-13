@@ -1,0 +1,10 @@
+Formatted lib/main.dart
+Formatted lib/appearance/app.dart
+Formatted lib/appearance/sheet.dart
+Formatted lib/development/appearance.dart
+Formatted test/foundation_test.dart
+Formatted test/development/gallery_test.dart
+Formatted test/development/startup_test.dart
+Formatted test/appearance/appearance_sheet_test.dart
+Formatted test/app/catalog_startup_test.dart
+Formatted 10 files (9 changed) in 0.05 seconds.

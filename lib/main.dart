@@ -3,24 +3,19 @@ import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'appearance/appearance.dart';
-import 'appearance/city_search.dart';
+import 'appearance/app.dart';
+import 'appearance/sheet.dart';
 import 'appearance/preferences.dart';
 import 'app/account_binding.dart';
-import 'development/gallery.dart';
-import 'foundation/theme.dart';
 import 'catalog/covers.dart';
-import 'catalog/glass.dart';
 import 'catalog/layout.dart';
 import 'catalog/controller.dart';
 import 'catalog/screen.dart';
-import 'catalog/model.dart' show Book;
 import 'catalog/store.dart';
 import 'crossings/crossings.dart';
 import 'foundation/derived_store.dart';
-import 'foundation/listenable_selector.dart';
 import 'downloads/downloads.dart';
 import 'downloads/platform.dart';
 import 'playback/native.dart';
@@ -51,7 +46,6 @@ Future<void> main() => runBookfin();
 /// both restoration and legacy migration. [recordStore] replaces native
 /// record persistence for hosts without the platform database plugin.
 Future<void> runBookfin({
-  bool gallery = false,
   Future<BookfinSources> Function()? openOtherSources,
   CatalogController Function(LocalCatalogStore store)? createCatalog,
   LocalCatalogStore? catalogStore,
@@ -59,17 +53,7 @@ Future<void> runBookfin({
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(readerLicenses);
-  LicenseRegistry.addLicense(() async* {
-    for (final font in ['Outfit', 'Source-Serif-4', 'Noto-Sans-Math']) {
-      yield LicenseEntryWithLineBreaks([
-        font,
-      ], await rootBundle.loadString('assets/fonts/OFL-$font.txt'));
-    }
-    yield LicenseEntryWithLineBreaks(
-      ['GeoNames city data'],
-      '${await rootBundle.loadString('assets/cities/NOTICE.txt')}\n\n${await rootBundle.loadString('assets/cities/CC-BY-4.0.txt')}',
-    );
-  });
+  registerAppearanceLicenses();
   final appearance = AppearanceController(LocalAppearanceStore());
   // Every native platform keeps personal records in the record database.
   // sqflite supplies it on Android, iOS and macOS. A Linux or Windows port
@@ -83,40 +67,38 @@ Future<void> runBookfin({
   final layout = LibraryLayout(LocalLayoutStore());
   // Local catalog restoration overlaps every independent source opening.
   // Until runApp hands it to the root, this function owns the controller.
-  final localStore = gallery ? null : catalogStore ?? LocalCatalogStore();
-  final catalog = localStore == null
-      ? null
-      : createCatalog?.call(localStore) ??
-            CatalogController(
-              credentials: SecureCredentialStore(),
-              store: localStore,
-            );
-  final restoring = catalog?.restore();
+  final localStore = catalogStore ?? LocalCatalogStore();
+  final catalog =
+      createCatalog?.call(localStore) ??
+      CatalogController(
+        credentials: SecureCredentialStore(),
+        store: localStore,
+      );
+  final restoring = catalog.restore();
   try {
-    late final opening = gallery ? Future<Covers?>.value() : createCovers();
-    final (:downloads, :playback, :covers) =
-        await (openOtherSources?.call() ??
-            openSources(
-              restoreAppearance: appearance.restore,
-              restoreLayout: layout.restore,
-              // Downloads prepares each saved ebook for reading in the background, so
-              // that its first open reads the admitted book (boo-sy2d).
-              openDownloads: () async => gallery
-                  ? null
-                  : await createDownloads(
-                      MediaPolicy(),
-                      prepare: prepareDownloadedBook,
-                    ),
-              // The system media player draws the blurred cover that the covers make.
-              // Playback starts without waiting for the covers to open.
-              openPlayback: (downloads) => createPlayback(
-                downloads,
-                store: records,
-                art: (session, cover) async =>
-                    (await opening)?.blurred(session, cover),
-              ),
-              openCovers: () => opening,
-            ));
+    late final opening = createCovers();
+    final (
+      :downloads,
+      :playback,
+      :covers,
+    ) = await (openOtherSources?.call() ??
+        openSources(
+          restoreAppearance: appearance.restore,
+          restoreLayout: layout.restore,
+          // Downloads prepares each saved ebook for reading in the background, so
+          // that its first open reads the admitted book (boo-sy2d).
+          openDownloads: () =>
+              createDownloads(MediaPolicy(), prepare: prepareDownloadedBook),
+          // The system media player draws the blurred cover that the covers make.
+          // Playback starts without waiting for the covers to open.
+          openPlayback: (downloads) => createPlayback(
+            downloads,
+            store: records,
+            art: (session, cover) async =>
+                (await opening)?.blurred(session, cover),
+          ),
+          openCovers: () => opening,
+        ));
     // The reading speed is derived data, so the first frame does not wait
     // for it. Pages that count before it is read join the saved ones.
     final speed = ReadingSpeed(LocalReadingSpeedStore());
@@ -192,7 +174,6 @@ Future<void> runBookfin({
         catalogStore: localStore,
         catalog: catalog,
         appearance: appearance,
-        gallery: gallery,
         layout: layout,
         covers: covers,
         downloads: downloads,
@@ -200,11 +181,11 @@ Future<void> runBookfin({
         reader: reader,
         crossings: crossings,
         hearing: hearing,
-        sync: gallery ? null : RecordSync(records: records),
+        sync: RecordSync(records: records),
       ),
     );
   } catch (_) {
-    catalog?.dispose();
+    catalog.dispose();
     rethrow;
   }
 }
@@ -221,7 +202,7 @@ typedef BookfinSources = ({
 ///
 /// The steps are independent, so they all start at once. Playback starts
 /// when Downloads is open, because it plays Downloads' files. Without
-/// Downloads, as in the development gallery, there is no Playback.
+/// Downloads there is no Playback.
 Future<BookfinSources> openSources({
   required Future<void> Function() restoreAppearance,
   required Future<void> Function() restoreLayout,
@@ -250,7 +231,6 @@ class BookfinApp extends StatefulWidget {
   const BookfinApp({
     super.key,
     required this.appearance,
-    this.gallery = false,
     this.catalog,
     this.layout,
     this.covers,
@@ -270,7 +250,6 @@ class BookfinApp extends StatefulWidget {
     required this._catalogStore,
     required this.catalog,
     required this.appearance,
-    this.gallery = false,
     this.layout,
     this.covers,
     this.downloads,
@@ -286,7 +265,6 @@ class BookfinApp extends StatefulWidget {
   final AppearanceController appearance;
   final LibraryLayout? layout;
   final Covers? covers;
-  final bool gallery;
   final CatalogController? catalog;
   final Downloads? downloads;
   final Playback? playback;
@@ -299,9 +277,8 @@ class BookfinApp extends StatefulWidget {
   State<BookfinApp> createState() => _BookfinAppState();
 }
 
-/// The app's root. It reports the phone's brightness, accessibility and
-/// lifecycle to the sources, and rebuilds [MaterialApp] only when the theme
-/// decision or the reduced-motion choice changes.
+/// The production root owns account binding and media lifecycle.
+/// [AppearanceApp] owns the shared theme and appearance lifecycle.
 class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   AppearanceController get _appearance => widget.appearance;
   late final CatalogController _catalog;
@@ -311,14 +288,6 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   /// Whether the app was hidden since it last returned to the screen. An
   /// inactive app stays visible, for example under the notification shade.
   bool _hidden = false;
-  final _reduceMotion = ValueNotifier(_platformReducesMotion());
-
-  static bool _platformReducesMotion() => WidgetsBinding
-      .instance
-      .platformDispatcher
-      .accessibilityFeatures
-      .disableAnimations;
-
   @override
   void initState() {
     super.initState();
@@ -332,7 +301,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
           credentials: SecureCredentialStore(),
           store: localStore!,
         );
-    if (localStore != null && !widget.gallery) {
+    if (localStore != null) {
       unawaited(
         _restoreCatalog(localStore, widget._restoration ?? _catalog.restore()),
       );
@@ -345,7 +314,6 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       widget.hearing?.start();
     });
     WidgetsBinding.instance.addObserver(this);
-    _showAppearance(_appearance);
   }
 
   Future<void> _restoreCatalog(
@@ -389,19 +357,9 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
     sync: widget.sync,
   );
 
-  void _showAppearance(AppearanceController appearance) => appearance
-    ..platformBrightnessChanged(
-      WidgetsBinding.instance.platformDispatcher.platformBrightness,
-    )
-    ..resume();
-
   @override
   void didUpdateWidget(BookfinApp oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.appearance != widget.appearance) {
-      oldWidget.appearance.suspend();
-      _showAppearance(_appearance);
-    }
     if (oldWidget.downloads != widget.downloads ||
         oldWidget.playback != widget.playback ||
         oldWidget.reader != widget.reader ||
@@ -412,21 +370,11 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangePlatformBrightness() => _appearance.platformBrightnessChanged(
-    WidgetsBinding.instance.platformDispatcher.platformBrightness,
-  );
-
-  @override
-  void didChangeAccessibilityFeatures() =>
-      _reduceMotion.value = _platformReducesMotion();
-
-  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       widget.sync?.resume();
       widget.reader?.resume();
       unawaited(widget.downloads?.refresh());
-      _appearance.resume();
       // The catalog owns freshness and recovery after an unreachable result.
       if (_hidden) unawaited(_catalog.resume());
       _hidden = false;
@@ -439,7 +387,6 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       }
       unawaited(widget.playback?.flush());
       unawaited(widget.reader?.flush());
-      _appearance.suspend();
     }
   }
 
@@ -458,336 +405,36 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _appearance.suspend();
     _binding.dispose();
     widget.sync?.dispose();
     widget.hearing?.dispose();
     if (_ownsCatalog) _catalog.dispose();
-    _reduceMotion.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([_appearance.decision, _reduceMotion]),
-    builder: (context, home) {
-      final reduceMotion = _reduceMotion.value;
-      final theme = bookfinTheme(
-        _appearance.decision.value.brightness,
-        reduceMotion: reduceMotion,
-      );
-      return MaterialApp(
-        title: 'Bookfin',
-        debugShowCheckedModeBanner: false,
-        theme: theme,
-        themeAnimationDuration: Duration.zero,
-        builder: (context, child) => RecordSyncScope(
+  Widget build(BuildContext context) => RecordSyncScope(
+    sync: widget.sync,
+    child: AppearanceApp(
+      appearance: _appearance,
+      home: Builder(
+        builder: (context) => CatalogHome(
+          catalog: _catalog,
+          layout: widget.layout,
+          covers: widget.covers,
+          downloads: widget.downloads,
+          playback: widget.playback,
+          reader: widget.reader,
+          crossings: widget.crossings,
           sync: widget.sync,
-          child: BookfinThemeTransition(
-            theme: theme,
-            reduceMotion: reduceMotion,
-            child: child!,
-          ),
-        ),
-        home: home,
-      );
-    },
-    // The same home on every theme, so a new theme rebuilds no page.
-    child: widget.gallery
-        ? _BookfinHome(appearance: _appearance, gallery: widget.gallery)
-        : Builder(
-            builder: (context) => CatalogHome(
-              catalog: _catalog,
-              layout: widget.layout,
-              covers: widget.covers,
-              downloads: widget.downloads,
-              playback: widget.playback,
-              reader: widget.reader,
-              crossings: widget.crossings,
-              sync: widget.sync,
-              onReaderNightChanged: (night) => unawaited(
-                _appearance.selectMode(
-                  night ? AppearanceMode.night : AppearanceMode.day,
-                ),
-              ),
-              onAppearance: () => unawaited(
-                showAppearance(
-                  context,
-                  _appearance,
-                  book: widget.playback?.book,
-                ),
-              ),
+          onReaderNightChanged: (night) => unawaited(
+            _appearance.selectMode(
+              night ? AppearanceMode.night : AppearanceMode.day,
             ),
           ),
-  );
-}
-
-/// Shows the appearance sheet over [context], and makes the choices that it
-/// reports: a mode, a city from the offline city search, a development
-/// location in the [gallery], or no location.
-Future<void> showAppearance(
-  BuildContext context,
-  AppearanceController appearance, {
-  Book? book,
-  bool gallery = false,
-  AnimationStyle? sheetAnimationStyle,
-}) => showGlassSheet<void>(
-  context,
-  book: book,
-  title: 'Appearance',
-  isScrollControlled: true,
-  sheetAnimationStyle: sheetAnimationStyle,
-  builder: (sheet) => AppearanceSheet(
-    appearance: appearance,
-    gallery: gallery,
-    onMode: (mode) => unawaited(appearance.selectMode(mode)),
-    onChooseCity: () => unawaited(
-      Navigator.of(sheet).push<void>(
-        MaterialPageRoute(builder: (_) => CitySearch(appearance: appearance)),
-      ),
-    ),
-    onLocation: (location) => unawaited(appearance.selectLocation(location)),
-  ),
-);
-
-class _BookfinHome extends StatelessWidget {
-  const _BookfinHome({required this.appearance, required this.gallery});
-
-  final AppearanceController appearance;
-  final bool gallery;
-
-  @override
-  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: Theme.of(context).brightness == Brightness.dark
-        ? SystemUiOverlayStyle.light
-        : SystemUiOverlayStyle.dark,
-    child: Scaffold(
-      appBar: AppBar(
-        title: Text('BOOKFIN', style: Theme.of(context).textTheme.labelSmall),
-        actions: [
-          IconButton(
-            tooltip: 'Appearance',
-            icon: const Icon(Icons.contrast_rounded),
-            onPressed: () => unawaited(
-              showAppearance(
-                context,
-                appearance,
-                gallery: gallery,
-                sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
-                    ? AnimationStyle.noAnimation
-                    : const AnimationStyle(
-                        duration: Duration(milliseconds: 360),
-                      ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: BookfinSurface(
-          child: gallery
-              ? const DevelopmentGallery()
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-                  children: [
-                    Text(
-                      'Book libraries',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'A little further\ninto the story.',
-                      style: Theme.of(context).textTheme.displaySmall,
-                    ),
-                    const SizedBox(height: 28),
-                    const BookfinPanel(
-                      child: Text('Your library starts here.'),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Library connection is not available in this setup build.',
-                    ),
-                    const SizedBox(height: 24),
-                    ValueListenableBuilder(
-                      valueListenable: appearance.decision,
-                      builder: (context, decision, _) => Text(
-                        decision.description,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                    ListenableSelector(
-                      listenable: appearance,
-                      select: () => appearance.warning,
-                      builder: (context, warning, _) => warning == null
-                          ? const SizedBox.shrink()
-                          : Text(warning),
-                    ),
-                    const SizedBox(height: 28),
-                    const Wrap(
-                      spacing: 12,
-                      children: [
-                        TextButton(onPressed: null, child: Text('Library')),
-                        TextButton(onPressed: null, child: Text('Downloads')),
-                        TextButton(onPressed: null, child: Text('Listening')),
-                      ],
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    ),
-  );
-}
-
-/// The appearance choices: a mode, a city and, in the development gallery,
-/// sample locations. It shows what [appearance] holds and reports each choice
-/// through its callbacks. It changes nothing itself; [showAppearance] acts.
-class AppearanceSheet extends StatelessWidget {
-  const AppearanceSheet({
-    super.key,
-    required this.appearance,
-    required this.gallery,
-    required this.onMode,
-    required this.onChooseCity,
-    required this.onLocation,
-  });
-
-  final AppearanceController appearance;
-  final bool gallery;
-
-  /// The user chose a mode.
-  final ValueChanged<AppearanceMode> onMode;
-
-  /// The user asked to search for a city.
-  final VoidCallback onChooseCity;
-
-  /// The user chose a sample location, or null to remove the location.
-  final ValueChanged<SelectedLocation?> onLocation;
-
-  @override
-  Widget build(BuildContext context) => BookfinSurface(
-    color: Theme.of(context).colorScheme.surfaceContainerLow,
-    child: ListenableBuilder(
-      listenable: appearance,
-      builder: (context, _) => ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-        ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            0,
-            24,
-            24 + MediaQuery.paddingOf(context).bottom,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final mode in AppearanceMode.values)
-                    ChoiceChip(
-                      checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                      label: Text(switch (mode) {
-                        AppearanceMode.automatic => 'Automatic',
-                        AppearanceMode.day => 'Day',
-                        AppearanceMode.night => 'Night',
-                      }),
-                      selected: appearance.settings.mode == mode,
-                      labelStyle: TextStyle(
-                        color: appearance.settings.mode == mode
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).colorScheme.onSurface,
-                      ),
-                      onSelected: (_) => onMode(mode),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ValueListenableBuilder(
-                valueListenable: appearance.decision,
-                builder: (context, decision, _) => Text(decision.description),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Automatic uses sunrise and sunset at your selected location. Without a location, it follows Android system appearance.',
-              ),
-              if (appearance.saveState == PreferenceSaveState.saving)
-                const Text('Saving on this device…'),
-              if (appearance.warning != null)
-                Text(
-                  appearance.warning!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              const SizedBox(height: 24),
-              Text(
-                'Selected city',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(appearance.settings.location?.name ?? 'No city selected'),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: onChooseCity,
-                child: const Text('Choose city'),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Search the bundled offline city list. No device location or network lookup is used.',
-              ),
-              if (gallery) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'Development location fixtures',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sample cities for testing only. The offline city search above is also available in production.',
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final location in [
-                      SelectedLocation('New York', 40.7128, -74.0060),
-                      SelectedLocation('Tokyo', 35.6762, 139.6503),
-                      SelectedLocation('Tromsø', 69.6492, 18.9553),
-                    ])
-                      OutlinedButton(
-                        onPressed: () => onLocation(location),
-                        child: Text(location.name),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Font fallback sample',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'À côté · Ελληνικά · Кириллица · 日本語 · العربية',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
-              if (appearance.settings.location != null)
-                TextButton(
-                  onPressed: () => onLocation(null),
-                  child: const Text('Remove selected location'),
-                ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Done'),
-              ),
-            ],
+          onAppearance: () => unawaited(
+            showAppearance(context, _appearance, book: widget.playback?.book),
           ),
         ),
       ),

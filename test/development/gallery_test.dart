@@ -3,7 +3,8 @@ import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/library_view.dart'
     show BookRow, ShelfFilterChips;
 import 'package:bookfin/foundation/theme.dart' show ProgressLine;
-import 'package:bookfin/main.dart';
+import 'package:bookfin/gallery.dart';
+
 import 'package:bookfin/playback/recent.dart';
 import 'package:bookfin/playback/records_screen.dart';
 import 'package:bookfin/playback/screen.dart';
@@ -22,10 +23,7 @@ Future<void> showGallery(WidgetTester tester) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
-    BookfinApp(
-      appearance: AppearanceController(MemoryAppearanceStore()),
-      gallery: true,
-    ),
+    GalleryApp(appearance: AppearanceController(MemoryAppearanceStore())),
   );
   await tester.pumpAndSettle();
 }
@@ -72,6 +70,31 @@ Finder stagePlayButton() => find.byWidgetPredicate(
 );
 
 void main() {
+  testWidgets('sample city choices use the saved appearance controller', (
+    tester,
+  ) async {
+    final store = MemoryAppearanceStore();
+    final appearance = AppearanceController(store);
+    addTearDown(appearance.dispose);
+    await tester.pumpWidget(GalleryApp(appearance: appearance));
+    await tester.tap(find.byTooltip('Appearance'));
+    await tester.pumpAndSettle();
+    final tokyo = find.widgetWithText(OutlinedButton, 'Tokyo');
+    await tester.ensureVisible(tokyo);
+    await tester.tap(tokyo);
+    await tester.pumpAndSettle();
+    final restored = AppearanceController(store);
+    addTearDown(restored.dispose);
+    await restored.restore();
+    expect(restored.settings.location?.name, 'Tokyo');
+    expect(restored.settings.location?.latitude, 35.6762);
+    expect(restored.settings.location?.longitude, 139.6503);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Development gallery'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('the library shows each sample book as a production book row', (
     tester,
   ) async {

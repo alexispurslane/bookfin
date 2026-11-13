@@ -1,0 +1,67 @@
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:integration_test/macos_desktop_test.dart:121:    unawaited(runBookfin());
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/gallery.dart:3:Future<void> main() => runBookfin(gallery: true);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:45:Future<void> main() => runBookfin();
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:53:Future<void> runBookfin({
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:190:      BookfinApp._restoring(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:195:        gallery: gallery,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:249:class BookfinApp extends StatefulWidget {
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:250:  const BookfinApp({
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:266:  // Takes ownership of the controller already started by runBookfin. The
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:268:  const BookfinApp._restoring({
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:299:  State<BookfinApp> createState() => _BookfinAppState();
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:305:class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:348:    _showAppearance(_appearance);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:392:  void _showAppearance(AppearanceController appearance) => appearance
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:399:  void didUpdateWidget(BookfinApp oldWidget) {
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:403:      _showAppearance(_appearance);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:498:        ? _BookfinHome(appearance: _appearance, gallery: widget.gallery)
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:515:                showAppearance(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:529:Future<void> showAppearance(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:541:  builder: (sheet) => AppearanceSheet(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:543:    gallery: gallery,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:573:              showAppearance(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:576:                gallery: gallery,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:646:/// through its callbacks. It changes nothing itself; [showAppearance] acts.
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:647:class AppearanceSheet extends StatelessWidget {
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:lib/main.dart:648:  const AppearanceSheet({
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/app_shell_test.dart:91:        BookfinApp(appearance: appearance, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:110:  }) => runBookfin(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:111:    gallery: gallery,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:176:      expect(find.byType(BookfinApp), findsNothing);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:193:    expect(find.byType(BookfinApp), findsOneWidget);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:230:    expect(find.byType(BookfinApp), findsNothing);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:329:        BookfinApp(appearance: appearance, catalog: supplied),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:344:    await start(gallery: true);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/catalog_startup_test.dart:347:    expect(find.byType(BookfinApp), findsOneWidget);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/app/resume_refresh_test.dart:94:      BookfinApp(appearance: appearance, catalog: catalog),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/appearance/appearance_sheet_test.dart:42:          body: AppearanceSheet(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/appearance/appearance_sheet_test.dart:44:            gallery: gallery,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/appearance/appearance_sheet_test.dart:80:    await show(tester, const AppearanceSettings(), gallery: true);
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/appearance/production_city_test.dart:33:  child: BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/boot_shell_test.dart:20:      BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/boot_shell_test.dart:37:      BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/boot_shell_test.dart:55:        BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/catalog/file_store_test.dart:65:        await tester.pumpWidget(BookfinApp(appearance: appearance));
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/catalog/file_store_test.dart:92:          await tester.pumpWidget(BookfinApp(appearance: appearance));
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/development/gallery_test.dart:25:    BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/development/gallery_test.dart:27:      gallery: true,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/durability/background_test.dart:130:        BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/durability/background_test.dart:175:        BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/durability/background_test.dart:260:          BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/durability/background_test.dart:288:          BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:28:    await tester.pumpWidget(BookfinApp(appearance: controller, gallery: true));
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:73:        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:91:        BookfinApp(appearance: controller, gallery: true),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:133:        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:182:        BookfinApp(appearance: controller, gallery: true),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:203:        BookfinApp(appearance: controller, gallery: true),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:253:        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:285:      BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:301:        BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:323:    await tester.pumpWidget(BookfinApp(appearance: controller, gallery: true));
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:344:      BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/foundation_test.dart:346:        gallery: true,
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/reader/shared_appearance_test.dart:45:  Widget build() => BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/sync/event_upload_test.dart:160:          BookfinApp(
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/sync/event_upload_test.dart:182:        rig.disposed = true; // BookfinApp owns disposal of its coordinator.
+a85c8789e9a14c4d978f94e64db3c6cacfafd8a0:test/sync/schedule_test.dart:158:        BookfinApp(

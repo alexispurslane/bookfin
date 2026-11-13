@@ -1,5 +1,6 @@
 import 'package:bookfin/appearance/appearance.dart';
 import 'package:bookfin/appearance/preferences.dart';
+import 'package:bookfin/gallery.dart';
 import 'package:bookfin/main.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ void main() {
     tester,
   ) async {
     final controller = AppearanceController(MemoryAppearanceStore());
-    await tester.pumpWidget(BookfinApp(appearance: controller, gallery: true));
+    await tester.pumpWidget(GalleryApp(appearance: controller));
     for (final mode in [AppearanceMode.day, AppearanceMode.night]) {
       await controller.selectMode(mode);
       await tester.pumpAndSettle();
@@ -87,9 +88,7 @@ void main() {
     (tester) async {
       final controller = AppearanceController(MemoryAppearanceStore());
       await controller.selectMode(AppearanceMode.day);
-      await tester.pumpWidget(
-        BookfinApp(appearance: controller, gallery: true),
-      );
+      await tester.pumpWidget(GalleryApp(appearance: controller));
       await tester.tap(find.byTooltip('Appearance'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Night'));
@@ -178,9 +177,7 @@ void main() {
     'manual appearance changes the screen without losing its filter',
     (tester) async {
       final controller = AppearanceController(MemoryAppearanceStore());
-      await tester.pumpWidget(
-        BookfinApp(appearance: controller, gallery: true),
-      );
+      await tester.pumpWidget(GalleryApp(appearance: controller));
       await tester.tap(find.text('Downloaded'));
       await tester.pumpAndSettle();
       expect(find.text('The Lost World').hitTestable(), findsNothing);
@@ -199,9 +196,7 @@ void main() {
     'reading size and scroll survive navigation and a palette change',
     (tester) async {
       final controller = AppearanceController(MemoryAppearanceStore());
-      await tester.pumpWidget(
-        BookfinApp(appearance: controller, gallery: true),
-      );
+      await tester.pumpWidget(GalleryApp(appearance: controller));
       await tester.tap(find.text('Reader'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(find.byTooltip('Reading settings'), 300);
@@ -238,80 +233,90 @@ void main() {
     },
   );
 
-  testWidgets(
-    'automatic appearance recalculates after resume and location changes',
-    (tester) async {
-      var now = DateTime.utc(2026, 3, 20, 16);
-      final controller = AppearanceController(
-        MemoryAppearanceStore(),
-        clock: () => now,
-      );
-      await controller.selectLocation(
-        SelectedLocation('New York', 40.7128, -74.0060),
-      );
-      await tester.pumpWidget(
-        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
-      );
-      await tester.pumpAndSettle();
-      expect(brightness(tester), Brightness.light);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      now = DateTime.utc(2026, 3, 21, 2);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
-      expect(brightness(tester), Brightness.dark);
-      await controller.selectLocation(
-        SelectedLocation('Tokyo', 35.6762, 139.6503),
-      );
-      await tester.pumpAndSettle();
-      expect(brightness(tester), Brightness.light);
-    },
-  );
+  for (final (name, app) in <(String, Widget Function(AppearanceController))>[
+    (
+      'production',
+      (appearance) =>
+          BookfinApp(appearance: appearance, catalog: disconnectedCatalog()),
+    ),
+    ('gallery', (appearance) => GalleryApp(appearance: appearance)),
+  ]) {
+    testWidgets(
+      '$name: automatic appearance recalculates after resume and location changes',
+      (tester) async {
+        var now = DateTime.utc(2026, 3, 20, 16);
+        final controller = AppearanceController(
+          MemoryAppearanceStore(),
+          clock: () => now,
+        );
+        await controller.selectLocation(
+          SelectedLocation('New York', 40.7128, -74.0060),
+        );
+        await tester.pumpWidget(app(controller));
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.light);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        now = DateTime.utc(2026, 3, 21, 2);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.dark);
+        await controller.selectLocation(
+          SelectedLocation('Tokyo', 35.6762, 139.6503),
+        );
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.light);
+      },
+    );
 
-  testWidgets('automatic appearance changes while the app remains open', (
-    tester,
-  ) async {
-    final controller = AppearanceController(
-      MemoryAppearanceStore(),
-      clock: fakeClock(tester, DateTime.utc(2026, 3, 20, 22, 55)),
+    testWidgets(
+      '$name: automatic appearance changes while the app remains open',
+      (tester) async {
+        final controller = AppearanceController(
+          MemoryAppearanceStore(),
+          clock: fakeClock(tester, DateTime.utc(2026, 3, 20, 22, 55)),
+        );
+        await controller.selectLocation(
+          SelectedLocation('New York', 40.7128, -74.0060),
+        );
+        await tester.pumpWidget(app(controller));
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.light);
+        // New York sets at about 23:10 UTC on the March equinox.
+        await tester.pump(const Duration(minutes: 25));
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.dark);
+      },
     );
-    await controller.selectLocation(
-      SelectedLocation('New York', 40.7128, -74.0060),
-    );
-    await tester.pumpWidget(
-      BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
-    );
-    await tester.pumpAndSettle();
-    expect(brightness(tester), Brightness.light);
-    // New York sets at about 23:10 UTC on the March equinox.
-    await tester.pump(const Duration(minutes: 25));
-    await tester.pumpAndSettle();
-    expect(brightness(tester), Brightness.dark);
-  });
 
-  testWidgets(
-    'without a location Android system appearance changes are honored',
-    (tester) async {
-      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
-      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
-      await tester.pumpWidget(
-        BookfinApp(
-          appearance: AppearanceController(MemoryAppearanceStore()),
-          catalog: disconnectedCatalog(),
-        ),
-      );
-      expect(brightness(tester), Brightness.light);
-      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-      await tester.pumpAndSettle();
-      expect(brightness(tester), Brightness.dark);
-      await tester.tap(find.byTooltip('Appearance'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('System appearance'), findsOneWidget);
-    },
-  );
+    testWidgets(
+      '$name: without a location Android system appearance changes are honored',
+      (tester) async {
+        tester.platformDispatcher.platformBrightnessTestValue =
+            Brightness.light;
+        addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+        await tester.pumpWidget(
+          app(AppearanceController(MemoryAppearanceStore())),
+        );
+        expect(brightness(tester), Brightness.light);
+        tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+        await tester.pumpAndSettle();
+        expect(brightness(tester), Brightness.dark);
+        await tester.tap(find.byTooltip('Appearance'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('System appearance'), findsOneWidget);
+      },
+    );
+  }
 
   testWidgets('reduced motion applies palette and screen changes immediately', (
     tester,
@@ -320,7 +325,7 @@ void main() {
         FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     final controller = AppearanceController(MemoryAppearanceStore());
-    await tester.pumpWidget(BookfinApp(appearance: controller, gallery: true));
+    await tester.pumpWidget(GalleryApp(appearance: controller));
     await controller.selectMode(AppearanceMode.night);
     await tester.pump();
     expect(brightness(tester), Brightness.dark);
@@ -341,10 +346,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await tester.pumpWidget(
-      BookfinApp(
-        appearance: AppearanceController(MemoryAppearanceStore()),
-        gallery: true,
-      ),
+      GalleryApp(appearance: AppearanceController(MemoryAppearanceStore())),
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

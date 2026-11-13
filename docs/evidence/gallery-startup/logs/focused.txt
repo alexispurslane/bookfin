@@ -1,0 +1,194 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.4 (2.5.5 available)
+  shared_preferences_foundation 2.5.7 (2.6.2 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.7 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+38 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/startup_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/startup_test.dart: gallery startup restores only appearance and opens no services
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the library shows each sample book as a production book row
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the production filter row filters the sample books
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: a tap on a library book opens it in the sample player
+00:01 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the production mini player shows the sample book and opens the player
+00:01 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the player stage is built from the production player leaves
+00:01 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: resuming a book in the production recent list opens it
+00:02 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:02 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the theme control turns the sample page to the night theme
+00:03 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:03 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:03 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: text stays readable during both directions of a palette change
+00:04 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:06 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:06 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:06 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:06 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:07 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:07 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/appearance_sheet_test.dart: Done remains reachable above scrolling appearance choices
+00:08 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: large text city results remain selectable above a landscape keyboard
+00:08 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: large text city results remain selectable above a landscape keyboard
+00:08 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/appearance_sheet_test.dart: choosing a city reports the wish to choose one
+00:08 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city search shows its loading state while the city list is read, then finds a city
+00:08 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city search shows its loading state while the city list is read, then finds a city
+00:08 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: city search shows its loading state while the city list is read, then finds a city
+00:08 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:09 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:10 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:10 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:10 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:11 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/city_finder_test.dart: the search page shows the latest answer and drops a stale one
+00:11 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:11 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:12 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:12 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:12 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:12 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/app_shell_test.dart: the theme a hidden app sets no timer for the next sunset
+00:13 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:13 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:13 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:14 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return keeps a catalog refreshed less than an hour ago
+00:14 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return refreshes a catalog whose last success is older than one hour
+00:14 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return refreshes a catalog whose last success is unknown
+00:14 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/account_binding_test.dart: Playback binds while Downloads restoration is held
+00:14 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an unchanged response starts a new hour without saving the catalog again
+00:14 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an unchanged response starts a new hour without saving the catalog again
+00:14 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an unchanged response starts a new hour without saving the catalog again
+00:14 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/account_binding_test.dart: a catalog notice that keeps the account and books does not rebind
+00:14 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a manual refresh still reads a recent catalog
+00:14 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a manual refresh still reads a recent catalog
+00:14 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/account_binding_test.dart: signing out rebinds Downloads without an account
+00:14 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen the launch refresh still reads a recent saved catalog
+00:14 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen the launch refresh still reads a recent saved catalog
+00:14 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen the launch refresh still reads a recent saved catalog
+00:14 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen the launch refresh still reads a recent saved catalog
+00:14 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/account_binding_test.dart: the start of a refresh binds nothing and synchronizes nothing
+00:14 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen an incomplete response does not start a new hour
+00:14 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/account_binding_test.dart: a refresh that succeeds starts no record sync, because record sync keeps its own schedule
+00:14 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a failed save keeps the old books and does not start a new hour
+00:15 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a correction after an unchanged response keeps the new hour
+00:15 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return from inactive only does not refresh it
+00:15 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a second return without hiding again does not refresh it
+00:15 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return while a refresh runs starts no other
+00:15 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return while a sign-in runs starts no refresh
+00:15 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/resume_refresh_test.dart: the catalog on return to the screen a return while the saved library loads starts no refresh and keeps it
+00:15 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: local catalog completes while other source opening is held
+00:15 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: local catalog completes while other source opening is held
+00:15 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: local catalog completes while other source opening is held
+00:15 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: local catalog completes while other source opening is held
+00:15 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: local catalog completes while other source opening is held
+00:16 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: source opening can finish before local catalog restoration
+00:16 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: failed source opening disposes its still-restoring catalog
+00:16 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: disposing the app during restore starts no refresh or migration
+00:16 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: completed restore waits for a frame before migration and never waits for network
+00:16 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: unreadable local catalog reports recovery without preventing the app
+00:16 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: an expired sign-in restores its local books without server requests
+00:16 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: supplied controllers remain owned and restored by their caller
+00:16 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/catalog_startup_test.dart: gallery startup leaves the production account untouched
+00:16 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before same account transition
+00:16 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before same account transition
+00:16 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before same account transition
+00:16 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before same account transition
+00:17 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before different account transition
+00:17 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/app/credential_access_test.dart: local playback and reading survive 401 before sign out account transition
+00:17 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/boot_shell_test.dart: Bookfin identifies itself before a library is connected
+00:18 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:18 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:18 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:20 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: reader day changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:21 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: global modes and Automatic follow system changes in an open reader after a reader selection (variant: TargetPlatform.android)
+00:24 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/reader/shared_appearance_test.dart: (tearDownAll)
+00:24 +138: All tests passed!

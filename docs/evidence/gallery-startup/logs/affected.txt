@@ -1,0 +1,990 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.4 (2.5.5 available)
+  shared_preferences_foundation 2.5.7 (2.6.2 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.7 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+38 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/startup_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: sample city choices use the saved appearance controller
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: sample city choices use the saved appearance controller
+00:01 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the library shows each sample book as a production book row
+00:01 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: the production filter row filters the sample books
+00:01 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:01 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:02 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:03 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: Start replacement starts the sample from the beginning
+00:03 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:03 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/development/gallery_test.dart: Smaller text shrinks the sample text, then turns off at its smallest
+00:03 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:03 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:04 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: text stays readable during both directions of a palette change
+00:05 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:05 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/covers_test.dart: the blurred copy for the system media player is a file beside the kept cover that works offline
+00:05 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:05 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:05 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:05 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:05 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:05 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/covers_test.dart: the blurred copy for the system media player is made again after a crash cut its write short
+00:05 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: production: automatic appearance recalculates after resume and location changes
+00:05 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: production: automatic appearance recalculates after resume and location changes
+00:05 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: production: automatic appearance recalculates after resume and location changes
+00:06 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: production: automatic appearance changes while the app remains open
+00:06 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: production: without a location Android system appearance changes are honored
+00:06 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance recalculates after resume and location changes
+00:06 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: automatic appearance changes while the app remains open
+00:06 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: gallery: without a location Android system appearance changes are honored
+00:06 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: reduced motion applies palette and screen changes immediately
+00:07 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/foundation_test.dart: large text fits the gallery and appearance controls
+00:07 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a body request returns the bytes that the server sent
+00:07 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a body request does not judge what the body holds
+00:07 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a body request follows the status rules of a JSON request
+00:07 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a body over 16 MiB is an unreadable catalog
+00:07 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: closing the transport cancels a body request in flight
+00:07 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a small response reads as its JSON object
+00:07 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a large library page reads as its JSON object
+00:07 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a large response that is not JSON is an unreadable catalog
+00:07 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a response that is a JSON list is an unreadable catalog
+00:07 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/transport_io_test.dart: a server error means Jellyfin cannot be reached
+00:07 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: a response received after credential rejection is not accepted
+00:07 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: a 401 retires the shared credential before another request can start
+00:07 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: a 403 does not reject the server credential
+00:07 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: sign-in sends password only in the JSON body and preserves a server subpath
+00:07 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: only book libraries are offered
+00:07 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: authenticated catalog works when legacy token headers are rejected
+00:07 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: catalog pagination fetches only selected book parents
+00:08 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/jellyfin_test.dart: a parent that is not a book library of the account is rejected before item fetching
+00:08 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks, download progress and catalog refreshes leave the app shell unbuilt
+00:08 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: signing out still switches the shell to the sign-in screen
+00:09 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/choices_test.dart: migration commits choices for inactive preference accounts before removing them
+00:09 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: player ticks and download progress do not regroup the library
+00:09 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/choices_test.dart: a correction queued behind a server write uses the adopted entries and preserves its choices
+00:09 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the playing book’s library tile follows the player
+00:09 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/choices_test.dart: a correction persists no server catalog bytes
+00:09 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a finished download marks its cover and joins the Downloaded filter
+00:09 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: the listening tab draws its own stage without a top bar
+00:09 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a tab’s top bar sits below the status bar, and the open player reaches it
+00:10 +139: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/shell_rebuild_test.dart: a player tick does not rescan the library on the book page
+00:10 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a playing tick redraws only the playing book’s tile
+00:10 +141: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a playing tick redraws only the playing book’s tile
+00:10 +142: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a playing tick redraws only the playing book’s tile
+00:11 +143: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a playing tick asks no other book for its listening progress
+00:11 +144: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a download notice for one edition redraws only its book’s tile
+00:11 +145: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a download notice for one edition asks no other book for its download state
+00:11 +146: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: each shelf tile follows only its own book a refresh that changes nothing redraws no tile and no shelf
+00:11 +147: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +148: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +149: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +150: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +151: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +152: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +153: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +154: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +155: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +156: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +157: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +158: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +159: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +160: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +161: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +162: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the shelf shows only downloaded books and keeps the chosen filter
+00:11 +163: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached a later refresh that reaches Jellyfin brings the chosen shelf back
+00:11 +164: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached a book downloaded while offline joins the shelf
+00:11 +165: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the library says so and offers Retry
+00:12 +166: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached Retry refreshes, and a refresh that reaches Jellyfin clears the notice and brings the full library back
+00:12 +167: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +168: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +169: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +170: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +171: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +172: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +173: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +174: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: when Jellyfin cannot be reached the notice stays while a retry runs
+00:12 +175: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: a refresh that ends within 1.5 seconds shows no progress line
+00:12 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: a refresh that runs longer than 1.5 seconds shows a progress line until it ends
+00:12 +177: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: a refresh in the background that Jellyfin answers but that fails shows nothing
+00:12 +178: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: a refresh that the person pulls for and that Jellyfin answers but that fails shows its failure
+00:12 +179: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: a refresh that the person pulls for during a background refresh joins it, and shows its failure after Jellyfin answered
+00:12 +180: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the pages own navigation a tapped shelf entry reports its item and opens nothing itself
+00:12 +181: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the pages own navigation tapping a book on the shelf opens its page
+00:13 +182: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a sheet about a book shows that book behind its glass
+00:13 +183: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a sheet about a book shows that book behind its glass
+00:13 +184: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the pages own navigation tapping a search result opens its book
+00:13 +185: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the pages own navigation tapping a search result opens its book
+00:13 +186: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a dialog opened on a book's page shows that book
+00:13 +187: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the layout toggle reports the chosen view and writes nothing
+00:13 +188: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a layer that names its own book shows it on any page
+00:13 +189: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the layout toggle the library tab saves the view that its toggle reports
+00:13 +190: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the layout toggle the library tab saves the view that its toggle reports
+00:13 +191: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the layout toggle the library tab saves the view that its toggle reports
+00:13 +192: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a confirmation is true only when its filled action is chosen
+00:13 +193: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh a refresh that changes nothing redraws no search result
+00:13 +194: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh a refresh that changes nothing redraws no search result
+00:13 +195: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: at the largest text size, a sheet's heading keeps its words whole, and its action moves under it to the end of the row
+00:14 +196: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh a refresh that changes nothing redraws no book of an open series
+00:14 +197: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh a refresh that changes nothing redraws no book of an open series
+00:14 +198: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: a message floats on glass with the playing book behind it
+00:14 +199: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh search results follow a library that changes under the query
+00:14 +200: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: library pages follow the library, not the refresh search results follow a library that changes under the query
+00:14 +201: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/glass_test.dart: glass panes in one backdrop group share one blur
+00:14 +202: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the shelf filter chips mark the chosen filter and no other
+00:14 +203: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/library_view_test.dart: the shelf filter chips report a tapped filter and leave the choice to their owner
+00:15 +204: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: removing a download from the book page asks the same question as Downloads
+00:16 +205: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/show_reader_test.dart: the reader comes to the front once: a new screen at first, and the same screen from a page above it
+00:16 +206: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/show_reader_test.dart: the reader comes to the front once: a new screen at first, and the same screen from a page above it
+00:16 +207: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/show_reader_test.dart: the reader comes to the front once: a new screen at first, and the same screen from a page above it
+00:16 +208: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: a chapter an hour in reads as hours, minutes and seconds
+00:16 +209: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: a player opened from a library page on search offers the book details
+00:16 +210: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: a player opened from a library page on a book page offers the book details
+00:16 +211: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: a player opened from a library page a playback problem reads as an error on the book page
+00:16 +212: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a playing tick of another book redraws nothing on the page
+00:17 +213: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a playing tick of another book redraws nothing on the page
+00:17 +214: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a playing tick of another book redraws nothing on the page
+00:17 +215: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a playing tick of another book redraws nothing on the page
+00:17 +216: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a playing tick of this book redraws only its progress
+00:17 +217: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a download notice for this book’s edition redraws only that edition’s download controls
+00:17 +218: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state a refresh that changes nothing redraws nothing on the page
+00:17 +219: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Listen opens the edition, then the player
+00:17 +220: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +221: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +222: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +223: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +224: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +225: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +226: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +227: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +228: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +229: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +230: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +231: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +232: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +233: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +234: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +235: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +236: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +237: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +238: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +239: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +240: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +241: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +242: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +243: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +244: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +245: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +246: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +247: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +248: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +249: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +250: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +251: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +252: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +253: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +254: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +255: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +256: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +257: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +258: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +259: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +260: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +261: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +262: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +263: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +264: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +265: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +266: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +267: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +268: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +269: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page follows only its own state Separate source asks first and separates only after a yes
+00:17 +270: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page finds its place in the library the page links its series and counts its possible matches
+00:17 +271: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the book page finds its place in the library a correction of the book shows on its open page
+00:17 +272: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the parts of the book page report what happened the main actions report Listen and Read with their edition
+00:18 +273: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_page_test.dart: the parts of the book page report what happened an edition panel reports Listen, file order and Separate source, and asks nothing itself
+00:18 +274: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows no sign-in form while the saved account is read
+00:18 +275: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows no sign-in form while the saved account is read
+00:18 +276: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows no sign-in form while the saved account is read
+00:19 +277: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the signed-in library tab, not the library selector or an empty shelf message, while the saved library loads
+00:19 +278: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +279: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +280: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +281: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +282: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +283: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +284: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +285: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +286: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +287: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +288: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +289: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +290: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: at launch shows the sign-in form when no account is saved
+00:19 +291: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the library shows a series as one card that opens its books in order
+00:19 +292: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: search is its own screen and lists series books one by one
+00:19 +293: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: a restored library shows its books with no Saved library label
+00:20 +294: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: account replacement can be cancelled without signing out
+00:20 +295: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/controller_test.dart: known denial survives an offline restart until access succeeds
+00:20 +296: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +297: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +298: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +299: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +300: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +301: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +302: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +303: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +304: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +305: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +306: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +307: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +308: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +309: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +310: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +311: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +312: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +313: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +314: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +315: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +316: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +317: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +318: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +319: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +320: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +321: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +322: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +323: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +324: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +325: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +326: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +327: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +328: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +329: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +330: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +331: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +332: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +333: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +334: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired account offers a usable sign-in form in Settings
+00:20 +335: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the catalog keeps its own messages an expired sign-in says so and offers no Retry
+00:21 +336: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the catalog keeps its own messages revoked access says so and offers no Retry
+00:21 +337: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the catalog keeps its own messages a sign-in that cannot reach Jellyfin offers no downloaded books
+00:21 +338: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: the app starts retained-account migration after its first frame
+00:21 +339: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: the app starts retained-account migration after its first frame
+00:21 +340: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: the app starts retained-account migration after its first frame
+00:21 +341: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: the app starts retained-account migration after its first frame
+00:21 +342: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: the app starts retained-account migration after its first frame
+00:21 +343: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: pages opened from the library show Jellyfin covers too
+00:21 +344: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: failed background migration reports an error and retains the catalog
+00:21 +345: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +346: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +347: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +348: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +349: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +350: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:21 +351: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +352: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +353: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +354: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +355: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +356: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +357: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +358: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +359: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +360: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: permission recovery closes only the library selector
+00:22 +361: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/file_store_test.dart: an interrupted first migration ignores partial bytes and retains legacy
+00:22 +362: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: password managers recognize the sign-in fields as one login
+00:22 +363: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: password managers recognize the sign-in fields as one login
+00:22 +364: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: password managers recognize the sign-in fields as one login
+00:22 +365: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: password managers recognize the sign-in fields as one login
+00:22 +366: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: sign-in is usable without gallery labels or enabled media controls
+00:22 +367: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the main navigation appears only after sign-in, at the bottom screen edge
+00:22 +368: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: while the first catalog read after sign-in runs, the empty shelf says that it reads the book libraries
+00:22 +369: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: sign-in lands on the books of every book library and their real editions, with no library choice
+00:22 +370: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: book search filters the real cached catalog
+00:22 +371: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: a series opens its books in explicit fractional order rather than title order
+00:22 +372: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: the correction dialog shows the corrected book behind its glass
+00:22 +373: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: signing in again retries a missing cover in the current view
+00:23 +374: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: signing in again retries a missing cover in the current view
+00:23 +375: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +376: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +377: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +378: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +379: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +380: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +381: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: expired sign-in keeps an open book and its correction form
+00:23 +382: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: a glass pane draws its cover with no offscreen layer but its backdrop blur
+00:23 +383: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: revoked library access dismisses an open book correction
+00:23 +384: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: revoked library access dismisses an open book correction
+00:23 +385: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: revoked library access dismisses an open book correction
+00:23 +386: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: a pre-blurred cover looks like the full blur it replaces
+00:23 +387: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: a pre-blurred cover looks like the full blur it replaces
+00:24 +388: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: ambiguous matches stay separate until the final confirmation
+00:24 +389: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/book_cover_test.dart: a change of the playing book redraws glass panes and no cover face
+00:24 +390: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: resetting corrections requires confirmation and restores source details
+00:24 +391: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/screen_test.dart: resetting corrections requires confirmation and restores source details
+00:24 +392: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/catalog/catalog_signals_test.dart: the library signal a refresh that changes no book notifies status and not library
+00:24 +393: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:24 +394: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:24 +395: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +396: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +397: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +398: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +399: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +400: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +401: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +402: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +403: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +404: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +405: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +406: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +407: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +408: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +409: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +410: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +411: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +412: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +413: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +414: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +415: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +416: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +417: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +418: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +419: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +420: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +421: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +422: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +423: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +424: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +425: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +426: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +427: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +428: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +429: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +430: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +431: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +432: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +433: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +434: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +435: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +436: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +437: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +438: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +439: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +440: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +441: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +442: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +443: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +444: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +445: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +446: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +447: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +448: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +449: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +450: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +451: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +452: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +453: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +454: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +455: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +456: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +457: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +458: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +459: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +460: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +461: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +462: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a kill right after the app is hidden mid-playback keeps the last position
+00:25 +463: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: a quit from the desktop menu mid-playback saves the last position before the app exits
+00:25 +464: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: the reader keeps the new chapter when it is killed right after the chapter changes
+00:25 +465: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: the reader keeps the place in the first book when it is killed after another book opens
+00:25 +466: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: the reader keeps a place whose save failed when it is killed right after the app is hidden
+00:26 +467: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/background_test.dart: the reader keeps a place whose save failed when the app quits from the desktop menu
+00:26 +468: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a kill in the middle of a write leaves the last saved listening place on the phone
+00:27 +469: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a kill in the middle of a write leaves the last saved listening place on the phone
+00:27 +470: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +471: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +472: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +473: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +474: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +475: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +476: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +477: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +478: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +479: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +480: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +481: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +482: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +482: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file that cannot be opened that another connection holds is not set aside
+error SqfliteFfiException(sqlite_error: 5, , SqliteException(5): while preparing statement, database is locked, database is locked (code 5)
+  Causing statement: PRAGMA journal_mode=WAL}) DatabaseException(SqliteException(5): while preparing statement, database is locked, database is locked (code 5)
+  Causing statement: PRAGMA journal_mode=WAL) sql 'PRAGMA journal_mode=WAL' {details: {database: {path: /tmp/nix-shell.vRSmxI/bookfin-file-IUio8D/records.sqlite, id: 22, readOnly: false, singleInstance: true}}} during open, closing...
+00:27 +483: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +483: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file that cannot be opened is kept aside as it was
+error SqfliteFfiException(sqlite_error: 26, , SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL}) DatabaseException(SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL) sql 'PRAGMA journal_mode=WAL' {details: {database: {path: /tmp/nix-shell.vRSmxI/bookfin-file-WQZosK/records.sqlite, id: 23, readOnly: false, singleInstance: true}}} during open, closing...
+00:27 +484: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences 401 suspends sync while local actions remain durable and replacement uploads them
+00:27 +484: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file that cannot be opened is replaced by a store that keeps a place through a restart
+error SqfliteFfiException(sqlite_error: 26, , SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL}) DatabaseException(SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL) sql 'PRAGMA journal_mode=WAL' {details: {database: {path: /tmp/nix-shell.vRSmxI/bookfin-file-feoAiR/records.sqlite, id: 25, readOnly: false, singleInstance: true}}} during open, closing...
+00:27 +485: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file that cannot be opened is replaced by a store that keeps a place through a restart
+00:27 +486: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences same-token sign-in rebinds sync before an obsolete rejection
+00:27 +487: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file whose pages are damaged after it opened is kept aside as it was and reported
+00:27 +488: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences choosing the 900 ms resume survives coordinator flushes without moving paused audio
+00:27 +489: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file whose pages are damaged after it opened keeps a place saved after it through a kill and a restart
+00:27 +490: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences choosing the 100 ms resume survives coordinator flushes without moving paused audio
+00:27 +491: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file whose pages are damaged after it opened keeps the records of an account that the store had read before it found the damage
+00:27 +492: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: preferences a displayed conflict that changed before the tap gives a recoverable result
+00:27 +493: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file whose pages are damaged after it opened found by a save keeps the place of that save and the records held in memory
+00:27 +494: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite a saved conflict choice remains usable while the credential is rejected
+00:27 +495: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: a SQLite file whose pages are damaged after it opened found while a damaged account is replaced keeps the records that still decode and those held in memory
+00:27 +496: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +497: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +498: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +499: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +500: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +501: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +502: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite 401 suspends sync while local actions remain durable and replacement uploads them
+00:28 +503: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records a kill during the merge keeps the saved place and the kept copy, and the next launch merges again
+00:28 +504: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite same-token sign-in rebinds sync before an obsolete rejection
+00:28 +505: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite same-token sign-in rebinds sync before an obsolete rejection
+00:28 +506: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite same-token sign-in rebinds sync before an obsolete rejection
+00:28 +507: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records a kept record file gives back the records of the accounts that it can read
+00:28 +508: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 900 ms resume survives coordinator flushes without moving paused audio
+00:28 +509: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 900 ms resume survives coordinator flushes without moving paused audio
+00:28 +509: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records a record file kept aside when it opened counts as a kept copy at once
+error SqfliteFfiException(sqlite_error: 26, , SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL}) DatabaseException(SqliteException(26): while preparing statement, file is not a database, file is not a database (code 26)
+  Causing statement: PRAGMA journal_mode=WAL) sql 'PRAGMA journal_mode=WAL' {details: {database: {path: /tmp/nix-shell.vRSmxI/bookfin-kept-open-AJYVBK/records.sqlite, id: 93, readOnly: false, singleInstance: true}}} during open, closing...
+00:28 +510: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 900 ms resume survives coordinator flushes without moving paused audio
+00:28 +511: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 900 ms resume survives coordinator flushes without moving paused audio
+00:28 +512: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records damage found during this launch counts as a kept copy at once
+00:28 +513: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 100 ms resume survives coordinator flushes without moving paused audio
+00:28 +514: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 100 ms resume survives coordinator flushes without moving paused audio
+00:28 +515: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/coordinator_test.dart: SQLite choosing the 100 ms resume survives coordinator flushes without moving paused audio
+00:28 +516: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records a mark that came back reaches another device at the next sync
+00:28 +517: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: kept copies of damaged records a mark that came back reaches another device at the next sync
+00:28 +518: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: record sync a failed sync keeps the place on the phone and sends it on the next sync
+00:28 +519: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: record sync the first sync of records saved before sync existed sends each record once, without a database
+00:28 +520: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: record sync records given back from damaged rows sync without copies or conflicts
+00:28 +521: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/durability/record_store_test.dart: record sync two devices that moved the same place offline both keep both places
+00:29 +522: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_transport_test.dart: legacy uploads overlap within a bound and keep actions saved during upload
+00:29 +523: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_transport_test.dart: one confirmed group uses one durable acknowledgment transaction
+00:29 +524: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_transport_test.dart: an acknowledgment failure rolls back every action in its group
+00:29 +525: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery moving preference records to SQLite retains unreadable originals
+00:29 +526: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery moving preference records to SQLite retains unreadable originals
+00:29 +527: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_transport_test.dart: mismatched confirmation retains only unconfirmed identities across restart
+00:29 +528: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery file damage during preference migration keeps every unreadable original
+00:29 +529: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a readable replacement cannot overwrite a retained unreadable identity
+00:29 +530: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery unreadable originals survive authoritative-file reconstruction
+00:30 +531: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery unavailable retained originals block reconstruction instead of losing the count
+00:30 +532: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery kept-file recovery restores the unreadable originals and count
+00:30 +533: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a transaction failure retains pending local writes and none of the page
+00:30 +534: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a tombstone retains local history and its immutable original
+00:30 +535: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a future envelope leaves dependent records waiting without hiding independent conflicts
+00:30 +536: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a known envelope with an unknown kind still supplies real causal coverage
+00:30 +537: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a later interpreter admits a kept original without deleting its bytes
+00:30 +538: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a malformed preserved-version reference cannot strand the next page
+00:30 +539: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a page that repairs an audio original also refreshes newly received reading records
+00:30 +540: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a preserved version received later releases its waiting action on retry
+00:30 +541: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a pending local action retired by the server cannot strand discovery
+00:30 +542: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a rejected upload still delivers later records to live Playback and reader sessions
+00:30 +542: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null
+  Skip: Run tool/plugin/prove.py in the pinned shells.
+00:30 +542 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery a rejected upload still delivers later records to live Playback and reader sessions
+00:30 +543 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery whole page fails without admitting part of the page
+00:30 +544 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery unsafe cursor fails without admitting part of the page
+00:30 +545 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery no advance fails without admitting part of the page
+00:30 +546 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery unsafe sequence fails without admitting part of the page
+00:30 +547 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery reopening exposes the account count before any exchange without loading original bodies
+00:30 +548 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery redelivery counts one unreadable identity while keeping both wire events
+00:30 +549 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery successful later delivery has its own quiet outcome
+00:30 +550 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps invalid JSON between valid records and receives later pages and the next sync
+00:31 +551 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +552 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +553 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +554 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +555 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +556 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +557 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +558 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +559 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +560 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown version between valid records and receives later pages and the next sync
+00:31 +561 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/schedule_test.dart: the app suspends record sync when hidden and resumes it in front
+00:32 +562 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps unknown kind between valid records and receives later pages and the next sync
+00:32 +563 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed payload type between valid records and receives later pages and the next sync
+00:32 +564 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:32 +565 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:32 +566 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:32 +567 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:32 +568 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:32 +569 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps malformed value between valid records and receives later pages and the next sync
+00:33 +570 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: legacy discovery keeps tombstone between valid records and receives later pages and the next sync
+00:33 +571 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery moving preference records to SQLite retains unreadable originals
+00:33 +572 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery file damage during preference migration keeps every unreadable original
+00:33 +573 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: a writer stops participating after it unregisters
+00:33 +574 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: a writer stops participating after it unregisters
+00:33 +575 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unreadable originals survive authoritative-file reconstruction
+00:33 +576 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unreadable originals survive authoritative-file reconstruction
+00:33 +577 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unreadable originals survive authoritative-file reconstruction
+00:33 +578 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unreadable originals survive authoritative-file reconstruction
+00:33 +579 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: an invalid page cursor cannot replace saved records or their cursor
+00:33 +580 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unavailable retained originals block reconstruction instead of losing the count
+00:33 +581 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unavailable retained originals block reconstruction instead of losing the count
+00:33 +582 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +583 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +584 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +585 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +586 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +587 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +588 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the player that registered with its store
+00:33 +589 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery a malformed preserved-version reference cannot strand the next page
+00:33 +590 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the reader that registered with its store
+00:33 +591 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the reader that registered with its store
+00:33 +592 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the reader that registered with its store
+00:33 +593 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/writer_registration_test.dart: sync flushes the reader that registered with its store
+00:33 +594 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery a rejected upload still delivers later records to live Playback and reader sessions
+00:33 +595 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery whole page fails without admitting part of the page
+00:34 +596 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unsafe cursor fails without admitting part of the page
+00:34 +597 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery no advance fails without admitting part of the page
+00:34 +598 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery unsafe sequence fails without admitting part of the page
+00:34 +599 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery reopening exposes the account count before any exchange without loading original bodies
+00:34 +600 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery redelivery counts one unreadable identity while keeping both wire events
+00:34 +601 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery successful later delivery has its own quiet outcome
+00:34 +602 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps invalid JSON between valid records and receives later pages and the next sync
+00:34 +603 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps unknown version between valid records and receives later pages and the next sync
+00:34 +604 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps unknown kind between valid records and receives later pages and the next sync
+00:34 +605 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed payload type between valid records and receives later pages and the next sync
+00:34 +606 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +607 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +608 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +609 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +610 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +611 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +612 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +613 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +614 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +615 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +616 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +617 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +618 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +619 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +620 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +621 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +622 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +623 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +624 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +625 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +626 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +627 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps malformed value between valid records and receives later pages and the next sync
+00:34 +628 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unreadable_discovery_test.dart: batch discovery keeps tombstone between valid records and receives later pages and the next sync
+00:35 +629 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients
+  Skip: Run with tool/plugin/prove.py in the pinned sync dev shell.
+00:35 +629 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: two offline installations retain independent bookmarks and old history
+00:35 +630 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: duplicate retries after restart cannot restore a deleted bookmark
+00:35 +631 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: concurrent reading places remain unresolved instead of using wall clocks
+00:35 +632 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: a causally incomplete action waits across restart for the missing action
+00:35 +633 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: another account cannot inject actions or alter an immutable action
+00:35 +634 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: an unseen edit concurrent with deletion preserves both for a user choice
+00:35 +635 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: continued listening does not silently choose between conflicting places
+00:35 +636 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: an action at an address that this build does not know is kept and applied in causal order
+00:35 +637 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/journal_test.dart: an action whose address is not a domain, a collection and an id is refused
+00:36 +638 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: opening an actual version-one SQLite account migrates all immutable positions once
+00:36 +639 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: opening an actual version-one SQLite account migrates all immutable positions once
+00:36 +640 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: opening an actual version-one SQLite account migrates all immutable positions once
+00:36 +641 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: opening an actual version-one SQLite account migrates all immutable positions once
+00:36 +642 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_records_test.dart: choosing a place keeps each other place as a bookmark titled as its choice said
+00:36 +643 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: ordinary saves retain every position without replacing the whole account payload
+00:36 +644 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_records_test.dart: this app reads places from an older app, and an older app reads this app's places unchanged
+00:36 +645 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: acknowledgments survive restart without replacing retained payloads
+00:36 +646 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: migration failure rolls back every row and leaves the legacy account retryable
+00:36 +647 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: a failed position transaction cannot advance records pending identity or causal coverage
+00:36 +648 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: a failed acknowledgment retains the same upload identity for a restart and retry
+00:36 +649 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: a held deletion survives restart and applies when its earlier action arrives
+00:36 +650 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: an altered server copy replaces the saved action, keeps the saved copy aside, and advances the discovery cursor
+00:36 +651 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: a legacy account with a damaged superseded value is kept aside when it moves into the record tables
+00:36 +652 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: reordered actions wake cross-installation dependencies after restart without duplicate versions
+00:36 +653 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/incremental_store_test.dart: a conflict remains readable after a held version applies before a later concurrent arrival and restart
+00:37 +654 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: thousands of retained actions use bounded batches and complete discovery in one exchange
+00:37 +655 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: thousands of retained actions use bounded batches and complete discovery in one exchange
+00:38 +656 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: thousands of retained actions use bounded batches and complete discovery in one exchange
+00:38 +657 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: thousands of retained actions use bounded batches and complete discovery in one exchange
+00:38 +658 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: thousands of retained actions use bounded batches and complete discovery in one exchange
+BATCH_WORKLOAD actions=2400 uploadRequests=10 acknowledgmentTransactions=10 receiveRequests=11 uploadHostMs=501 receiveHostMs=275
+00:38 +659 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a received action whose saved copy differs takes the server copy, and sync continues
+00:38 +660 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a received action whose saved copy differs takes the server copy, and sync continues
+00:38 +661 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: authenticated discovery selects the supported protocol for version 0.1.1.0
+00:38 +662 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite an upload that the server refuses because it holds another copy takes the server copy
+00:38 +663 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite an upload that the server refuses because it holds another copy takes the server copy
+00:38 +664 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite an upload that the server refuses because it holds another copy takes the server copy
+00:38 +665 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite an upload that the server refuses because it holds another copy takes the server copy
+00:38 +666 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: failed authenticated discovery never enables legacy uploads: CatalogFailureKind.unavailable
+00:38 +667 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a place saved after the server copy won survives a restart
+00:38 +668 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a place saved after the server copy won survives a restart
+00:38 +669 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a place saved after the server copy won survives a restart
+00:39 +670 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a place saved after the server copy won survives a restart
+00:39 +671 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: unrecognized plugin version 0.2 cannot silently select a protocol
+00:39 +672 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a kill while the server copy replaces the damaged one leaves the saved rows, and the next sync replaces it
+00:39 +673 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a kill while the server copy replaces the damaged one leaves the saved rows, and the next sync replaces it
+00:39 +674 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/server_copy_test.dart: SQLite a kill while the server copy replaces the damaged one leaves the saved rows, and the next sync replaces it
+00:39 +675 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch duplicate confirmation preserves exact pending identities through restart
+00:39 +676 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch unexpected confirmation preserves exact pending identities through restart
+00:39 +677 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch mismatched confirmation preserves exact pending identities through restart
+00:39 +678 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch rejected confirmation preserves exact pending identities through restart
+00:39 +679 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: an interrupted batch response keeps every action pending for idempotent retry
+00:39 +680 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: a batch conflict adopts only the verified server copy and keeps the damaged copy aside
+00:39 +681 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: legacy sync recovers an oversized damaged action and uploads the surrounding actions
+00:39 +682 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: legacy sync retains an oversized action when no server copy can recover it
+00:39 +683 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch sync recovers an oversized damaged action and uploads the surrounding actions
+00:39 +684 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: batch sync retains an oversized action when no server copy can recover it
+00:39 +685 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: Sync now reports decimal status 409.0 and retains only its unconfirmed action
+00:39 +686 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: Sync now reports decimal status 410.0 and retains only its unconfirmed action
+00:39 +687 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: receiving a page rolls back its cursor and actions together before retrying causal gaps in both domains
+00:39 +688 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/batch_api_test.dart: large UTF-8 actions split by bytes before reaching the object count bound
+00:39 +689 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a background sync that brings nothing new refreshes neither Playback nor the reader
+00:39 +690 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a sync that brings new listening records refreshes only Playback
+00:40 +691 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a sync that brings new reading records refreshes only the reader
+00:40 +692 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: listening records that came back from kept copies refresh only Playback
+00:40 +693 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: reading records that came back from kept copies refresh only the reader
+00:40 +694 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a retry of kept copies that fails reports nothing and refreshes nothing
+00:40 +695 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a sync that finds the same saved versions again does not notify the list of choices
+00:40 +696 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync does not stop the refresh of the other domain
+00:40 +697 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync reports a refresh failure after the exchange succeeded
+00:40 +698 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync does not report the storage plugin missing when a saved record cannot be decoded
+00:40 +699 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync advances the last successful sync time despite the failed refresh
+00:40 +700 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync keeps the number of records that the sync restored from Jellyfin
+00:40 +701 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a sync still shows the choices that the sync found
+00:40 +702 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a choice that was saved does not say that the choice was not saved
+00:40 +703 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a choice that was saved does not stop the refresh of the other domain
+00:40 +704 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a choice that was saved does not stop the sync that sends the choice
+00:40 +705 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a refresh that fails after a retry of kept copies does not stop the refresh of the other domain
+00:40 +706 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a listening refresh that cannot read the store, while audio plays reports a background refresh failure after the exchange succeeded
+00:40 +707 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a listening refresh that cannot read the store, while audio plays leaves the audio playing through a background sync
+00:40 +708 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a listening refresh that cannot read the store, while audio plays reports nothing after a retry of kept copies
+00:40 +709 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_after_sync_test.dart: a listening refresh that cannot read the store, while audio plays leaves the audio playing after a retry of kept copies
+00:40 +710 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin
+  Skip: Run tool/sync_fixture.py in the pinned shells.
+00:41 +710 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/durability_test.dart: saving a bookmark durably retains its upload before a restart
+00:41 +711 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/database_test.dart: Android record storage migrates legacy records and retains uploads outside preferences
+00:41 +712 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/database_test.dart: a completed personal-record write survives closing and reopening SQLite
+00:41 +713 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/persisted_journal_test.dart: saved listening resume has an invalid edition is kept aside, and later reader saves and syncs keep every readable record
+00:42 +714 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +715 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +716 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +717 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +718 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +719 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +720 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the Sync page quietly counts unreadable server records after successful delivery
+00:42 +721 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: conflict choices identify saved books and readable positions instead of raw record addresses
+00:42 +722 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: conflict choices use the current catalog book and kind of record
+00:42 +723 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: after a library refresh, the conflict list names the book from the new library
+00:43 +724 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: Keep resolves the choice through record sync and the page no longer offers it
+00:43 +725 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: Keep resolves the choice through record sync and the page no longer offers it
+00:43 +726 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: Keep resolves the choice through record sync and the page no longer offers it
+00:43 +727 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: Keep resolves the choice through record sync and the page no longer offers it
+00:43 +728 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: Keep resolves the choice through record sync and the page no longer offers it
+00:43 +729 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unknown_records_test.dart: a record of a kind that this build does not know a kill during its save keeps all of that save or none of it
+00:43 +730 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the sync view reports Sync now and a choice and calls no record sync method
+00:43 +731 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: the sync view reports Sync now and a choice and calls no record sync method
+00:43 +732 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/unknown_records_test.dart: a listening event of a known kind that does not decode is retained without stopping discovery
+00:43 +733 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: choosing a saved place reports the bookmark titles that name each place's device
+00:43 +734 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a healthy page says Synced and that nothing waits to be chosen
+00:43 +735 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a rejected upload reports incomplete sync with prior success false
+00:43 +736 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a rejected upload reports incomplete sync with prior success true
+00:43 +737 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a background sync shows no busy state on the page
+00:43 +738 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync Sync now shows Syncing until it ends and turns off the Sync button and every Keep button
+00:43 +739 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync without a connection, the page says Not syncing and offers Retry in a banner
+00:44 +740 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync without the storage plugin, the page says Sync is off and offers Check again
+00:44 +741 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync records that cannot be read show their own banner
+00:44 +742 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync after a sync that took the server copy of damaged records the page quietly says so
+00:44 +743 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync damaged records kept aside show a banner that says how many came back
+00:44 +744 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync Discard deletes the kept copies only after a confirmation
+00:44 +745 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a Discard that the user cancels deletes nothing
+00:44 +746 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: the first pending Android quote uploads without changing its payload
+00:44 +747 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a Discard that fails says so and keeps offering Discard
+00:44 +748 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync a Discard that fails says so and keeps offering Discard
+00:44 +749 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +750 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +751 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +752 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +753 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +754 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:44 +755 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: with a controlled sync every page state draws at night without overflow
+00:44 +756 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/screen_test.dart: a Discard that the user cancels keeps the kept copies
+00:45 +757 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a move saved with its place in one change set survives a restart
+00:45 +758 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a move saved with its place in one change set survives a restart
+00:45 +759 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: preferences a sync that brings back only this device's own uploads leaves both writers current
+00:45 +760 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a kill during that save keeps the old place without the move, never the new place alone
+00:45 +761 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a kill during that save keeps the old place without the move, never the new place alone
+00:45 +762 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a kill during that save keeps the old place without the move, never the new place alone
+00:45 +763 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: preferences listening stays behind until Playback takes in a read made after the change
+00:45 +764 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a failed sync keeps the move on the phone, and the next sync uploads it once
+00:46 +765 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a failed sync keeps the move on the phone, and the next sync uploads it once
+00:46 +766 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a failed sync keeps the move on the phone, and the next sync uploads it once
+00:46 +767 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a sync that brings no new record leaves both writers current
+00:46 +768 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: two devices that record moves offline each show the moves of both after they sync, newest first
+00:46 +769 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a sync that brings back only this device's own uploads leaves both writers current
+00:46 +770 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a move deleted on one device goes away on the other after sync, and other moves stay
+00:46 +771 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a move deleted on one device goes away on the other after sync, and other moves stay
+00:46 +772 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a sync that brings a remote reading bookmark marks only reading as behind
+00:46 +773 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a damaged record file keeps every move that still decodes
+00:46 +774 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite listening stays behind until Playback takes in a read made after the change
+00:46 +775 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: moves that an earlier version kept aside come back at the next launch
+00:46 +776 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a remote record that a sync saved before it failed is still reported by the next sync
+00:46 +777 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a move that a newer build synced shows after a restart, without a new sync
+00:46 +778 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a choice between saved versions marks its domain as behind until the writer takes it in
+00:46 +779 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/stale_domains_test.dart: SQLite a choice between saved versions marks its domain as behind until the writer takes it in
+00:46 +780 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: the reader reads the moves of the account at bind and after a sync brings new ones
+00:46 +781 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a choice between two versions of a move names it a reading history entry with the quote of its place
+00:46 +782 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a reading change set keeps the moves of an earlier set that a later set does not name
+00:46 +783 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/reading_history_test.dart: a reading change set shows its moves in the snapshot that it applies to
+00:47 +784 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a background sync shows no busy state and no message
+00:47 +785 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a background sync records when it finished
+00:47 +786 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a background sync records how many damaged records took the server copy
+00:47 +787 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a failed background sync is recorded as failed and shows no message
+00:47 +788 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a background sync publishes the conflicts it finds
+00:47 +789 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: Sync now shows busy, then how the sync ended
+00:47 +790 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a failed Sync now shows busy, then why it failed
+00:47 +791 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync a sync that cannot reach Jellyfin reports no connection
+00:47 +792 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync a sync whose Jellyfin has no storage plugin reports the plugin missing
+00:47 +793 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync a storage answer outside the plugin contract reports an invalid reply
+00:47 +794 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync a sync whose records on this phone cannot be read reports them unreadable
+00:47 +795 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync another failure is reported as neither no connection nor plugin missing
+00:47 +796 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: the cause of a failed sync a failed sync keeps when records last synced
+00:47 +797 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: Sync now during a background sync waits for it, then syncs again
+00:47 +798 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/status_test.dart: a choice made during a background sync waits for it and is kept
+00:47 +799 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +800 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +801 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +802 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +803 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +804 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a rejected listening refresh cannot make a local save delete an unseen remote bookmark
+00:47 +805 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a reading refresh from an ended account session cannot replace records after returning
+00:47 +806 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: preferences a rejected reading refresh cannot make a local save delete an unseen remote bookmark
+00:47 +807 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: SQLite a failed listening bookmark remains pending across account changes until storage recovers
+00:47 +808 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: SQLite a rejected listening refresh cannot make a local save delete an unseen remote bookmark
+00:47 +809 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: SQLite a reading refresh from an ended account session cannot replace records after returning
+00:47 +810 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/owner_refresh_test.dart: SQLite a rejected reading refresh cannot make a local save delete an unseen remote bookmark
+00:47 +811 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the device name is the name that Android gives this device
+00:47 +812 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: a device that gives no name, or a blank one, has none
+00:47 +813 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: a platform without the device channel has no device name
+00:47 +814 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a release build reports one fingerprint for one install and system
+00:47 +815 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a new install gives a new fingerprint
+00:47 +816 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a new system build gives a new fingerprint
+00:47 +817 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint another list of locales gives another fingerprint
+00:47 +818 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a process asks the platform for its build only once
+00:47 +819 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a debug build reports no fingerprint
+00:47 +820 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a missing channel reports no fingerprint
+00:47 +821 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint a failing call reports no fingerprint
+00:47 +822 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/device_test.dart: the text-engine fingerprint an answer without both facts reports no fingerprint
+00:48 +823 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: sync exchanges durable records while an audio seek stays held
+00:48 +824 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: sync exchanges durable records while an audio seek stays held
+00:48 +825 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:48 +826 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:48 +827 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:48 +828 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:48 +829 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:48 +830 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/refresh_retry_test.dart: a failed refresh offers the next sync instead of restart advice
+00:49 +831 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: the app hide sequence saves and uploads without waiting for resume
+00:49 +832 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: the app hide sequence saves and uploads without waiting for resume
+00:49 +833 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: local flush does not wait for a slow Jellyfin playback report
+00:49 +834 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: final upload does not wait for a slow Jellyfin playback report
+00:49 +835 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: the final upload waits for local storage to confirm the newest save
+00:49 +836 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: sign out during a writer flush prevents the obsolete exchange
+00:49 +837 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: account during a writer flush prevents the obsolete exchange
+00:49 +838 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: dispose during a writer flush prevents the obsolete exchange
+00:49 +839 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: pause uploads the newest durable place
+00:49 +840 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: stop uploads the newest durable place
+00:49 +841 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: book change uploads the newest durable place
+00:49 +842 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: app hide uploads the newest durable place
+00:49 +843 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: ordinary persistence finishes while an upload is blocked
+00:49 +844 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: nearby pause stop and hide events combine and keep the final save
+00:49 +845 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: background listening uploads at ten seconds of audio progress and stops when idle
+00:49 +846 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: a failed upload keeps actions without an idle retry and a later pause retries
+00:49 +847 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: hiding with no pending records makes no exchange
+00:49 +848 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: sign out cancels the scheduled old-account upload
+00:49 +849 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: account cancels the scheduled old-account upload
+00:49 +850 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: dispose cancels the scheduled old-account upload
+00:49 +851 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: a pending event waits for an earlier exchange and sends its later save
+00:49 +852 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/event_upload_test.dart: resume and manual sync retry failed pending uploads
+00:50 +853 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/failure_cause_test.dart: Jellyfin without the storage plugin answers that its routes are not found
+00:50 +854 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/failure_cause_test.dart: a sync against Jellyfin without the storage plugin reports the plugin missing
+00:50 +855 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/failure_cause_test.dart: a sync while Jellyfin cannot be reached reports no connection
+00:50 +856 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/failure_cause_test.dart: a sync that loses Jellyfin between pages reports no connection
+00:50 +857 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: an edition that this phone never read has no own place, and no other device saved its place
+00:50 +858 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: a place that this phone saved is its own place, and no other device saved it
+00:50 +859 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: after a sync brings the place of another device, the phone keeps its own last place and names that device
+00:50 +860 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: a place from a device without a name still came from elsewhere
+00:50 +861 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: the own last place stays after a restart
+00:50 +862 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/place_origin_test.dart: the move of a book that opened at another device's place names that device, and other moves name none
+00:50 +863 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page no notice appears while no choice waits
+00:51 +864 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page no notice appears while no choice waits
+00:51 +865 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: a held conflict validates its historical preserved version when a late predecessor arrives
+00:51 +866 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page a conflict found by a background sync shows a notice above Resume on its book
+00:51 +867 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page a conflict found by a background sync shows a notice above Resume on its book
+00:51 +868 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page a conflict found by a background sync shows a notice above Resume on its book
+00:51 +869 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: a missing current record is recovered from retained actions and the damaged rows stay aside
+00:51 +870 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page a conflict of another book shows no notice here
+00:51 +871 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page a conflict of another book shows no notice here
+00:51 +872 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: an unsendable database connection still restores and reads needed originals
+00:51 +873 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Choose opens the choice in a glass sheet, and Keep resolves it and the notice goes away
+00:51 +874 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Choose opens the choice in a glass sheet, and Keep resolves it and the notice goes away
+00:51 +875 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Choose opens the choice in a glass sheet, and Keep resolves it and the notice goes away
+00:51 +876 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Choose opens the choice in a glass sheet, and Keep resolves it and the notice goes away
+00:51 +877 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Choose opens the choice in a glass sheet, and Keep resolves it and the notice goes away
+00:52 +878 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: incomplete reconstruction preserves an unresolved resume through partial delivery and retry
+00:52 +879 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Not now closes the sheet and the notice stays
+00:52 +880 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page Not now closes the sheet and the notice stays
+00:52 +881 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: incomplete reconstruction keeps an unsaved place until its retained predecessors can be read
+00:52 +882 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: on the book page the Settings row says which book waits for a choice
+00:52 +883 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: a failed version-three upgrade leaves original rows intact and can be retried
+error SqfliteFfiException(sqlite_error: 1811, , SqliteException(1811): while executing statement, upgrade full disk, constraint failed (code 1811)
+  Causing statement: UPDATE record_actions SET author = ?, sequence = ?, record = ? WHERE rowid = ?, parameters: local, 1, ["audio","resumes","[\"recording\",\"[[\\\"one:m1\\\",\\\"r1\\\"],[\\\"two:m2\\\",\\\"r2\\\"]]\"]"], 1}) DatabaseException(SqliteException(1811): while executing statement, upgrade full disk, constraint failed (code 1811)
+  Causing statement: UPDATE record_actions SET author = ?, sequence = ?, record = ? WHERE rowid = ?, parameters: local, 1, ["audio","resumes","[\"recording\",\"[[\\\"one:m1\\\",\\\"r1\\\"],[\\\"two:m2\\\",\\\"r2\\\"]]\"]"], 1) sql 'UPDATE record_actions SET author = ?, sequence = ?, record = ? WHERE rowid = ?' args [local, 1, ["audio","resumes","[\"recording\",\"[[\\\"one:m1\..., 1] {details: {database: {path: /tmp/nix-shell.vRSmxI/bookfin-lazy-bIXxmn/records.sqlite, id: 52, readOnly: false, singleInstance: true}}} during open, closing...
+00:52 +884 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player a pill under the chapter appears only while a choice waits for the open book
+00:52 +885 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player a pill under the chapter appears only while a choice waits for the open book
+00:52 +886 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player a pill under the chapter appears only while a choice waits for the open book
+00:52 +887 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: full verification rejects lookup metadata that disagrees with its retained original
+00:52 +888 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player Choose on the pill opens the choice, and Keep clears the pill
+00:52 +889 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player Choose on the pill opens the choice, and Keep clears the pill
+00:52 +890 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: damage found by last local place keeps the file and the cached place recoverable
+00:52 +891 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/alert_test.dart: in the player a Keep on the Personal records page clears the pill and the badge together
+00:52 +892 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: reopening many superseded positions reads and holds only needed payloads
+00:52 +893 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/sync/restore_current_test.dart: reopening many superseded positions reads and holds only needed payloads
+00:53 +894 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: five minutes of listening make a window of the last 8 s
+00:53 +895 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: a skip through the book is no listening
+00:53 +896 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: a pause makes a window at its place
+00:53 +897 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: a jump makes a window at each of its ends
+00:53 +898 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: a new bookmark makes a window at its place
+00:53 +899 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: nothing is heard before the policy starts
+00:53 +900 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: the fill of older places waits while the phone does not allow it
+00:53 +901 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: the fill of older places starts when the phone starts allowing it
+00:53 +902 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: the fill of older places hears the older places newest first when allowed
+00:53 +903 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: the fill of older places stops when the phone stops allowing it
+00:53 +904 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: the fill of older places a place that heard nothing is not tried again
+00:53 +905 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: an audiobook whose book has no ebook is not heard after five minutes of listening
+00:53 +906 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: an audiobook whose book has no ebook is not heard at a new bookmark
+00:53 +907 ~3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-b5379c1c/test/speech/hearing_policy_test.dart: an audiobook whose book has no ebook is not heard by the fill
+00:53 +908 ~3: All tests passed!

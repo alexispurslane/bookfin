@@ -1,0 +1,61 @@
+integration_test/macos_desktop_test.dart:121:    unawaited(runBookfin());
+test/sync/event_upload_test.dart:160:          BookfinApp(
+test/sync/event_upload_test.dart:182:        rig.disposed = true; // BookfinApp owns disposal of its coordinator.
+test/sync/schedule_test.dart:158:        BookfinApp(
+test/foundation_test.dart:29:    await tester.pumpWidget(GalleryApp(appearance: controller));
+test/foundation_test.dart:74:        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+test/foundation_test.dart:91:      await tester.pumpWidget(GalleryApp(appearance: controller));
+test/foundation_test.dart:132:        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+test/foundation_test.dart:180:      await tester.pumpWidget(GalleryApp(appearance: controller));
+test/foundation_test.dart:199:      await tester.pumpWidget(GalleryApp(appearance: controller));
+test/foundation_test.dart:240:          BookfinApp(appearance: appearance, catalog: disconnectedCatalog()),
+test/foundation_test.dart:242:    ('gallery', (appearance) => GalleryApp(appearance: appearance)),
+test/foundation_test.dart:328:    await tester.pumpWidget(GalleryApp(appearance: controller));
+test/foundation_test.dart:349:      GalleryApp(appearance: AppearanceController(MemoryAppearanceStore())),
+test/boot_shell_test.dart:20:      BookfinApp(
+test/boot_shell_test.dart:37:      BookfinApp(
+test/boot_shell_test.dart:55:        BookfinApp(
+lib/main.dart:40:Future<void> main() => runBookfin();
+lib/main.dart:48:Future<void> runBookfin({
+lib/main.dart:172:      BookfinApp._restoring(
+lib/main.dart:230:class BookfinApp extends StatefulWidget {
+lib/main.dart:231:  const BookfinApp({
+lib/main.dart:246:  // Takes ownership of the controller already started by runBookfin. The
+lib/main.dart:248:  const BookfinApp._restoring({
+lib/main.dart:277:  State<BookfinApp> createState() => _BookfinAppState();
+lib/main.dart:282:class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
+lib/main.dart:361:  void didUpdateWidget(BookfinApp oldWidget) {
+lib/main.dart:437:            showAppearance(context, _appearance, book: widget.playback?.book),
+test/catalog/file_store_test.dart:65:        await tester.pumpWidget(BookfinApp(appearance: appearance));
+test/catalog/file_store_test.dart:92:          await tester.pumpWidget(BookfinApp(appearance: appearance));
+lib/gallery.dart:20:  runApp(GalleryApp(appearance: appearance));
+lib/gallery.dart:25:class GalleryApp extends StatelessWidget {
+lib/gallery.dart:26:  const GalleryApp({super.key, required this.appearance});
+lib/gallery.dart:55:              showAppearance(
+lib/appearance/app.dart:50:  void _showAppearance() => widget.appearance
+lib/appearance/app.dart:60:    _showAppearance();
+lib/appearance/app.dart:68:      _showAppearance();
+lib/appearance/sheet.dart:16:Future<void> showAppearance(
+lib/appearance/sheet.dart:29:  builder: (sheet) => AppearanceSheet(
+lib/appearance/sheet.dart:43:/// through its callbacks. It changes nothing itself; [showAppearance] acts.
+lib/appearance/sheet.dart:44:class AppearanceSheet extends StatelessWidget {
+lib/appearance/sheet.dart:45:  const AppearanceSheet({
+test/app/catalog_startup_test.dart:108:      runBookfin(
+test/app/catalog_startup_test.dart:173:      expect(find.byType(BookfinApp), findsNothing);
+test/app/catalog_startup_test.dart:190:    expect(find.byType(BookfinApp), findsOneWidget);
+test/app/catalog_startup_test.dart:227:    expect(find.byType(BookfinApp), findsNothing);
+test/app/catalog_startup_test.dart:326:        BookfinApp(appearance: appearance, catalog: supplied),
+test/development/gallery_test.dart:26:    GalleryApp(appearance: AppearanceController(MemoryAppearanceStore())),
+test/development/gallery_test.dart:79:    await tester.pumpWidget(GalleryApp(appearance: appearance));
+test/durability/background_test.dart:130:        BookfinApp(
+test/durability/background_test.dart:175:        BookfinApp(
+test/durability/background_test.dart:260:          BookfinApp(
+test/durability/background_test.dart:288:          BookfinApp(
+test/appearance/appearance_sheet_test.dart:43:              onPressed: () => showAppearance(context, appearance),
+test/appearance/appearance_sheet_test.dart:55:    expect(find.byType(AppearanceSheet), findsNothing);
+test/appearance/appearance_sheet_test.dart:75:          body: AppearanceSheet(
+test/appearance/appearance_sheet_test.dart:113:    await show(tester, const AppearanceSettings(), gallery: true);
+test/app/resume_refresh_test.dart:94:      BookfinApp(appearance: appearance, catalog: catalog),
+test/appearance/production_city_test.dart:33:  child: BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+test/app/app_shell_test.dart:91:        BookfinApp(appearance: appearance, catalog: disconnectedCatalog()),
+test/reader/shared_appearance_test.dart:45:  Widget build() => BookfinApp(

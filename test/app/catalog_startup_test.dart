@@ -104,27 +104,24 @@ void main() {
   _Catalog? catalog;
   const emptySources = (downloads: null, playback: null, covers: null);
 
-  Future<void> start({
-    Future<BookfinSources> Function()? sources,
-    bool gallery = false,
-  }) => runBookfin(
-    gallery: gallery,
-    catalogStore: store,
-    recordStore: LocalResumeStore(),
-    createCatalog: (given) {
-      expect(given, same(store));
-      return catalog = _Catalog(store, credentials, client);
-    },
-    openOtherSources:
-        sources ??
-        () => openSources(
-          restoreAppearance: () async {},
-          restoreLayout: () async {},
-          openDownloads: () async => null,
-          openPlayback: (_) async => null,
-          openCovers: () async => null,
-        ),
-  );
+  Future<void> start({Future<BookfinSources> Function()? sources}) =>
+      runBookfin(
+        catalogStore: store,
+        recordStore: LocalResumeStore(),
+        createCatalog: (given) {
+          expect(given, same(store));
+          return catalog = _Catalog(store, credentials, client);
+        },
+        openOtherSources:
+            sources ??
+            () => openSources(
+              restoreAppearance: () async {},
+              restoreLayout: () async {},
+              openDownloads: () async => null,
+              openPlayback: (_) async => null,
+              openCovers: () async => null,
+            ),
+      );
 
   // All fixtures complete in microtasks. No frame is pumped by this helper.
   Future<void> drain() async {
@@ -340,17 +337,6 @@ void main() {
     },
   );
 
-  testWidgets('gallery startup opens no account catalog', (tester) async {
-    await start(gallery: true);
-    await tester.pump();
-    await tester.pump();
-    expect(find.byType(BookfinApp), findsOneWidget);
-    expect(catalog, isNull);
-    expect(store.reads, 0);
-    expect(store.migrations, 0);
-    expect(client.validations, 0);
-    await tester.pumpWidget(const SizedBox());
-  });
   testWidgets(
     'failed migration still reconciles recovery notices and reports the failure',
     (tester) async {

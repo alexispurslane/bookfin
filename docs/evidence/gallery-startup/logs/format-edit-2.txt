@@ -1,0 +1,2 @@
+Formatted test/foundation_test.dart
+Formatted 10 files (1 changed) in 0.05 seconds.
