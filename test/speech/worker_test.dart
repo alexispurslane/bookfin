@@ -9,6 +9,8 @@ import 'dart:isolate';
 
 import 'package:bookfin/speech/worker.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
+import 'package:fake_async/fake_async.dart';
 
 import '../real_time.dart';
 import 'held_jobs.dart';
@@ -16,6 +18,10 @@ import 'held_jobs.dart';
 int one() => 1;
 int add(int state) => state + 1;
 Never exit(int state) => Isolate.exit();
+void brokenEnd(int state) {
+  assert(state == 0, 'The end job broke its contract.');
+}
+
 Never broken() => throw UnsupportedError('No model on this phone.');
 
 /// A state that names the moment of its start, so that a test can tell one
@@ -86,10 +92,92 @@ class Silence {
   }
 }
 
+Future<void> Function(int) endlessEnd(SendPort started) => (state) {
+  started.send(null);
+  return Completer<void>().future;
+};
+
 const limit = Duration(seconds: 60);
 const hour = Duration(hours: 1);
 
 void main() {
+  for (final invalid in [Duration.zero, const Duration(seconds: -1)]) {
+    test('rejects a nonpositive job limit of $invalid', () {
+      expect(
+        () => KeptWorker<int>(one, name: 'test', idle: hour, limit: invalid),
+        throwsArgumentError,
+      );
+    });
+  }
+
+  testWidgets('a window answers after the process thaws without being '
+      'counted as stuck', (tester) async {
+    final time = FakeAsync();
+    final ready = Signal();
+    addTearDown(ready.close);
+    late KeptWorker<int> worker;
+    final answer = time.run((_) {
+      worker = KeptWorker<int>(one, name: 'test', idle: hour, limit: limit);
+      return ending(worker.run(gated(ready.send)));
+    });
+    await runUntil(tester, () {
+      time.flushMicrotasks();
+      return ready.got;
+    });
+    // No Dart callback runs during the freeze. On thaw, overdue timers run
+    // before the native answer. Ordinary elapse would run every tick.
+    time.elapseBlocking(const Duration(hours: 8));
+    time.elapse(Duration.zero);
+    expect(answer.ended, isFalse);
+    release(ready);
+    await runUntil(tester, () {
+      time.flushMicrotasks();
+      return answer.ended;
+    });
+    expect(answer.value, 1);
+    expect(time.periodicTimerCount, 0, reason: 'no watch runs without a job');
+    final closed = time.run((_) => ending(worker.close()));
+    await runUntil(tester, () {
+      time.flushMicrotasks();
+      return closed.ended;
+    });
+    expect(time.periodicTimerCount, 0);
+    await finish(tester, worker.checkInvariants());
+  });
+
+  testWidgets('a stop before the first worker message has no uncaught '
+      'job error', (tester) async {
+    final started = Signal();
+    addTearDown(started.close);
+    final uncaught = <Object>[];
+    final worker = KeptWorker<int>(
+      endless(started.send),
+      name: 'test',
+      idle: hour,
+      limit: limit,
+    );
+    final answer = runZonedGuarded(
+      () => ending(worker.run(add)),
+      (error, stack) => uncaught.add(error),
+      zoneSpecification: ZoneSpecification(
+        // Hold back the worker's job port. Real isolate messages normally
+        // deliver it too soon to reach the failed-start race reliably.
+        registerUnaryCallback: <R, T>(self, parent, zone, callback) {
+          return parent.registerUnaryCallback<R, T>(zone, (message) {
+            if (message is SendPort) return null as R;
+            return callback(message);
+          });
+        },
+      ),
+    )!;
+    await runUntil(tester, () => started.got);
+    await tester.pump(limit);
+    expect(answer.error, isA<WorkerStopped>());
+    expect(uncaught, isEmpty);
+    await finish(tester, worker.checkInvariants());
+    await finish(tester, worker.close());
+  });
+
   test('a worker that stops during a job fails the job with an exception, '
       'and the next job starts a new worker', () async {
     final worker = KeptWorker<int>(
@@ -99,7 +187,9 @@ void main() {
     );
     addTearDown(worker.close);
     await expectLater(worker.run(exit), throwsA(isA<WorkerStopped>()));
+    await worker.checkInvariants();
     expect(await worker.run(add).timeout(const Duration(seconds: 5)), 2);
+    await worker.checkInvariants();
   });
 
   test('a worker that cannot make its state fails every job with an '
@@ -116,6 +206,18 @@ void main() {
         throwsA(isA<WorkerStopped>()),
       );
     }
+  });
+
+  test('a contract failure in the end job reaches the caller', () async {
+    final worker = KeptWorker<int>(
+      one,
+      name: 'test',
+      idle: hour,
+      end: brokenEnd,
+    );
+    expect(await worker.run(add), 2);
+    await expectLater(worker.close(), throwsA(isA<AssertionError>()));
+    await worker.checkInvariants();
   });
 
   // The tests below run on the fake clock of a widget test. `runUntil` and
@@ -141,11 +243,14 @@ void main() {
       worker = limited(one);
       final stuck = ending(worker.run(silent(started.send)));
       await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
       await tester.pump(const Duration(seconds: 40));
       expect(stuck.ended, isFalse, reason: 'the limit did not pass yet');
       await tester.pump(const Duration(seconds: 20));
       expect(stuck.error, isA<WorkerStopped>());
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
     });
 
     testWidgets('runs the next job on a new worker while the stuck worker '
@@ -156,11 +261,14 @@ void main() {
       final first = await finish(tester, worker.run(same));
       final stuck = ending(worker.run(blocked(started.send, silence.port)));
       await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
       await tester.pump(limit);
       expect(stuck.error, isA<WorkerStopped>());
       final second = await finish(tester, worker.run(same));
       expect(second, isNot(first));
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
     });
 
     testWidgets('a stuck worker whose call returns after the limit changes '
@@ -170,6 +278,7 @@ void main() {
       worker = limited(one);
       final stuck = ending(worker.run(blocked(started.send, silence.port)));
       await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
       await tester.pump(limit);
       expect(stuck.error, isA<WorkerStopped>());
       final ready = Signal();
@@ -186,7 +295,9 @@ void main() {
       release(ready);
       await runUntil(tester, () => next.ended);
       expect(next.value, 1);
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
     });
 
     testWidgets('gives a job that waits behind another the whole limit, '
@@ -210,7 +321,9 @@ void main() {
       release(readyTwo);
       await runUntil(tester, () => second.ended);
       expect(second.value, 1);
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
     });
 
     testWidgets('counts the start of the worker in the limit of its first '
@@ -218,9 +331,104 @@ void main() {
       worker = limited(endless(started.send));
       final first = ending(worker.run(add));
       await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
       await tester.pump(limit);
       expect(first.error, isA<WorkerStopped>());
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
+    });
+
+    testWidgets('logs the cause once when stuck workers turn work off', (
+      tester,
+    ) async {
+      final messages = <String>[];
+      final before = debugPrint;
+      debugPrint = (message, {wrapWidth}) => messages.add(message ?? '');
+      addTearDown(() => debugPrint = before);
+      worker = limited(one);
+      for (var hang = 0; hang < 2; hang++) {
+        final again = Signal();
+        addTearDown(again.close);
+        final stuck = ending(worker.run(silent(again.send)));
+        await runUntil(tester, () => again.got);
+        await finish(tester, worker.checkInvariants());
+        await tester.pump(limit);
+        expect(stuck.error, isA<WorkerStopped>());
+      }
+      final refused = ending(worker.run(add));
+      await tester.pump();
+      expect(refused.error, isA<WorkerStopped>());
+      await finish(tester, worker.checkInvariants());
+      await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
+      debugPrint = before;
+      expect(messages, hasLength(1));
+      expect(messages.single, contains('2 workers were stuck'));
+    });
+
+    testWidgets('a hanging idle end counts toward giving up', (tester) async {
+      worker = KeptWorker<int>(
+        one,
+        name: 'test',
+        idle: const Duration(seconds: 1),
+        limit: limit,
+        end: endlessEnd(started.send),
+      );
+      for (var hang = 0; hang < 2; hang++) {
+        started.got = false;
+        expect(await finish(tester, worker.run(add)), 2);
+        await tester.pump(const Duration(seconds: 1));
+        await runUntil(tester, () => started.got);
+        await finish(tester, worker.checkInvariants());
+        await tester.pump(limit);
+      }
+      expect(worker.closed, isTrue);
+      await finish(tester, worker.checkInvariants());
+      await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
+    });
+
+    testWidgets('close waits for an idle end job up to its limit', (
+      tester,
+    ) async {
+      worker = KeptWorker<int>(
+        one,
+        name: 'test',
+        idle: const Duration(seconds: 1),
+        limit: limit,
+        end: endlessEnd(started.send),
+      );
+      expect(await finish(tester, worker.run(add)), 2);
+      await tester.pump(const Duration(seconds: 1));
+      await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
+      final closed = ending(worker.close());
+      await tester.pump();
+      expect(closed.ended, isFalse);
+      await tester.pump(limit);
+      expect(closed.ended, isTrue);
+      expect(closed.error, isNull);
+      await finish(tester, worker.checkInvariants());
+    });
+
+    testWidgets('close returns when the final end job hangs', (tester) async {
+      worker = KeptWorker<int>(
+        one,
+        name: 'test',
+        idle: hour,
+        limit: limit,
+        end: endlessEnd(started.send),
+      );
+      expect(await finish(tester, worker.run(add)), 2);
+      final closed = ending(worker.close());
+      await runUntil(tester, () => started.got);
+      await finish(tester, worker.checkInvariants());
+      expect(closed.ended, isFalse);
+      await tester.pump(limit);
+      expect(closed.ended, isTrue);
+      expect(closed.error, isNull);
+      await finish(tester, worker.checkInvariants());
     });
 
     testWidgets('fails every job at once after two stuck workers, and '
@@ -231,9 +439,11 @@ void main() {
         addTearDown(again.close);
         final stuck = ending(worker.run(silent(again.send)));
         await runUntil(tester, () => again.got);
+        await finish(tester, worker.checkInvariants());
         await tester.pump(limit);
         expect(stuck.error, isA<WorkerStopped>());
       }
+      expect(worker.closed, isTrue);
       final refused = ending(worker.run(silent(started.send)));
       await tester.pump();
       expect(refused.error, isA<WorkerStopped>());
@@ -243,7 +453,9 @@ void main() {
       );
       await tester.pump();
       expect(started.got, isFalse, reason: 'a third worker ran the job');
+      await finish(tester, worker.checkInvariants());
       await finish(tester, worker.close());
+      await finish(tester, worker.checkInvariants());
     });
   });
 

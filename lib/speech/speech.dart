@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import 'native.dart';
 import 'words.dart';
@@ -63,13 +64,18 @@ Future<SpeechModel?> findSpeechModel() async {
 /// A native call can hang, such as a call to a codec of the phone. A window
 /// that the worker does not hear within [_windowLimit] fails with
 /// [WorkerStopped], and the next window starts a new worker ([KeptWorker]
-/// owns that rule). After two such windows, every later window fails at
-/// once until the app starts again.
+/// owns that rule). When the worker gives up under its stuck-worker rule,
+/// speech is off for this run, and every later window gives null.
 class Speech {
-  Speech({required this._locate, this._idle = const Duration(minutes: 2)});
+  Speech({
+    required this._locate,
+    this._idle = const Duration(minutes: 2),
+    this._limit = _windowLimit,
+  });
 
   final Future<SpeechModel?> Function() _locate;
   final Duration _idle;
+  final Duration _limit;
 
   /// The longest time that the worker has for one window before it counts
   /// as stuck.
@@ -82,7 +88,9 @@ class Speech {
   /// ten times the slower median, and more than five times the slowest
   /// window that was measured, so a slow but healthy phone stays inside
   /// it. A limit that is too long costs only a longer wait at a rare hang.
-  /// A limit that is too short loses every window of a slow phone.
+  /// A limit that is too short makes healthy workers count as stuck. The
+  /// worker then turns speech off for the run under its give-up rule, and
+  /// every abandoned worker leaks its model (t2-p0cc).
   ///
   /// The first window after a start also holds the start of the worker and
   /// the load of the model. The load took 106 to 253 ms on the emulator
@@ -96,24 +104,24 @@ class Speech {
   /// The worker, once the model is located. Null without a model.
   late final Future<KeptWorker<_Model?>?> _worker = () async {
     final model = await _locate();
-    return model == null ? null : _kept = _workerOf(model, _idle);
+    return model == null ? null : _kept = _workerOf(model, _idle, _limit);
   }();
   KeptWorker<_Model?>? _kept;
-
-  /// Whether the worker could not load the model.
-  var _unloadable = false;
 
   // NOTE: The worker's closures come from static functions, so that they
   // capture only plain data and never this object, which cannot travel to
   // the worker.
-  static KeptWorker<_Model?> _workerOf(SpeechModel model, Duration idle) =>
-      KeptWorker(
-        () => _Model.load(model),
-        name: 'speech',
-        idle: idle,
-        limit: _windowLimit,
-        end: (model) => model?.close(),
-      );
+  static KeptWorker<_Model?> _workerOf(
+    SpeechModel model,
+    Duration idle,
+    Duration limit,
+  ) => KeptWorker(
+    () => _Model.load(model),
+    name: 'speech',
+    idle: idle,
+    limit: limit,
+    end: (model) => model?.close(),
+  );
 
   /// The job of one window: whether the worker holds the model, and what
   /// the model heard.
@@ -143,8 +151,9 @@ class Speech {
   /// file's end, it holds silence or music, the file cannot be decoded, or
   /// this build has no speech model that this phone can load. [urgent]
   /// gives the window more threads, for a person who waits for it.
-  /// Throws [WorkerStopped] when the worker stops or does not hear the
-  /// window within [_windowLimit].
+  /// Gives null when speech is off for this run. Otherwise it throws
+  /// [WorkerStopped] when the worker stops or does not hear the window
+  /// within [_windowLimit].
   Future<Heard?> hear(
     String path,
     int startMs,
@@ -152,18 +161,27 @@ class Speech {
     bool urgent = false,
   }) async {
     final worker = await _worker;
-    if (worker == null || _unloadable) return null;
-    final (:loaded, :heard) = await worker.run(
-      _hearing(path, startMs, lengthMs, _threads(urgent: urgent)),
-    );
-    if (!loaded) {
-      // The cause does not change while the app runs, so a new worker for
-      // each later window would only try the same load again.
-      _unloadable = true;
-      unawaited(worker.close());
-      return null;
+    if (worker == null || worker.closed) return null;
+    try {
+      final (:loaded, :heard) = await worker.run(
+        _hearing(path, startMs, lengthMs, _threads(urgent: urgent)),
+      );
+      if (!loaded) {
+        // The cause stays the same during this run. Closing the worker
+        // stops later windows from trying to load the same model again.
+        if (!worker.closed) {
+          unawaited(worker.close());
+          debugPrint(
+            'Speech is off for this run: the model could not be loaded.',
+          );
+        }
+        return null;
+      }
+      return heard == null || heard.words.isEmpty ? null : heard;
+    } on WorkerStopped {
+      if (worker.closed) return null;
+      rethrow;
     }
-    return heard == null || heard.words.isEmpty ? null : heard;
   }
 
   Future<void> close() async => (await _worker)?.close();

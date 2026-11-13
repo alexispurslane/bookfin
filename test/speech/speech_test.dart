@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:bookfin/speech/speech.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 
 // The fixture holds 16.7 s of narration: "Alice was beginning to get very
 // tired of sitting by her sister on the bank, and of having nothing to do.
@@ -52,6 +53,11 @@ void main() {
     expect(await without.hear(mp3, 0, 8000), isNull);
   });
 
+  test('speech that is off gives no words for later windows', () async {
+    await speech.close();
+    expect(await speech.hear(mp3, 0, 8000), isNull);
+  });
+
   group('a phone that cannot load the speech model', () {
     // The native library gives no model for a file that it cannot open. It
     // gives the same answer on a phone whose CPU lacks an instruction that
@@ -63,6 +69,20 @@ void main() {
             (path: 'test/speech/fixtures/no_model.ggml', offset: 0, length: 0),
       );
       addTearDown(unloadable.close);
+    });
+
+    test('logs the cause once when the model cannot be loaded', () async {
+      final messages = <String>[];
+      final before = debugPrint;
+      debugPrint = (message, {wrapWidth}) => messages.add(message ?? '');
+      addTearDown(() => debugPrint = before);
+      await Future.wait([
+        unloadable.hear(mp3, 0, 8000),
+        unloadable.hear(mp3, 8000, 8000),
+      ]);
+      expect(await unloadable.hear(mp3, 0, 8000), isNull);
+      expect(messages, hasLength(1));
+      expect(messages.single, contains('model could not be loaded'));
     });
 
     test('hears nothing, as a build without the speech model', () async {
