@@ -77,14 +77,20 @@ Future<PdfRaster> _raster(String file, int page) async {
   } finally {
     client.close();
   }
-  final book = await PdfRuntime.instance.open(
-    bytes,
-    sha256.convert(bytes).toString(),
-  );
+  final folder = await Directory.systemTemp.createTemp('bookfin-raster-');
   try {
-    return _rasters[name] = await book.render(page, 1600);
+    final original = await File('${folder.path}/page.pdf').writeAsBytes(bytes);
+    final book = await PdfRuntime.instance.open(
+      original.path,
+      sha256.convert(bytes).toString(),
+    );
+    try {
+      return _rasters[name] = await book.render(page, 1600);
+    } finally {
+      await book.dispose();
+    }
   } finally {
-    await book.dispose();
+    await folder.delete(recursive: true);
   }
 }
 
@@ -445,7 +451,7 @@ void main() {
           );
           final supply = BundledEnglishText();
           final book = await PdfRuntime.instance.open(
-            bytes,
+            file.path,
             original.digest,
             textSupply: supply,
           );
