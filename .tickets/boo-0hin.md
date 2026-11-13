@@ -24,3 +24,14 @@ The boo-f9xa review fix adds DocumentNavigator.reportPendingPlace(). The session
 The final boo-f9xa correction also keeps the requested page's visibility in the navigator. _pageShown becomes true only after a content frame (or the word renderer's existing shown-screen callback). _appearance lets navigation wait for that frame, and completes on abandonment or draw failure as well. These belong with the navigation state when it moves into PdfPager. The view must report what it actually displayed; a requested page or a completed raster alone is insufficient.
 
 Integration correction 9a5a13f9 refines the failure rule above: a raster failure alone cannot end navigation while recognition may still produce usable text. `_finishUnavailablePage()` waits for text to settle without usable text or word content before releasing failure. Usable text must appear and report History before navigation completes. Preserve the held-raster regression and all displayed-page tests during extraction.
+
+
+## Astra implementation launch
+
+Review base: 3e345a1737fd0312e3fb6b5575eddf7de9ea2df1. Separate T3 worktree; implementation and direct fixes use codex/gpt-6-astra with reasoningEffort xhigh. One fresh read-only reviewer is authorized with the same provider/model and reasoningEffort high. No other stage agents. Required checks include affected suites/analysis and the full Flutter suite through nix develop with concurrency at most two. Parent owns integration and closure.
+
+Client request ID: bookfin-boo-0hin-astra-20261113-1
+Task ID: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-0hin-astra-20261113-1
+Child thread ID: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-0hin-astra-20261113-1
+Thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-0hin-astra-20261113-1>
+Launch status: running; stage not yet reported. Completion will be delivered automatically.
