@@ -359,6 +359,11 @@ class RecordSync {
         }
         await transport.synchronize(confirmed, client);
         guard();
+        // An exchange can wait while a live writer makes another change.
+        // Its failed save is absent from the durable pending set, so check
+        // writers again before that set can authorize removal.
+        await records.flushWriters(account: confirmed.scope.key);
+        guard();
       }
       guard();
       completed = true;

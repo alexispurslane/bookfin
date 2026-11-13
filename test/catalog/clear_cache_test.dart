@@ -62,7 +62,7 @@ void main() {
       test('clear removes only the confirmed saved library and preserves login on restart', () async {
         await catalog.clearSavedLibrary(
           catalog.session!,
-          beforeClear: (_) async {},
+          removeFiles: (_, clearCache) => clearCache(),
         );
         expect(await store.read(account('alice').scope), isNull);
         expect(await store.read(account('bob').scope), isNotNull);
@@ -78,7 +78,7 @@ void main() {
           await expectLater(
             catalog.clearSavedLibrary(
               catalog.session!,
-              beforeClear: (_) async {
+              removeFiles: (_, clearCache) async {
                 throw const FileSystemException('save failed');
               },
             ),
@@ -95,7 +95,10 @@ void main() {
           await files.entered.future;
           var cleared = false;
           final clearing = catalog
-              .clearSavedLibrary(catalog.session!, beforeClear: (_) async {})
+              .clearSavedLibrary(
+                catalog.session!,
+                removeFiles: (_, clearCache) => clearCache(),
+              )
               .then((_) => cleared = true);
           try {
             await Future<void>.delayed(const Duration(milliseconds: 30));
@@ -126,9 +129,10 @@ void main() {
           final clearing = catalog
               .clearSavedLibrary(
                 catalog.session!,
-                beforeClear: (_) async {
+                removeFiles: (_, clearCache) async {
                   entered.complete();
                   await release.future;
+                  await clearCache();
                 },
               )
               .then((_) => cleared = true);

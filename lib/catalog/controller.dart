@@ -1336,15 +1336,18 @@ class CatalogController extends ChangeNotifier {
     return write;
   }
 
-  /// Retires outstanding refreshes, runs the screen's preservation and file
-  /// removal work, then removes [confirmed]'s saved catalog. [beforeClear]
-  /// calls its guard between asynchronous steps; a superseding operation or
-  /// account replacement throws instead of authorizing further removal.
-  /// Refreshes cannot recreate the cache while this operation runs. Login,
-  /// corrections and every other account remain intact. Failure propagates.
+  /// Retires refreshes for the whole confirmed clear. [removeFiles] keeps
+  /// the file owners protected until it calls and awaits clearCache, which
+  /// deletes the saved catalog and publishes the empty library. Its guard
+  /// rejects superseding operations and account replacements between awaits.
+  /// Login, corrections and every other account remain intact.
   Future<void> clearSavedLibrary(
     JellyfinSession confirmed, {
-    required Future<void> Function(void Function() guard) beforeClear,
+    required Future<void> Function(
+      void Function() guard,
+      Future<void> Function() clearCache,
+    )
+    removeFiles,
   }) async {
     if (_disposed ||
         _work == _Work.clear ||
@@ -1369,22 +1372,34 @@ class CatalogController extends ChangeNotifier {
     try {
       await _cacheWrites;
       guard();
-      await beforeClear(guard);
-      guard();
-      final clearing = (_cacheWrites ?? Future<void>.value()).then((_) async {
+      Future<void>? clearing;
+      Future<void> clearCache() {
         guard();
-        await _store.clearCache(confirmed.scope);
-        guard();
-        _facts = null;
-        _text = null;
-        _cacheStored = false;
-        _lastSuccessfulRefresh = null;
-        _built = CatalogLibrary.empty;
-        _libraries = [];
-        _reach = CatalogReach.unknown;
-      });
-      _cacheWrites = clearing.catchError((Object _) {});
+        if (clearing != null) return clearing!;
+        clearing = (_cacheWrites ?? Future<void>.value()).then((_) async {
+          guard();
+          await _store.clearCache(confirmed.scope);
+          guard();
+          _facts = null;
+          _text = null;
+          _cacheStored = false;
+          _lastSuccessfulRefresh = null;
+          _built = CatalogLibrary.empty;
+          _libraries = [];
+          _reach = CatalogReach.unknown;
+          // File owners still block writes as listeners retire these books.
+          _notify();
+        });
+        _cacheWrites = clearing!.catchError((Object _) {});
+        return clearing!;
+      }
+
+      await removeFiles(guard, clearCache);
+      if (clearing == null) {
+        throw StateError('File removal did not finish the catalog clear.');
+      }
       await clearing;
+      guard();
     } finally {
       if (_current(generation)) {
         _work = _Work.idle;

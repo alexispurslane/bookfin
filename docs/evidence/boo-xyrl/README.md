@@ -20,20 +20,26 @@ New narrow interfaces:
 
 - `RecordSync.requireUploaded(session)` joins the existing sync queue, flushes
   the account's live record writers, and checks durable pending uploads until
-  acknowledged. It throws on failure or account replacement instead of using a
+  acknowledged. It flushes writers again after each exchange, so a live save
+  failure during an upload cannot hide behind an empty durable pending set.
+  It throws on failure or account replacement instead of using a
   UI status as evidence of success. Live writers now report failed saves to
   their sync registration, while their ordinary lifecycle flush keeps its
   existing save-status behavior.
-- `Downloads.clearAccount(session, beforeRemoval: ...)` uses the public
+- `Downloads.clearAccount(session, beforeRemoval: ..., afterRemoval: ...)` uses the public
   `remove` and `removeRetained` boundaries. The callback repeats the required
   record check after file users release each download. It cannot request a
   download read. The reader's sync flush and record refresh therefore save
   personal records independently of derived page-image writes. Normal reader
-  flush still saves both, in that order.
-- `Covers.clear(account)` is now scoped. There was no production caller of the
-  former all-account method.
-- `CatalogController.clearSavedLibrary(session, beforeClear: ...)` owns refresh
-  retirement and the final cache deletion. `CatalogStore.clearCache` and
+  flush still saves both, in that order. The afterRemoval continuation keeps
+  requests blocked while covers and catalog finish.
+- `Covers.clear(account, afterRemoval: ...)` is now scoped. It blocks loads
+  until the continuation publishes the empty catalog. There was no production
+  caller of the former all-account method.
+- `CatalogController.clearSavedLibrary(session, removeFiles: ...)` owns refresh
+  retirement and the final cache deletion. It passes a guarded cache-deletion
+  continuation to the file owners, which keep their protection until the empty
+  library is published. `CatalogStore.clearCache` and
   `CatalogFiles.remove` remove only the cache's committed and partial file,
   preserving saved choices and retained unreadable copies.
 
@@ -115,10 +121,15 @@ clearCache method. Production and gallery use LocalCatalogStore. New ticket
 t5-23yk records existing retained-discovery CPU work and broad recovery catches
 that still need engine-rule follow-up. This change does not broaden those catches.
 
-## Final implementation checks
+## Reviewed implementation checks
 
-All final commands used the identical Dart source manifest
+Checks 21 through 27 used the identical reviewed Dart source manifest
 `038ef9292e77c1b452d218f78eda8b963a999db9bd9c5eacf8e2079207f01033`.
+Check 19 used manifest `fe2bdab9597a` (prefix). Check 20 recorded formatting
+input manifest `56554e40720e` (prefix) and changed five files. Their full hashes
+are in commands.jsonl. The later analysis, affected suite, full suite and builds
+share the reviewed manifest; the earlier focused run and formatting input do
+not. This corrects review finding R3.
 
 | Archive label | Outcome |
 | --- | --- |
@@ -145,5 +156,63 @@ Gallery main.dart.js is 2797030 bytes, SHA-256
 The build directories are ignored local artifacts; the manifests and logs are
 committed. No browser or device validation is claimed.
 
-Review and final HEAD whitespace outcomes will be recorded after the immutable
-implementation commit and the single read-only reviewer report.
+## Review and fixes
+
+The one independent reviewer assessed implementation commit
+`f8565faaf390fe5cf968909f8b8e6d8a764d6483`. Its original report is retained
+verbatim in `reviewer-original.md`; launch/completion and original verdicts are
+in `reviewer-metadata.json`. All three original assessments were fail. No second
+review was requested. `review-resolutions.md` records the lead's fixes and
+their evidence without replacing those verdicts.
+
+| Check | Result and resolution |
+| --- | --- |
+| 28 | Test setup did not compile because its new preferences platform import was missing. The command also used a literal-name filter for alternatives. Added the import and changed to the regular-expression filter. This was not a meaningful red run. |
+| 29 | Meaningful red: SQLite live-save failure during upload incorrectly allowed clear to finish; preferences already stopped through its whole-store acknowledgment failure. Both storage modes accepted a new download while covers waited and a new cover while catalog deletion waited. Five failures and one pass. |
+| 30 | Both real-player failed-save cases passed after rechecking writers after an exchange. |
+| 31 | 83 passed, two fixture failures: the old one-shot synthetic writer completed its signal twice after the new recheck. The fixture now reports its initial save once and permits later no-op flushes. |
+| 32 | All 91 focused checks passed, including retry after cache-removal failure and account/credential replacement during final catalog deletion. |
+| 33 | Formatted all 28 changed Dart files; seven changed. Its manifest records formatting input. |
+| 34 | Analyzed all 28 changed Dart files; no issues. |
+
+One review-fix exploration command searched nonexistent `lib/sync/local*` and
+`lib/sync/*store*` paths and returned 2 while still locating the correct methods
+in playback/store.dart. No exploration failure counts as verification.
+
+## Final checks after review fixes
+
+After formatting, checks 34 onward use source manifest
+`3eedcd2359413f6eeed80f8284c6cb27cde98de99e95a87e63717962e21eef00`.
+Check 32's focused run and check 33's formatting input use the earlier manifest
+`16043b98177fe91c5be43a8ce6e9394fd2eb0c7deea1a2f33088b62c5c97ec6d`.
+
+| Archive label | Outcome |
+| --- | --- |
+| 32-green-review-focused | 91 passed |
+| 33-format-review-fixes | 28 files formatted; seven changed |
+| 34-analyze-review-fixes | 28 files analyzed; no issues |
+| 35-affected-review-fixes | 1240 passed, three optional external skips |
+| 36-full-flutter-review-fixes | 3912 passed, 27 optional skips, zero failures; concurrency 2 |
+| 37-production-js-review-fixes | Release JavaScript build succeeded for lib/main.dart |
+| 38-gallery-js-review-fixes | Release JavaScript build succeeded for lib/gallery.dart |
+
+Both release rebuilds retain the CupertinoIcons warning. The new inventory is
+`web-artifacts-final.json`; the earlier inventory remains unchanged. Production
+main.dart.js is 4291644 bytes, SHA-256
+`94358f946bdbce11d99a3fdf042b52c6a4f0cdb2f65cd25b9e0b3c63a4256b69`.
+Gallery main.dart.js is 2797030 bytes, SHA-256
+`f69ad3c2ec1dea570bd1f8a60a79cd8e4b42c8422db17990d48b79742ed8b1e6`.
+
+`skips-final.json` lists the final run's 27 skips and was compared with the
+earlier inventory: they are identical. `verification.json` records successful
+hash verification of all 38 archived command logs, their compressed files and
+available source manifests. The original review is preserved byte-for-byte
+with SHA-256 `0b02c56f75da31ba7bb75d898103e97bd515d72a2688f2a2655a43f1775d1f3a`.
+
+The lead considers R1, R2 and R3 resolved with the evidence in
+`review-resolutions.md`. The original review verdicts remain fail. All owned
+build/test commands and the one reviewer are finished. Integration, device
+acceptance, the combined boo-39cu behavior and hardening remain with the parent.
+The final commit's complete base-to-HEAD diff/clean-state check is archived at
+`.cache/boo-xyrl-final-verification.json`, outside tracked evidence so recording
+the final HEAD does not itself change that HEAD.

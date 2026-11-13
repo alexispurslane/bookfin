@@ -73,6 +73,7 @@ void main() {
         records.registerWriter(
           account: () => session.scope.key,
           flush: () async {
+            if (writing.isCompleted) return;
             writing.complete();
             await releaseWrite.future;
             await save('Saved before clear');

@@ -798,6 +798,7 @@ class LocalDownloads extends Downloads {
   Future<void> clearAccount(
     JellyfinSession confirmed, {
     Future<void> Function()? beforeRemoval,
+    Future<void> Function()? afterRemoval,
   }) async {
     final catalog = await _settled;
     if (_clearing != null) throw Exception('Clear data is already running.');
@@ -835,6 +836,9 @@ class LocalDownloads extends Downloads {
           'Some files remain. Review Downloads and retry Clear data.',
         );
       }
+      // The continuation can publish the empty catalog and intentionally
+      // retire our source binding. Keep requests blocked until it returns.
+      await afterRemoval?.call();
     } finally {
       if (_clearing == clearing) _clearing = null;
     }

@@ -12,6 +12,7 @@ import 'package:bookfin/catalog/store.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:bookfin/playback/store.dart';
+import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/settings/clear_data.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -19,10 +20,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../catalog/controller_test.dart' show FixtureClient, MemoryCredentials;
 import '../downloads/transfer_test.dart' show MediaFixture;
+import '../playback/playback_test.dart' as audio;
 import '../playback/incremental_save_test.dart' show bookmark, event, resume;
 import '../sync/controlled_transport.dart';
 import '../sync/phone.dart';
@@ -38,6 +41,8 @@ void main() {
       late JellyfinSession alice;
       late JellyfinSession bob;
       late LocalCatalogStore cache;
+      late _HeldCatalogFiles catalogFiles;
+      late _FailingPreferences preferences;
       late MemoryCredentials credentials;
       late CatalogController catalog;
       late _ObservedDownloads downloads;
@@ -58,6 +63,9 @@ void main() {
         SharedPreferences.setMockInitialValues({
           'bookfin.appearance.test': 'night',
         });
+        preferences = _FailingPreferences();
+        SharedPreferencesStorePlatform.instance = preferences;
+        SharedPreferences.resetStatic();
         final oldPreferences = SharedPreferencesAsyncPlatform.instance;
         SharedPreferencesAsyncPlatform.instance =
             InMemorySharedPreferencesAsync.empty();
@@ -68,9 +76,8 @@ void main() {
         media = await MediaFixture.start();
         alice = media.session();
         bob = media.session(user: 'bob');
-        cache = LocalCatalogStore(
-          files: DiskCatalogFiles(Directory('${root.path}/catalog')),
-        );
+        catalogFiles = _HeldCatalogFiles(Directory('${root.path}/catalog'));
+        cache = LocalCatalogStore(files: catalogFiles);
         for (final session in [alice, bob]) {
           await cache.write(
             session.scope,
@@ -284,6 +291,159 @@ void main() {
         );
       }
 
+      test(
+        'a live save failure during the final upload stops removal until retry',
+        () async {
+          final playerFiles = audio.LocalFiles();
+          final player = Playback(
+            downloads: playerFiles,
+            engine: audio.TestEngine(),
+            store: records,
+          );
+          addTearDown(playerFiles.dispose);
+          addTearDown(player.close);
+          await player.bind(alice, [audio.title]);
+          await player.open(audio.title, audio.recording, autoplay: false);
+          await player.flush();
+          final sql = await phone?.separateConnection();
+          final releaseFile = Completer<void>();
+          final uploadEntered = Completer<void>();
+          final releaseUpload = Completer<void>();
+          await downloads.readLocalFile(
+            catalog.books.single.editions.single.files.single,
+            (original) async {
+              unawaited(original.hold(() => releaseFile.future));
+            },
+          );
+          final clearing = clear();
+          final outcome = expectLater(clearing, throwsA(isA<Exception>()));
+          await downloads.removalEntered.future;
+          await records.write(alice.scope.key, {
+            ...(await records.read(alice.scope.key))!,
+            'bookmarks': [bookmark('while-held', title: 'While held')],
+          });
+          upload = () async {
+            uploadEntered.complete();
+            await releaseUpload.future;
+          };
+          releaseFile.complete();
+          await uploadEntered.future;
+          try {
+            preferences.refuseTitle = 'During upload';
+            await sql?.execute(
+              "CREATE TRIGGER refuse_save BEFORE INSERT ON record_actions BEGIN SELECT RAISE(ABORT, 'storage full'); END",
+            );
+            await player.addBookmark(title: 'During upload');
+            expect(player.unsavedChanges, isTrue);
+            releaseUpload.complete();
+            await outcome;
+            await expectFilesKept();
+            expect(player.unsavedChanges, isTrue);
+          } finally {
+            preferences.refuseTitle = null;
+            await sql?.execute('DROP TRIGGER IF EXISTS refuse_save');
+            if (!releaseUpload.isCompleted) releaseUpload.complete();
+          }
+          upload = null;
+          await clear();
+          expect(await downloaded.exists(), isFalse);
+          expect(player.unsavedChanges, isFalse);
+          expect(await records.hasPendingUploads(alice.scope.key), isFalse);
+          expect(
+            (await records.read(
+              alice.scope.key,
+            ))!['bookmarks'].map((dynamic entry) => entry['title']),
+            contains('During upload'),
+          );
+        },
+      );
+
+      test('downloads stay blocked while cover removal waits', () async {
+        final fetchEntered = Completer<void>();
+        final releaseFetch = Completer<void>();
+        final observed = _ObservedCovers(
+          root: covers.root,
+          fetch: (_, _) async {
+            fetchEntered.complete();
+            await releaseFetch.future;
+            return Uint8List.fromList([4]);
+          },
+        );
+        covers = observed;
+        final loading = covers.load(alice, const CoverRef('held', 'v1'));
+        await fetchEntered.future;
+        final edition = catalog.books.single.editions.single;
+        final clearing = clear();
+        await observed.clearEntered.future;
+        try {
+          expect(await downloaded.exists(), isFalse);
+          expect(catalog.books, isNotEmpty);
+          await expectLater(
+            downloads.request(edition),
+            throwsA(isA<Exception>()),
+          );
+        } finally {
+          releaseFetch.complete();
+          await loading;
+          await clearing;
+        }
+        expect(await downloaded.exists(), isFalse);
+      });
+
+      test(
+        'covers and downloads stay blocked until cleared catalog is published',
+        () async {
+          catalogFiles.holdRemoval = true;
+          final edition = catalog.books.single.editions.single;
+          final clearing = clear();
+          await catalogFiles.removeEntered.future;
+          try {
+            expect(catalog.books, isNotEmpty);
+            expect(
+              await covers.load(alice, const CoverRef('late', 'v1')),
+              isNull,
+            );
+            expect(
+              await covers.blurred(alice, const CoverRef('late-blur', 'v1')),
+              isNull,
+            );
+            await expectLater(
+              downloads.request(edition),
+              throwsA(isA<Exception>()),
+            );
+          } finally {
+            catalogFiles.releaseRemoval.complete();
+            await clearing;
+          }
+          expect(catalog.books, isEmpty);
+          online = false;
+          expect(
+            await covers.load(alice, const CoverRef('late', 'v1')),
+            isNull,
+          );
+          expect(await downloaded.exists(), isFalse);
+        },
+      );
+
+      test(
+        'a cache removal failure releases file protection and permits retry',
+        () async {
+          catalogFiles.failRemoval = true;
+          await expectLater(clear(), throwsA(isA<FileSystemException>()));
+          expect(catalog.clearingNotifier.value, isFalse);
+          expect(await cache.read(alice.scope), isNotNull);
+          final edition = catalog.books.single.editions.single;
+          await downloads.request(edition);
+          await downloads.idle;
+          expect(await downloaded.exists(), isTrue);
+          expect(await covers.load(alice, cover), [1, 2, 3]);
+          catalogFiles.failRemoval = false;
+          await clear();
+          expect(await downloaded.exists(), isFalse);
+          expect(await cache.read(alice.scope), isNull);
+        },
+      );
+
       for (final step in ['save', 'upload']) {
         test('required $step failure prevents every removal', () async {
           if (step == 'save') {
@@ -302,7 +462,7 @@ void main() {
         });
       }
 
-      for (final step in ['save', 'upload', 'read', 'cover']) {
+      for (final step in ['save', 'upload', 'read', 'cover', 'cache']) {
         for (final replacement in [false, true]) {
           test(
             '${replacement ? 'replacement' : 'switch'} during $step cannot clear the next account',
@@ -328,6 +488,14 @@ void main() {
                   (file) async {
                     unawaited(file.hold(hold));
                   },
+                );
+              } else if (step == 'cache') {
+                catalogFiles.holdRemoval = true;
+                unawaited(
+                  catalogFiles.removeEntered.future.then((_) async {
+                    await hold();
+                    catalogFiles.releaseRemoval.complete();
+                  }),
                 );
               } else {
                 covers = DiskCovers(
@@ -396,5 +564,61 @@ class _ObservedDownloads extends LocalDownloads {
     final removal = super.remove(edition);
     if (!removalEntered.isCompleted) removalEntered.complete();
     return removal;
+  }
+}
+
+class _FailingPreferences extends SharedPreferencesStorePlatform {
+  final values = <String, Object>{'flutter.bookfin.appearance.test': 'night'};
+  String? refuseTitle;
+  @override
+  Future<Map<String, Object>> getAll() async => Map.of(values);
+  @override
+  Future<bool> setValue(String type, String key, Object value) async {
+    if (refuseTitle != null &&
+        value is String &&
+        value.contains(refuseTitle!)) {
+      throw const FileSystemException('storage full');
+    }
+    values[key] = value;
+    return true;
+  }
+
+  @override
+  Future<bool> remove(String key) async {
+    values.remove(key);
+    return true;
+  }
+
+  @override
+  Future<bool> clear() async => throw UnimplementedError();
+}
+
+class _HeldCatalogFiles extends DiskCatalogFiles {
+  _HeldCatalogFiles(super.root);
+  bool holdRemoval = false;
+  bool failRemoval = false;
+  final removeEntered = Completer<void>();
+  final releaseRemoval = Completer<void>();
+  @override
+  Future<void> remove(String key) async {
+    if (holdRemoval) {
+      removeEntered.complete();
+      await releaseRemoval.future;
+    }
+    if (failRemoval) throw const FileSystemException('cache is unavailable');
+    await super.remove(key);
+  }
+}
+
+class _ObservedCovers extends DiskCovers {
+  _ObservedCovers({required super.root, required super.fetch});
+  final clearEntered = Completer<void>();
+  @override
+  Future<void> clear(
+    AccountScope account, {
+    Future<void> Function()? afterRemoval,
+  }) {
+    clearEntered.complete();
+    return super.clear(account, afterRemoval: afterRemoval);
   }
 }

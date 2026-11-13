@@ -1,0 +1,17 @@
+{
+  "checked_archives": 38,
+  "skip_count": 27,
+  "skip_inventory_unchanged": true,
+  "javascript": {
+    "production": {
+      "bytes": 4291644,
+      "sha256": "94358f946bdbce11d99a3fdf042b52c6a4f0cdb2f65cd25b9e0b3c63a4256b69"
+    },
+    "gallery": {
+      "bytes": 2797030,
+      "sha256": "f69ad3c2ec1dea570bd1f8a60a79cd8e4b42c8422db17990d48b79742ed8b1e6"
+    }
+  },
+  "source_manifest_sha256": "3eedcd2359413f6eeed80f8284c6cb27cde98de99e95a87e63717962e21eef00",
+  "original_review_sha256": "0b02c56f75da31ba7bb75d898103e97bd515d72a2688f2a2655a43f1775d1f3a"
+}

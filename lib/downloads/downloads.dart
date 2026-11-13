@@ -236,12 +236,15 @@ abstract class Downloads extends ChangeNotifier {
   /// throws. [beforeRemoval] rechecks required record saves/uploads after
   /// file users finish, before each removal. A failure preserves those files.
   /// It must not request another download read. Other accounts are untouched.
-  /// Platforms without storage do nothing.
+  /// [afterRemoval] finishes the owning operation while requests remain
+  /// blocked. Platforms without storage still run that continuation.
   Future<void> clearAccount(
     JellyfinSession confirmed, {
     Future<void> Function()? beforeRemoval,
+    Future<void> Function()? afterRemoval,
   }) async {
     if (supported) throw UnsupportedError('Account removal is unavailable.');
+    await afterRemoval?.call();
   }
 
   /// Notifies when a download starts, finishes, fails, stops or waits, or

@@ -18,7 +18,7 @@ Future<void> clearAccountData({
   required Covers? covers,
 }) => catalog.clearSavedLibrary(
   confirmed,
-  beforeClear: (guard) async {
+  removeFiles: (guard, clearCache) async {
     if (downloads.supported && covers == null) {
       throw Exception(
         'Cover storage is unavailable. Restart Bookfin and retry Clear data.',
@@ -37,9 +37,17 @@ Future<void> clearAccountData({
     }
 
     await preserveRecords();
-    await downloads.clearAccount(confirmed, beforeRemoval: preserveRecords);
-    guard();
-    await covers?.clear(confirmed.scope);
-    guard();
+    await downloads.clearAccount(
+      confirmed,
+      beforeRemoval: preserveRecords,
+      afterRemoval: () async {
+        guard();
+        if (covers == null) {
+          await clearCache();
+        } else {
+          await covers.clear(confirmed.scope, afterRemoval: clearCache);
+        }
+      },
+    );
   },
 );

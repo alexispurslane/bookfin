@@ -159,9 +159,14 @@ class DiskCovers implements Covers {
   }
 
   @override
-  Future<void> clear(AccountScope account) {
+  Future<void> clear(
+    AccountScope account, {
+    Future<void> Function()? afterRemoval,
+  }) {
     final directory = _directory(account);
-    if (_clearing[directory] case final clearing?) return clearing;
+    if (_clearing.containsKey(directory)) {
+      return Future.error(Exception('Cover removal is already running.'));
+    }
     _versions[directory] = (_versions[directory] ?? 0) + 1;
     _missing.removeWhere((entry) => entry.$1.startsWith('$directory/'));
     final pending = <Future<Object?>>[
@@ -175,15 +180,17 @@ class DiskCovers implements Covers {
       // this future owns the account. Neither path can recreate its files.
       await Future.wait(pending);
       final type = await FileSystemEntity.type(directory, followLinks: false);
-      if (type == FileSystemEntityType.notFound) return;
-      if (type != FileSystemEntityType.directory ||
-          await FileSystemEntity.type(root.path, followLinks: false) !=
-              FileSystemEntityType.directory) {
-        throw const FileSystemException(
-          'Cover storage is not a private directory.',
-        );
+      if (type != FileSystemEntityType.notFound) {
+        if (type != FileSystemEntityType.directory ||
+            await FileSystemEntity.type(root.path, followLinks: false) !=
+                FileSystemEntityType.directory) {
+          throw const FileSystemException(
+            'Cover storage is not a private directory.',
+          );
+        }
+        await Directory(directory).delete(recursive: true);
       }
-      await Directory(directory).delete(recursive: true);
+      await afterRemoval?.call();
     }();
     _clearing[directory] = done;
     return done.whenComplete(() => _clearing.remove(directory));

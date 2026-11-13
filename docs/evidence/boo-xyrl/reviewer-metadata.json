@@ -1,0 +1,27 @@
+{
+  "link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A0a08437f-b63c-4c84-bbf9-ee8b009b6bbd%3Adelegate-task%3Aboo-xyrl-review-f8565faa-20261113>",
+  "reviewHead": "f8565faaf390fe5cf968909f8b8e6d8a764d6483",
+  "originalBase": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "originalVerdicts": {
+    "correctness": "fail",
+    "fulfillment": "fail",
+    "design": "fail"
+  },
+  "findings": [
+    "R1",
+    "R2",
+    "R3"
+  ],
+  "runs": [
+    {
+      "runId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253A0a08437f-b63c-4c84-bbf9-ee8b009b6bbd%253Adelegate-task%253Aboo-xyrl-review-f8565faa-20261113:ordinal:1",
+      "ordinal": 1,
+      "status": "completed",
+      "providerInstanceId": "codex",
+      "model": "gpt-6-astra",
+      "requestedAt": "2026-11-13T23:30:55.619Z",
+      "startedAt": "2026-11-13T23:30:55.919Z",
+      "completedAt": "2026-11-13T23:36:31.012Z"
+    }
+  ]
+}

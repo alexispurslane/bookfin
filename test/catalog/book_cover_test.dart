@@ -41,7 +41,12 @@ class _FixedCovers implements Covers {
   @override
   Future<Uri?> blurred(JellyfinSession session, CoverRef cover) async => null;
   @override
-  Future<void> clear(AccountScope account) async {}
+  Future<void> clear(
+    AccountScope account, {
+    Future<void> Function()? afterRemoval,
+  }) async {
+    await afterRemoval?.call();
+  }
 }
 
 class _CredentialCovers extends _FixedCovers {

@@ -16,8 +16,13 @@ abstract class Covers {
 
   /// Removes only [account]'s kept covers, including blurred copies. Waits
   /// for older loads to stop writing so they cannot recreate cleared files.
-  /// Loads started during removal return no image. Failures propagate.
-  Future<void> clear(AccountScope account);
+  /// Loads return no image through [afterRemoval], which finishes the owning
+  /// clear and retires the visible catalog before this protection ends.
+  /// Failures propagate.
+  Future<void> clear(
+    AccountScope account, {
+    Future<void> Function()? afterRemoval,
+  });
 }
 
 /// Null where the platform keeps no covers. Screens then draw generated covers.
