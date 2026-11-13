@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart'
-    show ValueListenable, ValueNotifier, VoidCallback, compute;
+    show Listenable, ValueListenable, ValueNotifier, VoidCallback, compute;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../catalog/model.dart' show Edition, EditionKind;
@@ -172,6 +172,12 @@ class LocalResumeStore
   /// the last snapshot that they took in. Each account/domain has one signal.
   final Map<String, ValueNotifier<bool>> _behind = {};
   final _writers = <_RegisteredWriter>{};
+  final _uploadRequests = StreamController<String>.broadcast(sync: true);
+
+  /// Upload opportunities from registered writers, tagged with their account.
+  /// RecordSync subscribes once and decides when to flush and check pending
+  /// actions. This stream retains no events and owns no pending-state copy.
+  Stream<String> get uploadRequests => _uploadRequests.stream;
 
   ValueNotifier<bool> _stale(String account, {required bool reading}) =>
       _behind.putIfAbsent(
@@ -188,11 +194,13 @@ class LocalResumeStore
     required String? Function() account,
     required Future<void> Function() flush,
     required Future<void> Function() refresh,
+    Listenable? uploadRequests,
   }) => _registerWriter(
     reading: false,
     account: account,
     flush: flush,
     refresh: refresh,
+    uploadRequests: uploadRequests,
   );
 
   VoidCallback _registerWriter({
@@ -200,10 +208,19 @@ class LocalResumeStore
     required String? Function() account,
     required Future<void> Function() flush,
     required Future<void> Function() refresh,
+    Listenable? uploadRequests,
   }) {
     final writer = _RegisteredWriter(reading, account, flush, refresh);
     _writers.add(writer);
-    return () => _writers.remove(writer);
+    void requestUpload() {
+      if (account() case final key?) _uploadRequests.add(key);
+    }
+
+    uploadRequests?.addListener(requestUpload);
+    return () {
+      uploadRequests?.removeListener(requestUpload);
+      _writers.remove(writer);
+    };
   }
 
   /// Flushes each live writer before sync or a choice. Writers retain their
@@ -495,6 +512,11 @@ class LocalResumeStore
     account,
     (stored) => query(stored?.journal ?? _journal(account, {})),
   );
+
+  /// Whether this account has durable actions awaiting acknowledgment.
+  /// Reads the journal's pending set without copying its actions.
+  Future<bool> hasPendingUploads(String account) =>
+      _query(account, (journal) => journal.pending.isNotEmpty);
 
   /// A detached snapshot of actions still awaiting server acknowledgment.
   /// Editing the result cannot change retained or pending actions.
@@ -1202,11 +1224,13 @@ class ReadingRecords implements ResumeStore, ReadingStore, RecordWriterHost {
     required String? Function() account,
     required Future<void> Function() flush,
     required Future<void> Function() refresh,
+    Listenable? uploadRequests,
   }) => owner._registerWriter(
     reading: true,
     account: account,
     flush: flush,
     refresh: refresh,
+    uploadRequests: uploadRequests,
   );
 
   @override

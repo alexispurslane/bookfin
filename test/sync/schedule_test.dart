@@ -197,6 +197,9 @@ class LifecycleSync extends RecordSync {
 }
 
 class CountingRecords extends LocalResumeStore {
+  @override
+  Future<bool> hasPendingUploads(String account) async => false;
+
   late final transport = ControlledTransport(this, synchronize);
   int runs = 0;
 

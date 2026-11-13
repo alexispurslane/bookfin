@@ -191,6 +191,7 @@ class Playback extends ChangeNotifier {
         account: () => _session?.scope.key,
         flush: flush,
         refresh: refreshPersonalRecords,
+        uploadRequests: _uploadRequests,
       );
     }
     _samples = engine.samples.listen(
@@ -199,6 +200,18 @@ class Playback extends ChangeNotifier {
     );
   }
   VoidCallback? _unregisterWriter;
+  final _uploadRequests = ChangeNotifier();
+  // Live reports can be offline or backing off. Their network state must
+  // not suppress opportunities to upload durable records at this cadence.
+  AudioPosition? _lastUploadPosition;
+
+  // An opportunity, not a pending flag. The coordinator flushes registered
+  // writers and asks the durable store whether anything needs uploading.
+  void _requestUpload() {
+    _lastUploadPosition = _position;
+    _uploadRequests.notifyListeners();
+  }
+
   final Downloads downloads;
   final AudioEngine engine;
   final ListeningStore store;
@@ -983,6 +996,7 @@ class Playback extends ChangeNotifier {
     _starting = null;
     reports?.stop();
     _save();
+    _requestUpload();
     _notify();
   }
 
@@ -1041,6 +1055,7 @@ class Playback extends ChangeNotifier {
     _edition = null;
     _position = null;
     _recordedDecoderAnchor = null;
+    _lastUploadPosition = null;
     _playing = false;
     _active = false;
     _starting = null;
@@ -1336,6 +1351,7 @@ class Playback extends ChangeNotifier {
     try {
       await engine.pause();
       _save();
+      if (_edition != null) _requestUpload();
       reports?.stop();
       final fileIndex = resume == null
           ? 0
@@ -1389,6 +1405,7 @@ class Playback extends ChangeNotifier {
       _loading = false;
     }
     _save();
+    _lastUploadPosition = _position;
     if (target != null) await _writes.idle;
     if (generation != _generation) return false;
     _notify();
@@ -1438,6 +1455,15 @@ class Playback extends ChangeNotifier {
         previous!.milliseconds ~/ 1000 != milliseconds ~/ 1000 ||
         wasPlaying != _playing) {
       _save();
+    }
+    final lastUpload = _lastUploadPosition;
+    if (wasPlaying && !_playing ||
+        _playing &&
+            (lastUpload == null ||
+                lastUpload.sourceKey != file.key ||
+                (milliseconds - lastUpload.milliseconds).abs() >=
+                    LiveReports.progressIntervalMs)) {
+      _requestUpload();
     }
     if (sample.completed && _active) {
       _active = false;
@@ -1507,6 +1533,7 @@ class Playback extends ChangeNotifier {
     }
     _playing = false;
     _save();
+    _requestUpload();
     await _writes.idle;
     _notify();
   }
@@ -1531,6 +1558,7 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     reports?.stop();
     _save();
+    _requestUpload();
     await _writes.idle;
     _notify();
   }
@@ -1825,7 +1853,8 @@ class Playback extends ChangeNotifier {
   }
 
   /// Saves the current place and retries the pending changes of every
-  /// account. A retry that fails leaves its changes pending.
+  /// account. A retry that fails leaves its changes pending. Live Jellyfin
+  /// reports run independently and never delay local persistence.
   ///
   /// A save that fails with an [Exception] is an expected failure, such as
   /// full storage. Its report is the save status ([unsavedChanges] and the
@@ -1846,7 +1875,6 @@ class Playback extends ChangeNotifier {
       for (final entry in _pendingWrites.entries)
         _writes.run(() => _persistChanges(entry.key, entry.value)),
     ]);
-    await reports?.idle;
   }
 
   /// Stops playback and flushes records before releasing its resources.
@@ -1875,6 +1903,7 @@ class Playback extends ChangeNotifier {
   }
 
   List<ChangeNotifier> get _signals => [
+    _uploadRequests,
     _positionSignal,
     _selectionSignal,
     _sleepSignal,

@@ -277,6 +277,9 @@ void main() {
 
 /// Personal records whose sync can wait on [gate], fail, and find [found].
 class ControlledRecords extends LocalResumeStore {
+  @override
+  Future<bool> hasPendingUploads(String account) async => false;
+
   late final transport = ControlledTransport(this, synchronize);
   int runs = 0;
   Completer<void>? gate;

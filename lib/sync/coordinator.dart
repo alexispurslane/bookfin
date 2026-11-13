@@ -64,7 +64,9 @@ typedef _Result = ({String? message});
 ///
 /// It alone decides when a background sync runs. Signing in ([bind]) makes
 /// a sync due at once. While the app is in front, a periodic sync runs every
-/// [_period]. While it is in the background ([suspend]), no sync runs. On
+/// [_period]. In the background ([suspend]), idle polling stops. Writer
+/// events and app hide request debounced uploads, after flushing local
+/// changes, only when the durable store has pending actions. On
 /// [resume], a sync that came due in the background runs at once, and the
 /// period restarts.
 ///
@@ -80,12 +82,14 @@ typedef _Result = ({String? message});
 /// says how it ended and why it failed, and [conflictsNotifier].
 ///
 /// One sync or choice runs at a time. A background sync that comes due while
-/// another runs is skipped, because the running one covers it. An action of
-/// the user waits for the running one and then runs.
+/// another runs is skipped. Upload events wait for that sync and check the
+/// durable pending actions again, so a save after its snapshot is not lost.
+/// An action of the user waits for the running one and then runs.
 ///
 /// Invariants, which [checkInvariants] proves:
 /// - A signed-out coordinator is idle and holds no message, no outcome and
 ///   no conflicts.
+/// - A signed-out or disposed coordinator retains no scheduled upload event.
 class RecordSync {
   static const _period = Duration(seconds: 30);
 
@@ -93,13 +97,20 @@ class RecordSync {
     required this.records,
     RecordTransport? transport,
     this.now = DateTime.now,
-  }) : transport = transport ?? RecordTransport(records);
+  }) : transport = transport ?? RecordTransport(records) {
+    _uploadSubscription = records.uploadRequests.listen(_requestUpload);
+  }
   final RecordTransport transport;
   final LocalResumeStore records;
   final DateTime Function() now;
   JellyfinSession? _session;
   JellyfinClient? _client;
   Timer? _timer;
+  late final StreamSubscription<String> _uploadSubscription;
+  Timer? _uploadTimer;
+  // These flags describe event handling, never whether records are pending.
+  bool _uploadQueued = false;
+  bool _uploadAgain = false;
   // When the latest sync of this account started, or null before the first,
   // which is due at once.
   DateTime? _periodStart;
@@ -128,11 +139,13 @@ class RecordSync {
   RecordConflicts get conflicts => _conflicts.value;
 
   void bind(JellyfinSession? session) {
+    if (_disposed) return;
     if (_session?.scope.key == session?.scope.key &&
         _session?.token == session?.token) {
       return;
     }
     ++_generation;
+    _cancelUploads();
     _timer?.cancel();
     _client?.close();
     _session = session;
@@ -171,23 +184,66 @@ class RecordSync {
     await records.refreshWriters(session.scope.key);
   }
 
-  /// Stops the periodic sync while the app is in the background.
+  /// Stops idle polling and requests one final upload of locally saved
+  /// changes. Playback events can still request uploads while hidden.
   void suspend() {
     _suspended = true;
     _timer?.cancel();
+    if (_session case final session?) _requestUpload(session.scope.key);
   }
 
   /// Restarts the periodic sync when the app returns to the front, and syncs
-  /// at once if a sync came due in the background.
+  /// at once if a sync came due in the background. Pending local actions
+  /// also get a debounced attempt even when discovery is not yet due.
   void resume() {
     if (!_suspended) return;
     _suspended = false;
+    if (_session case final session?) _requestUpload(session.scope.key);
     final start = _periodStart;
     if (_session != null &&
         (start == null || now().difference(start) >= _period)) {
       unawaited(synchronize());
     }
     _schedule();
+  }
+
+  // A short debounce combines a pause, stop and lifecycle transition. A
+  // hidden app keeps this one-shot timer; only its idle polling stops.
+  void _requestUpload(String account) {
+    if (_disposed || _session?.scope.key != account) return;
+    _uploadAgain = true;
+    _uploadTimer?.cancel();
+    _uploadTimer = Timer(const Duration(milliseconds: 250), () {
+      _uploadTimer = null;
+      unawaited(_uploadPending());
+    });
+  }
+
+  // Keep one event-driven exchange queued behind any sync or user choice.
+  // Events during that exchange cause another check, even after a failure.
+  Future<void> _uploadPending() async {
+    if (_disposed || _session == null || _uploadQueued) return;
+    final generation = _generation;
+    _uploadQueued = true;
+    try {
+      await _background(() {
+        _uploadAgain = false;
+        return _sync(onlyPending: true);
+      });
+    } finally {
+      if (_current(generation)) {
+        _uploadQueued = false;
+        if (_uploadAgain) _requestUpload(_session!.scope.key);
+      }
+    }
+  }
+
+  // Account changes and disposal retire both scheduled and queued events.
+  void _cancelUploads() {
+    _uploadTimer?.cancel();
+    _uploadTimer = null;
+    _uploadQueued = false;
+    _uploadAgain = false;
   }
 
   void _schedule() {
@@ -203,8 +259,14 @@ class RecordSync {
   Future<void> synchronize() async {
     if (_running case final running?) return running;
     if (_disposed || _session == null) return;
+    await _background(_sync);
+  }
+
+  // Every app-started exchange replaces an older user-action message when
+  // it finishes, without hiding the busy state of a queued user action.
+  Future<void> _background(Future<_Result?> Function() work) async {
     final generation = _generation;
-    final result = await _exclusive(_sync);
+    final result = await _exclusive(work);
     if (result != null && _current(generation) && !busy) {
       _status.value = _idle;
     }
@@ -280,26 +342,33 @@ class RecordSync {
       await _running;
     }
     if (!_current(generation)) return null;
-    final run = work();
-    final running = run.then<void>((_) {}, onError: (_) {});
-    _running = running;
+    final done = Completer<void>();
+    final running = _running = done.future;
     try {
-      return await run;
+      return await work();
     } finally {
+      // Clear ownership before waking a waiter, including one in another
+      // zone. A completed running future must never remain installed.
       if (identical(_running, running)) _running = null;
+      done.complete();
     }
   }
 
   /// Flushes local changes, syncs them, and reads the conflicts. Returns
   /// null when the account changed meanwhile.
-  Future<_Result?> _sync() async {
+  Future<_Result?> _sync({bool onlyPending = false}) async {
     final session = _session;
     final client = _client;
     if (_disposed || session == null || client == null) return null;
     final generation = _generation;
-    _periodStart = now();
     try {
       await records.flushWriters();
+      if (!_current(generation)) return null;
+      if (onlyPending) {
+        final pending = await records.hasPendingUploads(session.scope.key);
+        if (!_current(generation) || !pending) return null;
+      }
+      _periodStart = now();
       final report = await transport.synchronize(session, client);
       if (!_current(generation)) return null;
       final refreshed = await records.refreshWriters(session.scope.key);
@@ -307,6 +376,11 @@ class RecordSync {
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
       _publish(conflicts);
+      // The transport sent a snapshot. Actions saved during the exchange
+      // need a later pass; a failed exchange never schedules this retry.
+      final pending = await records.hasPendingUploads(session.scope.key);
+      if (!_current(generation)) return null;
+      if (pending) _requestUpload(session.scope.key);
       // The sync itself succeeded. A refresh that failed after it changes
       // only the failure, to its own kind.
       return _ended(
@@ -369,6 +443,10 @@ class RecordSync {
   bool _current(int generation) => !_disposed && generation == _generation;
 
   void checkInvariants() {
+    if ((_disposed || _session == null) &&
+        (_uploadTimer != null || _uploadQueued || _uploadAgain)) {
+      throw StateError('Retired record sync cannot retain upload events.');
+    }
     if (_session == null &&
         (busy ||
             message != null ||
@@ -381,8 +459,10 @@ class RecordSync {
   void dispose() {
     _disposed = true;
     ++_generation;
+    _cancelUploads();
     _timer?.cancel();
     _client?.close();
+    unawaited(_uploadSubscription.cancel());
     _status.dispose();
     _lastSync.dispose();
     _conflicts.dispose();

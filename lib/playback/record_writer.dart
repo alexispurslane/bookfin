@@ -9,11 +9,16 @@ abstract interface class RecordWriterHost {
   /// exchange or choice, and refreshes only stale writers of its account
   /// after an exchange, choice, or recovery of kept records.
   ///
+  /// [uploadRequests] signals a useful time to upload, such as a pause.
+  /// The host tags each event with the writer's current account. It does
+  /// not imply that records are pending or that a save has finished.
+  ///
   /// The returned callback unregisters this writer and is safe to repeat.
   VoidCallback registerWriter({
     required String? Function() account,
     required Future<void> Function() flush,
     required Future<void> Function() refresh,
+    Listenable? uploadRequests,
   });
 
   /// Whether this domain of [account] changed outside its writer since the

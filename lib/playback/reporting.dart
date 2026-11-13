@@ -3,6 +3,10 @@ import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 
 class LiveReports {
+  /// Audio progress, in source milliseconds, between periodic reports.
+  /// Playback uses the same cadence for durable personal-record uploads.
+  static const progressIntervalMs = 10000;
+
   LiveReports(
     this.policy, {
     JellyfinClient Function(JellyfinSession)? clientFactory,
@@ -73,7 +77,7 @@ class LiveReports {
     }
     final live = _live!;
     final shouldReport =
-        (milliseconds - live.lastReportedMs).abs() >= 10000 ||
+        (milliseconds - live.lastReportedMs).abs() >= progressIntervalMs ||
         live.playing != playing ||
         live.speed != speed;
     live.milliseconds = milliseconds;
