@@ -2,7 +2,7 @@
 id: boo-rw9z
 status: in_progress
 deps: []
-links: []
+links: [boo-2bl9, boo-n7no, boo-w6m2]
 created: 2026-11-12T23:41:00Z
 type: task
 priority: 2

@@ -2,7 +2,7 @@
 id: boo-n7no
 status: open
 deps: []
-links: [boo-f4xm]
+links: [boo-f4xm, boo-rw9z, boo-2bl9, boo-w6m2]
 created: 2026-11-12T23:41:00Z
 type: task
 priority: 2

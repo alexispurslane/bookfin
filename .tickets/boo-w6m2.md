@@ -2,7 +2,7 @@
 id: boo-w6m2
 status: open
 deps: []
-links: []
+links: [boo-rw9z, boo-2bl9, boo-n7no]
 created: 2026-11-12T23:41:00Z
 type: task
 priority: 2
