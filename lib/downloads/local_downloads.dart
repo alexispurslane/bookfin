@@ -67,7 +67,11 @@ class LocalDownloads extends Downloads {
   /// The work that reads hold ([VerifiedFile.hold]) and that still runs, by
   /// source id. A removal of the source's files waits for it. Invariant
   /// ([checkInvariants]): a source id without held work has no entry.
-  final Map<String, Set<Future<void>>> _held = {};
+  final Map<String, Set<_HeldRead>> _held = {};
+
+  /// The sole owner of requested removals. No waiting consumer occupies the
+  /// download command queue: a book switch must be able to read its new files.
+  final Map<String, _Removal> _pendingRemovals = {};
 
   /// How many removals of each source id began. A read's holds run only
   /// while no removal of its source began since the read started.
@@ -293,6 +297,7 @@ class LocalDownloads extends Downloads {
     _retainedBinding = Object();
     _ready = false;
     final generation = ++_generation;
+    _abandonRemovals();
     // An unchanged transfer keeps its record and open connection. A changed
     // source or credential must finish closing before its replacement writes.
     final stopTransfer =
@@ -712,7 +717,10 @@ class LocalDownloads extends Downloads {
       totalBytes: files.every((source) => source.sizeBytes != null)
           ? files.fold(0, (total, source) => total! + source.sizeBytes!)
           : null,
-      message: error,
+      removing: _pendingRemovals.containsKey('edition:${edition.id}'),
+      message: _pendingRemovals.containsKey('edition:${edition.id}')
+          ? 'Removing after the files are released. Playing audio continues until you pause or switch books.'
+          : error,
     );
   }
 
@@ -859,13 +867,103 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<void> remove(Edition edition) {
-    try {
-      _current(edition).forEach(_beginRemoval);
-    } on StateError {
-      // The removal command reports it.
+  Future<void> remove(Edition edition) async {
+    final catalog = await _settled;
+    if (_disposed || catalog.generation != _generation) {
+      throw const DownloadRemovalException(
+        'The active download catalog changed.',
+      );
     }
-    return _command(() => _remove(edition));
+    final ids = _current(edition);
+    return _startRemoval(
+      'edition:${edition.id}',
+      ids,
+      catalog.generation,
+      () => _remove(edition),
+    );
+  }
+
+  Future<void> _startRemoval(
+    String key,
+    List<String> ids,
+    int generation,
+    Future<void> Function() remove,
+  ) {
+    if (_pendingRemovals[key] case final pending?) {
+      return pending.result;
+    }
+    final pending = _Removal(ids);
+    _pendingRemovals[key] = pending;
+    ids.forEach(_beginRemoval);
+    // Install the result before notifying: a listener may request it again.
+    pending.result = _finishRemoval(key, pending, generation, remove);
+    _emit();
+    return pending.result;
+  }
+
+  Future<void> _finishRemoval(
+    String key,
+    _Removal pending,
+    int generation,
+    Future<void> Function() remove,
+  ) async {
+    void guard() {
+      if (_disposed ||
+          generation != _generation ||
+          !identical(_pendingRemovals[key], pending)) {
+        throw const DownloadRemovalException(
+          'The active download catalog changed.',
+        );
+      }
+    }
+
+    try {
+      final releases = <Future<void> Function()>{};
+      Future<void> releaseReaders() => Future.wait([
+        for (final id in pending.ids)
+          for (final held in _held[id] ?? <_HeldRead>{})
+            if (held.beforeRemoval case final release?
+                when releases.add(release))
+              Future.sync(release),
+      ]);
+      // Observe each current owner's result now. A failed close can end its
+      // hold while another read occupies the queue; an ended hold alone does
+      // not prove that the place was saved. Also ask any owner that a read
+      // already in progress lends to before the queue barrier completes.
+      await Future.any([
+        Future.wait([
+          releaseReaders(),
+          _command(() async {}).then((_) {
+            guard();
+            return releaseReaders();
+          }),
+        ]),
+        pending.abandoned.future,
+      ]);
+      guard();
+      var removed = false;
+      await _command(() async {
+        guard();
+        await remove();
+        removed = true;
+      });
+      guard();
+      if (!removed) {
+        throw const DownloadRemovalException('Removal was abandoned.');
+      }
+    } finally {
+      if (identical(_pendingRemovals[key], pending)) {
+        _pendingRemovals.remove(key);
+        _emit();
+      }
+    }
+  }
+
+  void _abandonRemovals() {
+    for (final pending in _pendingRemovals.values) {
+      pending.abandoned.complete();
+    }
+    _pendingRemovals.clear();
   }
 
   /// Notes that a removal of source [id] began: its reads lose their
@@ -885,7 +983,7 @@ class LocalDownloads extends Downloads {
       held != null && held.isNotEmpty;
       held = _held[id]?.toList()
     ) {
-      await Future.wait(held);
+      await Future.wait([for (final read in held) read.ended]);
     }
   }
 
@@ -1073,9 +1171,19 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<void> removeRetained(RetainedDownload download) {
-    if (_idPattern.hasMatch(download.id)) _beginRemoval(download.id);
-    return _command(() => _removeRetained(download));
+  Future<void> removeRetained(RetainedDownload download) async {
+    final catalog = await _settled;
+    if (_disposed || catalog.generation != _generation) {
+      throw const DownloadRemovalException(
+        'The active download catalog changed.',
+      );
+    }
+    return _startRemoval(
+      'retained:${download.id}',
+      [download.id],
+      catalog.generation,
+      () => _removeRetained(download),
+    );
   }
 
   Future<void> _removeRetained(RetainedDownload download) async {
@@ -1165,6 +1273,12 @@ class LocalDownloads extends Downloads {
       // restoration. A converter must settle before either can reclaim its
       // source directory.
       await _command(() async {
+        if (_pendingRemovals.values.any(
+          (removal) => removal.ids.contains(id),
+        )) {
+          replaced = false;
+          return;
+        }
         final generation = _generation;
         final found = await _lookup(id, generation);
         if (found == null) return;
@@ -1185,7 +1299,7 @@ class LocalDownloads extends Downloads {
             VerifiedFile.lent(
               file.uri,
               file.digest,
-              hold: (work) => _hold(lend, work),
+              hold: (work, beforeRemoval) => _hold(lend, work, beforeRemoval),
             ),
           );
         } finally {
@@ -1203,7 +1317,11 @@ class LocalDownloads extends Downloads {
   }
 
   /// Runs [work] under [lend], as [VerifiedFile.hold] describes.
-  Future<void> _hold(_Lend lend, Future<void> Function() work) {
+  Future<void> _hold(
+    _Lend lend,
+    Future<void> Function() work,
+    Future<void> Function()? beforeRemoval,
+  ) {
     if (!lend.reading && lend.holding == 0) {
       throw StateError('A download can be held only while it is lent.');
     }
@@ -1215,11 +1333,12 @@ class LocalDownloads extends Downloads {
     lend.holding++;
     final held = Future.sync(work);
     final ended = held.then<void>((_) {}, onError: (Object _) {});
-    final holds = _held.putIfAbsent(lend.id, () => {})..add(ended);
+    final read = _HeldRead(ended, beforeRemoval);
+    final holds = _held.putIfAbsent(lend.id, () => {})..add(read);
     unawaited(
       ended.whenComplete(() {
         lend.holding--;
-        holds.remove(ended);
+        holds.remove(read);
         if (holds.isEmpty && identical(_held[lend.id], holds)) {
           _held.remove(lend.id);
         }
@@ -1831,8 +1950,15 @@ class LocalDownloads extends Downloads {
   /// - The text source index contains exactly the bound text editions' ids.
   /// - Each record's last look at its complete file matches storage. A file
   ///   changed outside the app breaks this until [refresh] looks again.
+  /// - Each pending removal belongs to this binding and has not been abandoned.
+  /// - A source with no held work has no entry in the held-read index.
   @override
   void checkInvariants() {
+    if (_pendingRemovals.values.any(
+      (pending) => pending.abandoned.isCompleted,
+    )) {
+      throw StateError('An abandoned removal must not remain pending.');
+    }
     if (_session == null && (_records.isNotEmpty || _queued.isNotEmpty)) {
       throw StateError('Signed-out downloads must expose no account records.');
     }
@@ -1897,6 +2023,7 @@ class LocalDownloads extends Downloads {
 
   @override
   void dispose() {
+    _abandonRemovals();
     _disposed = true;
     ++_generation;
     _session?.credentialChanges.removeListener(_networkChanged);
@@ -1972,6 +2099,20 @@ class _Record {
     diskVersion++;
     savedLength = length;
   }
+}
+
+/// Work held beyond a read, with its consumer's optional release request.
+class _HeldRead {
+  const _HeldRead(this.ended, this.beforeRemoval);
+  final Future<void> ended;
+  final Future<void> Function()? beforeRemoval;
+}
+
+class _Removal {
+  _Removal(this.ids);
+  final List<String> ids;
+  final abandoned = Completer<void>();
+  late Future<void> result;
 }
 
 /// One read of a source's saved file ([LocalDownloads.readLocalFile]), and

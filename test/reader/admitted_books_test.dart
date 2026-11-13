@@ -452,7 +452,7 @@ void main() {
       final lent = VerifiedFile.lent(
         file.uri,
         _digest(bytes),
-        hold: (work) {
+        hold: (work, _) {
           final done = work();
           held.add(done);
           return done;
@@ -987,7 +987,7 @@ void main() {
         final lent = VerifiedFile.lent(
           file.uri,
           _digest(bytes),
-          hold: (work) {
+          hold: (work, _) {
             final done = work();
             held.add(done);
             return done;

@@ -10,7 +10,7 @@ assignee: Alexis Purslane
 parent: boo-fs0n
 tags: [survey-1112]
 ---
-# Stop or wait for Playback before a playing download is removed
+# Keep playing and remove a requested audiobook after pause or book switch
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: plausible, the ExoPlayer reopen was not observed. lib/playback/playback.dart:1204-1210 takes file URIs from `downloads.localFile` without a lend, and `changeDownload` (lib/downloads/local_downloads.dart:690-699) waits only for work held through `readLocalFile`. A removal of the playing multi-file edition deletes the files under the player. The next file or a seek then fails with "Cannot play this local audio file". The position is saved. Playback uses the same lend as the reader, or the controller that confirms the removal stops that edition first. Related: t7-5m4d.
 
@@ -51,3 +51,45 @@ Lead: codex/gpt-6-astra xhigh. Stages: build, one read-only review
 (codex/gpt-6-astra high), fixes if needed, then parent integration.
 Launch reports running; branch and current stage have not yet been reported.
 Parent retains integration, acceptance, hardening and closure.
+
+## Implementation evidence — 2026-11-13
+
+Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29`.
+Branch: `t3/defer-audiobook-removal`.
+Original base: `2f5f0393d4d5961627b7eb84f7c2f7725ab762aa`; initially clean.
+
+The survey failure is now reproduced with real LocalDownloads files and a
+test decoder that reopens them during a seek and multi-file progression.
+Both preferences and SQLite reproduce missing files before the fix.
+
+Downloads owns pending removal through its existing public removal boundary,
+including retained files. Playback uses the reader's verified-file holds for
+every audio part. Removal asks the current consumer to release outside the
+Downloads command queue, so a book switch can obtain its new files. Playback's
+command queue owns decoder pause, the required local save, and file release.
+A failed save rejects removal and retains file ownership for an explicit retry.
+The existing confirmation and narrow download status show pending removal.
+
+`Downloads.remove(Edition)` keeps its signature. Its future resolves after
+removal, not when the request is queued. Clear data must await that future and
+treat failure as failure. `VerifiedFile.hold` adds an optional `beforeRemoval`
+callback; providers of `VerifiedFile.lent` receive that callback as the second
+argument of `hold`. Existing ordinary reader hold calls are unchanged.
+
+Checks, exact commands, every failed run, source patches and SHA-256 hashes
+are retained in `docs/evidence/boo-39cu/`. The full-suite results separately
+list every skipped test. No coverage or mutation campaign ran. Native device
+acceptance remains with the parent under t1-dth0; host callbacks and the
+file-reading test decoder are not native device proof. No live server,
+credentials, destructive account operation, browser or device was used.
+
+Follow-ups recorded under this epic and dependent on integration of boo-39cu:
+t0-dv5n (independent file verification currently uses the existing serialized
+read queue), and t0-ejq2 (the pre-existing place-origin lookup suppresses
+programming Errors). No performance measurement or runtime reproduction is
+claimed for those static findings. Integration, acceptance, hardening and
+ticket closure remain parent-owned.
+
+**2026-11-13T23:38:52Z**
+
+Pre-review checks complete: 36 new real-file lifecycle tests across preferences and SQLite, plus the pending-button widget test. Affected suite: 895 passed before the final two race cases; post-race focused ownership suites: 81 passed. Final full Flutter suite: 3868 passed, 27 existing skips, zero failures, concurrency=2. Scoped analysis: no issues. Production and gallery JavaScript builds pass. Format: 11 files, zero changes. Source/evidence hashes and all 29 verification commands are audited in docs/evidence/boo-39cu/verification.json. Earlier failures remain archived and explained in implementation.json. The queued-removal/failed-close race is reproduced and fixed. One fresh read-only reviewer is next; no readiness or integration/closure is claimed yet.

@@ -168,7 +168,7 @@ void main() {
     final lent = VerifiedFile.lent(
       download.uri,
       'a' * 64,
-      hold: (work) {
+      hold: (work, _) {
         final done = work();
         held.add(done);
         return done;

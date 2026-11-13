@@ -36,6 +36,9 @@ abstract class AudioEngine {
   Stream<AudioSample> get samples;
   Future<void> load(List<Uri> files, int fileIndex, int milliseconds);
   Future<void> play();
+
+  /// Stops sound and releases decoder file handles, retaining the confirmed
+  /// source and position. No file access resumes until a later play or seek.
   Future<void> pause();
   Future<AudioSample> seek(int fileIndex, int milliseconds);
   Future<void> speed(double value);
@@ -276,6 +279,25 @@ enum ListeningPlace { thisPhone, otherDevice }
 typedef _NoticeOrigin = ({int generation, String editionId, Edition? edition});
 typedef _ActionFailure = ({_NoticeOrigin origin, PlaybackActionNotice notice});
 
+/// One decoder lend. [ended] protects files; [boundary] reports the next
+/// release attempt. A failed save ends that attempt, not the lend.
+class _AudioFiles {
+  List<Uri> uris = const [];
+  final ended = Completer<void>();
+  var boundary = Completer<bool>();
+
+  void saveFailed() {
+    boundary.complete(false);
+    boundary = Completer<bool>();
+  }
+
+  void finish(bool saved) {
+    if (ended.isCompleted) return;
+    ended.complete();
+    boundary.complete(saved);
+  }
+}
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -334,6 +356,7 @@ class Playback extends ChangeNotifier {
   // A failed load can leave the decoder on another edition. Ignore its
   // samples until the retained selection is successfully loaded again.
   bool _decoderReady = false;
+  _AudioFiles? _audioFiles;
   bool _restored = false;
   // See [starting].
   Edition? _starting;
@@ -1303,6 +1326,8 @@ class Playback extends ChangeNotifier {
     }
     _save();
     reports?.stop();
+    final previousFiles = _audioFiles;
+    _audioFiles = null;
     final generation = ++_generation;
     _session = session;
     _restored = false;
@@ -1341,6 +1366,7 @@ class Playback extends ChangeNotifier {
       await previousOperations;
       await engine.pause();
       await _writes.idle;
+      previousFiles?.finish(false);
       if (session == null || generation != _generation) return;
       try {
         final pending = _pendingWrites[session.scope.key];
@@ -1573,6 +1599,96 @@ class Playback extends ChangeNotifier {
         : null;
   }
 
+  /// Lends every part for the decoder's whole use, including unopened parts.
+  /// Readers and audio use the same Downloads holds and removal boundary.
+  Future<_AudioFiles?> _lendAudioFiles(Edition edition) async {
+    final files = _AudioFiles();
+    Future<void> release() => _releaseForRemoval(files);
+    try {
+      final found = await Future.wait([
+        for (final source in edition.files)
+          downloads.readLocalFile(source, (original) async {
+            unawaited(
+              original.hold(() => files.ended.future, beforeRemoval: release),
+            );
+            return original.uri;
+          }),
+      ]);
+      if (found.any((uri) => uri?.scheme != 'file')) {
+        files.finish(false);
+        return null;
+      }
+      files.uris = found.cast<Uri>();
+      return files;
+    } catch (_) {
+      files.finish(false);
+      rethrow;
+    }
+  }
+
+  /// A removal waits outside the command queue while audio plays. The next
+  /// pause or book switch supplies its save result. Already paused audio can
+  /// release now, without starting sound. Failed saves keep the lend alive.
+  Future<void> _releaseForRemoval(_AudioFiles files) async {
+    final boundary = files.boundary;
+    await _inCommandOrder(() async {
+      if (identical(files, _audioFiles) && !_playing && _starting == null) {
+        await engine.pause();
+        _save();
+        await _releaseAudioFiles();
+      }
+    });
+    if (!await boundary.future) {
+      throw const DownloadRemovalException(
+        'The listening place could not be saved or playback changed. The files were kept.',
+      );
+    }
+  }
+
+  /// Called only after decoder pause, in command order. A failed save vetoes
+  /// this removal attempt but retains ownership so a retry must save again.
+  Future<bool> _releaseAudioFiles() async {
+    final files = _audioFiles;
+    if (files == null) return true;
+    final account = _session?.scope.key;
+    await _writes.idle;
+    if (!identical(files, _audioFiles)) return false;
+    if (_pendingWrites.containsKey(account)) {
+      files.saveFailed();
+      return false;
+    }
+    _audioFiles = null;
+    files.finish(true);
+    return true;
+  }
+
+  /// A paused decoder may retain its selection after its lend ended. Obtain
+  /// a new lend before a Play or seek can make it reopen any source.
+  Future<bool> _ownAudioFiles(PlaybackOperation operation) async {
+    final edition = _edition!;
+    final generation = _generation;
+    final files = _audioFiles == null
+        ? await _lendAudioFiles(edition)
+        : await _savedFiles(edition) == null
+        ? null
+        : _audioFiles;
+    if (generation != _generation || _closed) {
+      files?.finish(false);
+      return false;
+    }
+    if (files == null) {
+      _actionFailed(
+        _noticeOrigin(edition.id),
+        operation,
+        'Download every file in this audio edition before listening.',
+      );
+      _notify();
+      return false;
+    }
+    _audioFiles = files;
+    return true;
+  }
+
   /// True only when this account's selection was loaded and committed.
   Future<bool> _open(
     Book book,
@@ -1612,14 +1728,20 @@ class Playback extends ChangeNotifier {
     final restoringChoice =
         _choiceToRestore?['sources'] == editionSources(edition);
     final opening = await Future.wait<Object?>([
-      _savedFiles(edition),
+      _lendAudioFiles(edition),
       if (restoringChoice) origin ?? Future<PlaceOrigin?>.value(),
     ]);
-    final files = opening[0] as List<Uri>?;
+    final files = opening[0] as _AudioFiles?;
     final recovered = restoringChoice ? opening[1] as PlaceOrigin? : null;
-    if (generation != _generation) return false;
+    if (generation != _generation) {
+      files?.finish(false);
+      return false;
+    }
     bound = _bound(book, edition);
-    if (bound == null) return false;
+    if (bound == null) {
+      files?.finish(false);
+      return false;
+    }
     (book, edition) = bound;
     if (files == null) {
       _actionFailed(
@@ -1650,6 +1772,7 @@ class Playback extends ChangeNotifier {
         recordId: recordId,
       );
       _offerReplacement(book, edition, resume);
+      files.finish(false);
       _notify();
       return false;
     }
@@ -1657,13 +1780,17 @@ class Playback extends ChangeNotifier {
     _decoderReady = false;
     try {
       await engine.pause();
+      _playing = false;
+      _active = false;
       _save();
+      if (!await _releaseAudioFiles()) return false;
+      if (generation != _generation) return false;
       if (_edition != null) _requestUpload();
       reports?.stop();
       final fileIndex = resume == null
           ? 0
           : edition.files.indexWhere((file) => file.key == resume.sourceKey);
-      await engine.load(files, fileIndex, resume?.milliseconds ?? 0);
+      await engine.load(files.uris, fileIndex, resume?.milliseconds ?? 0);
       await engine.speed(_speed);
       final confirmed = target == null
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
@@ -1705,6 +1832,7 @@ class Playback extends ChangeNotifier {
       _active = autoplay;
       _position = _positionForSample(confirmed);
       _decoderReady = true;
+      _audioFiles = files;
       final savedChoice = _choiceToRestore;
       _choiceToRestore = null;
       if (restoringChoice) {
@@ -1725,6 +1853,10 @@ class Playback extends ChangeNotifier {
       _actionFailure = null;
       _cancelSleep();
     } finally {
+      if (!identical(_audioFiles, files)) {
+        await engine.pause();
+        files.finish(false);
+      }
       _loading = false;
     }
     _save();
@@ -1793,6 +1925,17 @@ class Playback extends ChangeNotifier {
       _cancelSleep();
       unawaited(_audioCommand(PlaybackOperation.stop, engine.pause));
     }
+    if (wasPlaying && !_playing && _commandAction == null) {
+      final files = _audioFiles;
+      unawaited(
+        _audioCommand(PlaybackOperation.pause, () async {
+          if (!identical(_audioFiles, files) || _playing) return;
+          await engine.pause();
+          _save();
+          await _releaseAudioFiles();
+        }),
+      );
+    }
     if (wasPlaying == _playing && !sample.completed) {
       _publish();
     } else {
@@ -1845,18 +1988,7 @@ class Playback extends ChangeNotifier {
       );
       if (!loaded || generation != _generation) return;
     }
-    final origin = _noticeOrigin(_edition!.id);
-    final saved = await _savedFiles(_edition!);
-    if (generation != _generation) return;
-    if (saved == null) {
-      _actionFailed(
-        origin,
-        PlaybackOperation.play,
-        'Download every file in this audio edition before listening.',
-      );
-      _notify();
-      return;
-    }
+    if (!await _ownAudioFiles(PlaybackOperation.play)) return;
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
       if (!await _seekPosition(
@@ -2072,6 +2204,7 @@ class Playback extends ChangeNotifier {
     _save();
     _requestUpload();
     await _writes.idle;
+    await _releaseAudioFiles();
     _notify();
   }
 
@@ -2097,6 +2230,7 @@ class Playback extends ChangeNotifier {
     _save();
     _requestUpload();
     await _writes.idle;
+    await _releaseAudioFiles();
     _notify();
   }
 
@@ -2225,6 +2359,7 @@ class Playback extends ChangeNotifier {
       if (!loaded || generation != _generation) return false;
     }
     if (gesture != null && gesture.revision != _sliderRevision) return false;
+    if (_audioFiles == null && !await _ownAudioFiles(operation)) return false;
     if (choice != null && !identical(choice, _playChoice)) return false;
     assert(_edition != null && index >= 0 && index < _edition!.files.length);
     _seeking = true;
@@ -2475,6 +2610,8 @@ class Playback extends ChangeNotifier {
       _cancelSleep();
       await _samples.cancel();
       await engine.close();
+      _audioFiles?.finish(false);
+      _audioFiles = null;
       for (final signal in _signals) {
         signal.dispose();
       }
@@ -2599,10 +2736,21 @@ class Playback extends ChangeNotifier {
   ///   exposes only requested presentations, never a refresh alone.
   /// - The personal records, the pending writes and the replacement offer
   ///   agree.
+  /// - Playing audio owns every source file. A retained decoder lend belongs
+  ///   to the open edition and has not ended or completed a release attempt.
   /// - Action notices retain the current source of their signed-in binding;
   ///   recovery notices belong to a signed-in binding. Save failure
   ///   is derived from that account's unconfirmed writes, never from text.
   void checkInvariants() {
+    final files = _audioFiles;
+    if (_playing && files == null ||
+        files != null &&
+            (_edition == null ||
+                files.ended.isCompleted ||
+                files.boundary.isCompleted ||
+                files.uris.length != _edition!.files.length)) {
+      throw StateError('Playing audio must own its complete, live file lend.');
+    }
     if (_actionFailure case final failure?) {
       if (!_originIsCurrent(failure.origin)) {
         throw StateError('Action notices require their originating source.');

@@ -1,0 +1,65 @@
+{
+  "ticket": "boo-39cu",
+  "originalBase": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29",
+  "branch": "t3/defer-audiobook-removal",
+  "initiallyClean": true,
+  "userDecision": "Keep playing. Remove local audio only after pause or book switch and a successful listening-place save.",
+  "implementation": [
+    "Downloads owns one pending removal operation per requested edition or retained file; duplicate requests share its result.",
+    "Playback holds every original audio file through the existing verified-file lending boundary, including parts not opened by the decoder yet.",
+    "Removal requests consumer release outside the Downloads command queue. Playback uses its existing command queue for decoder pause, save, and release.",
+    "A failed required save rejects the removal attempt, keeps files held, and leaves records pending for recovery or an explicit retry.",
+    "Account/source replacement and Downloads disposal abandon pending operations. An old release cannot remove or pause a replacement edition.",
+    "Confirmation stays in the existing glass dialog. Pending status disables repeated UI actions and explains pause or book switch.",
+    "History, bookmarks and saved places are not deleted. Existing persistence owners and atomic stores are unchanged."
+  ],
+  "interfaceForParent": {
+    "remove": "Downloads.remove(Edition) still returns Future<void>. Await completion before reporting a destructive action successful; failures propagate.",
+    "hold": "VerifiedFile.hold adds optional beforeRemoval. VerifiedFile.lent providers now accept (work, beforeRemoval). Reader callers of hold(work) do not change.",
+    "clearData": "Use the existing Downloads removal boundary. No Settings Clear data implementation is included."
+  },
+  "newChecks": {
+    "backends": ["preferences via the real record codec/journal over SharedPreferences test storage", "SQLite record database on disk"],
+    "runtimeReproduction": "LocalDownloads uses a loopback synthetic HTTP fixture and real local files. The test decoder reads the actual next file on progression and on seek.",
+    "behaviors": [
+      "multi-file progression and seek while removal waits",
+      "held required save and failed required save",
+      "explicit pause and native pause callback",
+      "book switch with a held old-book save",
+      "removal while a seek is held",
+      "duplicate removal requests and narrow pending status",
+      "already paused and opened-paused editions without starting audio",
+      "replacement account and replacement source",
+      "Downloads disposal, failed-save close and recovery, including a removal queued behind a held unrelated read",
+      "partially acquired files abandoned before decoder load",
+      "retained-file removal uses the same save veto",
+      "record retention across a store restart",
+      "pending download button and controls remain usable and disabled appropriately"
+    ]
+  },
+  "failureHistory": [
+    {"run": "01-unsafe-removal-red", "meaningfulRed": false, "reason": "Flutter's test HTTP override rejected the synthetic download fixture. Disabled that override for the real loopback fixture."},
+    {"run": "02-unsafe-removal-red", "meaningfulRed": true, "reason": "Both backends lost the next file during progression and reported a playback failure during seek after immediate deletion."},
+    {"run": "03-save-order-red", "meaningfulRed": true, "reason": "Removal completed successfully despite a failed required save on both backends."},
+    {"run": "05-affected-first", "reason": "Eleven introduced regressions: ending the active-session marker early, skipping Play source verification, and one widget test waiting on record flush instead of the audio command."},
+    {"run": "06-regression-fixes", "reason": "The one widget test still raced command completion. It now observes actual playback before asserting; its scenario and assertions are retained."},
+    {"run": "07-lifecycle-tests", "reason": "Four fixture/expectation failures: Bob was not authenticated by the synthetic server, and close correctly added a Stop history event after the expected snapshot. Corrected fixture account and stopped before snapshot."},
+    {"run": "09-acquisition-leftover-red", "meaningfulRed": true, "reason": "Failed multi-file acquisition leaked an unused hold. Retained-file removal did not ask its consumer to save/release, causing a wait after save failure. Both fixed through the shared ownership path; timeout and teardown failures are preserved."},
+    {"run": "13-pending-button-red", "meaningfulRed": true, "reason": "The book download button assumed at least one action and failed when pending removal exposed no actions; its error widget also overflowed."},
+    {"run": "16-full-suite", "reason": "Three reader test files used the old hold-provider callback signature; one book-page test expected the old confirmation text. Updated all providers and checked the new removal consequence in the confirmation."},
+    {"run": "22-abandoned-removal-red", "meaningfulRed": true, "reason": "A held unrelated read delayed the removal's observation of an audio hold. A failed close ended that hold before observation, so removal incorrectly succeeded. Removal now observes existing consumer results before its queue barrier and also admits consumers from reads already in progress. Both backends reproduce the original failure and pass the fix."}
+  ],
+  "followUps": [
+    {"ticket": "t0-dv5n", "scope": "Concurrent independent verified-file lookups; existing global read queue remains safe but serializes actual storage lookups."},
+    {"ticket": "t0-ejq2", "scope": "Pre-existing Playback._open place-origin onError converts programming Errors to unknown origin."}
+  ],
+  "limits": [
+    "No native device acceptance; parent owns t1-dth0.",
+    "No browser/device operation, live credentials/server operation, or destructive account action.",
+    "No coverage, mutation campaign, push, PR, deployment, peer integration, ticket closure, or worktree removal.",
+    "Optional external tests remain the explicitly reported suite skips.",
+    "Pending removal is process-local; abandoning the process leaves files for a later explicit request.",
+    "JavaScript production and gallery builds are checked; WebAssembly is not a requested build target."
+  ]
+}

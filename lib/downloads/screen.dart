@@ -112,18 +112,22 @@ class DownloadButton extends StatelessWidget {
   );
 
   Widget _button(BuildContext context, EditionDownload state) {
-    final action = state.actions.first;
-    final icon = switch (state.phase) {
-      DownloadPhase.downloaded => Icons.check_rounded,
-      DownloadPhase.waiting => Icons.wifi_off_rounded,
-      _ => _icon(action),
-    };
-    final tooltip = switch (state.phase) {
-      DownloadPhase.downloaded ||
-      DownloadPhase.waiting ||
-      DownloadPhase.failed => '${state.label}. ${_tooltip(action)}',
-      _ => _tooltip(action),
-    };
+    final action = state.actions.firstOrNull;
+    final icon = action == null
+        ? Icons.hourglass_empty_rounded
+        : switch (state.phase) {
+            DownloadPhase.downloaded => Icons.check_rounded,
+            DownloadPhase.waiting => Icons.wifi_off_rounded,
+            _ => _icon(action),
+          };
+    final tooltip = action == null
+        ? state.message ?? state.label
+        : switch (state.phase) {
+            DownloadPhase.downloaded ||
+            DownloadPhase.waiting ||
+            DownloadPhase.failed => '${state.label}. ${_tooltip(action)}',
+            _ => _tooltip(action),
+          };
     final downloading = state.phase == DownloadPhase.downloading;
     return Stack(
       alignment: Alignment.center,
@@ -144,7 +148,7 @@ class DownloadButton extends StatelessWidget {
             minimumSize: const Size(52, 52),
           ),
           tooltip: tooltip,
-          onPressed: () => onAction(action),
+          onPressed: action == null ? null : () => onAction(action),
           icon: Icon(icon),
         ),
       ],
@@ -533,7 +537,7 @@ extension on String {
 Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
   context,
   title: 'Remove download?',
-  message: 'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
+  message: 'Remove this edition’s local files and unfinished transfers. Playing audio continues until you pause or switch books. Your listening place is saved first. Your history, bookmarks and Jellyfin files stay.',
   action: 'Remove download',
   cancel: 'Keep download',
 );
@@ -579,11 +583,11 @@ void changeDownload(
       DownloadAction.cancel => downloads.cancel(edition),
       DownloadAction.remove => downloads.remove(edition),
     };
-  } catch (_) {
+  } on Exception catch (error) {
     if (context.mounted) {
       showGlassMessage(
         context,
-        'The download could not be changed. Check your account and available storage.',
+        error is DownloadRemovalException ? error.message : 'The download could not be changed. Check your account and available storage.',
       );
     }
   }

@@ -1,0 +1,581 @@
+{
+  "name": "16-full-suite",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json"
+  ],
+  "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "started": "2026-11-13T23:12:44.124416+00:00",
+  "ended": "2026-11-13T23:18:03.241814+00:00",
+  "exitCode": 1,
+  "log": "16-full-suite.log.gz",
+  "logSha256": "712278d4eb3a4efe584d4f07bde6cd45053b6a775907c6185b4a07e27bf473a0",
+  "patch": "16-full-suite.patch.gz",
+  "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+  "counts": {
+    "success": 3794,
+    "error": 4,
+    "skipped": 27
+  },
+  "failures": [
+    {
+      "test": {
+        "id": 201,
+        "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart",
+        "suiteID": 200,
+        "groupIDs": [],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": null,
+        "column": null,
+        "url": null
+      },
+      "result": {
+        "testID": 201,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 15490
+      },
+      "errors": [
+        {
+          "testID": 201,
+          "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart: test/reader/book_words_reader_test.dart:115:13: Error: The argument type 'Never Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n      hold: (_) {\n            ^\n.",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 15490
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": 924,
+        "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart",
+        "suiteID": 923,
+        "groupIDs": [],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": null,
+        "column": null,
+        "url": null
+      },
+      "result": {
+        "testID": 924,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 80675
+      },
+      "errors": [
+        {
+          "testID": 924,
+          "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart: test/reader/admitted_books_test.dart:455:15: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n        hold: (work) {\n              ^\ntest/reader/admitted_books_test.dart:990:17: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n          hold: (work) {\n                ^\n.",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 80675
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": 1106,
+        "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart",
+        "suiteID": 1105,
+        "groupIDs": [],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": null,
+        "column": null,
+        "url": null
+      },
+      "result": {
+        "testID": 1106,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 100869
+      },
+      "errors": [
+        {
+          "testID": 1106,
+          "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart: test/reader/kept_pages_test.dart:171:13: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n      hold: (work) {\n            ^\n.",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 100869
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": 2791,
+        "name": "removing a download from the book page asks the same question as Downloads",
+        "suiteID": 2769,
+        "groupIDs": [
+          2790
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 174,
+        "column": 5,
+        "url": "package:flutter_test/src/widget_tester.dart",
+        "root_line": 72,
+        "root_column": 3,
+        "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/catalog/book_page_test.dart"
+      },
+      "result": {
+        "testID": 2791,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 214106
+      },
+      "errors": [
+        {
+          "testID": 2791,
+          "error": "Test failed. See exception logs above.\nThe test description was: removing a download from the book page asks the same question as Downloads",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 214103
+        }
+      ]
+    }
+  ],
+  "skips": [
+    {
+      "id": 1418,
+      "name": "the part open benchmark",
+      "suiteID": 1414,
+      "groupIDs": [
+        1417
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      },
+      "line": 53,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+    },
+    {
+      "id": 1423,
+      "name": "the corpus prepare",
+      "suiteID": 1419,
+      "groupIDs": [
+        1422
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      },
+      "line": 81,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+    },
+    {
+      "id": 1446,
+      "name": "the downloaded books open the places that epub.js saved",
+      "suiteID": 1424,
+      "groupIDs": [
+        1427,
+        1445
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 45,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+    },
+    {
+      "id": 1487,
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "suiteID": 1324,
+      "groupIDs": [
+        1329
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1346,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+    },
+    {
+      "id": 1523,
+      "name": "body text breaks lines and pages where epub.js broke them",
+      "suiteID": 1519,
+      "groupIDs": [
+        1521
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 24,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+    },
+    {
+      "id": 1603,
+      "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1604,
+      "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1605,
+      "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1606,
+      "name": "the admitted files of a known book stay the same se-frankenstein",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1607,
+      "name": "the admitted files of a known book stay the same se-moby-dick",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1608,
+      "name": "the admitted files of a known book stay the same se-poetry",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1609,
+      "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+      "suiteID": 1590,
+      "groupIDs": [
+        1592,
+        1593
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1670,
+      "name": "the step budget",
+      "suiteID": 1666,
+      "groupIDs": [
+        1669
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+      },
+      "line": 63,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+    },
+    {
+      "id": 1741,
+      "name": "the corpus steps",
+      "suiteID": 1738,
+      "groupIDs": [
+        1740
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      },
+      "line": 92,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+    },
+    {
+      "id": 1767,
+      "name": "the admission benchmark",
+      "suiteID": 1764,
+      "groupIDs": [
+        1766
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      },
+      "line": 97,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+    },
+    {
+      "id": 1913,
+      "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "suiteID": 1899,
+      "groupIDs": [
+        1901,
+        1909
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 156,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+    },
+    {
+      "id": 1926,
+      "name": "the jumps into real books",
+      "suiteID": 1922,
+      "groupIDs": [
+        1925
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+    },
+    {
+      "id": 1965,
+      "name": "the corpus run",
+      "suiteID": 1961,
+      "groupIDs": [
+        1964
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+    },
+    {
+      "id": 2029,
+      "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "suiteID": 2000,
+      "groupIDs": [
+        2003
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 244,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+    },
+    {
+      "id": 2191,
+      "name": "the open of a PDF",
+      "suiteID": 2188,
+      "groupIDs": [
+        2190
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      },
+      "line": 21,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+    },
+    {
+      "id": 2257,
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "suiteID": 2110,
+      "groupIDs": [
+        2113
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1433,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+    },
+    {
+      "id": 2273,
+      "name": "measure incremental saves and acknowledgments while retaining every original action",
+      "suiteID": 2269,
+      "groupIDs": [
+        2272
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+      },
+      "line": 498,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+    },
+    {
+      "id": 2278,
+      "name": "measure current restoration against complete retained replay on this host",
+      "suiteID": 2274,
+      "groupIDs": [
+        2277
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 130,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+    },
+    {
+      "id": 2283,
+      "name": "the layout cache survey",
+      "suiteID": 2279,
+      "groupIDs": [
+        2282
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+      },
+      "line": 51,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+    },
+    {
+      "id": 4293,
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "suiteID": 4280,
+      "groupIDs": [
+        4292
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+      },
+      "line": 69,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+    },
+    {
+      "id": 4399,
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "suiteID": 4369,
+      "groupIDs": [
+        4398
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+      },
+      "line": 51,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+    },
+    {
+      "id": 4519,
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "suiteID": 4489,
+      "groupIDs": [
+        4518
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+      },
+      "line": 18,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+    }
+  ]
+}

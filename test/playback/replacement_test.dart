@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'history_test.dart' show FailingRecordStore, GatedRecordStore;
 import 'playback_test.dart';
+import 'observe_playback.dart';
 
 const revisedSecond = SourceFile(
   itemId: 'two',
@@ -571,6 +572,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.text('Start from beginning'));
+        await waitForPlayback(playback, () => playback.playing);
         await playback.flush();
       });
       await tester.pumpAndSettle();

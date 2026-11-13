@@ -83,12 +83,7 @@ void main() {
       await tester.tap(find.byTooltip('Downloaded. Remove download'));
       await tester.pumpAndSettle();
       expect(find.text('Remove download?'), findsOneWidget);
-      expect(
-        find.text(
-          'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.textContaining('pause or switch books'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Remove download'));
       await tester.pumpAndSettle();
       expect(downloads.calls, ['remove']);

@@ -15,12 +15,20 @@ class VerifiedFile {
   const VerifiedFile.lent(
     this.uri,
     this.digest, {
-    required Future<void> Function(Future<void> Function() work) this._hold,
+    required Future<void> Function(
+      Future<void> Function() work,
+      Future<void> Function()? beforeRemoval,
+    )
+    this._hold,
   });
 
   final Uri uri;
   final String digest;
-  final Future<void> Function(Future<void> Function() work)? _hold;
+  final Future<void> Function(
+    Future<void> Function() work,
+    Future<void> Function()? beforeRemoval,
+  )?
+  _hold;
 
   /// Runs [work], such as a write of a file derived from this download,
   /// while Downloads keeps the download: a removal of the download waits
@@ -32,8 +40,22 @@ class VerifiedFile {
   /// bug, and throws a [StateError]. Once a removal of the download began,
   /// [work] does not run. A file that Downloads did not lend, as a test
   /// makes, has no download to keep, so [work] runs at once.
-  Future<void> hold(Future<void> Function() work) =>
-      _hold == null ? work() : _hold(work);
+  /// With [beforeRemoval], removal first asks the consumer to finish using
+  /// the file. It runs outside Downloads' command queue, so the consumer can
+  /// open another book while releasing this one. A failure refuses removal.
+  /// The consumer must still end [work] after releasing the file.
+  Future<void> hold(
+    Future<void> Function() work, {
+    Future<void> Function()? beforeRemoval,
+  }) => _hold == null ? work() : _hold(work, beforeRemoval);
+}
+
+/// A requested removal could not safely finish. The caller may retry it.
+class DownloadRemovalException implements Exception {
+  const DownloadRemovalException(this.message);
+  final String message;
+  @override
+  String toString() => message;
 }
 
 enum MediaNetwork { unknown, disconnected, wifi, mobile }
@@ -81,6 +103,7 @@ class EditionDownload {
     this.unavailableBytes = 0,
     this.totalBytes,
     this.message,
+    this.removing = false,
   });
   final DownloadPhase phase;
   final int completeFiles;
@@ -91,14 +114,19 @@ class EditionDownload {
   final int unavailableBytes;
   final int? totalBytes;
   final String? message;
-  String get label => switch (phase) {
-    DownloadPhase.none => 'Not downloaded',
-    DownloadPhase.partial => 'Partial',
-    DownloadPhase.downloading => 'Downloading',
-    DownloadPhase.waiting => 'Waiting for Wi-Fi',
-    DownloadPhase.failed => 'Download failed',
-    DownloadPhase.downloaded => 'Downloaded',
-  };
+
+  /// Files remain usable by their current owner until it releases them.
+  final bool removing;
+  String get label => removing
+      ? 'Removal pending'
+      : switch (phase) {
+          DownloadPhase.none => 'Not downloaded',
+          DownloadPhase.partial => 'Partial',
+          DownloadPhase.downloading => 'Downloading',
+          DownloadPhase.waiting => 'Waiting for Wi-Fi',
+          DownloadPhase.failed => 'Download failed',
+          DownloadPhase.downloaded => 'Downloaded',
+        };
 
   /// The changes that a person can ask of the download in this state, the
   /// most useful first. Every screen offers these and no others.
@@ -107,6 +135,7 @@ class EditionDownload {
   /// that failed or saved some bytes is retried, and one that saved nothing
   /// is requested. Anything on the phone, and a failure, can be removed.
   List<DownloadAction> get actions {
+    if (removing) return const [];
     if (phase == DownloadPhase.downloading || phase == DownloadPhase.waiting) {
       return const [DownloadAction.cancel];
     }
@@ -132,6 +161,7 @@ class EditionDownload {
       other.bytes == bytes &&
       other.unavailableBytes == unavailableBytes &&
       other.totalBytes == totalBytes &&
+      other.removing == removing &&
       other.message == message;
 
   @override
@@ -143,6 +173,7 @@ class EditionDownload {
     unavailableBytes,
     totalBytes,
     message,
+    removing,
   );
 }
 
@@ -228,6 +259,11 @@ abstract class Downloads extends ChangeNotifier {
 
   Future<void> request(Edition edition);
   Future<void> cancel(Edition edition);
+
+  /// Removes local files only after their consumers safely release them.
+  /// Playing audio continues until pause or book switch. The future completes
+  /// after removal, or fails if a required save or the removal fails. Repeated
+  /// requests for the same pending removal share its result.
   Future<void> remove(Edition edition);
 
   /// Removes the confirmed account's current and retained downloads through

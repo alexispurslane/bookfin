@@ -85,6 +85,51 @@ void main() {
   BookRow rowOf(WidgetTester tester, String title) =>
       tester.widget<BookRow>(find.widgetWithText(BookRow, title));
 
+  testWidgets(
+    'a pending removal disables the book button and explains when files leave',
+    (tester) async {
+      downloads.states[first.id] = downloaded;
+      final actions = <DownloadAction>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                DownloadButton(
+                  downloads: downloads,
+                  edition: first,
+                  onAction: actions.add,
+                ),
+                DownloadControls(
+                  downloads: downloads,
+                  edition: first,
+                  onAction: actions.add,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      downloads.showPhase(
+        first,
+        const EditionDownload(
+          phase: DownloadPhase.downloaded,
+          removing: true,
+          message: 'Playing audio continues until you pause or switch books.',
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('pause or switch books'), findsOneWidget);
+      expect(find.text('Remove'), findsNothing);
+      expect(
+        tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+        isNull,
+      );
+      expect(actions, isEmpty);
+    },
+  );
+
   testWidgets('a byte notice redraws only the row of its edition', (
     tester,
   ) async {

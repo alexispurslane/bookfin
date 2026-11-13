@@ -1,0 +1,2284 @@
+{
+  "auditCommand": [
+    "python3",
+    "docs/evidence/boo-39cu/audit.py"
+  ],
+  "archivedHashesVerified": true,
+  "runs": [
+    {
+      "name": "01-unsafe-removal-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T22:56:24.140750+00:00",
+      "ended": "2026-11-13T22:56:40.110672+00:00",
+      "exitCode": 1,
+      "log": "01-unsafe-removal-red.log.gz",
+      "logSha256": "412232c195ef49151dd111267d2f476e17f0b79e34d35e78c60c2e52c1e6490e",
+      "patch": "01-unsafe-removal-red.patch.gz",
+      "patchSha256": "e1727442ec84434ce967d61dfc245c99d2acb5600b9f280e80ccc326193bdc2a",
+      "failureNames": [
+        "00:00 +0 -1: preferences removal keeps every audio part usable until pause during multi-file progression [E]",
+        "00:00 +0 -2: preferences removal keeps every audio part usable until pause during a seek [E]",
+        "00:00 +0 -3: SQLite removal keeps every audio part usable until pause during multi-file progression [E]",
+        "00:00 +0 -4: SQLite removal keeps every audio part usable until pause during a seek [E]"
+      ],
+      "testSummary": [
+        "00:00 +0 -4: Some tests failed."
+      ]
+    },
+    {
+      "name": "02-unsafe-removal-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T22:56:57.310245+00:00",
+      "ended": "2026-11-13T22:57:04.859447+00:00",
+      "exitCode": 1,
+      "log": "02-unsafe-removal-red.log.gz",
+      "logSha256": "b4891c1078563db4c2eff3d1ca2e808336ae270711e5e295005763deac199236",
+      "patch": "02-unsafe-removal-red.patch.gz",
+      "patchSha256": "6961a9a2ff607c0a02fb50dde71b23a67fd24ed99542b10766eca6b61db17d0f",
+      "failureNames": [
+        "00:00 +0 -1: preferences removal keeps every audio part usable until pause during multi-file progression [E]",
+        "00:00 +0 -2: preferences removal keeps every audio part usable until pause during a seek [E]",
+        "00:00 +0 -3: SQLite removal keeps every audio part usable until pause during multi-file progression [E]",
+        "00:00 +0 -4: SQLite removal keeps every audio part usable until pause during a seek [E]"
+      ],
+      "testSummary": [
+        "00:00 +0 -4: Some tests failed."
+      ]
+    },
+    {
+      "name": "03-save-order-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "--plain-name",
+        "pause save"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T22:58:00.178379+00:00",
+      "ended": "2026-11-13T22:58:07.635080+00:00",
+      "exitCode": 1,
+      "log": "03-save-order-red.log.gz",
+      "logSha256": "3713f5cc1402ddded477475ab8e21f6a1c00ce415badaf4d5cea70b802dcc79e",
+      "patch": "03-save-order-red.patch.gz",
+      "patchSha256": "762d48612b570bc91a60fc91765f53347be6b31a44133e8060a2c3a2796a8576",
+      "failureNames": [
+        "00:00 +0 -1: preferences a failed pause save refuses removal and keeps the place recoverable [E]",
+        "00:00 +0 -2: SQLite a failed pause save refuses removal and keeps the place recoverable [E]"
+      ],
+      "testSummary": [
+        "00:00 +0 -2: Some tests failed."
+      ]
+    },
+    {
+      "name": "04-core-green",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T22:59:42.754102+00:00",
+      "ended": "2026-11-13T22:59:51.290424+00:00",
+      "exitCode": 0,
+      "log": "04-core-green.log.gz",
+      "logSha256": "3230f2972b48b95992b28ba3cbe0e5b9ce7386233c5b5b253711bb92be64a3fd",
+      "patch": "04-core-green.patch.gz",
+      "patchSha256": "dd79edbaf26442133cf76c321578be1f0fb6239da5052ebca35b88e920875949",
+      "failureNames": [],
+      "testSummary": [
+        "00:01 +8: All tests passed!"
+      ]
+    },
+    {
+      "name": "05-affected-first",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/downloads",
+        "test/playback",
+        "test/sync/playback_refresh_test.dart",
+        "test/sync/refresh_after_sync_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:00:22.562625+00:00",
+      "ended": "2026-11-13T23:01:19.916501+00:00",
+      "exitCode": 1,
+      "log": "05-affected-first.log.gz",
+      "logSha256": "e338b6e34aaaa19b079f32532b7d1516ad02bb5f75d600ef6f236beebdac9ffc",
+      "patch": "05-affected-first.patch.gz",
+      "patchSha256": "dd79edbaf26442133cf76c321578be1f0fb6239da5052ebca35b88e920875949",
+      "failureNames": [
+        "00:16 +257 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/notices_widget_test.dart: a current player error is inset like the position control [E]",
+        "00:16 +257 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/notices_widget_test.dart: Play clears its error but keeps recovery visible in the player [E]",
+        "00:22 +354 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/play_choice_test.dart: preferences sync during a held in-app Play is considered before starting [E]",
+        "00:22 +354 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/play_choice_test.dart: preferences sync during a held external Play is considered before starting [E]",
+        "00:23 +395 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/play_choice_test.dart: SQLite sync during a held in-app Play is considered before starting [E]",
+        "00:23 +395 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/play_choice_test.dart: SQLite sync during a held external Play is considered before starting [E]",
+        "00:31 +518 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/history_test.dart: explicit Pause after interruption records its cancellation once [E]",
+        "00:31 +522 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/history_test.dart: Stop records the end of an already paused active session once [E]",
+        "00:35 +591 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/play_start_test.dart: a start looks up all files of the edition at once Play looks up every file together [E]",
+        "00:41 +706 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/playback_test.dart: source verification cannot start audio after sign-out [E]",
+        "00:42 +717 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records [E]"
+      ],
+      "testSummary": [
+        "00:50 +850 -11: Some tests failed."
+      ]
+    },
+    {
+      "name": "06-regression-fixes",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "test/playback/history_test.dart",
+        "test/playback/notices_widget_test.dart",
+        "test/playback/play_choice_test.dart",
+        "test/playback/play_start_test.dart",
+        "test/playback/playback_test.dart",
+        "test/playback/replacement_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:02:20.587945+00:00",
+      "ended": "2026-11-13T23:02:33.632145+00:00",
+      "exitCode": 1,
+      "log": "06-regression-fixes.log.gz",
+      "logSha256": "0218caf7ae7c5c3394c1bf20fe4cc86432a876a463a8c82e8993411881f7ebc4",
+      "patch": "06-regression-fixes.patch.gz",
+      "patchSha256": "02c1bc2a02470c53fdd389ee15929c8445b9e3b86be1660a5625627d02fcdfc1",
+      "failureNames": [
+        "00:05 +185 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records [E]"
+      ],
+      "testSummary": [
+        "00:05 +185 -1: Some tests failed."
+      ]
+    },
+    {
+      "name": "07-lifecycle-tests",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:03:46.234566+00:00",
+      "ended": "2026-11-13T23:03:56.998204+00:00",
+      "exitCode": 1,
+      "log": "07-lifecycle-tests.log.gz",
+      "logSha256": "55d1f94c24fcac3646d3f31a377a813226ba49ea38a6dcba800ba94e433f3c21",
+      "patch": "07-lifecycle-tests.patch.gz",
+      "patchSha256": "e21ff875a17b064a2fa492b495543324cc32fdcc99cb5d7ff388e55f030dd5b3",
+      "failureNames": [
+        "00:00 +26 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart: preferences a pending removal cannot follow a replacement account [E]",
+        "00:00 +29 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart: preferences removal retains bookmarks History and saved places across restart [E]",
+        "00:02 +40 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart: SQLite a pending removal cannot follow a replacement account [E]",
+        "00:02 +43 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart: SQLite removal retains bookmarks History and saved places across restart [E]"
+      ],
+      "testSummary": [
+        "00:03 +47 -4: Some tests failed."
+      ]
+    },
+    {
+      "name": "08-lifecycle-green",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/downloads/screen_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:04:15.074731+00:00",
+      "ended": "2026-11-13T23:04:31.040788+00:00",
+      "exitCode": 0,
+      "log": "08-lifecycle-green.log.gz",
+      "logSha256": "1f61dc722b04fc0c20e6fb13e8cc18bee8b2eb4d7ee63c1a05d0611e0f57f54f",
+      "patch": "08-lifecycle-green.patch.gz",
+      "patchSha256": "24cd9a60ca4eafaeae1fee681ff2e944227c675c7d4c95ab8b007b744134dc0b",
+      "failureNames": [],
+      "testSummary": [
+        "00:08 +78: All tests passed!"
+      ]
+    },
+    {
+      "name": "09-acquisition-leftover-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "--name",
+        "failed file acquisition|leftover removal"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:05:52.253444+00:00",
+      "ended": "2026-11-13T23:07:01.779311+00:00",
+      "exitCode": 1,
+      "log": "09-acquisition-leftover-red.log.gz",
+      "logSha256": "2fa797e6e30caff6984afea9c422b97a91b1dc91434e28e04d7e7391c4aecd7e",
+      "patch": "09-acquisition-leftover-red.patch.gz",
+      "patchSha256": "76e79332292bc1ac77e0ae1726014ae9a4e4f9fd1045b4d7509f5cd8754e5aa0",
+      "failureNames": [
+        "00:01 +0 -1: preferences a failed file acquisition releases parts that never reached the decoder [E]",
+        "00:02 +0 -2: preferences leftover removal also refuses to remove playing audio after a failed save [E]",
+        "00:32 +0 -3: SQLite a failed file acquisition releases parts that never reached the decoder [E]",
+        "00:33 +0 -4: SQLite leftover removal also refuses to remove playing audio after a failed save [E]"
+      ],
+      "testSummary": [
+        "01:02 +0 -4: Some tests failed."
+      ]
+    },
+    {
+      "name": "10-acquisition-leftover-green",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "--name",
+        "failed file acquisition|leftover removal"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:07:50.338235+00:00",
+      "ended": "2026-11-13T23:07:57.995692+00:00",
+      "exitCode": 0,
+      "log": "10-acquisition-leftover-green.log.gz",
+      "logSha256": "3d8ce454d0593ae34e95b3ee5199175c55043c18fc84fcea75eb2788470e7fb4",
+      "patch": "10-acquisition-leftover-green.patch.gz",
+      "patchSha256": "768f70349e1211d5dcf5965f66f918242fe34d69f744a99dd2090c347cfd42ba",
+      "failureNames": [],
+      "testSummary": [
+        "00:00 +4: All tests passed!"
+      ]
+    },
+    {
+      "name": "11-format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:08:48.261961+00:00",
+      "ended": "2026-11-13T23:08:50.848623+00:00",
+      "exitCode": 0,
+      "log": "11-format.log.gz",
+      "logSha256": "feca4fa32b48d22848b3d0146c03e3c5f124d06c8925b16e6929ede255aa7fb7",
+      "patch": "11-format.patch.gz",
+      "patchSha256": "89865f9e1edbb386ee6c86bd9cfd7fe656a6324576f95ec1948c6e79d4ef65f9",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "12-focused-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:09:26.893079+00:00",
+      "ended": "2026-11-13T23:09:36.776372+00:00",
+      "exitCode": 0,
+      "log": "12-focused-final.log.gz",
+      "logSha256": "5046ce304a037407d03c04133b6bec5341feb96d71f39404eeaececc40c98219",
+      "patch": "12-focused-final.patch.gz",
+      "patchSha256": "aee29c8f62bb7c59c53b0a996ea2497b0e4100674ec202184a4510b1ef11f58b",
+      "failureNames": [],
+      "testSummary": [
+        "00:02 +34: All tests passed!"
+      ]
+    },
+    {
+      "name": "13-pending-button-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/downloads/tab_test.dart",
+        "--plain-name",
+        "pending removal"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:09:58.528854+00:00",
+      "ended": "2026-11-13T23:10:06.106977+00:00",
+      "exitCode": 1,
+      "log": "13-pending-button-red.log.gz",
+      "logSha256": "5340b428b15c96576108c3659c4bb9eb4ede13814c9f7bb64f3ad91907353d35",
+      "patch": "13-pending-button-red.patch.gz",
+      "patchSha256": "9d645135da313637fbca4047ca180b09c6f2a1b4ec1acb97d08ed22e6587b54d",
+      "failureNames": [
+        "00:00 +0 -1: a pending removal disables the book button and explains when files leave [E]"
+      ],
+      "testSummary": [
+        "00:00 +0 -1: Some tests failed."
+      ]
+    },
+    {
+      "name": "14-pending-button-green",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/downloads/tab_test.dart",
+        "--plain-name",
+        "pending removal"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:10:20.326001+00:00",
+      "ended": "2026-11-13T23:10:27.869093+00:00",
+      "exitCode": 0,
+      "log": "14-pending-button-green.log.gz",
+      "logSha256": "50992fcf1abc355ff72f5e59b8dfa6bde3d541b17adc8b79bc9607d7b401bc0e",
+      "patch": "14-pending-button-green.patch.gz",
+      "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+      "failureNames": [],
+      "testSummary": [
+        "00:00 +1: All tests passed!"
+      ]
+    },
+    {
+      "name": "15-affected-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/downloads",
+        "test/playback",
+        "test/sync/playback_refresh_test.dart",
+        "test/sync/refresh_after_sync_test.dart",
+        "test/reader/downloaded_reader_test.dart",
+        "test/reader/ocr_downloads_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:10:45.812700+00:00",
+      "ended": "2026-11-13T23:11:43.759014+00:00",
+      "exitCode": 0,
+      "log": "15-affected-final.log.gz",
+      "logSha256": "6b23c595abb24934ffbfe2689971848a47b49f6c487417e85723d6380ff6d92a",
+      "patch": "15-affected-final.patch.gz",
+      "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+      "failureNames": [],
+      "testSummary": [
+        "00:50 +895: All tests passed!"
+      ]
+    },
+    {
+      "name": "16-full-suite",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:12:44.124416+00:00",
+      "ended": "2026-11-13T23:18:03.241814+00:00",
+      "exitCode": 1,
+      "log": "16-full-suite.log.gz",
+      "logSha256": "712278d4eb3a4efe584d4f07bde6cd45053b6a775907c6185b4a07e27bf473a0",
+      "patch": "16-full-suite.patch.gz",
+      "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+      "counts": {
+        "success": 3794,
+        "error": 4,
+        "skipped": 27
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 201,
+            "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart",
+            "suiteID": 200,
+            "groupIDs": [],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": null,
+            "column": null,
+            "url": null
+          },
+          "result": {
+            "testID": 201,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 15490
+          },
+          "errors": [
+            {
+              "testID": 201,
+              "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/book_words_reader_test.dart: test/reader/book_words_reader_test.dart:115:13: Error: The argument type 'Never Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n      hold: (_) {\n            ^\n.",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 15490
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 924,
+            "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart",
+            "suiteID": 923,
+            "groupIDs": [],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": null,
+            "column": null,
+            "url": null
+          },
+          "result": {
+            "testID": 924,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 80675
+          },
+          "errors": [
+            {
+              "testID": 924,
+              "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/admitted_books_test.dart: test/reader/admitted_books_test.dart:455:15: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n        hold: (work) {\n              ^\ntest/reader/admitted_books_test.dart:990:17: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n          hold: (work) {\n                ^\n.",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 80675
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 1106,
+            "name": "loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart",
+            "suiteID": 1105,
+            "groupIDs": [],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": null,
+            "column": null,
+            "url": null
+          },
+          "result": {
+            "testID": 1106,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 100869
+          },
+          "errors": [
+            {
+              "testID": 1106,
+              "error": "Failed to load \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart\":\nCompilation failed for testPath=/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/kept_pages_test.dart: test/reader/kept_pages_test.dart:171:13: Error: The argument type 'Future<void> Function(Future<void> Function())' can't be assigned to the parameter type 'Future<void> Function(Future<void> Function(), Future<void> Function()?)'.\n - 'Future' is from 'dart:async'.\n      hold: (work) {\n            ^\n.",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 100869
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 2791,
+            "name": "removing a download from the book page asks the same question as Downloads",
+            "suiteID": 2769,
+            "groupIDs": [
+              2790
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 72,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/catalog/book_page_test.dart"
+          },
+          "result": {
+            "testID": 2791,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 214106
+          },
+          "errors": [
+            {
+              "testID": 2791,
+              "error": "Test failed. See exception logs above.\nThe test description was: removing a download from the book page asks the same question as Downloads",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 214103
+            }
+          ]
+        }
+      ],
+      "skips": [
+        {
+          "id": 1418,
+          "name": "the part open benchmark",
+          "suiteID": 1414,
+          "groupIDs": [
+            1417
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+          },
+          "line": 53,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+        },
+        {
+          "id": 1423,
+          "name": "the corpus prepare",
+          "suiteID": 1419,
+          "groupIDs": [
+            1422
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+          },
+          "line": 81,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+        },
+        {
+          "id": 1446,
+          "name": "the downloaded books open the places that epub.js saved",
+          "suiteID": 1424,
+          "groupIDs": [
+            1427,
+            1445
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 45,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+        },
+        {
+          "id": 1487,
+          "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "suiteID": 1324,
+          "groupIDs": [
+            1329
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1346,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+        },
+        {
+          "id": 1523,
+          "name": "body text breaks lines and pages where epub.js broke them",
+          "suiteID": 1519,
+          "groupIDs": [
+            1521
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 24,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+        },
+        {
+          "id": 1603,
+          "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1604,
+          "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1605,
+          "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1606,
+          "name": "the admitted files of a known book stay the same se-frankenstein",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1607,
+          "name": "the admitted files of a known book stay the same se-moby-dick",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1608,
+          "name": "the admitted files of a known book stay the same se-poetry",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1609,
+          "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+          "suiteID": 1590,
+          "groupIDs": [
+            1592,
+            1593
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1670,
+          "name": "the step budget",
+          "suiteID": 1666,
+          "groupIDs": [
+            1669
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+          },
+          "line": 63,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+        },
+        {
+          "id": 1741,
+          "name": "the corpus steps",
+          "suiteID": 1738,
+          "groupIDs": [
+            1740
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+          },
+          "line": 92,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+        },
+        {
+          "id": 1767,
+          "name": "the admission benchmark",
+          "suiteID": 1764,
+          "groupIDs": [
+            1766
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+          },
+          "line": 97,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+        },
+        {
+          "id": 1913,
+          "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "suiteID": 1899,
+          "groupIDs": [
+            1901,
+            1909
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 156,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+        },
+        {
+          "id": 1926,
+          "name": "the jumps into real books",
+          "suiteID": 1922,
+          "groupIDs": [
+            1925
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+        },
+        {
+          "id": 1965,
+          "name": "the corpus run",
+          "suiteID": 1961,
+          "groupIDs": [
+            1964
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+        },
+        {
+          "id": 2029,
+          "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "suiteID": 2000,
+          "groupIDs": [
+            2003
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 244,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+        },
+        {
+          "id": 2191,
+          "name": "the open of a PDF",
+          "suiteID": 2188,
+          "groupIDs": [
+            2190
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+          },
+          "line": 21,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+        },
+        {
+          "id": 2257,
+          "name": "the host benchmark draws each deck page in a section in under 20 ms",
+          "suiteID": 2110,
+          "groupIDs": [
+            2113
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1433,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+        },
+        {
+          "id": 2273,
+          "name": "measure incremental saves and acknowledgments while retaining every original action",
+          "suiteID": 2269,
+          "groupIDs": [
+            2272
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+          },
+          "line": 498,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+        },
+        {
+          "id": 2278,
+          "name": "measure current restoration against complete retained replay on this host",
+          "suiteID": 2274,
+          "groupIDs": [
+            2277
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 130,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+        },
+        {
+          "id": 2283,
+          "name": "the layout cache survey",
+          "suiteID": 2279,
+          "groupIDs": [
+            2282
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+          },
+          "line": 51,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+        },
+        {
+          "id": 4293,
+          "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "suiteID": 4280,
+          "groupIDs": [
+            4292
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+          },
+          "line": 69,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+        },
+        {
+          "id": 4399,
+          "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "suiteID": 4369,
+          "groupIDs": [
+            4398
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+          },
+          "line": 51,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+        },
+        {
+          "id": 4519,
+          "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+          "suiteID": 4489,
+          "groupIDs": [
+            4518
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+          },
+          "line": 18,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+        }
+      ]
+    },
+    {
+      "name": "17-reader-caller-fixes",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:18:49.149901+00:00",
+      "ended": "2026-11-13T23:19:00.989670+00:00",
+      "exitCode": 0,
+      "log": "17-reader-caller-fixes.log.gz",
+      "logSha256": "0061c6919f18c985b320cfd04bcbf0fd0c31e1cafe868fb8a15cd803df63393f",
+      "patch": "17-reader-caller-fixes.patch.gz",
+      "patchSha256": "4191fc574d600f7086b960688dc87c4389ee806960bd4c29c91cef66d898945a",
+      "failureNames": [],
+      "testSummary": [
+        "00:04 +88: All tests passed!"
+      ]
+    },
+    {
+      "name": "18-format-all",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:19:18.378748+00:00",
+      "ended": "2026-11-13T23:19:20.787864+00:00",
+      "exitCode": 0,
+      "log": "18-format-all.log.gz",
+      "logSha256": "10cd65db783f253ba243696384137c0f0e1e1a1001b2567ce40c4fb433d7f2fd",
+      "patch": "18-format-all.patch.gz",
+      "patchSha256": "4191fc574d600f7086b960688dc87c4389ee806960bd4c29c91cef66d898945a",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "19-analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "analyze",
+        "--no-pub",
+        "lib/downloads",
+        "lib/playback",
+        "test/downloads",
+        "test/playback",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:19:26.037723+00:00",
+      "ended": "2026-11-13T23:19:35.151233+00:00",
+      "exitCode": 0,
+      "log": "19-analysis.log.gz",
+      "logSha256": "ea95d65659e71ede1009b8be8eb719c6c4fe4f14ec6fe062038dd7b4060c64cc",
+      "patch": "19-analysis.patch.gz",
+      "patchSha256": "2b2c97f91849925acda1d125f2524eb3be527140503cca9b7f846f026b594f37",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "20-web-builds",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "test/web_build_test.sh"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:20:24.585061+00:00",
+      "ended": "2026-11-13T23:21:45.385726+00:00",
+      "exitCode": 0,
+      "log": "20-web-builds.log.gz",
+      "logSha256": "e1ec8c6c35715bd1057829beb40dca3c1c47116813a8180ad36aeac1476c0428",
+      "patch": "20-web-builds.patch.gz",
+      "patchSha256": "2b2c97f91849925acda1d125f2524eb3be527140503cca9b7f846f026b594f37",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "21-full-suite-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:21:58.195904+00:00",
+      "ended": "2026-11-13T23:27:34.844982+00:00",
+      "exitCode": 0,
+      "log": "21-full-suite-final.log.gz",
+      "logSha256": "c7ad5360539ad77a02a6d0f161131f4f523172de4f3283cc354aa0fb8d52690f",
+      "patch": "21-full-suite-final.patch.gz",
+      "patchSha256": "2b2c97f91849925acda1d125f2524eb3be527140503cca9b7f846f026b594f37",
+      "counts": {
+        "success": 3866,
+        "skipped": 27
+      },
+      "failures": [],
+      "skips": [
+        {
+          "id": 1506,
+          "name": "the part open benchmark",
+          "suiteID": 1502,
+          "groupIDs": [
+            1505
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+          },
+          "line": 53,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+        },
+        {
+          "id": 1511,
+          "name": "the corpus prepare",
+          "suiteID": 1507,
+          "groupIDs": [
+            1510
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+          },
+          "line": 81,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+        },
+        {
+          "id": 1535,
+          "name": "the downloaded books open the places that epub.js saved",
+          "suiteID": 1512,
+          "groupIDs": [
+            1515,
+            1534
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 45,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+        },
+        {
+          "id": 1575,
+          "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "suiteID": 1415,
+          "groupIDs": [
+            1426
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1346,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+        },
+        {
+          "id": 1616,
+          "name": "body text breaks lines and pages where epub.js broke them",
+          "suiteID": 1607,
+          "groupIDs": [
+            1614
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 24,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+        },
+        {
+          "id": 1688,
+          "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1689,
+          "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1690,
+          "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1691,
+          "name": "the admitted files of a known book stay the same se-frankenstein",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1692,
+          "name": "the admitted files of a known book stay the same se-moby-dick",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1693,
+          "name": "the admitted files of a known book stay the same se-poetry",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1694,
+          "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1758,
+          "name": "the step budget",
+          "suiteID": 1754,
+          "groupIDs": [
+            1757
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+          },
+          "line": 63,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+        },
+        {
+          "id": 1830,
+          "name": "the corpus steps",
+          "suiteID": 1826,
+          "groupIDs": [
+            1829
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+          },
+          "line": 92,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+        },
+        {
+          "id": 1855,
+          "name": "the admission benchmark",
+          "suiteID": 1852,
+          "groupIDs": [
+            1854
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+          },
+          "line": 97,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+        },
+        {
+          "id": 2003,
+          "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "suiteID": 1988,
+          "groupIDs": [
+            1991,
+            1999
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 156,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+        },
+        {
+          "id": 2017,
+          "name": "the jumps into real books",
+          "suiteID": 2013,
+          "groupIDs": [
+            2016
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+        },
+        {
+          "id": 2056,
+          "name": "the corpus run",
+          "suiteID": 2052,
+          "groupIDs": [
+            2055
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+        },
+        {
+          "id": 2121,
+          "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "suiteID": 2092,
+          "groupIDs": [
+            2096
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 244,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+        },
+        {
+          "id": 2279,
+          "name": "the open of a PDF",
+          "suiteID": 2276,
+          "groupIDs": [
+            2278
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+          },
+          "line": 21,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+        },
+        {
+          "id": 2346,
+          "name": "the host benchmark draws each deck page in a section in under 20 ms",
+          "suiteID": 2193,
+          "groupIDs": [
+            2198
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1433,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+        },
+        {
+          "id": 2361,
+          "name": "measure incremental saves and acknowledgments while retaining every original action",
+          "suiteID": 2357,
+          "groupIDs": [
+            2360
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+          },
+          "line": 498,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+        },
+        {
+          "id": 2367,
+          "name": "measure current restoration against complete retained replay on this host",
+          "suiteID": 2362,
+          "groupIDs": [
+            2366
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 130,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+        },
+        {
+          "id": 2371,
+          "name": "the layout cache survey",
+          "suiteID": 2368,
+          "groupIDs": [
+            2370
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+          },
+          "line": 51,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+        },
+        {
+          "id": 4382,
+          "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "suiteID": 4374,
+          "groupIDs": [
+            4381
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+          },
+          "line": 69,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+        },
+        {
+          "id": 4487,
+          "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "suiteID": 4462,
+          "groupIDs": [
+            4486
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+          },
+          "line": 51,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+        },
+        {
+          "id": 4580,
+          "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+          "suiteID": 4577,
+          "groupIDs": [
+            4579
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+          },
+          "line": 18,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+        }
+      ]
+    },
+    {
+      "name": "22-abandoned-removal-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "--plain-name",
+        "queued removal remembers"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:28:23.463896+00:00",
+      "ended": "2026-11-13T23:28:31.392463+00:00",
+      "exitCode": 1,
+      "log": "22-abandoned-removal-red.log.gz",
+      "logSha256": "d12b8df906b07f429b48b48d2ee8a32df1759819f83b8e2ccf14ad667c2c0366",
+      "patch": "22-abandoned-removal-red.patch.gz",
+      "patchSha256": "3ec15b3a43d9438c51d944583fc76c88dc9e3415519ac11f5da76e0a1be53c72",
+      "failureNames": [
+        "00:00 +0 -1: preferences a queued removal remembers a failed close while another read is held [E]",
+        "00:00 +0 -2: SQLite a queued removal remembers a failed close while another read is held [E]"
+      ],
+      "testSummary": [
+        "00:00 +0 -2: Some tests failed."
+      ]
+    },
+    {
+      "name": "23-abandoned-removal-green",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "expanded",
+        "test/playback/download_removal_test.dart",
+        "test/downloads/prepared_downloads_test.dart",
+        "test/downloads/retained_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:29:23.470912+00:00",
+      "ended": "2026-11-13T23:29:33.774459+00:00",
+      "exitCode": 0,
+      "log": "23-abandoned-removal-green.log.gz",
+      "logSha256": "5ea78b9e74c58d9169b4bb43a4447099ed8192b6b1f33070d0b95b44dd50a2f7",
+      "patch": "23-abandoned-removal-green.patch.gz",
+      "patchSha256": "fbb20843114ef8c7bf914ccfdd2eb48fc5d700a95b2831bf963335997583ee57",
+      "failureNames": [],
+      "testSummary": [
+        "00:03 +81: All tests passed!"
+      ]
+    },
+    {
+      "name": "24-format-after-race",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/downloads/local_downloads.dart",
+        "test/playback/download_removal_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:29:52.150344+00:00",
+      "ended": "2026-11-13T23:29:54.482747+00:00",
+      "exitCode": 0,
+      "log": "24-format-after-race.log.gz",
+      "logSha256": "880851e0befe1110ab6ad8986e0a75b73785408d6e83d8fe913e88b5469e6bb6",
+      "patch": "24-format-after-race.patch.gz",
+      "patchSha256": "fbb20843114ef8c7bf914ccfdd2eb48fc5d700a95b2831bf963335997583ee57",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "25-analysis-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "analyze",
+        "--no-pub",
+        "lib/downloads",
+        "lib/playback",
+        "test/downloads",
+        "test/playback",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:30:32.430368+00:00",
+      "ended": "2026-11-13T23:30:39.185698+00:00",
+      "exitCode": 0,
+      "log": "25-analysis-final.log.gz",
+      "logSha256": "e46e5a37874ff09c71a0a42003b05bb2b1af4bbb39b41eeea96e60366e6a84f1",
+      "patch": "25-analysis-final.patch.gz",
+      "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "26-web-builds-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "test/web_build_test.sh"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:30:58.895567+00:00",
+      "ended": "2026-11-13T23:32:10.127740+00:00",
+      "exitCode": 0,
+      "log": "26-web-builds-final.log.gz",
+      "logSha256": "ac023d88f5ee9d3fc125633ee468a7d361b13eedd54adc3786eb1f1d3471062b",
+      "patch": "26-web-builds-final.patch.gz",
+      "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "27-full-suite-after-race",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:32:14.869525+00:00",
+      "ended": "2026-11-13T23:37:24.371958+00:00",
+      "exitCode": 0,
+      "log": "27-full-suite-after-race.log.gz",
+      "logSha256": "1bfc391e5c165f4aa9390fd2148a2784568b38619a3c4d325c522eb34f1129e2",
+      "patch": "27-full-suite-after-race.patch.gz",
+      "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "counts": {
+        "success": 3868,
+        "skipped": 27
+      },
+      "failures": [],
+      "skips": [
+        {
+          "id": 1505,
+          "name": "the part open benchmark",
+          "suiteID": 1497,
+          "groupIDs": [
+            1504
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+          },
+          "line": 53,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+        },
+        {
+          "id": 1510,
+          "name": "the corpus prepare",
+          "suiteID": 1506,
+          "groupIDs": [
+            1509
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+          },
+          "line": 81,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+        },
+        {
+          "id": 1533,
+          "name": "the downloaded books open the places that epub.js saved",
+          "suiteID": 1511,
+          "groupIDs": [
+            1514,
+            1532
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 45,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+        },
+        {
+          "id": 1587,
+          "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "suiteID": 1415,
+          "groupIDs": [
+            1426
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1346,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+        },
+        {
+          "id": 1616,
+          "name": "body text breaks lines and pages where epub.js broke them",
+          "suiteID": 1611,
+          "groupIDs": [
+            1614
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 24,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+        },
+        {
+          "id": 1688,
+          "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1689,
+          "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1690,
+          "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1691,
+          "name": "the admitted files of a known book stay the same se-frankenstein",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1692,
+          "name": "the admitted files of a known book stay the same se-moby-dick",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1693,
+          "name": "the admitted files of a known book stay the same se-poetry",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1694,
+          "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+          "suiteID": 1675,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1757,
+          "name": "the step budget",
+          "suiteID": 1753,
+          "groupIDs": [
+            1756
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+          },
+          "line": 63,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+        },
+        {
+          "id": 1829,
+          "name": "the corpus steps",
+          "suiteID": 1826,
+          "groupIDs": [
+            1828
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+          },
+          "line": 92,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+        },
+        {
+          "id": 1855,
+          "name": "the admission benchmark",
+          "suiteID": 1852,
+          "groupIDs": [
+            1854
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+          },
+          "line": 97,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+        },
+        {
+          "id": 2001,
+          "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "suiteID": 1987,
+          "groupIDs": [
+            1989,
+            1997
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 156,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+        },
+        {
+          "id": 2013,
+          "name": "the jumps into real books",
+          "suiteID": 2010,
+          "groupIDs": [
+            2012
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+        },
+        {
+          "id": 2052,
+          "name": "the corpus run",
+          "suiteID": 2048,
+          "groupIDs": [
+            2051
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+        },
+        {
+          "id": 2116,
+          "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "suiteID": 2088,
+          "groupIDs": [
+            2090
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 244,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+        },
+        {
+          "id": 2287,
+          "name": "the open of a PDF",
+          "suiteID": 2276,
+          "groupIDs": [
+            2286
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+          },
+          "line": 21,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+        },
+        {
+          "id": 2345,
+          "name": "the host benchmark draws each deck page in a section in under 20 ms",
+          "suiteID": 2198,
+          "groupIDs": [
+            2200
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1433,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+        },
+        {
+          "id": 2360,
+          "name": "measure incremental saves and acknowledgments while retaining every original action",
+          "suiteID": 2356,
+          "groupIDs": [
+            2359
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+          },
+          "line": 498,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+        },
+        {
+          "id": 2365,
+          "name": "measure current restoration against complete retained replay on this host",
+          "suiteID": 2361,
+          "groupIDs": [
+            2364
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 130,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+        },
+        {
+          "id": 2370,
+          "name": "the layout cache survey",
+          "suiteID": 2366,
+          "groupIDs": [
+            2369
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+          },
+          "line": 51,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+        },
+        {
+          "id": 4384,
+          "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "suiteID": 4380,
+          "groupIDs": [
+            4383
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+          },
+          "line": 69,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+        },
+        {
+          "id": 4489,
+          "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "suiteID": 4483,
+          "groupIDs": [
+            4488
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+          },
+          "line": 51,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+        },
+        {
+          "id": 4582,
+          "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+          "suiteID": 4579,
+          "groupIDs": [
+            4581
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+          },
+          "line": 18,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+        }
+      ]
+    },
+    {
+      "name": "28-format-check",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:37:55.524481+00:00",
+      "ended": "2026-11-13T23:37:57.920015+00:00",
+      "exitCode": 0,
+      "log": "28-format-check.log.gz",
+      "logSha256": "17cb85f7f67b6de697a7ca80234a7842e5ecd2a2f2d1288ade10b7a64403cd5e",
+      "patch": "28-format-check.patch.gz",
+      "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "29-base-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:38:28.403703+00:00",
+      "ended": "2026-11-13T23:38:28.446843+00:00",
+      "exitCode": 0,
+      "log": "29-base-diff-check.log.gz",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch": "29-base-diff-check.patch.gz",
+      "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "30-staged-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:38:53.372958+00:00",
+      "ended": "2026-11-13T23:38:53.402535+00:00",
+      "exitCode": 2,
+      "log": "30-staged-diff-check.log.gz",
+      "logSha256": "42cb371c1b5d52f27437f4504f69b3cef0e34a55eb0ae3d7b16083c233ea8ee5",
+      "patch": "30-staged-diff-check.patch.gz",
+      "patchSha256": "60b2703a39347fd558d1f18d85c91a39391764f8f474ee4e3bc5b7cf9ca9e2ad",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "31-staged-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa"
+      ],
+      "head": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "started": "2026-11-13T23:39:06.530492+00:00",
+      "ended": "2026-11-13T23:39:06.557045+00:00",
+      "exitCode": 0,
+      "log": "31-staged-diff-check.log.gz",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch": "31-staged-diff-check.patch.gz",
+      "patchSha256": "1402f5b70339a6e78a6acd7aab835bfecacbbfe4eaa565d565c9b0bf64e73008",
+      "failureNames": [],
+      "testSummary": []
+    }
+  ],
+  "sourceSha256": {
+    "lib/downloads/downloads.dart": "055ee6a02ac3c87bd0900bebd4820d729a0d98b337c29fa00ca1d9984bb5d8e6",
+    "lib/downloads/local_downloads.dart": "82eaccb725e92dbab7bed6ee0ee4c65b9bc8c4a7fdd0854e27777c3409397777",
+    "lib/downloads/screen.dart": "fc5ea5a30f46625f221133a269e9c9156859611a6ae3610ca3707f2755be9ca9",
+    "lib/playback/playback.dart": "d3b293acf64ffafdf7196873f3647b469e519b55ebac7bc75d80c83790483723",
+    "test/playback/download_removal_test.dart": "38fa1a9f32541ec337717378bb23a39f081efcd5a5406e9f0d2b69a0867f9e43",
+    "test/playback/replacement_test.dart": "b94f02850fef7ca41d9ff5a2af14c17ca5dc7be6f4185d6a104ba8d049bf8601",
+    "test/downloads/tab_test.dart": "1ac04fff830a64a9d2add5ab74fd914ac142008023aec21312b565a1e5447e86",
+    "test/reader/book_words_reader_test.dart": "da59ef66b23e90c4588be8877057ee7998f25480017d00f2794f244fb5e6ec96",
+    "test/reader/admitted_books_test.dart": "215b80509b95dc012e7e3de74f5368ac7c157fd4a9f10b001584fb8cab1b56b1",
+    "test/reader/kept_pages_test.dart": "49dd7f69945e980263e66e7ef32df726475d68c5782afe2cff32f20ac6490d77",
+    "test/catalog/book_page_test.dart": "16f614de1410ea255ca1fd452e6caa837f317f619901cc72a754dc3f0903cbdf"
+  },
+  "exclusions": [
+    "The full-suite skip entries name every omitted optional/external test and its framework metadata.",
+    "No device, browser, live credentials/server actions, coverage or mutation campaign.",
+    "Native framework acceptance remains parent-owned under t1-dth0."
+  ],
+  "diagnostics": [
+    "Flutter test setup reports unavailable iphoneos and iphonesimulator SDKs. Host tests still execute; no iOS acceptance is claimed.",
+    "JavaScript builds report WebAssembly dry-run incompatibilities in flutter_secure_storage_web and missing Cupertino font-family warnings. Both requested JavaScript builds succeed."
+  ]
+}

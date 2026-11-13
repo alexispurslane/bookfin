@@ -112,7 +112,7 @@ void main() {
     final lent = VerifiedFile.lent(
       original.uri,
       original.digest,
-      hold: (_) {
+      hold: (_, _) {
         // A ReceivePort cannot travel to a worker. The factory must capture
         // only the path, digest and outline, never this lent file or its hold.
         port.sendPort.send('unexpected hold');
