@@ -1,0 +1,488 @@
+{
+  "ticket": "t7-3j9c",
+  "originalBase": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+  "branch": "t3/55dca846",
+  "commands": [
+    {
+      "label": "01-base-production-web",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "build",
+        "web",
+        "--no-pub"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/01-base-production-web.log",
+      "exitCode": 1,
+      "seconds": 2.73,
+      "archive": "01-base-production-web.log.gz",
+      "rawBytes": 180,
+      "rawSha256": "b6a1793f1708f3e4a2f2d86c13267310026e723d005cb287193af861b5bade81",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "setup failure, not defect reproduction"
+    },
+    {
+      "label": "02-pub-get",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "pub",
+        "get"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/02-pub-get.log",
+      "exitCode": 0,
+      "seconds": 3.17,
+      "archive": "02-pub-get.log.gz",
+      "rawBytes": 1787,
+      "rawSha256": "5dd8f24529c8ba79e334b26273ca0c7c5983bc5371b4e4abfbf241fab747a17d",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "03-base-production-web",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "build",
+        "web",
+        "--no-pub"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/03-base-production-web.log",
+      "exitCode": 1,
+      "seconds": 38.14,
+      "archive": "03-base-production-web.log.gz",
+      "rawBytes": 1227314,
+      "rawSha256": "34eb1e88e5a06378d2e68e0c8c73b0f4c8a5bc2f5a26dbf6d8f81c6d53ad28e4",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [
+        "Compiling lib/main.dart for the Web...",
+        "Compiling lib/main.dart for the Web...                             35.7s"
+      ],
+      "classification": "original import portability failure in actual entry points"
+    },
+    {
+      "label": "04-original-web-regression",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "test/web_build_test.sh"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/04-original-web-regression.log",
+      "exitCode": 1,
+      "seconds": 72.95,
+      "archive": "04-original-web-regression.log.gz",
+      "rawBytes": 2457633,
+      "rawSha256": "88dd09a174b9d6e244767d9df0e1958abf9b1efa982227fb989174f7bd160c0a",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [
+        "Compiling lib/main.dart for the Web...",
+        "Compiling lib/main.dart for the Web...                             34.9s",
+        "Compiling lib/gallery.dart for the Web...",
+        "Compiling lib/gallery.dart for the Web...                          35.3s"
+      ],
+      "classification": "original import portability failure in actual entry points"
+    },
+    {
+      "label": "05-boundary-web-regression",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "test/web_build_test.sh"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/05-boundary-web-regression.log",
+      "exitCode": 0,
+      "seconds": 75.96,
+      "archive": "05-boundary-web-regression.log.gz",
+      "rawBytes": 2876,
+      "rawSha256": "c8b812632e1ceb79873157bfda2ddf759341ef00defc5356ca7c625773106898",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [
+        "Compiling lib/main.dart for the Web...",
+        "Compiling lib/main.dart for the Web...                             37.1s",
+        "Compiling lib/gallery.dart for the Web...",
+        "Compiling lib/gallery.dart for the Web...                          36.1s"
+      ],
+      "classification": "pass"
+    },
+    {
+      "label": "06-focused-native",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded",
+        "test/reader/pdf_outline_calculation_test.dart",
+        "test/reader/pdf_outline_stub_test.dart",
+        "test/reader/pdf_outline_test.dart",
+        "test/reader/pdf_document_test.dart",
+        "test/reader/pdf_close_test.dart",
+        "test/reader/book_map_test.dart",
+        "test/reader/text_outline_test.dart",
+        "test/crossings/crossings_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/06-focused-native.log",
+      "exitCode": 0,
+      "seconds": 20.7,
+      "archive": "06-focused-native.log.gz",
+      "rawBytes": 22775,
+      "rawSha256": "5ded4ea203a1e1e98ae04268374b27c543c2e1cefb4b472a162c437dc3cb2d2c",
+      "skips": [],
+      "testSummaries": [
+        "00:04 +109: All tests passed!"
+      ],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "07-affected-suites",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded",
+        "test/reader",
+        "test/crossings",
+        "test/app",
+        "test/development",
+        "test/playback/crossing_history_test.dart",
+        "test/playback/crossing_timeline_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/07-affected-suites.log",
+      "exitCode": 0,
+      "seconds": 212.2,
+      "archive": "07-affected-suites.log.gz",
+      "rawBytes": 388178,
+      "rawSha256": "dc97baaafb91359c47c469f0b0f4eaa2dd89c74cab2b4fd4ea6d30d8da463081",
+      "skips": [
+        {
+          "test": "02:16 +1067: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+          "reason": "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        },
+        {
+          "test": "02:17 +1068 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        },
+        {
+          "test": "02:18 +1085 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+          "reason": "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "test": "02:23 +1132 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+          "reason": "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "test": "02:34 +1182 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+          "reason": "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+          "reason": "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        },
+        {
+          "test": "02:34 +1182 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        },
+        {
+          "test": "02:44 +1230 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/step_budget_test.dart: the step budget",
+          "reason": "Skip: set BOOKFIN_EPUB_STEPS=1 to run"
+        },
+        {
+          "test": "02:49 +1281 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        },
+        {
+          "test": "02:50 +1295 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+          "reason": "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        },
+        {
+          "test": "02:54 +1409 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "test": "02:54 +1417 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1"
+        },
+        {
+          "test": "02:56 +1447 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_test.dart: the corpus run",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 to run"
+        },
+        {
+          "test": "02:59 +1493 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "test": "03:07 +1605 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+          "reason": "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        }
+      ],
+      "testSummaries": [
+        "03:24 +1817 ~21: All tests passed!"
+      ],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "08-full-suite",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/08-full-suite.log",
+      "exitCode": 0,
+      "seconds": 330.74,
+      "archive": "08-full-suite.log.gz",
+      "rawBytes": 734788,
+      "rawSha256": "fde788fac7bbe84a69788e573768e4800dd47793980bef4f08ca6c7d1d3cee4a",
+      "skips": [
+        {
+          "test": "02:06 +1067: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/part_open_benchmark_test.dart: the part open benchmark",
+          "reason": "Skip: set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+        },
+        {
+          "test": "02:07 +1068 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_prepare_test.dart: the corpus prepare",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+        },
+        {
+          "test": "02:08 +1085 ~2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/saved_places_test.dart: the downloaded books open the places that epub.js saved",
+          "reason": "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "test": "02:13 +1131 ~4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/fidelity_test.dart: body text breaks lines and pages where epub.js broke them",
+          "reason": "Skip: set BOOKFIN_EPUB_TRIAL=1 to run"
+        },
+        {
+          "test": "02:24 +1182 ~5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-46-christmas-carol",
+          "reason": "Skip: The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same pg-84-frankenstein",
+          "reason": "Skip: The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-frankenstein",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-moby-dick",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-poetry",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+        },
+        {
+          "test": "02:24 +1182 ~11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_test.dart: the admitted files of a known book stay the same se-pride-and-prejudice",
+          "reason": "Skip: The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+        },
+        {
+          "test": "02:34 +1231 ~12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/step_budget_test.dart: the step budget",
+          "reason": "Skip: set BOOKFIN_EPUB_STEPS=1 to run"
+        },
+        {
+          "test": "02:39 +1282 ~13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_steps_test.dart: the corpus steps",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+        },
+        {
+          "test": "02:41 +1295 ~14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/admission_benchmark_test.dart: the admission benchmark",
+          "reason": "Skip: set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+        },
+        {
+          "test": "02:44 +1410 ~15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/zip_test.dart: the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "test": "02:45 +1418 ~16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/page_map_jump_test.dart: the jumps into real books",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1"
+        },
+        {
+          "test": "02:46 +1448 ~17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/corpus_test.dart: the corpus run",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 to run"
+        },
+        {
+          "test": "02:50 +1494 ~18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/epub/image_size_test.dart: every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "reason": "Skip: set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+        },
+        {
+          "test": "02:57 +1605 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
+          "reason": "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        },
+        {
+          "test": "03:03 +1656 ~21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/research/journal_growth_measurement_test.dart: measure incremental saves and acknowledgments while retaining every original action",
+          "reason": "Skip: Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+        },
+        {
+          "test": "03:04 +1657 ~23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/research/epub_layout_cache_test.dart: the layout cache survey",
+          "reason": "Skip: set BOOKFIN_LAYOUT_CACHE=1"
+        },
+        {
+          "test": "04:38 +3057 ~24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/sync/plugin_upgrade_integration_test.dart: durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "reason": "Skip: Run tool/plugin/prove.py in the pinned shells."
+        },
+        {
+          "test": "04:43 +3139 ~25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/sync/plugin_batch_integration_test.dart: the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "reason": "Skip: Run with tool/plugin/prove.py in the pinned sync dev shell."
+        },
+        {
+          "test": "04:49 +3206 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
+          "reason": "Skip: Run tool/sync_fixture.py in the pinned shells."
+        }
+      ],
+      "testSummaries": [
+        "05:21 +3693 ~27: All tests passed!"
+      ],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "09-affected-analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "analyze",
+        "--no-pub",
+        "lib/reader",
+        "lib/crossings",
+        "lib/app",
+        "lib/main.dart",
+        "lib/gallery.dart",
+        "test/reader",
+        "test/crossings",
+        "test/app",
+        "test/development",
+        "test/playback/crossing_history_test.dart",
+        "test/playback/crossing_timeline_test.dart"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/09-affected-analysis.log",
+      "exitCode": 0,
+      "seconds": 13.37,
+      "archive": "09-affected-analysis.log.gz",
+      "rawBytes": 96,
+      "rawSha256": "5d040e8a4bc908aea126d9e9ed3d3099e76cffd7b0eb2316352117d8ed28e451",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "10-format-verification",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "-c",
+        "dart format --output=none --set-exit-if-changed lib/reader/pdf_outline.dart lib/reader/pdf_outline_io.dart lib/reader/pdf_outline_stub.dart test/reader/pdf_outline_test.dart test/reader/pdf_outline_calculation_test.dart test/reader/pdf_outline_stub_test.dart && bash -n test/web_build_test.sh"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/10-format-verification.log",
+      "exitCode": 0,
+      "seconds": 2.92,
+      "archive": "10-format-verification.log.gz",
+      "rawBytes": 47,
+      "rawSha256": "f17f9586c2bfddb4a79997a4603090ac06721d6b135a42ab855e30bbf8331b55",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "11-original-base-whitespace",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "-c",
+        "git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 && git diff --cached --check 62f4fb238861fd601acb2668a9a4d646c8a28c77"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/11-original-base-whitespace.log",
+      "exitCode": 0,
+      "seconds": 2.62,
+      "archive": "11-original-base-whitespace.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
+    }
+  ],
+  "historicalEvidence": {
+    "original": "/tmp/boo-jlhy-web.log",
+    "archive": "historical-boo-jlhy-web.log.gz",
+    "rawBytes": 1227671,
+    "rawSha256": "dcbe6d41a8d980b00b855c7c2e8ecc9846fc587111f13289d8154d7f983d9608"
+  },
+  "relocationAudit": {
+    "kind": "Static relocation audit, not a regression test",
+    "originalBase": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+    "nativeBodyUnchanged": true,
+    "nativeBodySha256": "b088791c7525a48d04e169e53a36853a0edb7ad5be5f6000c3a8403cf107ecdf",
+    "calculationBodyUnchanged": true,
+    "calculationBodySha256": "6bb2a1c6b2e9738df3b4605f1add5674a14956f5bd9a49c68063f6d6a989687e"
+  }
+}
