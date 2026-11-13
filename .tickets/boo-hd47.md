@@ -21,3 +21,12 @@ Preserve current chapter-title semantics: package-relative paths and decoded fra
 Owned scope: EPUB preparation/places/pager and narrow source wiring/tests, this ticket. Preserve boo-rcgf's paragraph-width ownership and active excerpt lifetime. Required Nix checks: focused regression/places/pager/preparation tests, reader and crossings suites, affected analysis/format, full Flutter suite. Concurrency two, one heavy command at a time. Implementation and direct fixes Astra xhigh; one fresh read-only Astra high reviewer, no second reviewer. No device, browser, coverage, mutations, push, PR or closure; parent owns integration and closure.
 
 Found in the code survey of November 12 (main at f9f26500). Nothing was run for this finding. Status: path confirmed, cost estimated. lib/reader/epub/pager.dart:761-777 and lib/reader/epub/places.dart:237-276. Each reported page turn resolves the URL of every contents entry in the book, walks the section DOM for a heading, and scans all text nodes with `indexOf`. A book with thousands of contents entries (a Bible, collected works) spends an estimated 2 to 10 ms for each turn on the UI isolate. lib/reader/epub/search.dart:232-253 already filters entries by section. Compute the entries and the heading once for each prepared section.
+
+## Launch — 2026-11-13
+
+Astra xhigh lead launched from 00b5860e7cdabcc943871913409036646900bd13; running, stage uncertain. One fresh read-only Astra high reviewer authorized.
+
+- clientRequestId: bookfin-boo-hd47-astra-20261113-1
+- taskId: node:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1
+- childThreadId: thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1
+- Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A1c08c61d-1551-4bdb-9409-d3433b5889af%3Adelegate-task%3Abookfin-boo-hd47-astra-20261113-1>
