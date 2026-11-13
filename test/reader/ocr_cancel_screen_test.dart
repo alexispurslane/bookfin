@@ -54,7 +54,7 @@ Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
     if (ready()) return;
   }
   fail('The reader did not reach the expected visible state.');
@@ -173,8 +173,8 @@ void main() {
       await showReader(tester);
       await chooseSetting(tester, 'Original page', settle: tester.pump);
       expect(find.byType(ErrorWidget), findsNothing);
-      expect(reader.position!.anchor, savedAnchor);
-      expect(reader.position!.sourceKey, pdfSource.key);
+      expect(reader.visibleAddress, isNull);
+      expect(reader.bookmarks.single.position.anchor, savedAnchor);
       pdf.finishRender();
       await waitFor(
         tester,
@@ -185,6 +185,8 @@ void main() {
                 .isNotEmpty &&
             nativeCalls == 1,
       );
+      expect(reader.position!.anchor, savedAnchor);
+      expect(reader.position!.sourceKey, pdfSource.key);
       await chooseSetting(tester, 'Page words', settle: tester.pump);
       await waitFor(tester, textSettled);
       expect(
@@ -223,7 +225,15 @@ void main() {
           await showReader(tester);
           if (pending == 'native recognition') {
             pdf.finishRender();
-            await waitFor(tester, () => nativeCalls == 1);
+            await waitFor(
+              tester,
+              () =>
+                  nativeCalls == 1 &&
+                  find
+                      .bySemanticsLabel('Original source page 1')
+                      .evaluate()
+                      .isNotEmpty,
+            );
           } else {
             expect(nativeCalls, 0);
             expect(
@@ -235,14 +245,15 @@ void main() {
           expect(pdf.textSupply.recognizing.value, isFalse);
           expect(find.byType(ErrorWidget), findsNothing);
           expect(find.byTooltip('Next page'), findsOneWidget);
-          expect((reader.visibleAddress as PdfAddress).toJson(), {
-            'page': 1,
-            'character': 0,
-            'quote': '',
-          });
+          if (pending == 'render') {
+            expect(reader.visibleAddress, isNull);
+          } else {
+            expect((reader.visibleAddress as PdfAddress).sourcePage, 1);
+            expect((reader.visibleAddress as PdfAddress).character, 0);
+            // The scrub bar counts the shown page of the two as read.
+            expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
+          }
           expect(find.textContaining('of null'), findsNothing);
-          // The scrub bar counts the shown page of the two as read.
-          expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
 
           await chooseSetting(tester, 'Page words', settle: tester.pump);
           expect(

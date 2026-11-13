@@ -1,6 +1,7 @@
 // The reading place of a PDF page whose text is still on its way
 // (boo-f9xa). Recognition of a scanned page takes seconds, and the page
 // shows meanwhile, so the page is the saved place before its text arrives.
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -11,6 +12,7 @@ import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
@@ -18,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'native_reader.dart' show finishReader, settleReader;
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
@@ -76,6 +79,40 @@ class HeldScan extends HeldPdf {
   Future<PdfText> text(int sourcePage) => _of(sourcePage).future;
 }
 
+/// Holds raster production separately from recognition on every page.
+class HeldPageDraw extends HeldScan {
+  final _draws = <int, Completer<PdfRaster>>{};
+
+  void draw(int page) => (_draws[page] ??= Completer()).complete(
+    PdfRaster(1, 1, Uint8List.fromList([255, 255, 255, 255])),
+  );
+
+  @override
+  Future<PdfRaster> render(int sourcePage, double width) =>
+      (_draws[sourcePage] ??= Completer()).future;
+}
+
+/// Waits for native image decoding, without advancing the report clock.
+Future<void> showOriginal(WidgetTester tester, int page) async {
+  final original = find.byWidgetPredicate(
+    (widget) =>
+        widget is Semantics &&
+        widget.properties.label == 'Original source page $page',
+  );
+  for (var frame = 0; frame < 100; frame++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
+    if (original.evaluate().isNotEmpty) break;
+  }
+  expect(original, findsOneWidget);
+  expect(
+    find.descendant(of: original, matching: find.byType(RawImage)),
+    findsOneWidget,
+  );
+}
+
 /// A scan whose recognition the reader can cancel, as the bundled
 /// recognition does: a cancel ends every wait for a page's text with a
 /// failed text, and a later request for the page waits again.
@@ -130,6 +167,14 @@ class HeldWords extends HeldScan {
 /// run. A stop of the app after that time must not lose a page that shows,
 /// whether its text arrived or not.
 Future<void> settle(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump();
+  await settleReader(
+    tester,
+    () =>
+        find.byType(RawImage).evaluate().isNotEmpty ||
+        find.byType(PdfTextView).evaluate().isNotEmpty,
+  );
   await tester.pump(const Duration(milliseconds: 100));
   for (var frame = 0; frame < 3; frame++) {
     await tester.pump();
@@ -304,7 +349,7 @@ void main() {
       await tester.pumpWidget(viewport(scan, reports, view: PdfPageView.text));
       await settle(tester);
       final before = reports.addresses.length;
-      await reports.navigator!.move(true);
+      await finishReader(tester, reports.navigator!.move(true));
       await settle(tester);
       final turned = reports.addresses.skip(before).toList();
       expect(turned.first.quote, HeldScan.words(2));
@@ -382,6 +427,80 @@ void main() {
   });
 
   group('the session saves the page that shows before its text arrives', () {
+    for (final trigger in ['timer', 'flush', 'contents']) {
+      testWidgets('a $trigger cannot save an unseen scanned page', (
+        tester,
+      ) async {
+        final store = MemoryResume();
+        final scan = HeldPageDraw()..recognize(1);
+        final reader = await read(tester, scan, store);
+        expect(find.byType(PdfTextView), findsOneWidget);
+        expect(reader.position!.sourcePage, 1);
+        if (trigger == 'contents') {
+          unawaited(reader.goToContents('page:2'));
+        } else {
+          unawaited(reader.move(true));
+        }
+        await tester.pump();
+        expect(find.byType(PdfTextView), findsNothing);
+        expect(find.byType(RawImage), findsNothing);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        if (trigger == 'flush') {
+          await reader.flush();
+        } else {
+          await tester.pump(const Duration(milliseconds: 100));
+          await tester.pump();
+        }
+        final before = await restarted(store);
+        await before.open(book, edition);
+        expect((before.initialAddress as PdfAddress).sourcePage, 1);
+        expect(
+          before.history.where((move) => move.kind == HistoryAction.chapter),
+          isEmpty,
+        );
+
+        scan.draw(2);
+        await showOriginal(tester, 2);
+        if (trigger == 'flush') {
+          await reader.flush();
+        } else {
+          await settle(tester);
+        }
+        final after = await restarted(store);
+        await after.open(book, edition);
+        expect((after.initialAddress as PdfAddress).sourcePage, 2);
+        if (trigger == 'contents') {
+          final jump = after.history.firstWhere(
+            (move) => move.kind == HistoryAction.chapter,
+          );
+          expect((pageOf(jump.before), pageOf(jump.after)), (1, 2));
+        }
+      });
+    }
+
+    testWidgets('ready text becomes the saved page only after its frame', (
+      tester,
+    ) async {
+      final store = MemoryResume();
+      final scan = HeldPageDraw()
+        ..recognize(1)
+        ..recognize(2);
+      final reader = await read(tester, scan, store);
+      final turn = reader.move(true);
+      await Future<void>.value();
+      await Future<void>.value();
+      await reader.flush();
+      final before = await restarted(store);
+      await before.open(book, edition);
+      expect((before.initialAddress as PdfAddress).sourcePage, 1);
+      await finishReader(tester, turn);
+      await settle(tester);
+      expect(find.byType(PdfTextView), findsOneWidget);
+      final after = await restarted(store);
+      await after.open(book, edition);
+      expect((after.initialAddress as PdfAddress).sourcePage, 2);
+    });
+
     testWidgets('a book that Android stops during recognition reopens at the '
         'turned-to page', (tester) async {
       final store = MemoryResume();
@@ -417,8 +536,9 @@ void main() {
           disposeAtTearDown: ending != 'dispose',
         );
         unawaited(reader.move(true));
-        // No fake time passes between the turn and the end of the view.
-        await tester.pump();
+        // Native decoding and a frame finish, but no fake time passes
+        // between the appearance of the page and the end of the view.
+        await showOriginal(tester, 2);
         expect(reader.position!.sourcePage, 1);
         switch (ending) {
           case 'flush':
@@ -461,9 +581,9 @@ void main() {
           ..recognize(3);
         final reader = await read(tester, scan, store);
         unawaited(reader.move(true));
-        await tester.pump();
+        await showOriginal(tester, 2);
         expect(reader.position!.sourcePage, 1);
-        await reader.goToContents('page:3');
+        await finishReader(tester, reader.goToContents('page:3'));
         await reader.flush();
         final next = await restarted(store);
         expect(next.history.first.kind, HistoryAction.chapter);
@@ -508,7 +628,7 @@ void main() {
         addTearDown(() => tester.pumpWidget(const SizedBox()));
         await settle(tester);
         unawaited(reader.move(true));
-        await tester.pump();
+        await showOriginal(tester, 2);
         expect(reader.position!.sourcePage, 1);
 
         await reader.restoreBookmark(bookmark);
@@ -602,7 +722,7 @@ void main() {
         'ends the offer once', (tester) async {
       final scan = HeldScan()..recognize(3);
       final reader = await read(tester, scan, MemoryResume());
-      await reader.goToContents('page:3');
+      await finishReader(tester, reader.goToContents('page:3'));
       await settle(tester);
       expect(reader.undoOffer, isNotNull);
       List<HistoryAction> kinds() => [
@@ -733,7 +853,7 @@ void main() {
           ),
           HistoryAction.historyRestore,
         );
-        await reader.move(true);
+        await finishReader(tester, reader.move(true));
         scan.recognize(2);
         await settle(tester);
         await running;
@@ -751,7 +871,7 @@ void main() {
         ..recognize(1)
         ..recognize(2);
       final reader = await read(tester, scan, MemoryResume());
-      await reader.goToContents('page:2');
+      await finishReader(tester, reader.goToContents('page:2'));
       await settle(tester);
       expect(reader.undoOffer, isNotNull);
       // A jump to page 4 starts. Its page did not report its place yet, so
@@ -775,7 +895,7 @@ void main() {
         ..recognize(2)
         ..recognize(5);
       final reader = await read(tester, scan, MemoryResume());
-      await reader.goToContents('page:2');
+      await finishReader(tester, reader.goToContents('page:2'));
       await settle(tester);
       // A jump to page 4 starts, and the offer of the jump before it still
       // shows. The Undo and then the jump to page 5 wait behind it.
@@ -801,7 +921,7 @@ void main() {
         ..recognize(2);
       final reader = await read(tester, scan, store);
       final before = store.saves;
-      await reader.move(true);
+      await finishReader(tester, reader.move(true));
       await settle(tester);
       expect(reader.describe(reader.position!).quote, HeldScan.words(2));
       expect(store.saves, before + 1);
@@ -815,7 +935,7 @@ void main() {
         ..recognize(3);
       final reader = await read(tester, scan, store);
       final before = store.saves;
-      await reader.goToContents('page:3');
+      await finishReader(tester, reader.goToContents('page:3'));
       await settle(tester);
       expect(
         reader.describe(reader.history.first.after).quote,
@@ -936,7 +1056,7 @@ void main() {
         ..recognize(1)
         ..recognize(4);
       final reader = await read(tester, scan, MemoryResume());
-      await reader.goToContents('page:4');
+      await finishReader(tester, reader.goToContents('page:4'));
       await settle(tester);
       final jump = reader.history.first;
       scan.forget(1);
@@ -959,7 +1079,7 @@ void main() {
       await reader.setPdfView(PdfPageView.original);
       await settle(tester);
       final before = store.saves;
-      await reader.move(true);
+      await finishReader(tester, reader.move(true));
       await settle(tester);
       expect(reader.position!.sourcePage, 2);
       expect(store.saves, before + 1);

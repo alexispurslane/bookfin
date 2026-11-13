@@ -159,6 +159,15 @@ class _PdfViewportState extends State<PdfViewport>
   /// Whether the last request for the shown page's text failed.
   bool _textFailed = false;
 
+  /// Whether content from the requested page has appeared in a frame.
+  /// Loading indicators and a retained word screen from an earlier page
+  /// cannot make the requested address eligible for persistence.
+  bool _pageShown = false;
+
+  /// Finishes navigation after its first content frame, or when that
+  /// request is abandoned or its original page cannot be drawn.
+  Completer<void> _appearance = Completer<void>();
+
   /// Whether the shown page reported its place since it loaded.
   bool _placeReported = false;
 
@@ -194,8 +203,10 @@ class _PdfViewportState extends State<PdfViewport>
     _words = PdfWordScreens(
       widget.book,
       onPlace: (place) {
+        _pageShown = true;
         _address = place;
         _publish();
+        if (!_appearance.isCompleted) _appearance.complete();
       },
       onRefinedPlace: (place) {
         _address = place;
@@ -258,6 +269,7 @@ class _PdfViewportState extends State<PdfViewport>
   @override
   void dispose() {
     _generation++;
+    if (!_appearance.isCompleted) _appearance.complete();
     _search++;
     _latePlace?.cancel();
     _words.showing.removeListener(_wordStateChanged);
@@ -280,6 +292,8 @@ class _PdfViewportState extends State<PdfViewport>
     _search++;
     if (_loading) widget.onCancelRecognition();
     final generation = ++_generation;
+    if (!_appearance.isCompleted) _appearance.complete();
+    final appearance = _appearance = Completer<void>();
     _latePlace?.cancel();
     _zoom.value = Matrix4.identity();
     setState(() {
@@ -287,6 +301,7 @@ class _PdfViewportState extends State<PdfViewport>
       _turned = turned;
       _address = address;
       _placeReported = false;
+      _pageShown = false;
       _positionResolved = false;
       _failure = null;
       _text = null;
@@ -302,6 +317,7 @@ class _PdfViewportState extends State<PdfViewport>
     }
     if (!mounted || generation != _generation) return;
     if (!_usingText) await _draw(generation);
+    await appearance.future;
   }
 
   /// Opens the shown page, whose place is [address], in the word view, and
@@ -327,7 +343,6 @@ class _PdfViewportState extends State<PdfViewport>
     await Future<void>.value();
     if (!current()) return;
     widget.onReady(this, _contents());
-    if (_words.screen.value == null) _reportWhenLate(generation);
     unawaited(_draw(generation));
     if (await _words.shows(address.sourcePage)) return;
     if (!current()) return;
@@ -365,7 +380,6 @@ class _PdfViewportState extends State<PdfViewport>
         return;
       }
       widget.onReady(this, _contents());
-      _reportWhenLate(generation);
       unawaited(_draw(generation));
       final text = await pendingText;
       if (!current()) return;
@@ -399,6 +413,25 @@ class _PdfViewportState extends State<PdfViewport>
     } else {
       _publish();
     }
+  }
+
+  /// Called only while building page content that will enter this frame,
+  /// never while constructing the word view's unused waiting widget.
+  /// The first completed frame starts the allowance for late text.
+  void _pageInFrame() {
+    if (_pageShown) return;
+    final generation = _generation;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _generation || _pageShown) return;
+      if (_usingWords && _words.screen.value != null) return;
+      _pageShown = true;
+      if (_loading) {
+        _reportWhenLate(generation);
+      } else {
+        _publish();
+      }
+      if (!_appearance.isCompleted) _appearance.complete();
+    });
   }
 
   /// Reports the place of the shown page, the page of [generation], once
@@ -461,6 +494,7 @@ class _PdfViewportState extends State<PdfViewport>
         setState(
           () => _failure = 'The original page could not be drawn. Retry this source page or reopen the download.',
         );
+        if (!_appearance.isCompleted) _appearance.complete();
       }
     } finally {
       if (_drawingRequest == request) _drawingRequest = null;
@@ -478,7 +512,8 @@ class _PdfViewportState extends State<PdfViewport>
   void reportPendingPlace() {
     // A retained word screen is still the place on screen while the
     // requested page waits for its words.
-    if (_placeReported ||
+    if (!_pageShown ||
+        _placeReported ||
         (widget.view == PdfPageView.pageWords &&
             !_words.showing.value &&
             _words.screen.value != null)) {
@@ -499,6 +534,7 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   void _publish() {
+    if (!_pageShown) return;
     _latePlace?.cancel();
     _placeReported = true;
     final previous = _reported, screen = _shownScreen;
@@ -718,6 +754,7 @@ class _PdfViewportState extends State<PdfViewport>
       );
       _textSize = size;
       final shown = _layText(size);
+      _pageInFrame();
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: PdfTextView(screens: shown.layout, screen: shown.index),
@@ -769,17 +806,22 @@ class _PdfViewportState extends State<PdfViewport>
     if (_image == null) {
       return Center(child: failure ?? const CircularProgressIndicator());
     }
-    final page = Semantics(
-      label: 'Original source page $_page',
-      image: true,
-      child: InteractiveViewer(
-        transformationController: _zoom,
-        minScale: 1,
-        maxScale: 6,
-        child: Center(
-          child: RawImage(image: _image, fit: BoxFit.contain),
-        ),
-      ),
+    final page = Builder(
+      builder: (_) {
+        _pageInFrame();
+        return Semantics(
+          label: 'Original source page $_page',
+          image: true,
+          child: InteractiveViewer(
+            transformationController: _zoom,
+            minScale: 1,
+            maxScale: 6,
+            child: Center(
+              child: RawImage(image: _image, fit: BoxFit.contain),
+            ),
+          ),
+        );
+      },
     );
     return failure == null
         ? page

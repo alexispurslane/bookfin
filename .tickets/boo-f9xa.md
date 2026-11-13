@@ -101,3 +101,24 @@ Verification through the Nix dev shell:
 A note on boo-0hin names the timer, the reported flag, the pending place and the last reported address and screen that must move with the navigator. That ticket was not started. td-rbtc and t8-dqir remain follow-ups. All three findings were applied. No product decision is pending.
 
 Final verification after both pending-start fixes: the required 100-file selection passed 1330 tests, skipped 21, and failed none. dart analyze on the 10 changed Dart files reported no issues. The final test command ran through nix develop with --concurrency=2 and --reporter=json.
+
+
+## Final displayed-page correction, 2026-11-12
+
+The final Astra review found F1: the 50 ms timer and reportPendingPlace could persist a requested page while its raster and recognition were both pending. Reproduced it with three real-session tests (timer, flush, contents jump): all reopened page 2 instead of the still-last-shown page 1. A fourth test reproduced ready text being saved before its first frame. Red logs: /tmp/boo-f9xa-unseen-red.log and /tmp/boo-f9xa-text-frame-red.log.
+
+The existing navigator now makes the requested page eligible for reporting only after its original image or reading text enters a completed frame. Word screens use their existing displayed-screen notification. The 50 ms allowance starts at that frame. Both delayed publication and synchronous collection respect the same visibility state. Navigation also waits for that frame before completing, so a ready-text jump cannot leave its queue before its History destination has reported. Abandonment, disposal, and draw failure release the frame wait without reporting unseen content. Recognition still delays navigation completion as recorded in td-rbtc; this correction does not implement that follow-up.
+
+The three held-render tests prove that no original image or reading-text widget appears before release, read the saved records through a fresh session, then release the raster while keeping recognition pending and prove that the original image appears and page 2 is saved. The contents case checks both History endpoints. Existing early-end tests now wait for native image decoding and confirm the displayed image, without advancing fake time between its appearance and flush/close/pop/open/account change/removal/disposal. Tests that await page navigation now pump the frame it needs. OCR tests retain saved bookmarks while an unshown initial page has no visible address, then assert the address after content appears.
+
+Verification through nix develop:
+- Four new regressions passed after the visibility correction.
+- Initial four-file reader run: 70 passed, 35 failed. The failures exposed tests that assumed appearance from a completed raster and queued navigation completing before the frame.
+- Next three-file run: 44 passed, 16 failed because the shared test wait still accepted the previous frame's content. Corrected it to pump the requested frame before waiting for content.
+- Complete pdf_place_test.dart: 47 passed, no failures.
+- 100-file selection: 1323 passed and 21 skipped before interruption; six OCR screen assertions/waits failed, and an OCR navigation test waited without pumping its required frame. Stopped only the owned test runner (PID 45623). Its interruption adds two error events; this run is not a passing suite. Log: /tmp/boo-f9xa-shown-required.jsonl.
+- After correcting those test waits, both OCR files passed all 11 tests: /tmp/boo-f9xa-shown-ocr.log.
+- dart analyze on all eight changed Dart files: no issues. Formatting and git diff --check pass.
+- Parent's full suite on integrated main remains the completion gate. No device acceptance, coverage, mutation run, push, or ticket closure is claimed here.
+
+F1 is resolved by the reproduced behavior and checks above. The planned PDF pager extraction remains boo-0hin; its notes include ownership of visibility and the frame wait. The td-rbtc note now correctly distinguishes superseded queued Undo from ordinary queued jumps.

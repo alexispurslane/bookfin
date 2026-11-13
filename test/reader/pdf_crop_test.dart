@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
+import 'native_reader.dart' show finishReader;
 import 'book_crop_test.dart' show SplicedBook, analyzedPage, bookOf;
 import 'book_survey_test.dart' show UnreadSurvey;
 import 'ocr_hop_test.dart' show runInWorker;
@@ -274,7 +275,7 @@ void main() {
       final third = shownImage(tester);
       final thirdRect = shownRect(tester);
       final thirdInk = await imageInk(tester, third);
-      await tester.runAsync(() => navigator!.display(PdfAddress(5, 0)));
+      await finishReader(tester, navigator!.display(PdfAddress(5, 0)));
       await drawn(tester, shown: original(5));
       final fifth = shownImage(tester);
       final fifthRect = shownRect(tester);

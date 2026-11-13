@@ -9,6 +9,7 @@ import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'native_reader.dart' show finishReader;
 import 'pdf_navigation_test.dart' show HeldPdf;
 import 'pdf_viewport_test.dart' show Reports;
 
@@ -297,14 +298,14 @@ void main() {
         (reports.addresses.last.sourcePage, reports.addresses.last.character),
         (1, 90),
       );
-      await reports.navigator!.move(true);
-      await reports.navigator!.move(false);
+      await finishReader(tester, reports.navigator!.move(true));
+      await finishReader(tester, reports.navigator!.move(false));
       await tester.pumpAndSettle();
       expect(
         (reports.addresses.last.sourcePage, reports.addresses.last.character),
         (1, 90),
       );
-      await reports.navigator!.move(false);
+      await finishReader(tester, reports.navigator!.move(false));
       await tester.pumpAndSettle();
       expect(
         (reports.addresses.last.sourcePage, reports.addresses.last.character),

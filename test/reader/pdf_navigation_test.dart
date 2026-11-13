@@ -9,6 +9,7 @@ import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'native_reader.dart' show finishReader;
 import 'pdf_viewport_host.dart';
 
 class HeldPdf extends PdfBook {
@@ -147,15 +148,15 @@ void main() {
       final count = screen().screens.count;
       expect(count, greaterThan(2));
       for (var turn = 1; turn < count; turn++) {
-        await navigation.move(true);
+        await finishReader(tester, navigation.move(true));
         await tester.pump();
       }
       final last = location!;
-      await navigation.move(true);
+      await finishReader(tester, navigation.move(true));
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 2);
       expect(screen().screen, 0);
-      await navigation.move(false);
+      await finishReader(tester, navigation.move(false));
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 1);
       expect(screen().screen, count - 1);
@@ -192,10 +193,10 @@ void main() {
       PdfTextView screen() =>
           tester.widget<PdfTextView>(find.byType(PdfTextView));
       expect(screen().screens.count, 1);
-      await navigation.move(true);
+      await finishReader(tester, navigation.move(true));
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 2);
-      await navigation.move(false);
+      await finishReader(tester, navigation.move(false));
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 1);
       expect(location!.character, 0);

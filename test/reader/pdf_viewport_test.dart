@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'native_reader.dart' show finishReader;
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
@@ -250,7 +251,7 @@ void main() {
       final reports = Reports();
       await tester.pumpWidget(viewport(pdf, reports));
       await drawn(tester);
-      await reports.navigator!.move(true);
+      await finishReader(tester, reports.navigator!.move(true));
       await drawn(
         tester,
         shown: find.bySemanticsLabel('Original source page 2'),
@@ -368,7 +369,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       for (var step = 1; step <= 6; step++) {
-        await reports.navigator!.move(true);
+        await finishReader(tester, reports.navigator!.move(true));
         await tester.pump();
       }
       expect(

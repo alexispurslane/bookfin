@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'pdf_viewport_host.dart';
+import 'pdf_viewport_test.dart' show drawn;
+import 'native_reader.dart' show finishReader;
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_test.dart' show englishPage;
@@ -130,6 +132,7 @@ void main() {
       expect(supply.canceled, isTrue, reason: 'The screen cancels it.');
       expect(find.byType(ErrorWidget), findsNothing);
       expect(find.byTooltip('Next page'), findsOneWidget);
+      await drawn(tester);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 1);
       expect((reader.visibleAddress as PdfAddress).character, 0);
     },
@@ -202,7 +205,7 @@ void main() {
       final hit = report.hits.last.address as PdfAddress;
       expect(hit.sourcePage, 2);
       expect(hit.character, 'The quiet '.length);
-      await navigation.display(hit);
+      await finishReader(tester, navigation.display(hit));
       await tester.pump();
       expect(address!.sourcePage, 2);
       expect(pdf.restore(pdf.save(address!))!.resource, 'page:2');
