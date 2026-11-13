@@ -27,3 +27,9 @@ nix develop --command dart format --output=none --set-exit-if-changed lib/catalo
 
 08-analysis.txt (exit 0, no issues):
 nix develop --command flutter analyze --no-pub lib/catalog lib/settings test/catalog test/settings test/app test/downloads test/playback test/sync
+
+09-staged-whitespace.json (exit 0, no output):
+git diff --cached --check 6a5e2b95fa449be40c8de74431718346fb85b180
+
+10-reviewed-head-whitespace.json (exit 0, no output, reviewed implementation HEAD):
+git diff --check 6a5e2b95fa449be40c8de74431718346fb85b180..HEAD

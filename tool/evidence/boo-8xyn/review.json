@@ -1,0 +1,114 @@
+{
+  "ticket": "boo-8xyn",
+  "reviewedBase": "6a5e2b95fa449be40c8de74431718346fb85b180",
+  "reviewedHead": "e4fbdcddb6f2494c6d6fd751475368f6fe957e10",
+  "reviewMethod": "One independent read-only review of the complete production/test diff, authoritative ticket scope, relevant callers and retained fields, pinned SDK source, and saved verification evidence. No edits, builds, tests, formatting, device actions, or delegation performed.",
+  "assessments": {
+    "correctness": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "location": "lib/catalog/controller.dart:145",
+          "assessment": "All catalog-result paths now return facts, encoded text and derived books without returning CatalogCache or CatalogEntry. Inspection of AccountScope, BookLibrary, Book, Edition, SourceFile and CatalogLibrary found no retained reference back to decoded server-entry maps. Derived collections are materialized rather than retaining lazy iterators over entries."
+        },
+        {
+          "location": "lib/catalog/controller.dart:324",
+          "assessment": "Correction and visibility workers decode the retained text and use the existing book derivation. Their callers still save choices separately and do not encode, hash or write the server catalog."
+        },
+        {
+          "location": "lib/catalog/controller.dart:623",
+          "assessment": "Catalog adoption remains guarded by account and request ownership. Inspection of restore, sign-in, refresh, visibility, correction and access-revision callers found the existing write serialization, cancellation checks, credential handling and uncertain-write recovery preserved."
+        },
+        {
+          "location": "test/catalog/catalog_signals_test.dart:795",
+          "assessment": "Existing tests cover failed denial preparation, cancelled and superseded writes, unchanged-refresh identity, metadata-only changes, concurrent corrections, native worker builds, and empty catalogs. Choice tests additionally cover durable ordering, account switches, missing-library refresh, hidden retention, migration and recovery."
+        },
+        {
+          "location": "tool/evidence/boo-8xyn/03-boundary-green.txt",
+          "assessment": "Saved builder output records all eight boundary tests passing. Focused output records 109 passes; affected output records 1563 passes and three skips; full output records 3554 passes and 27 skips. These are inspected builder results, not reviewer executions."
+        }
+      ],
+      "findingIds": [],
+      "gaps": []
+    },
+    "ticketFulfillment": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "location": "lib/catalog/controller.dart:400",
+          "assessment": "The controller retains small catalog facts, encoded text, choices and the derived library. Its retained CatalogCache field is removed. Restore, refresh and access revision use the revised result type; all three choice-rebuild callers send text rather than decoded entries."
+        },
+        {
+          "location": "lib/catalog/controller.dart:465",
+          "assessment": "The documented hasCatalog query replaces full-cache exposure. Both production callers were updated, preserving the distinction between an absent catalog and a loaded empty or blocked catalog."
+        },
+        {
+          "location": "lib/catalog/controller.dart:502",
+          "assessment": "The on-demand invariant checker temporarily decodes retained text, checks retained facts and derived books, and stores no decoded result. The existing 512-character and one-entry thresholds remain unchanged."
+        },
+        {
+          "location": "test/catalog/catalog_signals_test.dart:1037",
+          "assessment": "Runtime boundary tests exercise restore, refresh, correction, visibility and denial. The saved red output contains five assertion failures for the intended entry-transfer behavior, followed by eight green cases. Source inspection supplements the targeted boundary probe."
+        },
+        {
+          "location": "tool/evidence/boo-8xyn/00-transfer.txt",
+          "assessment": "Direct inspection of the pinned Flutter and Dart sources corroborates native compute using Isolate.run, immutable strings being shared, and results being returned through Isolate.exit without copying. Web compute runs on the current event loop. Documentation correctly avoids measured heap or Android latency claims."
+        },
+        {
+          "location": "tool/evidence/boo-8xyn/commands.txt",
+          "assessment": "Required focused, affected and full checks have saved results. Formatting reports zero changes; affected analysis reports no issues. Saved whitespace evidence includes the complete original-base-to-reviewed-head check. The changed-path audit confirms concurrent text/outline and playback/sync production code is untouched."
+        }
+      ],
+      "findingIds": [],
+      "gaps": []
+    },
+    "softwareDesign": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "source": "User",
+          "location": "lib/catalog/controller.dart:623",
+          "assessment": "The change extends the existing catalog owner and adoption path. It adds no parallel catalog service, persistent worker, storage format or independent authority."
+        },
+        {
+          "source": "Ousterhout",
+          "location": "lib/catalog/controller.dart:145",
+          "assessment": "The private facts record hides decoded storage details from orchestration. Facts derive from the same snapshot as retained text and are adopted together. UI callers receive the presence query they need without gaining access to the storage representation."
+        },
+        {
+          "source": "Muratori",
+          "location": "lib/catalog/controller.dart:308",
+          "assessment": "Existing workers continue to use one book-derivation path. The implementation adds no speculative generic framework or caller-specific service. The additional decode cost is explicit and follows the settled ticket tradeoff."
+        },
+        {
+          "source": "User",
+          "location": "lib/catalog/controller.dart:419",
+          "assessment": "Latest reported library metadata and saved snapshot metadata keep their distinct existing meanings. All writers of facts and text remain within guarded adoption and account clearing; choice adoption maintains choices and their derived view together."
+        }
+      ],
+      "findingIds": [],
+      "gaps": []
+    }
+  },
+  "findings": [],
+  "materialUnverifiedRequirements": [],
+  "limitations": [
+    {
+      "blocking": false,
+      "description": "The boundary probe is not a general heap walker. The retention conclusion combines runtime input/result checks with inspection of concrete retained fields and collection construction."
+    },
+    {
+      "blocking": false,
+      "description": "No heap-size reduction, garbage-collection timing or Android latency was measured. The original 20–30 MB estimate remains unverified and is not an acceptance result."
+    },
+    {
+      "blocking": false,
+      "description": "Tests were not rerun during this read-only review. Saved outputs substantiate the reported checks; optional benchmarks, missing-corpus tests and live-plugin checks remain skipped."
+    },
+    {
+      "blocking": false,
+      "description": "Device/browser checks, coverage and mutation testing were explicitly excluded. Existing device/browser blockers and intermittent failures t5-rplx and tf-il7u remain unresolved; passing runs do not establish their causes."
+    }
+  ],
+  "overallVerdict": "pass"
+}

@@ -1,0 +1,7 @@
+{
+  "command": "git diff --check 6a5e2b95fa449be40c8de74431718346fb85b180..HEAD",
+  "head": "e4fbdcddb6f2494c6d6fd751475368f6fe957e10",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": ""
+}

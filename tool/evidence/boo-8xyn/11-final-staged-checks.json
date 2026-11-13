@@ -1,0 +1,14 @@
+[
+  {
+    "command": "git diff --cached --check 6a5e2b95fa449be40c8de74431718346fb85b180",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": "git diff --exit-code e4fbdcddb6f2494c6d6fd751475368f6fe957e10 -- lib test",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
