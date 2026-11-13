@@ -1,6 +1,6 @@
 ---
 id: boo-8xyn
-status: in_progress
+status: closed
 deps: [boo-7z9a]
 links: [boo-7z9a]
 created: 2026-11-12T23:41:01Z
@@ -129,3 +129,28 @@ is `10-reviewed-head-whitespace.json`. Evidence-only final checks cover the
 complete staged diff and final HEAD, including all saved logs. No fork remains.
 All owned commands and the reviewer finished. Ready for parent integration;
 parent retains acceptance, hardening and closure. Ticket is not closed here.
+
+## Parent integration — 2026-11-13
+
+Verified clean child checkout, branch and HEAD. Inspected the complete
+original-base production/test diff, actual adoption and UI callers, concrete
+retained metadata and derived-book fields, original review and saved red/green
+and required outputs. No integration finding. Child `e4fbdcdd` integrated as
+`2528c6ea`, and `1d2ad6b` as `27dc49fd`. A ticket-history conflict retained
+both the parent launch record and the child evidence. Production and tests are
+identical to the reviewed child implementation; no second review claimed.
+
+Combined with corrupt-admission repair `583cae18`, the parent ran ten-file
+format verification (zero changes), full analysis of lib/test/integration_test
+(no issues), and catalog/settings/app/downloads/playback/sync/reader/crossings/
+speech suites (3,435 passed, 24 existing skips, zero failures). Exact commands
+are recorded in `.tickets/t7-vq21.md`; output is under
+`/tmp/bookfin-ownership-catalog-{format,analysis,affected}.log`. The full suite
+then passed in the same sequential Nix driver: 3,606 passed, 27 existing skips,
+zero failures, exit 0. Full output is
+`/tmp/bookfin-ownership-catalog-full.log`; driver output is
+`/tmp/bookfin-ownership-catalog-driver.log`. All parent commands finished.
+Complete integration and final ticket whitespace checks passed. No retry or
+unexpected failure occurred. Parent closes this implementation ticket on main.
+No heap-size, device latency, native acceptance or hardening claim is made;
+existing platform blockers and unexplained intermittent failures remain open.
