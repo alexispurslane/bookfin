@@ -1,6 +1,6 @@
 ---
 id: boo-0hin
-status: open
+status: in_progress
 deps: [boo-f9xa]
 links: [boo-f9xa, boo-p9s3, td-rbtc, td-ez6p]
 created: 2026-11-12T23:41:01Z
