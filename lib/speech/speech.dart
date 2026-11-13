@@ -67,15 +67,10 @@ Future<SpeechModel?> findSpeechModel() async {
 /// owns that rule). When the worker gives up under its stuck-worker rule,
 /// speech is off for this run, and every later window gives null.
 class Speech {
-  Speech({
-    required this._locate,
-    this._idle = const Duration(minutes: 2),
-    this._limit = _windowLimit,
-  });
+  Speech({required this._locate, this._idle = const Duration(minutes: 2)});
 
   final Future<SpeechModel?> Function() _locate;
   final Duration _idle;
-  final Duration _limit;
 
   /// The longest time that the worker has for one window before it counts
   /// as stuck.
@@ -104,24 +99,21 @@ class Speech {
   /// The worker, once the model is located. Null without a model.
   late final Future<KeptWorker<_Model?>?> _worker = () async {
     final model = await _locate();
-    return model == null ? null : _kept = _workerOf(model, _idle, _limit);
+    return model == null ? null : _kept = _workerOf(model, _idle);
   }();
   KeptWorker<_Model?>? _kept;
 
   // NOTE: The worker's closures come from static functions, so that they
   // capture only plain data and never this object, which cannot travel to
   // the worker.
-  static KeptWorker<_Model?> _workerOf(
-    SpeechModel model,
-    Duration idle,
-    Duration limit,
-  ) => KeptWorker(
-    () => _Model.load(model),
-    name: 'speech',
-    idle: idle,
-    limit: limit,
-    end: (model) => model?.close(),
-  );
+  static KeptWorker<_Model?> _workerOf(SpeechModel model, Duration idle) =>
+      KeptWorker(
+        () => _Model.load(model),
+        name: 'speech',
+        idle: idle,
+        limit: _windowLimit,
+        end: (model) => model?.close(),
+      );
 
   /// The job of one window: whether the worker holds the model, and what
   /// the model heard.
