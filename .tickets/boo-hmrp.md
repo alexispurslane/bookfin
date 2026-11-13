@@ -1,6 +1,6 @@
 ---
 id: boo-hmrp
-status: in_progress
+status: closed
 deps: [boo-f4xm]
 links: [boo-0931, boo-s11s]
 created: 2026-11-12T23:41:00Z
@@ -94,3 +94,12 @@ Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:deleg
 Findings: none. No fixes, rejected findings, or unresolved product forks remain. The final review-record commit changes only this ticket; production and test files remain exactly at the reviewed implementation HEAD.
 
 Review limitations: execution evidence came from saved logs, not reviewer reruns. The event tests use controlled transport and preference-backed persistence; existing transport and durability tests cover those boundaries separately. Android background execution and live plugin behavior remain unverified, and existing opt-in/external-fixture skips remain. The pass verdicts cover this implementation ticket; release acceptance, integration checks, coverage, and mutation testing remain with the parent. The ticket stays in progress until the parent integrates and closes it.
+
+
+## Parent integration and verification
+
+The parent inspected the complete original-base-to-ed8b991e diff, the fresh Astra review, and saved verification logs. Integrated as ecf2cb34 (implementation) and d90ed7c4 (review record). The only conflict was the ticket appendix; both the parent launch record and child evidence were kept. Production and tests match the reviewed branch.
+
+On integrated main, the affected analysis command recorded above found no issues in 6.2 seconds (/tmp/boo-hmrp-integrated-analysis.log). The parent ran `nix develop --command bash -c 'flutter test --no-pub --concurrency=2 --reporter expanded'`: 3,222 passed, 25 skipped, no failures, 4 minutes 48 seconds (/tmp/boo-hmrp-integrated-full.log). The command exited successfully and git diff --check passed. No owned command remains running.
+
+Closed after integration and verification. Android background execution and live plugin acceptance remain unverified; existing external-fixture and opt-in skips remain. No coverage/mutation campaign, deployment, push, or publication was performed. The next dependency is boo-s11s; its client-first and plugin-second scope is already approved.
