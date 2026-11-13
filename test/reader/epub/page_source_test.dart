@@ -825,12 +825,13 @@ void main() {
 
     test("a turn into the next section waits only for that section's "
         "prepare, not for the previous section's", () async {
+      final held = HeldPrepares();
+      addTearDown(() {
+        if (!held.release.isCompleted) held.release.complete();
+      });
       open(
-        book([
-          paragraphs(500, sentences: 12),
-          paragraphs(12),
-          paragraphs(2, label: 'Brief'),
-        ]),
+        book([paragraphs(4), paragraphs(12), paragraphs(2, label: 'Brief')]),
+        work: held.run,
       );
       final shown = await scheduler.until(source.section(1));
       final last = await scheduler.until(
@@ -846,9 +847,10 @@ void main() {
       });
       final previous = source.section(0).then((_) => ended.add('previous'));
       final next = await scheduler.until(turn);
-      await scheduler.until(previous);
-
       expect(next!.section, 2);
+      expect(ended, ['turn']);
+      held.release.complete();
+      await scheduler.until(previous);
       expect(ended, ['turn', 'previous']);
     });
 
