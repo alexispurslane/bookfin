@@ -17,4 +17,3 @@ Found while extracting boo-0hin. Static inspection confirms that PdfPager.search
 ## Acceptance Criteria
 
 Large-page matching runs outside the UI isolate. Existing search results, ordering, cancellation, result limit and failure reporting remain covered by behavior tests.
-

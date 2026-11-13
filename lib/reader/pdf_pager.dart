@@ -11,6 +11,7 @@ import 'document.dart';
 import 'pdf.dart';
 import 'pdf_text_view.dart';
 import 'pdf_word_view.dart';
+import 'word_pages.dart';
 
 class _TextScreen {
   _TextScreen(this.page, this.text, this.layout, this.index);
@@ -30,8 +31,7 @@ class _TextScreen {
 ///
 /// Invariants:
 /// - A request's address belongs to its requested source page.
-/// - Only a completed content frame (or the word renderer's shown-screen
-///   report) makes that request eligible for publication.
+/// - Only a completed content frame makes that request eligible for publication.
 /// - Pending reports and appearance waits belong to the current request.
 /// - Report suppression compares both address and screen: incomplete word
 ///   addresses can be equal on distinct screens.
@@ -408,9 +408,15 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
 
   /// Accepts a completed content frame for [generation]. The viewport must
   /// report only content it actually drew, never a completed raster or a
-  /// loading indicator. An old view's queued report cannot advance a new page.
-  void appeared(int generation) {
-    if (_disposed || generation != _generation || _pageShown) return;
+  /// loading indicator. [words] identifies the exact prepared word screen
+  /// drawn in that frame. An old view's queued report cannot advance a new page.
+  void appeared(int generation, {WordScreen? words}) {
+    if (_disposed || generation != _generation) return;
+    if (words != null) {
+      if (_usingWords) _words.appeared(words);
+      return;
+    }
+    if (_pageShown) return;
     if (_usingWords && _words.screen.value != null) return;
     _pageShown = true;
     if (_loading) {
@@ -494,21 +500,15 @@ class PdfPager extends ChangeNotifier implements DocumentNavigator {
 
   @override
   void reportPendingPlace() {
-    // A retained word screen is still the place on screen while the
-    // requested page waits for its words.
-    if (!_pageShown ||
-        _placeReported ||
-        (_view == PdfPageView.pageWords &&
-            !_words.showing.value &&
-            _words.screen.value != null)) {
-      return;
-    }
+    // Only this request's completed content frame sets _pageShown. Prepared
+    // words cannot hide an original page's pending report or advance it.
+    if (!_pageShown || _placeReported) return;
     _publish();
   }
 
   /// The layout and screen index that show, or null for an original page.
   Object? get _shownScreen {
-    final words = _words.screen.value;
+    final words = _words.appearedScreen;
     if (_usingWords && words != null) {
       return (words.column.column, words.screen);
     }

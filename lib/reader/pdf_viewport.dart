@@ -9,6 +9,7 @@ import 'pdf_text_view.dart';
 import 'pdf_word_view.dart';
 import 'selection.dart';
 import 'word_bands.dart';
+import 'word_pages.dart';
 import 'word_selection.dart';
 
 /// Draws the session's PDF page and reports gestures, measurements and
@@ -38,8 +39,9 @@ class PdfViewport extends StatefulWidget {
   final void Function(double, Size, TextStyle) onLayout;
   final ValueChanged<WordSettings> onWordLayout;
 
-  /// Reports the request identity whose content entered a completed frame.
-  final ValueChanged<int> onAppeared;
+  /// Reports the request identity whose content entered a completed frame,
+  /// with the exact prepared screen when that content consists of word images.
+  final void Function(int generation, {WordScreen? words}) onAppeared;
   final VoidCallback onRetry;
   final VoidCallback onTouch;
   final ValueChanged<String> onCopy;
@@ -218,6 +220,9 @@ class _PdfViewportState extends State<PdfViewport> {
   /// The shown page in the chosen view.
   Widget _view() {
     if (_usingWords) {
+      final pager = widget.pager;
+      final generation = pager.generation;
+      final report = widget.onAppeared;
       return ReaderCopyArea(
         area: _selectionArea,
         onCopy: _copy,
@@ -229,6 +234,11 @@ class _PdfViewportState extends State<PdfViewport> {
             fontSize: widget.fontSize,
             waiting: _wordWaiting(),
             onLayout: widget.onWordLayout,
+            onAppeared: (shown) {
+              if (mounted && identical(widget.pager, pager)) {
+                report(generation, words: shown);
+              }
+            },
           ),
         ),
       );

@@ -16,6 +16,7 @@ import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/page_analysis.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_pager.dart';
 import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
@@ -32,6 +33,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
 import 'pdf_test_controller.dart';
+import 'native_reader.dart' show finishReader;
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart' show footnotePage;
@@ -261,17 +263,36 @@ int? firstCharacter(
 Future<void> settle(
   WidgetTester tester,
   bool Function() holds,
-  String what,
-) async {
+  String what, {
+  Duration frameStep = const Duration(milliseconds: 5),
+}) async {
   final clock = Stopwatch()..start();
   while (!holds()) {
     if (clock.elapsed > const Duration(seconds: 20)) fail('Never: $what.');
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
-    await tester.pump(const Duration(milliseconds: 5));
+    await tester.pump(frameStep);
   }
 }
+
+Widget pagerView(PdfPager pager) => MaterialApp(
+  theme: bookfinTheme(Brightness.light),
+  home: Scaffold(
+    body: PdfViewport(
+      pager: pager,
+      fontSize: 40,
+      onLayout: pager.layout,
+      onWordLayout: pager.words.lay,
+      onAppeared: pager.appeared,
+      onRetry: pager.retryPage,
+      onTouch: pager.words.touch,
+      onCopy: (_) {},
+      onTap: () {},
+      onTurn: pager.move,
+    ),
+  ),
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -871,6 +892,114 @@ void main() {
     );
     await close(tester, book);
   });
+
+  testWidgets(
+    'word images prepared without a viewport cannot save or finish a jump',
+    (tester) async {
+      final born = await open(tester, marginsBook);
+      final book = HeldWordPdf(born);
+      final store = MemoryResume();
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = Uri.file('/words.pdf');
+      addTearDown(downloads.dispose);
+      Future<ReaderSession> session() async {
+        final reader = ReaderSession(
+          downloads: downloads,
+          store: store,
+          load: loadPublication,
+          loadDocument: (_, _) async => book,
+        );
+        addTearDown(reader.dispose);
+        await reader.bind(account(), [fixture.book]);
+        await reader.open(fixture.book, fixture.edition);
+        return reader;
+      }
+
+      final reader = await session();
+      await reader.setPdfView(PdfPageView.pageWords);
+      final pager = reader.pdfPager!;
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(pagerView(pager));
+      final first = await showsScreen(tester, 1, 0);
+      final firstGeneration = pager.generation;
+      final oldPlace = reader.visibleAddress!.toJson();
+      final oldHistory = reader.history.map((entry) => entry.id).toList();
+      final bandsArrive = hold();
+      book.bandsWait = bandsArrive.future;
+      var completed = false;
+      final jump = reader.goToContents('page:2').then((_) => completed = true);
+      await settle(tester, () => book.waitingBands > 0, 'page two waits');
+      await tester.pumpWidget(const SizedBox());
+      bandsArrive.complete();
+      await settle(
+        tester,
+        () => pager.words.screen.value?.page == 2,
+        'page two images finish without a viewport',
+      );
+      // Queued reports from an earlier request or retained screen cannot
+      // acknowledge the prepared destination on behalf of a replacement view.
+      pager.appeared(firstGeneration, words: pager.words.screen.value);
+      pager.appeared(pager.generation, words: first);
+      await reader.flush();
+      final restarted = await session();
+      expect(restarted.initialAddress!.toJson(), oldPlace);
+      expect(reader.visibleAddress!.toJson(), oldPlace);
+      expect(reader.history.map((entry) => entry.id), oldHistory);
+      expect(completed, isFalse);
+
+      await tester.pumpWidget(pagerView(pager));
+      await finishReader(tester, jump);
+      expect(reader.visibleAddress?.page, 2);
+      expect(reader.history.first.kind, HistoryAction.chapter);
+      expect(reader.history.first.after.anchor, reader.position!.anchor);
+      reader.checkInvariants();
+      await close(tester, born);
+    },
+  );
+
+  testWidgets(
+    'prepared words cannot hide a pending report of an original page that appeared',
+    (tester) async {
+      final born = await open(tester, marginsBook);
+      final bandsArrive = hold();
+      final book = HeldWordPdf(born)..bandsWait = bandsArrive.future;
+      final places = <PdfAddress>[];
+      final pager = PdfPager(
+        book,
+        initial: PdfAddress(3, 0),
+        view: PdfPageView.pageWords,
+        trimMargins: false,
+        onAddress: places.add,
+        onRefinedAddress: places.add,
+        onCancelRecognition: () {},
+      );
+      addTearDown(pager.dispose);
+      await tester.pumpWidget(pagerView(pager));
+      await settle(
+        tester,
+        () => find
+            .bySemanticsLabel('Original source page 3')
+            .evaluate()
+            .isNotEmpty,
+        'the original page appears while its word images wait',
+        frameStep: Duration.zero,
+      );
+      await tester.pumpWidget(const SizedBox());
+      bandsArrive.complete();
+      await settle(
+        tester,
+        () => pager.words.screen.value != null,
+        'the word images prepare without a viewport',
+        frameStep: Duration.zero,
+      );
+      expect(places, isEmpty, reason: 'The report timer has not run.');
+      pager.reportPendingPlace();
+      expect(places.map((place) => place.sourcePage), [3]);
+      pager.checkInvariants();
+    },
+  );
 
   testWidgets(
     'History keeps the first word screen of a jump when a turn precedes recognition',

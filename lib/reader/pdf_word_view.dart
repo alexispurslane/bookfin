@@ -109,6 +109,9 @@ class PdfWordScreens {
 
   late PdfWordPages _pages;
   _OpenPage? _open;
+  // Identity of the last screen of this open page acknowledged by a view.
+  // Prepared images can outlive the view; readiness must never publish a place.
+  WordScreen? _appeared;
   WordSettings? _settings;
   var _disposed = false;
   final _showing = ValueNotifier(false);
@@ -126,8 +129,14 @@ class PdfWordScreens {
   /// Whether the shown page waits for its text.
   ValueListenable<bool> get waitingForText => _waitingForText;
 
-  /// The shown screen, which [WordScreenView] draws.
+  /// The prepared screen, which [WordScreenView] draws. Preparation alone
+  /// does not report a place; the view must acknowledge its completed frame.
   ValueListenable<WordScreen?> get screen => _pages.shown;
+
+  /// The last word screen of this request acknowledged in a completed frame,
+  /// or null before one appears. Its identity still names the reported place
+  /// while another screen prepares, even if that preparation has finished.
+  WordScreen? get appearedScreen => _appeared;
 
   /// The settings that the screens are laid out for, once [lay] gave them.
   WordSettings? get settings => _settings;
@@ -137,7 +146,7 @@ class PdfWordScreens {
   bool get covers => !(_open?.gaveUp ?? true);
 
   PdfWordPages _newPages() =>
-      PdfWordPages(book)..shown.addListener(_screenShown);
+      PdfWordPages(book)..shown.addListener(_screenPrepared);
 
   /// Opens the page of [place]: on its last screen when [last], and
   /// otherwise on its first screen until its text names the screen that
@@ -146,6 +155,7 @@ class PdfWordScreens {
     _pages.retainShown();
     _open?.end();
     final open = _open = _OpenPage(place, last: last);
+    _appeared = null;
     _text.value = null;
     _showing.value = false;
     _waitingForText.value = true;
@@ -200,11 +210,12 @@ class PdfWordScreens {
   void leave() {
     _open?.end();
     _open = null;
+    _appeared = null;
     _text.value = null;
     _showing.value = false;
     _waitingForText.value = false;
     _pages
-      ..shown.removeListener(_screenShown)
+      ..shown.removeListener(_screenPrepared)
       ..dispose();
     _pages = _newPages();
   }
@@ -213,8 +224,9 @@ class PdfWordScreens {
     _disposed = true;
     _open?.end();
     _open = null;
+    _appeared = null;
     _pages
-      ..shown.removeListener(_screenShown)
+      ..shown.removeListener(_screenPrepared)
       ..dispose();
     _showing.dispose();
     _waitingForText.dispose();
@@ -222,7 +234,7 @@ class PdfWordScreens {
   }
 
   /// Checks the open page, requested screen and displayed band ownership.
-  /// A ready page owns the displayed screen; its requested screen is inside
+  /// A shown page has a view-acknowledged screen; its requested screen is inside
   /// its column. A closed controller has no open page. Pending page opens,
   /// turns and size changes keep the previous screen until bands arrive.
   void checkInvariants() {
@@ -231,8 +243,9 @@ class PdfWordScreens {
     if (_disposed && open != null) {
       throw StateError('A disposed word view has no open page.');
     }
-    if (_showing.value &&
-        (open == null || open.gaveUp || screen.value?.page != open.page)) {
+    if (_showing.value != (_appeared != null) ||
+        (_appeared != null &&
+            (open == null || open.gaveUp || _appeared!.page != open.page))) {
       throw StateError('The displayed word screen belongs to the open page.');
     }
     final text = _text.value, shown = screen.value;
@@ -320,8 +333,8 @@ class PdfWordScreens {
       open.screen = screen;
       return _show(open);
     }
-    if (_showing.value) {
-      _publishText(open);
+    _publishText(open);
+    if (_appeared != null && identical(_appeared, _pages.shown.value)) {
       onRefinedPlace(_placeOf(open));
     }
   }
@@ -390,17 +403,35 @@ class PdfWordScreens {
     }
   }
 
-  /// Follows [PdfWordPages.shown]: the asked screen of the open page shows.
-  void _screenShown() {
+  bool _isRequested(WordScreen shown, _OpenPage open) =>
+      !open.gaveUp &&
+      shown.page == open.page &&
+      identical(shown.column, open.column) &&
+      shown.screen == open.screen;
+
+  /// Pairs selection text with prepared images without claiming visibility.
+  void _screenPrepared() {
     final open = _open, shown = _pages.shown.value;
-    if (open == null ||
-        open.gaveUp ||
-        shown == null ||
-        shown.page != open.page ||
-        !identical(shown.column, open.column) ||
-        shown.screen != open.screen) {
+    if (open != null && shown != null && _isRequested(shown, open)) {
+      _publishText(open);
+    }
+  }
+
+  /// Acknowledges [shown] after a view drew it in a completed frame.
+  /// Only the current prepared, requested screen can report a changed place
+  /// or release the first-screen wait. Repeated and retained-screen reports
+  /// are ignored. Text may later refine this same displayed screen even
+  /// while the view is absent; preparation of another screen cannot do so.
+  void appeared(WordScreen shown) {
+    final open = _open;
+    if (_disposed ||
+        open == null ||
+        identical(_appeared, shown) ||
+        !identical(_pages.shown.value, shown) ||
+        !_isRequested(shown, open)) {
       return;
     }
+    _appeared = shown;
     if (!open.shown.isCompleted) open.shown.complete(true);
     _publishText(open);
     _showing.value = true;
@@ -448,6 +479,7 @@ class PdfWordScreens {
 
   void _giveUp(_OpenPage open) {
     open.gaveUp = true;
+    _appeared = null;
     _text.value = null;
     _pages.clearShown();
     _showing.value = false;
@@ -471,12 +503,16 @@ class PdfWordView extends StatelessWidget {
     required this.fontSize,
     required this.waiting,
     required this.onLayout,
+    required this.onAppeared,
     this.selectionKey,
   });
   final PdfWordScreens screens;
   final double fontSize;
   final Widget waiting;
   final ValueChanged<WordSettings> onLayout;
+
+  /// Reports the exact prepared screen drawn in a completed content frame.
+  final ValueChanged<WordScreen> onAppeared;
   final GlobalKey? selectionKey;
 
   /// The margins of a screen in logical pixels, as the text view's.
@@ -502,7 +538,13 @@ class PdfWordView extends StatelessWidget {
       }
       return ValueListenableBuilder<WordScreen?>(
         valueListenable: screens.screen,
-        builder: (_, shown, view) => shown == null ? waiting : view!,
+        builder: (context, shown, view) {
+          if (shown == null) return waiting;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) onAppeared(shown);
+          });
+          return view!;
+        },
         child: _screen(side, top),
       );
     },
