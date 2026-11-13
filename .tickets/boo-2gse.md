@@ -1,6 +1,6 @@
 ---
 id: boo-2gse
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:00Z
@@ -97,3 +97,15 @@ This follow-up commit changes only ticket evidence. Production and tests are exa
 Inspected the entire three-file original-base diff, all twelve startup cases, current CatalogController restoration/disposal and account binding, the completed review, and saved final logs. Verified the reported branch/head and clean worktree. All original review assessments pass with no findings. Integrated bfc769d0 as bec1dbaa and review-only 9625803a as 2aab2d8b. Only appended ticket notes conflicted; both histories were kept. lib/main.dart and test/app/catalog_startup_test.dart are identical to the reviewed child.
 
 Combined checks run through Nix, concurrency two, one heavy parent command at a time. Formatting passed for both changed Dart files with zero changes; affected analysis found no issues. The required combined app/catalog/boot/download/playback/sync suites passed 1,548 tests, three existing skips, zero failures in 1m34s (/tmp/boo-2gse-integrated-affected.log). Full combined verification and closure follow below. No claim of Android launch-time improvement or device acceptance; t1-dth0 remains the acceptance blocker.
+
+## Parent final verification and closure — 2026-11-13
+
+The full combined suite passed: 3,495 tests, 27 existing skips, zero failures, 5m01s. Log: /tmp/boo-2gse-integrated-full.log. The sequential parent command exited zero. All commands finished. Implementation is unchanged from reviewed bfc769d0 (integrated as bec1dbaa); later commits change only ticket evidence and delegation notes.
+
+Exact parent command:
+
+```sh
+nix develop --command bash -c 'dart format --output=none --set-exit-if-changed lib/main.dart test/app/catalog_startup_test.dart > /tmp/boo-2gse-integrated-format.log 2>&1 && flutter analyze --no-pub lib/main.dart test/app/catalog_startup_test.dart > /tmp/boo-2gse-integrated-analysis.log 2>&1 && flutter test --no-pub --concurrency=2 test/app test/catalog test/boot_shell_test.dart test/downloads test/playback test/sync --reporter expanded > /tmp/boo-2gse-integrated-affected.log 2>&1 && flutter test --no-pub --concurrency=2 --reporter expanded > /tmp/boo-2gse-integrated-full.log 2>&1' > /tmp/boo-2gse-integrated-checks-driver.log 2>&1
+```
+
+Two Dart files format-clean; analysis clean; affected suites 1,548 passed with three existing skips; full suite 3,495 passed with 27 existing skips. git diff --check passed. Ticket closes after integration and combined checks. Reviewer limitations remain preserved; no second review, device work, coverage, mutations, measured Android speed, push, PR or deployment. Device acceptance remains blocked by t1-dth0; acceptance and later hardening remain open separately. No existing skip or test threshold was changed.
