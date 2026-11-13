@@ -1,6 +1,6 @@
 ---
 id: boo-w69y
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:02Z
@@ -60,3 +60,7 @@ Orchestrator continuation on Astra. The final review passed the production paths
 Replaced the timing-dependent Core Audio FIFO test with test/speech/native_hang_test.dart and its native C fixture. The fixture counts entry inside the blocking FFI call. The test advances fake time only after observing native entry, proves that another isolate answers while the original call still blocks, and proves that two abandoned workers stop further work. Teardown permanently releases current and late native calls, joins owned work, and verifies native completion. Temporary directory cleanup is registered before compilation. This supersedes the earlier claim that a 200 ms delay proved Core Audio entry or that a brief FIFO writer guaranteed cleanup. The new test exercises the actual worker and a controlled native condition-variable hang, not a vendor decoder hang or an Android device.
 
 Regression proof: temporarily removing _owner._abandon(this) made the native test fail with expected WorkerStopped but actual null; teardown completed and the original production file was restored. With the production deadline restored, the test passed. nix develop --command dart analyze lib/speech test/speech found no issues. nix develop --command flutter test test/speech test/crossings --no-pub --reporter expanded passed 170 tests. Full-suite integration check follows. Both final review findings are resolved without another fixer delegate.
+
+**2026-11-13T03:09:08Z**
+
+Orchestrator integration verified on main with source changes through 11266d7e. nix develop --command flutter test --no-pub --concurrency=4 --reporter expanded: 3114 passed, 25 skipped, 0 failed in 3m23s, exit 0. Log: /tmp/bookfin-astra-full-suite-fixed.log. The earlier full run exposed boo-9zgy; its deterministic test fix is integrated. No new device acceptance or coverage/mutation campaign is claimed. Integrated and closed by the orchestrator.
