@@ -2,8 +2,11 @@
 
 Original base and initial HEAD: `62f4fb238861fd601acb2668a9a4d646c8a28c77`.
 Worktree: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846`.
-Branch: `t3/55dca846`. Initial checkout was clean; the original-base diff was
-empty. The ticket was already in progress and had no dependencies.
+Initial branch: `t3/55dca846`. Current branch: `t3/restore-browser-builds`.
+Git's reflog records the external rename at the original base, in the same
+bound worktree. The ticket lead did not switch or reset the checkout.
+Initial checkout was clean; the original-base diff was empty. The ticket was
+already in progress and had no dependencies.
 
 ## Failure and correction
 
@@ -55,6 +58,10 @@ shell. Flutter tests use two workers at most, with one heavy command at a time.
 No existing test was disabled, no timing threshold changed, and no other
 owner's process was stopped. Detailed results and skip names are in the
 manifest and logs.
+Boolean skips print no reason in the expanded reporter. The manifest also
+names the two opt-in reader benchmarks and the opt-in current-restore
+measurement from their unchanged skip conditions, accounting for all 21 and
+27 skips respectively.
 
 The focused native run passed 109 tests. The affected reader, crossing, app,
 gallery and playback crossing suites passed 1,817 tests with 21 skips. The full

@@ -2,7 +2,8 @@
   "ticket": "t7-3j9c",
   "originalBase": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
   "worktreePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
-  "branch": "t3/55dca846",
+  "initialBranch": "t3/55dca846",
+  "branch": "t3/restore-browser-builds",
   "commands": [
     {
       "label": "01-base-production-web",
@@ -262,6 +263,16 @@
         {
           "test": "03:07 +1605 ~19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/reader/pdf_open_benchmark_test.dart: the open of a PDF",
           "reason": "Skip: set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+        },
+        {
+          "test": "test/reader/epub/page_source_test.dart: the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "reason": "BOOKFIN_PAGE_SOURCE_BENCHMARK != 1",
+          "source": "Boolean skip condition in unchanged source; expanded reporter has no reason text."
+        },
+        {
+          "test": "test/reader/epub/pager_test.dart: the host benchmark draws each deck page in a section in under 20 ms",
+          "reason": "BOOKFIN_PAGER_BENCHMARK != 1",
+          "source": "Boolean skip condition in unchanged source; expanded reporter has no reason text."
         }
       ],
       "testSummaries": [
@@ -385,6 +396,21 @@
         {
           "test": "04:49 +3206 ~26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin",
           "reason": "Skip: Run tool/sync_fixture.py in the pinned shells."
+        },
+        {
+          "test": "test/reader/epub/page_source_test.dart: the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "reason": "BOOKFIN_PAGE_SOURCE_BENCHMARK != 1",
+          "source": "Boolean skip condition in unchanged source; expanded reporter has no reason text."
+        },
+        {
+          "test": "test/reader/epub/pager_test.dart: the host benchmark draws each deck page in a section in under 20 ms",
+          "reason": "BOOKFIN_PAGER_BENCHMARK != 1",
+          "source": "Boolean skip condition in unchanged source; expanded reporter has no reason text."
+        },
+        {
+          "test": "test/research/current_restore_measurement_test.dart",
+          "reason": "BOOKFIN_CURRENT_RESTORE_EVIDENCE is absent",
+          "source": "Boolean skip condition at lines 129 and 254 of unchanged source; expanded reporter has no reason text."
         }
       ],
       "testSummaries": [
@@ -465,6 +491,28 @@
       "archive": "11-original-base-whitespace.log.gz",
       "rawBytes": 0,
       "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "skips": [],
+      "testSummaries": [],
+      "builtTargets": [],
+      "classification": "pass"
+    },
+    {
+      "label": "12-committed-base-whitespace",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "-c",
+        "git diff --check 62f4fb238861fd601acb2668a9a4d646c8a28c77 HEAD && git status --short && git rev-parse HEAD && git branch --show-current"
+      ],
+      "cwd": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-55dca846",
+      "log": "/tmp/bookfin-t7-3j9c/12-committed-base-whitespace.log",
+      "exitCode": 0,
+      "seconds": 2.91,
+      "archive": "12-committed-base-whitespace.log.gz",
+      "rawBytes": 67,
+      "rawSha256": "ffc3d5d6b5c2b3463240c0b6a092e02595db1adce37492f19eec231012147b7c",
       "skips": [],
       "testSummaries": [],
       "builtTargets": [],
