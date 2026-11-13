@@ -1,6 +1,6 @@
 ---
 id: boo-3y46
-status: in_progress
+status: closed
 deps: [boo-0931]
 links: []
 created: 2026-11-12T23:41:00Z
@@ -231,3 +231,29 @@ Parent finding P1: damage immediately after a server-copy repair commits can dis
 This is a direct parent fix with executed evidence, not a second review or a reviewer reapproval. Combined final verification and closure follow below.
 
 Combined affected verification passed 2,777 tests, 24 existing skips, zero failures in 4m16s (/tmp/boo-3y46-o3cm-integrated-affected.log). Exact command and the separate downloads integration correction are recorded in boo-o3cm. After that correction, 105 focused tests passed, including the real-SQLite repair regression (/tmp/boo-3y46-o3cm-integrated-regressions-green.log). Final analysis/format/full verification follows both direct parent fixes.
+
+
+## Parent final verification and closure — 2026-11-13
+
+Combined implementation and parent fixes are committed at 7cb281777c991f4e05fd4b731ba70bd3ba7a2971. The subsequent 7a1993fb changes only another ticket's coordination notes. No production/test change occurred during final checks.
+
+`nix develop --command bash /tmp/boo-3y46-o3cm-final-checks.sh` completed with exit 0, one heavy command at a time:
+
+| Check | Result | Log |
+| --- | --- | --- |
+| Changed Dart formatting | 21 files, zero changes | /tmp/boo-3y46-o3cm-integrated-format.log |
+| Affected analysis | No issues | /tmp/boo-3y46-o3cm-integrated-analysis.log |
+| Full combined Flutter suite | 3,483 passed, 27 existing skips, zero failures; 4m44s | /tmp/boo-3y46-o3cm-integrated-full.log |
+| Diff checks | Passed | git diff --check |
+
+Exact sequential commands:
+
+```sh
+set -e
+dart format --output=none --set-exit-if-changed lib/app/account_binding.dart lib/downloads/local_downloads.dart lib/playback/database.dart lib/playback/record_codec.dart lib/playback/store.dart lib/sync/coordinator.dart lib/sync/journal.dart lib/sync/screen.dart lib/sync/transport.dart test/app/account_binding_test.dart test/downloads/binding_test.dart test/research/current_restore_measurement_test.dart test/sync/alert_test.dart test/sync/batch_api_test.dart test/sync/schedule_test.dart test/sync/screen_test.dart test/sync/status_test.dart test/sync/transport_test.dart test/sync/unknown_records_test.dart test/sync/unreadable_discovery_test.dart test/sync/repair_recovery_test.dart > /tmp/boo-3y46-o3cm-integrated-format.log 2>&1
+flutter analyze --no-pub lib/playback lib/sync lib/downloads lib/app/account_binding.dart test/sync test/durability test/playback test/app test/downloads test/research/current_restore_measurement_test.dart > /tmp/boo-3y46-o3cm-integrated-analysis.log 2>&1
+flutter test --no-pub --concurrency=2 --reporter expanded > /tmp/boo-3y46-o3cm-integrated-full.log 2>&1
+
+```
+
+All parent commands finished. Ticket implementation is integrated and verified; closure records that state. Original reviewer verdicts and direct-fix evidence remain above. Android acceptance is still blocked by t1-dth0; no device/performance claim, coverage, mutation campaign, push, PR or deployment. Hardening awaits acceptance. Existing opt-in/external-fixture skips and the unresolved t5-rplx intermittent failure remain limitations.
