@@ -8,18 +8,24 @@ import 'package:flutter_test/flutter_test.dart';
 import '../playback/playback_test.dart'
     show LocalFiles, MemoryResume, TestEngine, account, recording, title;
 
-/// Counts the refreshes that record sync asks Playback for.
+/// Counts the refreshes that record sync asks Playback for. While
+/// [refreshFailure] is set, each refresh fails with it.
 class _Playback extends Playback {
   _Playback(LocalFiles downloads)
     : super(downloads: downloads, engine: TestEngine(), store: MemoryResume());
   int refreshes = 0;
+  Exception? refreshFailure;
   @override
   Future<void> flush() async {}
   @override
-  Future<void> refreshPersonalRecords() async => refreshes++;
+  Future<void> refreshPersonalRecords() async {
+    refreshes++;
+    if (refreshFailure case final failure?) throw failure;
+  }
 }
 
-/// Counts the refreshes that record sync asks the reader for.
+/// Counts the refreshes that record sync asks the reader for. While
+/// [refreshFailure] is set, each refresh fails with it.
 class _Reader extends ReaderSession {
   _Reader(LocalFiles downloads)
     : super(
@@ -28,22 +34,45 @@ class _Reader extends ReaderSession {
         load: (_) => throw UnimplementedError(),
       );
   int refreshes = 0;
+  Exception? refreshFailure;
   @override
   Future<void> flush() async {}
   @override
-  Future<void> refreshPersonalRecords() async => refreshes++;
+  Future<void> refreshPersonalRecords() async {
+    refreshes++;
+    if (refreshFailure case final failure?) throw failure;
+  }
 }
 
-/// Personal records whose next sync reports [stale] and finds [found].
+/// Personal records whose next sync reports [stale] and finds [found], and
+/// which save every choice between saved versions.
 class _Records implements LocalResumeStore {
   StaleDomains stale = (listening: false, reading: false);
   int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
+  int syncs = 0;
+
+  /// The identity of each version that a choice saved.
+  final chosen = <String>[];
   @override
   Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
-  ) async => (stale: stale, replaced: replaced);
+  ) async {
+    syncs++;
+    return (stale: stale, replaced: replaced);
+  }
+
+  @override
+  Future<bool> resolve(
+    String account,
+    String record,
+    String identity, {
+    Map<String, String> bookmarkTitles = const {},
+  }) async {
+    chosen.add(identity);
+    return true;
+  }
 
   @override
   Future<Map<String, List<Map<String, dynamic>>>> conflicts(
@@ -85,6 +114,7 @@ void main() {
     await pumpEventQueue();
     playback.refreshes = 0;
     reader.refreshes = 0;
+    records.syncs = 0;
   });
   tearDown(() async {
     sync.dispose();
@@ -172,6 +202,100 @@ void main() {
     expect(sync.conflicts, isEmpty);
   });
 
+  group('a refresh that fails after a sync', () {
+    test('does not stop the refresh of the other domain', () async {
+      records.stale = (listening: true, reading: true);
+      playback.refreshFailure = Exception('The listening records failed.');
+      await sync.synchronize();
+      expect(reader.refreshes, 1);
+
+      playback.refreshFailure = null;
+      reader.refreshFailure = Exception('The reading records failed.');
+      playback.refreshes = 0;
+      await sync.synchronize();
+      expect(playback.refreshes, 1);
+    });
+
+    test('ends the sync as one whose records could not be read', () async {
+      records.stale = (listening: false, reading: true);
+      reader.refreshFailure = Exception('The reading records failed.');
+      await sync.synchronize();
+
+      expect(
+        sync.lastSyncNotifier.value?.failure,
+        RecordSyncFailure.unreadable,
+      );
+    });
+
+    test('does not report the storage plugin missing when a saved record cannot be decoded', () async {
+      records.stale = (listening: true, reading: false);
+      playback.refreshFailure = const FormatException('A bad saved record.');
+      await sync.synchronize();
+
+      expect(
+        sync.lastSyncNotifier.value?.failure,
+        RecordSyncFailure.unreadable,
+      );
+    });
+
+    test('keeps the number of records that the sync restored from Jellyfin', () async {
+      records
+        ..stale = (listening: true, reading: false)
+        ..replaced = 2;
+      playback.refreshFailure = Exception('The listening records failed.');
+      await sync.synchronize();
+
+      expect(sync.lastSyncNotifier.value?.replaced, 2);
+    });
+
+    test('still shows the choices that the sync found', () async {
+      records
+        ..stale = (listening: true, reading: false)
+        ..found = {
+          '["audio","resumes","x"]': [
+            {'value': null},
+          ],
+        };
+      playback.refreshFailure = Exception('The listening records failed.');
+      await sync.synchronize();
+
+      expect(sync.conflicts.keys, ['["audio","resumes","x"]']);
+    });
+  });
+
+  group('a refresh that fails after a choice that was saved', () {
+    setUp(() {
+      playback.refreshFailure = Exception('The listening records failed.');
+    });
+
+    test('does not say that the choice was not saved', () async {
+      await sync.resolve('["audio","resumes","x"]', 'chosen');
+
+      expect(records.chosen, ['chosen']);
+      expect(sync.message, isNull);
+    });
+
+    test('does not stop the refresh of the other domain', () async {
+      await sync.resolve('["audio","resumes","x"]', 'chosen');
+
+      expect(reader.refreshes, 1);
+    });
+
+    test('does not stop the sync that sends the choice', () async {
+      await sync.resolve('["audio","resumes","x"]', 'chosen');
+
+      expect(records.syncs, 1);
+    });
+  });
+
+  test('a refresh that fails after a retry of kept copies does not stop the refresh of the other domain', () async {
+    records.stale = (listening: true, reading: true);
+    playback.refreshFailure = Exception('The listening records failed.');
+    await sync.recoverKept();
+
+    expect(reader.refreshes, 1);
+  });
+
   group('a listening refresh that cannot read the store, while audio plays', () {
     late TestEngine engine;
     late MemoryResume store;
@@ -195,10 +319,13 @@ void main() {
       await playing.close();
     });
 
-    test('ends a background sync as a sync that did not finish', () async {
+    test('ends a background sync as one whose records could not be read', () async {
       await sync.synchronize();
 
-      expect(sync.lastSyncNotifier.value?.failure, RecordSyncFailure.other);
+      expect(
+        sync.lastSyncNotifier.value?.failure,
+        RecordSyncFailure.unreadable,
+      );
     });
 
     test('leaves the audio playing through a background sync', () async {
