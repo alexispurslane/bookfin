@@ -2,16 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/catalog/jellyfin.dart';
+import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/record_codec.dart';
 import 'package:bookfin/playback/store.dart';
+import 'package:bookfin/playback/timeline.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/journal.dart';
 import 'package:bookfin/sync/transport.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../reader/native_reader.dart' show finishReader;
 import '../playback/held_engine.dart';
 import '../playback/playback_test.dart' as audio;
 import 'batch_api_test.dart' show BatchApi, ConnectedTransport;
@@ -33,6 +38,7 @@ class _Records extends LocalResumeStore {
   Completer<void>? nextSaved;
   Object? readFailure;
   bool failWrites = false;
+  int saves = 0;
 
   void holdRead() {
     readStarted = Completer<void>();
@@ -57,6 +63,7 @@ class _Records extends LocalResumeStore {
 
   @override
   Future<void> save(String accountKey, ListeningChanges changes) async {
+    saves++;
     if (writeStarted case final started? when !started.isCompleted) {
       started.complete();
       await writeRelease!.future;
@@ -75,19 +82,37 @@ class _Records extends LocalResumeStore {
   }
 }
 
+class _Engine extends HeldEngine {
+  int loads = 0;
+  int seeks = 0;
+
+  @override
+  Future<void> load(List<Uri> sources, int fileIndex, int position) {
+    loads++;
+    return super.load(sources, fileIndex, position);
+  }
+
+  @override
+  Future<AudioSample> seek(int fileIndex, int position) {
+    seeks++;
+    return super.seek(fileIndex, position);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
   for (final durable in [false, true]) {
     group(durable ? 'SQLite' : 'preferences', () {
       late _Records records;
-      late HeldEngine engine;
+      late _Engine engine;
       late audio.LocalFiles downloads;
       late Playback player;
       late BatchApi api;
       late JellyfinClient client;
       late JellyfinSession session;
       late RecordSync sync;
+      var syncDisposed = false;
       late RecordJournal remote;
       Phone? phone;
       String getAccount() => session.scope.key;
@@ -114,12 +139,13 @@ void main() {
           RecordTransport(records).synchronize(session, client);
 
       setUp(() async {
+        syncDisposed = false;
         SharedPreferences.setMockInitialValues({});
         if (durable) phone = await Phone.open('playback-refresh');
         records = _Records(
           openDatabase: durable ? () async => phone!.database : null,
         );
-        engine = HeldEngine();
+        engine = _Engine();
         downloads = audio.LocalFiles();
         player = Playback(downloads: downloads, engine: engine, store: records);
         api = BatchApi();
@@ -155,13 +181,197 @@ void main() {
       });
 
       tearDown(() async {
-        sync.dispose();
+        if (!syncDisposed) sync.dispose();
         records.release();
         engine.release();
         await player.close();
         downloads.dispose();
         client.close();
       });
+
+      for (final action in [
+        'history before',
+        'history after',
+        'bookmark restore',
+        'bookmark edit',
+      ]) {
+        test(
+          'a queued $action does nothing after sync adopts its deletion during a held pause',
+          () async {
+            final history = action.startsWith('history');
+            final id = history
+                ? player.history.first.id
+                : player.bookmarks.single.id;
+            await player.seekEdition(25000);
+            final undo = player.undoNotifier.value!.action.id;
+            engine.held = HeldCommand.pause;
+            late int savesAfterPause;
+            final pausing = player.pause().then((_) {
+              savesAfterPause = records.saves;
+            });
+            await engine.entered.future;
+            var completed = false;
+            final stale = switch (action) {
+              'history before' => player.restoreHistory(id),
+              'history after' => player.restoreHistory(id, previous: false),
+              'bookmark restore' => player.restoreBookmark(id),
+              _ => player.editBookmark(
+                id,
+                title: 'Stale rename',
+                note: 'Stale note',
+              ),
+            };
+            // Listen immediately so a failing command is reported as a failed
+            // completion, rather than leaving an unobserved future in the test.
+            final checked = expectLater(
+              stale.then((_) => completed = true),
+              completes,
+            );
+            try {
+              remote.change(
+                jsonEncode(['audio', history ? 'history' : 'bookmarks', id]),
+                null,
+              );
+              publish();
+              await sync.syncNow().timeout(_deadline);
+              expect(completed, isFalse);
+              expect(engine.released.isCompleted, isFalse);
+              if (history) {
+                expect(
+                  player.history.map((event) => event.id),
+                  isNot(contains(id)),
+                );
+              }
+              if (!history) expect(player.bookmarks, isEmpty);
+              expect(records.staleNotifier(getAccount()).value, isFalse);
+              final moves = player.history.length;
+              final loads = engine.loads;
+              final seeks = engine.seeks;
+
+              engine.release();
+              await pausing;
+              await checked;
+
+              expect(completed, isTrue);
+              expect(player.position?.milliseconds, 25000);
+              expect(engine.milliseconds, 25000);
+              expect(engine.loads, loads);
+              expect(engine.seeks, seeks);
+              expect(player.undoNotifier.value?.action.id, undo);
+              expect(
+                player.history,
+                hasLength(moves + 1),
+                reason: 'Only the held pause records a move.',
+              );
+              expect(
+                records.saves,
+                savesAfterPause,
+                reason: 'The stale action writes nothing after the pause.',
+              );
+              expect(player.message, isNull);
+              expect(player.unsavedChanges, isFalse);
+              final saved = (await reopened().read(getAccount()))!;
+              expect(
+                (saved[history ? 'history' : 'bookmarks'] as List).map(
+                  (value) => value['id'],
+                ),
+                isNot(contains(id)),
+              );
+
+              await player.seekEdition(32000);
+              expect(engine.milliseconds, 32000);
+              player.checkInvariants();
+              if (durable) {
+                await player.close();
+                await phone!.restart();
+                final restarted = (await phone!.store.read(getAccount()))!;
+                expect(
+                  (restarted[history ? 'history' : 'bookmarks'] as List).map(
+                    (value) => value['id'],
+                  ),
+                  isNot(contains(id)),
+                );
+              }
+            } finally {
+              engine.release();
+              await pausing;
+              await checked;
+            }
+          },
+        );
+      }
+
+      testWidgets(
+        'the audio editor completes normally when sync deletes its bookmark while it is open',
+        (tester) async {
+          late BuildContext page;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: bookfinTheme(Brightness.light),
+              home: Builder(
+                builder: (context) {
+                  page = context;
+                  return const Scaffold();
+                },
+              ),
+            ),
+          );
+          try {
+            openHistory(
+              page,
+              player,
+              book: audio.title,
+              showing: EditionKind.audio,
+            );
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Local', findRichText: true));
+            await tester.pumpAndSettle();
+            await tester.tap(find.byTooltip('Rename'));
+            await tester.pumpAndSettle();
+            expect(find.text('Edit bookmark'), findsOneWidget);
+            final id = player.bookmarks.single.id;
+            final undo = player.undoNotifier.value?.action.id;
+            await tester.runAsync(() async {
+              remote.change(jsonEncode(['audio', 'bookmarks', id]), null);
+              publish();
+              await sync.syncNow().timeout(_deadline);
+            });
+            await tester.pumpAndSettle();
+            expect(player.bookmarks, isEmpty);
+            final saves = records.saves;
+            final history = player.history;
+            await tester.enterText(find.byType(TextField).first, 'Too late');
+            await tester.tap(find.text('Save bookmark'));
+            await finishReader(tester, player.setSleep(null));
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+            expect(find.text('Edit bookmark'), findsNothing);
+            expect(player.bookmarks, isEmpty);
+            expect(player.history, same(history));
+            expect(player.undoNotifier.value?.action.id, undo);
+            expect(engine.milliseconds, 11000);
+            expect(records.saves, saves);
+            expect(player.message, isNull);
+            await tester.runAsync(() async {
+              expect(
+                (await reopened().read(getAccount()))!['bookmarks'],
+                isEmpty,
+              );
+            });
+            await finishReader(
+              tester,
+              player.addBookmark(title: 'Still works'),
+            );
+            expect(player.bookmarks.single.title, 'Still works');
+          } finally {
+            await tester.pumpWidget(const SizedBox());
+            sync.dispose();
+            syncDisposed = true;
+            await finishReader(tester, player.close());
+            await tester.pumpAndSettle();
+          }
+        },
+      );
 
       for (final command in HeldCommand.values) {
         for (final rejected in [false, true]) {

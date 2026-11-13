@@ -409,12 +409,22 @@ void main() {
     await playback.seekEdition(75000);
     await playback.addBookmark(title: 'Private');
     final id = playback.bookmarks.single.id;
+    final historyId = playback.history.first.id;
     await playback.bind(account(user: 'bob'), [title]);
     expect(playback.bookmarks, isEmpty);
     expect(playback.history, isEmpty);
-    await expectLater(playback.restoreBookmark(id), throwsArgumentError);
+    final saved = jsonEncode(store.values);
+    await playback.restoreBookmark(id);
+    await playback.restoreHistory(historyId);
+    await playback.editBookmark(id, title: 'Wrong account');
+    expect(playback.position, isNull);
+    expect(playback.bookmarks, isEmpty);
+    expect(playback.history, isEmpty);
+    expect(playback.message, isNull);
+    expect(jsonEncode(store.values), saved);
     await playback.bind(account(), [title]);
     expect(playback.bookmarks.single.id, id);
+    expect(playback.bookmarks.single.title, 'Private');
     expect(playback.position?.milliseconds, 15000);
   });
 

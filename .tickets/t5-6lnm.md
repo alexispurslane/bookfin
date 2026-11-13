@@ -75,3 +75,36 @@ Astra high reviewer authorized. Parent integrates and closes.
 - taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t5-6lnm-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t5-6lnm-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t5-6lnm-astra-20261113-1>
+
+## Implementation evidence — 2026-11-13
+
+Worktree `/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2`, branch
+`t3/ignore-stale-history-bookmarks`, started clean at original base
+`cce56bd53c5a2cd4c4611c84507f161be9544272`. No inherited changes were removed.
+
+Implemented only the four missing-record guards: Playback history restore,
+bookmark restore/edit, and ReaderSession history restore. Existing reader
+bookmark restore/edit remain unchanged. Actual timeline and editor callers
+were audited. No fork or sync-conflict model change.
+
+Red proof: 14 expected missing-record failures, with the three existing reader
+bookmark cases passing. Green proof includes adopted remote deletion during a
+held audio pause, both history directions, actual open-editor callback races,
+account replacement, decoder/reader movement checks, unchanged Undo and
+records, SQLite restart rereads, later successful commands, and retained
+argument/storage/programming-error regressions.
+
+Required Nix checks: focused 94 passed; affected playback/sync/durability/app/
+reader/crossings suites 2,724 passed and 24 skipped; full Flutter suite 3,622
+passed and 27 skipped. No failures in those completed green suites. The only
+later code change added braces to a test for analysis; final formatting,
+94 focused tests, and affected analysis passed. Analysis reports no issues.
+
+Exact commands, all earlier failures and interrupted attempts, logs, caller
+audit, skipped-test inventory and limits are in
+`docs/evidence/t5-6lnm/validation.md`, `commands.json`, and `full-suite.json`.
+Raw outputs remain at this worktree's `.cache/t5-6lnm/` paths. The complete
+original-base diff passed the Nix whitespace check, including staged new files
+and evidence. One fresh read-only Astra high review follows the local commit.
+No devices/browser, coverage/mutations, timing-threshold edits, push/PR,
+deployment, integration, acceptance, or closure. Parent owns those stages.

@@ -1446,11 +1446,10 @@ class ReaderSession extends ChangeNotifier {
   /// Shows where the move [id] of [history] began, or with [previous]
   /// false, where it ended, as a history restore move. A place in another
   /// ebook edition opens that edition there (see [_jumpTo]).
+  /// If the move is gone, completes normally without changing anything.
   Future<void> restoreHistory(String id, {bool previous = true}) async {
     final event = _history.where((value) => value.id == id).firstOrNull;
-    if (event == null) {
-      throw ArgumentError('Choose history from the current account.');
-    }
+    if (event == null) return;
     await _jumpTo(
       HistoryAction.historyRestore,
       previous ? event.before : event.after,

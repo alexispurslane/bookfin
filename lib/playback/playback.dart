@@ -524,12 +524,13 @@ class Playback extends ChangeNotifier {
     _notify();
   });
 
+  /// Restores where the history event [id] began, or where it ended when
+  /// [previous] is false. If the event is gone when this command runs,
+  /// completes normally without changing anything.
   Future<void> restoreHistory(String id, {bool previous = true}) =>
       _audioCommand(() async {
         final event = _history.where((event) => event.id == id).firstOrNull;
-        if (event == null) {
-          throw ArgumentError('Choose history from the current account.');
-        }
+        if (event == null) return;
         await _restorePosition(
           previous ? event.before : event.after,
           HistoryAction.historyRestore,
@@ -584,13 +585,13 @@ class Playback extends ChangeNotifier {
     await _saveRecords();
   });
 
+  /// Edits the bookmark [id]. If it is gone when this command runs,
+  /// completes normally without changing anything.
   Future<void> editBookmark(String id, {String? title, String? note}) =>
       _recordsCommand(() async {
         if (!_restored) return;
         final index = _bookmarks.indexWhere((bookmark) => bookmark.id == id);
-        if (index < 0) {
-          throw ArgumentError('Choose a bookmark from the current account.');
-        }
+        if (index < 0) return;
         final bookmark = _bookmarks[index];
         _putBookmark(
           Bookmark(
@@ -673,13 +674,13 @@ class Playback extends ChangeNotifier {
     _notify();
   }
 
+  /// Restores the bookmark [id]. If it is gone when this command runs,
+  /// completes normally without changing anything.
   Future<void> restoreBookmark(String id) => _audioCommand(() async {
     final bookmark = _bookmarks
         .where((bookmark) => bookmark.id == id)
         .firstOrNull;
-    if (bookmark == null) {
-      throw ArgumentError('Choose a bookmark from the current account.');
-    }
+    if (bookmark == null) return;
     await _restorePosition(bookmark.position, HistoryAction.bookmarkRestore);
   });
 

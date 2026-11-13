@@ -1,0 +1,128 @@
+[
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart --name \"queued.*deletion|editor completes|stale reading|account switches\"' > .cache/t5-6lnm/01-red.log 2>&1",
+    "exitCode": 1,
+    "result": "not red: compiler and account failures",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/01-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart --name \"queued.*deletion|editor completes|stale reading|account switches\"' > .cache/t5-6lnm/02-red.log 2>&1",
+    "exitCode": 1,
+    "result": "0 passed, 17 failed; mixed behavior and fixture failures",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/02-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart --name \"editor completes|stale reading\"' > .cache/t5-6lnm/03-red.log 2>&1",
+    "exitCode": 1,
+    "result": "0 passed, 8 fixture failures",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/03-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart --name \"editor completes|stale reading\"' > .cache/t5-6lnm/04-red.log 2>&1",
+    "exitCode": 0,
+    "result": "interrupted, not a pass; SIGINT to owned PID 47008",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/04-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart --name \"editor completes|stale reading\"' > .cache/t5-6lnm/05-red.log 2>&1",
+    "exitCode": 0,
+    "result": "interrupted, not a pass; SIGINT to owned PID 48302",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/05-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart --name \"editor completes|stale reading\"' > .cache/t5-6lnm/06-red.log 2>&1",
+    "exitCode": 0,
+    "result": "interrupted, not a pass; SIGINT to owned PID 49028",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/06-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart --name \"queued.*deletion|editor completes|stale reading|account switches\"' > .cache/t5-6lnm/07-red.log 2>&1",
+    "exitCode": 1,
+    "result": "3 passed, 14 failed; desired failures plus double-dispose cleanup",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/07-red.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart --name \"queued.*deletion|editor completes|stale reading|account switches\"' > .cache/t5-6lnm/08-red.log 2>&1",
+    "exitCode": 1,
+    "result": "3 passed, 14 expected missing-record failures; meaningful red gate",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/08-red.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart --name 'queued history' > .cache/t5-6lnm/09-history-green.log 2>&1",
+    "exitCode": 1,
+    "result": "0 passed, 4 failed; incorrect pause write-count assumption",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/09-history-green.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format test/sync/playback_refresh_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart --name \"queued history\"' > .cache/t5-6lnm/10-history-green.log 2>&1",
+    "exitCode": 0,
+    "result": "4 passed",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/10-history-green.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart --name 'queued bookmark restore' > .cache/t5-6lnm/11-bookmark-restore-green.log 2>&1",
+    "exitCode": 0,
+    "result": "2 passed",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/11-bookmark-restore-green.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/playback/history_test.dart --name 'queued bookmark edit|audio editor completes|account switches' > .cache/t5-6lnm/12-bookmark-edit-green.log 2>&1",
+    "exitCode": 0,
+    "result": "5 passed",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/12-bookmark-edit-green.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/sync/stale_reading_actions_test.dart > .cache/t5-6lnm/13-reader-green.log 2>&1",
+    "exitCode": 1,
+    "result": "5 passed, 1 failed; test queried open-edition bookmarks before reopening",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/13-reader-green.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format lib/playback/playback.dart lib/reader/session.dart test/playback/history_test.dart test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart test/playback/command_queue_test.dart' > .cache/t5-6lnm/14-focused-green.log 2>&1",
+    "exitCode": 0,
+    "result": "94 passed, no skips",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/14-focused-green.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --reporter expanded test/playback test/sync test/durability test/app test/reader test/crossings > .cache/t5-6lnm/15-affected.log 2>&1",
+    "exitCode": 0,
+    "result": "2724 passed, 24 skipped, 0 failed",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/15-affected.log"
+  },
+  {
+    "command": "nix develop --command flutter test --concurrency=2 --machine > .cache/t5-6lnm/16-full.log 2>&1",
+    "exitCode": 0,
+    "result": "3622 passed, 27 skipped, 0 failed; done.success=true",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/16-full.log"
+  },
+  {
+    "command": "nix develop --command dart format --output=none --set-exit-if-changed lib/playback/playback.dart lib/reader/session.dart test/playback/history_test.dart test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart > .cache/t5-6lnm/17-format.log 2>&1",
+    "exitCode": 0,
+    "result": "5 files, 0 changed",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/17-format.log"
+  },
+  {
+    "command": "nix develop --command flutter analyze lib/playback lib/reader lib/sync test/playback test/reader test/sync > .cache/t5-6lnm/18-analyze.log 2>&1",
+    "exitCode": 1,
+    "result": "one info: curly_braces_in_flow_control_structures at test/sync/playback_refresh_test.dart:240; added braces only",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/18-analyze.log"
+  },
+  {
+    "command": "nix develop --command bash -c 'dart format --output=none --set-exit-if-changed lib/playback/playback.dart lib/reader/session.dart test/playback/history_test.dart test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart && flutter test --concurrency=2 --reporter expanded test/sync/playback_refresh_test.dart test/sync/stale_reading_actions_test.dart test/playback/history_test.dart test/playback/command_queue_test.dart' > .cache/t5-6lnm/19-final-focused.log 2>&1",
+    "exitCode": 0,
+    "result": "5 files, 0 formatting changes; 94 tests passed, no skips",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/19-final-focused.log"
+  },
+  {
+    "command": "nix develop --command flutter analyze lib/playback lib/reader lib/sync test/playback test/reader test/sync > .cache/t5-6lnm/20-final-analyze.log 2>&1",
+    "exitCode": 0,
+    "result": "No issues found",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/20-final-analyze.log"
+  },
+  {
+    "command": "nix develop --command git diff --check cce56bd53c5a2cd4c4611c84507f161be9544272 > .cache/t5-6lnm/21-whitespace.log 2>&1",
+    "exitCode": 0,
+    "result": "Complete original-base diff whitespace-clean, including staged new files and evidence",
+    "log": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/.cache/t5-6lnm/21-whitespace.log"
+  }
+]

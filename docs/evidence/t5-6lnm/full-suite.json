@@ -1,0 +1,153 @@
+{
+  "counts": {
+    "passed": 3622,
+    "skipped": 27,
+    "failed": 0
+  },
+  "completion": {
+    "success": true,
+    "type": "done",
+    "time": 290505
+  },
+  "errors": [],
+  "skips": [
+    {
+      "name": "the part open benchmark",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/part_open_benchmark_test.dart",
+      "reason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+    },
+    {
+      "name": "the corpus prepare",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/corpus_prepare_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+    },
+    {
+      "name": "the downloaded books open the places that epub.js saved",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/saved_places_test.dart",
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/page_source_test.dart",
+      "reason": null,
+      "sourceCondition": "BOOKFIN_PAGE_SOURCE_BENCHMARK != '1' (test/reader/epub/page_source_test.dart:1215)"
+    },
+    {
+      "name": "body text breaks lines and pages where epub.js broke them",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/fidelity_test.dart",
+      "reason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+    },
+    {
+      "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-frankenstein",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-moby-dick",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-poetry",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+    },
+    {
+      "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_test.dart",
+      "reason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+    },
+    {
+      "name": "the step budget",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/step_budget_test.dart",
+      "reason": "set BOOKFIN_EPUB_STEPS=1 to run"
+    },
+    {
+      "name": "the corpus steps",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/corpus_steps_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+    },
+    {
+      "name": "the admission benchmark",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/admission_benchmark_test.dart",
+      "reason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+    },
+    {
+      "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/zip_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "name": "the jumps into real books",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/page_map_jump_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1"
+    },
+    {
+      "name": "the corpus run",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/corpus_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+    },
+    {
+      "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/image_size_test.dart",
+      "reason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+    },
+    {
+      "name": "the open of a PDF",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/pdf_open_benchmark_test.dart",
+      "reason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+    },
+    {
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/reader/epub/pager_test.dart",
+      "reason": null,
+      "sourceCondition": "BOOKFIN_PAGER_BENCHMARK != '1' (test/reader/epub/pager_test.dart:1206)"
+    },
+    {
+      "name": "measure incremental saves and acknowledgments while retaining every original action",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/research/journal_growth_measurement_test.dart",
+      "reason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+    },
+    {
+      "name": "measure current restoration against complete retained replay on this host",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/research/current_restore_measurement_test.dart",
+      "reason": null,
+      "sourceCondition": "BOOKFIN_CURRENT_RESTORE_EVIDENCE is unset (test/research/current_restore_measurement_test.dart:129,254)"
+    },
+    {
+      "name": "the layout cache survey",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/research/epub_layout_cache_test.dart",
+      "reason": "set BOOKFIN_LAYOUT_CACHE=1"
+    },
+    {
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/sync/plugin_upgrade_integration_test.dart",
+      "reason": "Run tool/plugin/prove.py in the pinned shells."
+    },
+    {
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/sync/plugin_batch_integration_test.dart",
+      "reason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+    },
+    {
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f25a0de2/test/sync/plugin_integration_test.dart",
+      "reason": "Run tool/sync_fixture.py in the pinned shells."
+    }
+  ]
+}
