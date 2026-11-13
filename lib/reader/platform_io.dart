@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
@@ -134,7 +135,7 @@ Future<T> _readAdmitted<T>(
 Future<Publication> Function() _admission(VerifiedFile original) {
   final path = File.fromUri(original.uri).path;
   final digest = original.digest;
-  return () async => Publication.admit(await File(path).readAsBytes(), digest);
+  return () async => Publication.admit(await _archiveBytes(path), digest);
 }
 
 /// The admitted publication of the EPUB at [path], whose SHA-256 is
@@ -147,7 +148,7 @@ Future<Publication> _keptOrAdmittedEpub(String path, String digest) async {
     File(path),
     digest,
     Publication.policy,
-    () async => Publication.admit(await File(path).readAsBytes(), digest),
+    () async => Publication.admit(await _archiveBytes(path), digest),
   );
   return publication;
 }
@@ -182,6 +183,10 @@ ReadBook _wordsOf(
 ) =>
     () async => bookWordsOf(await admitted(path, digest));
 
+/// The regular local file at [uri], which Downloads verified. Throws for
+/// any other address and for a link, so that a reader never follows a
+/// path out of the downloads. It sets no size limit: each format's loader
+/// knows whether the bytes come into memory ([_archiveBytes]).
 Future<File> _verifiedFile(Uri uri) async {
   if (uri.scheme != 'file' ||
       uri.host.isNotEmpty ||
@@ -194,11 +199,22 @@ Future<File> _verifiedFile(Uri uri) async {
   }
   final file = File.fromUri(uri);
   if (await FileSystemEntity.type(file.path, followLinks: false) !=
-          FileSystemEntityType.file ||
-      await file.length() > Publication.maxArchiveBytes) {
-    throw const FormatException(
-      'The downloaded ebook is missing or exceeds 64 MiB.',
-    );
+      FileSystemEntityType.file) {
+    throw const FormatException('The downloaded ebook is missing.');
   }
   return file;
+}
+
+/// The bytes of the EPUB at [path]. An EPUB loads whole into the memory of
+/// the calling isolate, so a file above [Publication.maxArchiveBytes] is
+/// refused before the read. A MOBI has the same limit in its conversion
+/// (mobi.dart). A PDF has none: PDFium reads it from its path.
+Future<Uint8List> _archiveBytes(String path) async {
+  final file = File(path);
+  if (await file.length() > Publication.maxArchiveBytes) {
+    throw const FormatException(
+      'This EPUB exceeds the 64 MiB limit. The original download was kept.',
+    );
+  }
+  return file.readAsBytes();
 }
