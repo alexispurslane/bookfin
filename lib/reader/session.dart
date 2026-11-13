@@ -279,6 +279,7 @@ class ReaderSession extends ChangeNotifier {
   /// Goes on with the background work that [suspend] paused.
   void resume() {
     _suspended = false;
+    if (!_recordsReady && _account != null) unawaited(_readAgain());
     if (_document case final PdfBook book) book.survey.resume();
   }
 
@@ -414,6 +415,20 @@ class ReaderSession extends ChangeNotifier {
   Future<void> _writes = Future.value();
   final _pendingWrites = <String, ReadingChanges>{};
   final _failedAccounts = <String>{};
+
+  /// The record changes of each account that were made while its saved
+  /// records were unread: the first read still runs, or it failed. They
+  /// wait in memory, because a save carries the whole settings, and the
+  /// settings of unread records are defaults that would replace the saved
+  /// ones. [_readRecords] merges them into the records that it reads and
+  /// then saves them, so a failed read costs no place (boo-y2sj).
+  final _unreadChanges = <String, ReadingChanges>{};
+
+  /// The notice while the records of the account are unread after a failed
+  /// read. It ends when a later read opens them.
+  static const _recordsUnread =
+      'Reading records could not be opened. Existing records were kept. '
+      'Bookfin keeps new places and saves them when the records open.';
   int _search = 0;
   int _recordRevision = 0;
 
@@ -549,6 +564,7 @@ class ReaderSession extends ChangeNotifier {
         _emit();
       }
       await _binding;
+      if (!_recordsReady) await _readAgain();
       await _retryPending();
       return;
     }
@@ -569,63 +585,117 @@ class ReaderSession extends ChangeNotifier {
     _binding = () async {
       await previous;
       await _retryPending();
-      if (!_liveAccount(generation) || key == null) return;
-      try {
-        final pending = _pendingWrites[key];
-        final stored = await store.read(key);
-        final saved = pending == null ? stored : pending.applyTo(stored);
-        if (!_liveAccount(generation)) return;
-        if (saved != null) {
-          if (saved['version'] != 1 ||
-              saved['resumes'] is! List ||
-              saved['bookmarks'] is! List ||
-              (saved['resumes'] as List).any(
-                (value) => value is! Map<String, dynamic>,
-              ) ||
-              (saved['bookmarks'] as List).any(
-                (value) => value is! Map<String, dynamic>,
-              )) {
-            throw const FormatException('Invalid reading record.');
-          }
-          final resumes = (saved['resumes'] as List)
-              .map((value) => decodeTextPosition(value as Map<String, dynamic>))
-              .toList();
-          final bookmarks = (saved['bookmarks'] as List)
-              .map(
-                (value) => Bookmark.fromJson(
-                  value as Map<String, dynamic>,
-                  decodeTextPosition,
-                ),
-              )
-              .toList();
-          if (bookmarks.map((mark) => mark.id).toSet().length !=
-              bookmarks.length) {
-            throw const FormatException('Duplicate reading bookmarks.');
-          }
-          final pdfBooks = _readPdfBooks(saved);
-          _resumes.addAll(resumes);
-          _bookmarks = bookmarks;
-          _history = _moves(saved);
-          final size = saved['fontSize'];
-          if (size is num && size.isFinite) {
-            _fontSize = size.toDouble().clamp(14, 40);
-          }
-          // A text size other than the default, saved before the choice
-          // was saved, came from the size buttons.
-          _sizesMainText =
-              saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
-          _legacyTrimMargins = saved['trimMargins'] != false;
-          _pdfBooks = pdfBooks;
-        }
-        if (pending == null) store.acceptSnapshot(key, saved);
-        _recordsReady = true;
-      } on Exception {
-        if (_liveAccount(generation)) _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
-      }
-      _emit();
+      await _readRecords(generation, key);
     }();
     _emit();
     await _binding;
+  }
+
+  /// Reads the saved records of [key], the account of [generation], into
+  /// this session, and makes the records ready. The changes that waited in
+  /// [_unreadChanges] apply on top of the read records and are then saved.
+  /// A read that fails leaves the records unread, with the changes still
+  /// waiting, and shows [_recordsUnread]. [_readAgain] tries again.
+  Future<void> _readRecords(int generation, String? key) async {
+    if (!_liveAccount(generation) || key == null) return;
+    var saveWaiting = false;
+    try {
+      var pending = _pendingWrites[key];
+      final stored = await store.read(key);
+      if (!_liveAccount(generation)) return;
+      // No await from here to the end of the try block: a change made in
+      // between would wait in [_unreadChanges] with nothing to save it.
+      final waiting = _unreadChanges[key];
+      if (waiting != null) {
+        // The waiting changes name records only. Their settings came from
+        // unread records, so the pending or the read settings stand.
+        final changes = ReadingChanges(
+          pending?.settings ??
+              (stored == null
+                  ? _settings()
+                  : {
+                      for (final MapEntry(:key, :value) in stored.entries)
+                        if (!const {
+                          'resumes',
+                          'bookmarks',
+                          'history',
+                        }.contains(key))
+                          key: value,
+                    }),
+          resumes: waiting.resumes,
+          bookmarks: waiting.bookmarks,
+          history: waiting.history,
+        );
+        pending = pending?.followedBy(changes) ?? changes;
+      }
+      final saved = pending == null ? stored : pending.applyTo(stored);
+      if (saved != null) {
+        if (saved['version'] != 1 ||
+            saved['resumes'] is! List ||
+            saved['bookmarks'] is! List ||
+            (saved['resumes'] as List).any(
+              (value) => value is! Map<String, dynamic>,
+            ) ||
+            (saved['bookmarks'] as List).any(
+              (value) => value is! Map<String, dynamic>,
+            )) {
+          throw const FormatException('Invalid reading record.');
+        }
+        final resumes = (saved['resumes'] as List)
+            .map((value) => decodeTextPosition(value as Map<String, dynamic>))
+            .toList();
+        final bookmarks = (saved['bookmarks'] as List)
+            .map(
+              (value) => Bookmark.fromJson(
+                value as Map<String, dynamic>,
+                decodeTextPosition,
+              ),
+            )
+            .toList();
+        if (bookmarks.map((mark) => mark.id).toSet().length !=
+            bookmarks.length) {
+          throw const FormatException('Duplicate reading bookmarks.');
+        }
+        final pdfBooks = _readPdfBooks(saved);
+        _resumes
+          ..clear()
+          ..addAll(resumes);
+        _bookmarks = bookmarks;
+        _history = _moves(saved);
+        final size = saved['fontSize'];
+        if (size is num && size.isFinite) {
+          _fontSize = size.toDouble().clamp(14, 40);
+        }
+        // A text size other than the default, saved before the choice
+        // was saved, came from the size buttons.
+        _sizesMainText =
+            saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
+        _legacyTrimMargins = saved['trimMargins'] != false;
+        _pdfBooks = pdfBooks;
+      }
+      if (waiting != null) {
+        _unreadChanges.remove(key);
+        _pendingWrites[key] = pending!;
+        saveWaiting = true;
+      }
+      if (pending == null) store.acceptSnapshot(key, saved);
+      _recordsReady = true;
+      if (_message == _recordsUnread) _message = null;
+    } on Exception {
+      if (_liveAccount(generation)) _message = _recordsUnread;
+    }
+    _emit();
+    if (saveWaiting) await _retryPending();
+  }
+
+  /// Reads the records of the bound account again when they are unread
+  /// after a failed read. It runs after the reads that already wait.
+  Future<void> _readAgain() {
+    final generation = _accountGeneration;
+    final key = _account;
+    return _binding = _binding.then((_) async {
+      if (!_recordsReady) await _readRecords(generation, key);
+    });
   }
 
   bool _current(Edition selected) => _books.any(
@@ -844,7 +914,7 @@ class ReaderSession extends ChangeNotifier {
         (null, null) => _Move(HistoryAction.open, null, token: generation),
       };
       if (!_recordsReady) {
-        _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
+        _message = _recordsUnread;
       } else if (store.setAside(_account!)) {
         _message ??= 'Saved reading records were damaged. Bookfin kept a copy and restored the places that it could read. The next sync restores the rest.';
       }
@@ -1695,16 +1765,10 @@ class ReaderSession extends ChangeNotifier {
     Map<String, HistoryEvent<TextPosition>?> history = const {},
   }) async {
     final key = _account;
-    if (key == null || !_recordsReady || _disposed) return;
+    if (key == null || _disposed) return;
     ++_recordRevision;
     final changes = ReadingChanges(
-      {
-        'version': 1,
-        'fontSize': fontSize,
-        if (sizesMainText) 'sizesMainText': true,
-        if (!_legacyTrimMargins) 'trimMargins': false,
-        if (_pdfBooks.isNotEmpty) 'pdfBooks': _pdfBooks,
-      },
+      _settings(),
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {
         for (final MapEntry(key: id, value: mark) in bookmarks.entries)
@@ -1715,9 +1779,23 @@ class ReaderSession extends ChangeNotifier {
           id: move?.toJson(),
       },
     );
+    if (!_recordsReady) {
+      _unreadChanges[key] = _unreadChanges[key]?.followedBy(changes) ?? changes;
+      await _readAgain();
+      return;
+    }
     _pendingWrites[key] = _pendingWrites[key]?.followedBy(changes) ?? changes;
     await _retryPending();
   }
+
+  /// The version and the reading preferences as a save carries them.
+  Map<String, dynamic> _settings() => {
+    'version': 1,
+    'fontSize': fontSize,
+    if (sizesMainText) 'sizesMainText': true,
+    if (!_legacyTrimMargins) 'trimMargins': false,
+    if (_pdfBooks.isNotEmpty) 'pdfBooks': _pdfBooks,
+  };
 
   Future<void> _retryPending() {
     _writes = _writes.then((_) async {
@@ -1739,6 +1817,7 @@ class ReaderSession extends ChangeNotifier {
 
   Future<void> flush() async {
     await _binding;
+    if (!_recordsReady) await _readAgain();
     await _retryPending();
     // The place is saved first. The kept page is derived from it.
     _keepShown();
@@ -1820,6 +1899,7 @@ class ReaderSession extends ChangeNotifier {
             jsonEncode(_compatible(position!)?.toJson()) !=
                 jsonEncode(_visibleAddress!.toJson())) ||
         _failedAccounts.any((key) => !_pendingWrites.containsKey(key)) ||
+        (_recordsReady && _unreadChanges.containsKey(_account)) ||
         (_undo != null && !_history.contains(_undo)) ||
         (_pending != null && (_pending!.token != token || edition == null))) {
       throw StateError(
