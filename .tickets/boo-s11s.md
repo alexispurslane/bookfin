@@ -1,6 +1,6 @@
 ---
 id: boo-s11s
-status: open
+status: in_progress
 deps: [boo-hmrp]
 links: [boo-f4xm, boo-0931, boo-hmrp, t6-il6y, t8-dqir]
 created: 2026-11-12T23:41:00Z
