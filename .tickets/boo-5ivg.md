@@ -1,6 +1,6 @@
 ---
 id: boo-5ivg
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-12T23:41:02Z
@@ -101,3 +101,17 @@ Design sources cited by the reviewer: User's reuse of the existing owner, Ouster
 Finding R1 (low, documentation only): following the speech-reader history from the former line 50 led to `8e659ae5`, which introduced held preparation, rather than the commit that removed speech-record persistence. Remedy: split the attribution and cite `5944606e` for the speech change. Lead resolution: inspected `git show 5944606e5fa5b76a019f870a491ba322bc80100e -- lib/reader/platform_io.dart lib/reader/mobi.dart`, confirmed both renamed helpers and the removed `AdmittedBooks.keep` calls, and corrected the provenance above. No behavior changed, so no new red/fix cycle or test run was warranted. This is the lead's resolution, not a second review or a claim of reapproval.
 
 The reviewer also noted that raw logs alone do not establish shell exit codes or every invocation setting. The lead observed exit 0 for each recorded command; the ticket preserves their exact invocations. Missing iOS SDK messages, expected SQLite failure-path diagnostics and optional skips remain explicit limitations. The original tests and production source are unchanged after review. All lead commands and the reviewer have finished; no findings or forks remain unresolved. Parent integration, acceptance, hardening and ticket closure remain outstanding.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated the two child commits as b7ecd449 and a6669f87 on main. The only conflict was the ticket: preserved the parent launch record and the child's corrected survey claim and full evidence. Inspected the entire original-base diff, completed reviewer assessment and saved final logs. All three review assessments pass; the documentation finding was corrected by the lead. No production code changed.
+
+Parent verification ran sequentially through `nix develop --command bash -c` with `set -e`; the driver exited 0. Exact inner commands:
+
+- `dart format --output=none --set-exit-if-changed lib/reader/admitted_books.dart lib/reader/epub/publication.dart lib/reader/platform_io.dart lib/reader/mobi.dart test/reader/admitted_books_test.dart`: 5 files, zero changes; `/tmp/boo-5ivg-integrated-format.log`.
+- `flutter analyze --no-pub lib/reader/admitted_books.dart lib/reader/epub/publication.dart lib/reader/platform_io.dart lib/reader/mobi.dart test/reader/admitted_books_test.dart`: no issues; `/tmp/boo-5ivg-integrated-analysis.log`.
+- `flutter test --no-pub --concurrency=2 --reporter=expanded test/reader/admitted_books_test.dart test/reader/publication_test.dart test/reader/mobi_document_test.dart test/reader/unknown_format_test.dart test/reader/book_words_reader_test.dart test/reader/text_outline_test.dart test/reader/downloaded_reader_test.dart test/reader/session_native_test.dart test/downloads test/speech test/crossings/speech_landings_test.dart`: 453 passed, no failures or skips; `/tmp/boo-5ivg-integrated-affected.log`.
+- `git diff --check d5251da58ede970a2d8522b4ee8f10ec657bd90f HEAD`: passed.
+- `git diff --exit-code d236137d8640dd289d35d6262e0be68e5248a3f2 HEAD -- lib test/reader/admitted_books_test.dart`: empty, exit 0. Integrated production and the changed tests are identical to the child-tested versions.
+
+The child's full suite (3,497 passed, 27 skips) remains child evidence; parent did not repeat it because only ticket text differs and the affected checks pass. Boundary instrumentation proves record-opening placement; source tracing establishes decode and copy placement. No Android performance, device acceptance, coverage or mutation claim. Closed after integration and verification; release acceptance and hardening remain separate.
