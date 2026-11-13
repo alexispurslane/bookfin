@@ -27,3 +27,11 @@ The immediate isolated retry, nix develop --command flutter test --concurrency=1
 **2026-11-13T03:38:43Z**
 
 Two later full-suite runs at concurrency 2 passed: 3131 passed and 25 skipped before the final catalog access-recovery fix, then 3132 passed and 25 skipped after that fix and its regression test. The reader recovery test passed in both. The original concurrency-4 failure remains recorded for investigation.
+
+## Additional observation during boo-o3cm (2026-11-13)
+
+On base `77e6d62e3a7a6f7018fdeba3efd9d8862278aa81` with boo-o3cm download-binding changes, `nix develop --command flutter test --concurrency=2` finished with 3374 passed, 27 skipped and one failure: the same test and line 97, an empty saved `resumes` list instead of one entry. Log: `/tmp/boo-o3cm-full.log`. `nix develop --command flutter test --concurrency=2 test/reader/unread_records_test.dart` immediately passed all 5 tests unchanged; log: `/tmp/boo-o3cm-unread-retry.log`.
+
+Inspection confirms that this test uses `LocalFiles` from `test/playback/playback_test.dart`, not `LocalDownloads`, and constructs ReaderSession directly without AccountBinding. The reader, record store, test file and its `pumpEventQueue` wait are unchanged by boo-o3cm. The affected suite, including all reader tests, passed three times before this full-suite failure. No cause is claimed from this evidence, and no timing threshold, test wait, or reader behavior was changed. Investigation remains owned by this ticket.
+
+The complete unchanged retry, `nix develop --command flutter test --concurrency=2`, passed 3375 tests with 27 skips; log `/tmp/boo-o3cm-full-retry.log`. The recovery test passed in that run. This confirms another intermittent occurrence, not its cause; the ticket remains open.

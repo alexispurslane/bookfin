@@ -55,8 +55,6 @@ class AccountBinding {
   /// blocked, to tell a new account from blocked access.
   String? _accountKey;
 
-  /// Counts bindings, so that a binding that a newer one replaced stops.
-  int _generation = 0;
   bool _disposed = false;
 
   // The catalog sets its signals one after another, so the listener of one
@@ -77,11 +75,9 @@ class AccountBinding {
     }
   }
 
-  /// Stops following the catalog. A binding in progress stops before its
-  /// next source.
+  /// Stops following the catalog. Sources own bindings already started.
   void dispose() {
     _disposed = true;
-    _generation++;
     catalog.accountNotifier.removeListener(_accountOrBooksChanged);
     catalog.libraryNotifier.removeListener(_accountOrBooksChanged);
   }
@@ -107,9 +103,9 @@ class AccountBinding {
     }());
   }
 
-  /// Binds Downloads and the reader at once, and Playback once Downloads is
-  /// bound, because Playback plays Downloads' files. Binds record sync when
-  /// the account changed.
+  /// Starts each binding at once. Downloads owns readiness of each file,
+  /// so Playback can restore its book while unrelated downloads restore.
+  /// Binds record sync when the account changed.
   void _bind() {
     final account = _visibleAccount;
     final books = _boundBooks = catalog.books;
@@ -118,13 +114,13 @@ class AccountBinding {
     final session = account.session;
     final downloads = this.downloads;
     if (downloads == null) return;
-    final generation = ++_generation;
     final reading = reader?.bind(session, books);
-    unawaited(() async {
-      await downloads.bind(session, books);
-      if (generation != _generation) return;
-      await playback?.bind(session, books);
-      await reading;
-    }());
+    unawaited(
+      Future.wait<void>([
+        downloads.bind(session, books),
+        if (playback != null) playback!.bind(session, books),
+        ?reading,
+      ]),
+    );
   }
 }

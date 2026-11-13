@@ -207,7 +207,7 @@ void main() {
     sync.calls.clear();
   }
 
-  test('a new book list binds Downloads and the reader at once, and Playback once Downloads is bound', () async {
+  test('Playback binds while Downloads restoration is held', () async {
     log.downloadsGate = Completer();
     bind();
     await pumpEventQueue();
@@ -215,14 +215,12 @@ void main() {
       'reader started',
       'reader finished',
       'downloads started',
-    ]);
-    log.downloadsGate!.complete();
-    await pumpEventQueue();
-    expect(log.events.skip(3), [
-      'downloads finished',
       'playback started',
       'playback finished',
     ]);
+    log.downloadsGate!.complete();
+    await pumpEventQueue();
+    expect(log.events.skip(5), ['downloads finished']);
     for (final bind in log.binds) {
       expect(bind.account, catalog.session!.scope.key);
       expect(bind.books, same(catalog.books));
@@ -230,7 +228,7 @@ void main() {
   });
 
   test(
-    'a binding that a newer book list replaced stops before Playback',
+    'a newer book list reaches Playback while an older restoration is held',
     () async {
       log.downloadsGate = Completer();
       bind();
@@ -248,9 +246,9 @@ void main() {
         for (final bind in log.binds)
           if (bind.source == 'playback') bind.books,
       ];
-      expect(played, hasLength(1));
-      expect(played.single, isNot(same(first)));
-      expect(played.single, same(catalog.books));
+      expect(played, hasLength(2));
+      expect(played.first, same(first));
+      expect(played.last, same(catalog.books));
     },
   );
 
