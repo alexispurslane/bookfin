@@ -1,0 +1,259 @@
+{
+  "identity": {
+    "role": "Fresh read-only reviewer for t9-ftlz",
+    "worktree": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-c3dea442",
+    "branch": "t3/offload-collection-processing",
+    "head": "563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+    "clean_before_and_after_review": true,
+    "checkout_changed": false
+  },
+  "reviewed": {
+    "base": "0f1b55762aef7ea17c2460242203cd972d767014",
+    "head": "563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+    "scope": "Complete base-to-HEAD change: production code, new tests, ticket update and saved evidence, including archived logs.",
+    "complete_binary_diff_sha256": "e4c1e36dd9215610df789731a46cbf7db2709fed9269a2fc8b5d6e4c98e2b2c9",
+    "saved_diff_matches_git_diff": true,
+    "guidance_read": [
+      "~/.claude/agents/reviewer.md",
+      "~/.claude/CLAUDE.md",
+      "AGENTS.md",
+      "docs/plans/bookfin.md",
+      ".tickets/t9-ftlz.md",
+      "~/.agents/skills/software-design/SKILL.md",
+      "~/.agents/skills/software-design/references/reviewer-brief.md",
+      "~/.agents/skills/ultracode-orchestration/SKILL.md"
+    ],
+    "checkout_claude_md": "Absent"
+  },
+  "assessments": {
+    "correctness_and_regressions": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "location": "lib/catalog/jellyfin.dart:312",
+          "assessment": "The worker parser preserves the original count, start-index, page-size and item-ID validation. Malformed JSON and invalid objects become ordinary catalog failures. Duplicate IDs remain invalid both within a page and across a complete listing."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:370",
+          "assessment": "Discovery still requires a complete dense listing, validates collection names and deduplicates shared collection IDs across libraries. Membership preserves collection order and direct membership."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:732",
+          "assessment": "Paging still advances by the requested page size against the server count. Empty and sparse Jellyfin 10.11 child pages therefore do not terminate discovery of later members. The unchanged Jellyfin 12.4 dense-page behavior uses the same walk."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:714",
+          "assessment": "Optional recovery catches Exception rather than every thrown object. Programming Errors escape. Closure takes precedence over an ordinary worker failure, so a closed request cannot appear successful."
+        },
+        {
+          "location": "lib/catalog/jellyfin.dart:771",
+          "assessment": "Worker results pass credential and closure guards before adoption. The existing controller also retires obsolete requests and checks request ownership before catalog storage and adoption."
+        },
+        {
+          "location": "test/catalog/collection_worker_test.dart:313",
+          "assessment": "Saved passing tests cover closure during page parsing, discovery and membership; rejected credentials; an ordinary worker failure after closure; and account replacement during pending native work. The controller-level case at line 378 checks both visible state and saved catalog contents."
+        },
+        {
+          "location": "test/catalog/collection_queries_test.dart:201",
+          "assessment": "The unchanged source-backed fixtures cover direct membership, shared-ID deduplication, both paging shapes, malformed metadata, empty shown libraries and changed membership on subsequent refreshes."
+        }
+      ],
+      "findings": [],
+      "gaps": {
+        "material_in_scope": [],
+        "integration": [
+          "Combined verification with main's separate tf-il7u test correction has not occurred in this reviewed checkout."
+        ],
+        "execution_boundary": "I inspected source and retained execution evidence. I did not run tests or reproduce failures."
+      }
+    },
+    "ticket_fulfillment": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "requirement": "Move collection parsing and complete-list reductions off the native UI isolate.",
+          "locations": [
+            "lib/catalog/jellyfin.dart:420",
+            "lib/catalog/jellyfin.dart:690",
+            "lib/catalog/jellyfin.dart:713",
+            "lib/catalog/jellyfin.dart:756",
+            "test/catalog/collection_worker_test.dart:23",
+            "test/catalog/collection_worker_test.dart:56",
+            "test/catalog/collection_worker_test.dart:251"
+          ],
+          "assessment": "Production defaults to the existing compute mechanism. Tests execute the actual callbacks through Isolate.run, compare isolate control ports and guard page maps against item traversal on the originating isolate. The fixture verifies six page calls and two complete-list reductions for two libraries sharing one collection with 601 children."
+        },
+        {
+          "requirement": "Avoid per-item worker calls and repeated transfer of a growing accumulation.",
+          "locations": [
+            "lib/catalog/jellyfin.dart:676",
+            "lib/catalog/jellyfin.dart:697",
+            "lib/catalog/jellyfin.dart:756"
+          ],
+          "assessment": "Each parser receives one new raw page. Each reduction receives its complete compact input once. The client retains request batching and reads page count scalars without reducing page contents."
+        },
+        {
+          "requirement": "Preserve request ownership, bounded requests, refresh behavior and catalog retention.",
+          "locations": [
+            "lib/catalog/jellyfin.dart:670",
+            "lib/catalog/jellyfin.dart:698",
+            "lib/catalog/jellyfin.dart:816",
+            "lib/catalog/controller.dart:1125",
+            "lib/catalog/controller.dart:1137"
+          ],
+          "assessment": "The client remains the request-local collection owner. Child requests remain batched eight at a time. No membership cache, controller map, refresh-policy change, transport change or controller production change was introduced. The existing catalog retention path remains intact."
+        },
+        {
+          "requirement": "Provide meaningful red-before-green evidence and required validation.",
+          "locations": [
+            "docs/evidence/t9-ftlz/red-seam.json",
+            "docs/evidence/t9-ftlz/commands.json",
+            "docs/evidence/t9-ftlz/logs/",
+            "/tmp/bookfin-t9-ftlz/implementation-check.json"
+          ],
+          "assessment": "Retained reds show compiled behavioral failures: six decoded sends instead of zero, zero worker calls instead of eight, swallowed StateError, and successful CatalogPages instead of cancellation after a closed worker failed. Final collection and affected runs pass. Analysis, formatting and complete original-base whitespace checks have saved successful results. Both failing full-suite runs remain explicitly recorded."
+        },
+        {
+          "requirement": "Report measurements and platform limits accurately.",
+          "location": "docs/evidence/t9-ftlz/validation.md",
+          "assessment": "Evidence limits its measurement to worker and transfer counts. It explicitly retains compact-page copying and memory costs, disclaims latency and heap improvements, and states that browser compute does not provide native isolation."
+        }
+      ],
+      "findings": [],
+      "gaps": {
+        "material_in_scope": [],
+        "integration": [
+          "The parent must verify the integrated combination. The saved failing full-suite run is not a passing integration result."
+        ]
+      }
+    },
+    "software_design": {
+      "verdict": "pass",
+      "evidence": [
+        {
+          "source": "User",
+          "locations": [
+            "lib/catalog/jellyfin.dart:307",
+            "lib/catalog/jellyfin.dart:670",
+            "lib/catalog/jellyfin.dart:771"
+          ],
+          "assessment": "One request-local owner controls collection lifetime, network access and result adoption. Workers receive response data rather than sessions, credentials, transports or controllers. The change feeds the existing worker mechanism rather than adding a parallel execution framework."
+        },
+        {
+          "source": "Ousterhout",
+          "locations": [
+            "lib/catalog/jellyfin.dart:312",
+            "lib/catalog/jellyfin.dart:370",
+            "lib/catalog/jellyfin.dart:397",
+            "lib/catalog/jellyfin.dart:771"
+          ],
+          "assessment": "Private operations hide meaningful decisions: response validation, discovery reconciliation, direct membership reduction and guarded worker adoption. Collection-processing details remain inside the Jellyfin module. Existing transport and controller callers require no new coordination."
+        },
+        {
+          "source": "Muratori",
+          "locations": [
+            "lib/catalog/jellyfin.dart:356",
+            "lib/catalog/jellyfin.dart:376",
+            "lib/catalog/jellyfin.dart:402",
+            "lib/foundation/hop.dart:7"
+          ],
+          "assessment": "Cross-page uniqueness has one shared implementation used by both real reductions. The existing IsolateHop dependency is reused. There is no speculative framework, long-lived worker, retained membership authority or duplicate controller state."
+        },
+        {
+          "source": "User and Ousterhout",
+          "location": "lib/catalog/jellyfin.dart:714",
+          "assessment": "Optional failure classification has one handler. It preserves cancellation and exposes programming Errors instead of treating them as absent metadata. Tests protect this distinction."
+        }
+      ],
+      "findings": [],
+      "gaps": {
+        "material_in_scope": [],
+        "performance_limits": [
+          "Native input copying and retention of compact child pages through the final reduction remain. These costs are disclosed and accepted within the settled design; no measured latency or total-memory improvement is established."
+        ]
+      }
+    }
+  },
+  "findings": [],
+  "saved_validation": {
+    "provenance": "Builder executions, independently inspected through retained logs and metadata; no validation commands rerun.",
+    "archive_integrity": "All 18 compressed archives and their decompressed contents match recorded SHA256 hashes.",
+    "source_integrity": "All four entries in source-hashes.json match the reviewed files.",
+    "focused_initial": {
+      "passed": 145
+    },
+    "focused_collection_final": {
+      "passed": 39
+    },
+    "affected_final": {
+      "passed": 1681,
+      "failed": 0,
+      "skipped": 3,
+      "result": "pass"
+    },
+    "full_suite_final": {
+      "passed": 3689,
+      "failed": 1,
+      "skipped": 27,
+      "result": "fail",
+      "failure": "The original tf-il7u idle-frame assertion at test/reader/epub/page_source_frames_test.dart:188."
+    },
+    "analysis_final": "No issues",
+    "format_final": "Two files checked; zero changes",
+    "complete_base_to_head_whitespace": "Saved command exited 0",
+    "tf_il7u": {
+      "integrated_test_correction": "2a9df513d398ba86f0a6142abe1c7240e43e570e",
+      "evidence_commit": "96eb86b5726891b9d6a89e24c72536d3cfbe1109",
+      "review_treatment": "The parent reports the correction integrated on main. Git inspection confirms that the correction changes tests and evidence, not production. This checkout deliberately retains the old assertion. No edit, cherry-pick, retry or renewed diagnosis is requested.",
+      "combined_verification": "Pending parent integration"
+    },
+    "t5_rplx": "No recurrence recorded in these runs. Cause and correction remain unexplained."
+  },
+  "limitations": [
+    "This is a review of the supplied base-to-HEAD change, not approval of an untested integrated revision.",
+    "No device, browser, live Jellyfin, credential, coverage or mutation actions were performed.",
+    "Browser execution is outside scope; compute on the browser does not establish off-isolate execution.",
+    "No million-record stress run, latency measurement, frame-budget measurement or total-heap measurement is established.",
+    "Existing plugin integration, corpus and benchmark skips remain explicit in the saved results. They do not establish those broader capabilities.",
+    "The final full-suite run preceded the documented brace-only lint cleanup. Final source analysis and formatting followed that cleanup; the cleanup changes no behavior."
+  ],
+  "commands_actually_run": {
+    "note": "Repeated reads are grouped below. Inline Python ran only source, metadata, log and hash inspection; it wrote no files.",
+    "identity": [
+      "pwd",
+      "git branch --show-current",
+      "git rev-parse HEAD",
+      "git status --short",
+      "git status --porcelain=v1",
+      "git log -1 --format='%H %s'"
+    ],
+    "diff_and_history": [
+      "git diff --stat 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+      "git diff --binary 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+      "git diff --name-status 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+      "git diff 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc -- lib/catalog/jellyfin.dart",
+      "git diff 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc -- .tickets/t9-ftlz.md",
+      "git show --stat --oneline 2a9df513d398ba86f0a6142abe1c7240e43e570e",
+      "git show --stat --oneline 96eb86b5726891b9d6a89e24c72536d3cfbe1109"
+    ],
+    "source_and_guidance_reads": [
+      "rg --files -g AGENTS.md -g CLAUDE.md",
+      "cat, sed -n, nl -ba and wc -l on the listed guidance, plan, ticket, validation files and source files",
+      "rg -n for controller refresh, cancellation, credential and storage boundaries",
+      "rg -n for collection fixture cases",
+      "Read lib/catalog/transport.dart, transport_protocol.dart, transport_io.dart, transport_web.dart and lib/foundation/hop.dart",
+      "Read all 435 lines of test/catalog/collection_worker_test.dart and the complete unchanged test/catalog/collection_queries_test.dart"
+    ],
+    "evidence_inspection": [
+      "shasum -a 256 /tmp/bookfin-t9-ftlz/implementation.diff",
+      "cat /tmp/bookfin-t9-ftlz/implementation-check.json",
+      "Read every added evidence JSON file and validation.md",
+      "python3 inline scripts: locate ancestor instructions; read complete evidence JSON; decompress retained logs; inspect test completion/error events; compare archive, raw-log and source hashes; compare the saved complete binary diff with git output"
+    ],
+    "tests_builds_analysis_or_mutations_run": []
+  },
+  "overall_verdict": "pass",
+  "required_changes": [],
+  "user_decisions_needed": [],
+  "integration_condition": "Preserve the recorded full-suite failure and complete the parent's combined verification with the already-integrated tf-il7u test correction."
+}

@@ -1,0 +1,10 @@
+{
+  "command": "nix develop --command git diff --check 0f1b55762aef7ea17c2460242203cd972d767014 563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+  "exitCode": 0,
+  "head": "563f1f3d4e69354a8f7a64df4bb2f51e33f6a4bc",
+  "log": "/tmp/bookfin-t9-ftlz/implementation-whitespace.log",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "completeDiff": "/tmp/bookfin-t9-ftlz/implementation.diff",
+  "diffSHA256": "e4c1e36dd9215610df789731a46cbf7db2709fed9269a2fc8b5d6e4c98e2b2c9",
+  "clean": true
+}
