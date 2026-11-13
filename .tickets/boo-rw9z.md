@@ -60,3 +60,21 @@ All check commands below ran from this worktree through `nix develop --command b
 | Full Flutter suite | `flutter test --concurrency=2` | Exit 0: 3,395 passed, 27 existing opt-in tests skipped; 4 minutes 32 seconds. | `/tmp/boo-rw9z-full.log` |
 
 The four affected-suite skips require separate live plugin/sync proofs or `BOOKFIN_EPUB_TRIAL=1`. No commands were interrupted. Coverage, mutation testing, acceptance and integration remain with the parent. This ticket stays open until integration.
+
+## Single review completed, 2026-11-13
+
+Reviewer: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A82b69cb9-22db-4497-a39c-34709d941d53%3Adelegate-task%3Aboo-rw9z-review-20261113-1>
+
+The one authorized `delegate_task` used shared isolation, async mode, review role, provider `codex`, model `gpt-6-astra`, and `reasoningEffort: high`. `orchestrator_capabilities` was called once before delegation. Client request: `boo-rw9z-review-20261113-1`. Task: `node:delegated-task:command%3Amcp%3A82b69cb9-22db-4497-a39c-34709d941d53%3Adelegate-task%3Aboo-rw9z-review-20261113-1`. Completion was delivered without polling; the finished thread was then read to verify its report.
+
+Original review base: `db45fcaa5e13cab6eb2de210d5d0403623f4a31b`. Original review head: `992159fcb76f163c156d973c95b4ad69a2da9478`. The reviewer inspected all nine changed files, real callers and the saved logs. The checkout stayed clean and unchanged during review. These are the original verdicts, not a second approval:
+
+| Assessment | Verdict | Evidence | Limits |
+| --- | --- | --- | --- |
+| Correctness | pass | Confirmed-place authority, account-owned retries, ordered writes, failure classification, command persistence and teardown inspected; controlled tests and retained report-independence regressions checked against saved logs. | Static review and observed logs, no independent execution. |
+| Fulfillment | pass | Six new behavior cases cover the settled scope; lifecycle, retry-save, sync and native-control callers checked; automatic-transition tests corrected; excluded tickets untouched. | The sync test proves exchange starts while a command is held, not that all subsequent sync steps complete independently. This matches the settled scope. |
+| Design | pass | User: one authority for confirmed place and pending records. Ousterhout: persistence no longer depends on unrelated command completion and the contract states that. Muratori: existing save path reused without duplicate state or new production abstractions. | No material design evidence missing for this bounded change. |
+
+Overall verdict: pass. Findings: none. No fixes, rejected findings, unresolved material assessments or product forks. The reviewer confirmed the saved results, including six meaningful red failures and the 3,395-pass full suite. Execution parameters and exit codes are recorded by the builder; output logs alone do not independently prove every parameter. Independent reviewer execution, coverage, mutation testing, device acceptance and skipped opt-in checks were unavailable or excluded as instructed.
+
+Only this review evidence changed after the reviewed head; implementation and test content remain the versions that passed the final checks. No second review or re-check was requested. Ready for parent integration; ticket closure and acceptance remain with the parent.
