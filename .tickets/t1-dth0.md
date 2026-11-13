@@ -59,3 +59,9 @@ the returned command. The new authorization permits a fresh inspection
 attempt. The host failure rule still applies to each new failure. Preserve
 both earlier failures and this ownership error as evidence. Both product
 tickets remain unaccepted until their actual requirements run.
+
+## Notes
+
+**2026-11-13T20:43:42Z**
+
+Fresh user-authorized retry on 2026-11-13 after merging pinned parent e23662da as e7c43399. device_open returned the original delegate session t3-bdbd965bfc55eb8afbd9f3f6, and its bound open dev.bookfin.bookfin --foreground succeeded at 20:41:32 UTC. No ownership error occurred. Two NEW device_screenshot calls failed with: Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened. Between them, the advised discovery reported local/emulator-5556 ready, booted, and already open. The single advised retry failed, so device work stopped under the current host rule. No build, install, playback, transfer, speech, setting change, or data reset ran. Evidence: docs/evidence/android-survey-20261113/acceptance.md, device-attempt.json, and agent-device-events.ndjson. Earlier evidence remains unchanged. This recurrence keeps the blocker in_progress.

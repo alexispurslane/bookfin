@@ -1,0 +1,272 @@
+{
+  "attempt": "2026-11-13 resumed authorization",
+  "priorEvidenceUnchanged": "docs/evidence/android-survey-20261112",
+  "checkout": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-15fac808",
+  "branch": "t3/verify-android-device-fixes",
+  "initialHead": "38e2d6e95fc7d6730c83df8a3baa743406e61c2e",
+  "initialGitStatusPorcelain": "",
+  "authorizedParent": "e23662daf2e4e9b737aee4366c418f0ec5591145",
+  "mergeCommand": "git merge --no-edit e23662daf2e4e9b737aee4366c418f0ec5591145",
+  "mergeConflicts": [
+    ".tickets/boo-737n.md",
+    ".tickets/boo-zyx1.md",
+    ".tickets/t1-dth0.md"
+  ],
+  "mergeResolution": "Kept the newer parent notes and status, including the identical earlier acceptance notes. Resulting entire tree exactly matches the pinned parent tree.",
+  "mergedHead": "e7c43399f5c361ebbf51161bb8ed49c0c9681ee9",
+  "buildSource": null,
+  "installedApk": null,
+  "existingInstalledBuild": "unknown",
+  "session": "t3-bdbd965bfc55eb8afbd9f3f6",
+  "sequence": [
+    {
+      "tool": "device_open",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"device\":{\"hostId\":\"local\",\"id\":\"emulator-5556\",\"platform\":\"android\",\"name\":\"bookfin-api36\",\"version\":\"Android\",\"booted\":true,\"physical\":false},\"agentDevice\":{\"command\":\"/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device\",\"targetArgs\":[\"--platform\",\"android\",\"--serial\",\"emulator-5556\",\"--config\",\"/Users/alexispurslane/.t3/userdata/device/hosts/25bf8e1a2393f1108d37029b.json\",\"--session\",\"t3-bdbd965bfc55eb8afbd9f3f6\"],\"session\":\"t3-bdbd965bfc55eb8afbd9f3f6\"},\"quickStart\":\"The user is watching bookfin-api36 (Android) in the Device panel.\\nDrive it with /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device. It is bound to this device and session, so it needs no --platform, --udid, --serial, --config or --session flags. Use this exact path; login shells may reset PATH.\\nEvery app launch, deep link, tap, text entry, alert, setting, screenshot and recording on this device goes through it. Run open <bundle-or-package-id> (apps lists them) before snapshots, CLI screenshots or input; it starts the session they need. Use device_screenshot just to look.\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open <bundle-or-package-id> --relaunch  # restarts the app; Expo dev clients connect to their Metro, --metro-port <port> picks it\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open <bundle-or-package-id> <deep-link-url>\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device snapshot -i  # accessibility tree with @eN refs\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device press @e3 --settle\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device fill @e5 \\\"text\\\" --settle\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device alert accept\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device settings appearance dark  # also text-size, permission grant <name>\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device screenshot /tmp/shot.png  # or call device_screenshot to look\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device record start --scope device /tmp/run.mp4  # then record stop\\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device install <app> <path-to-.app-or-.apk>\\nPrefer snapshot refs over coordinates. Run /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device help <command> for flags and /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device help workflow for guides.\\nDo not use simctl, idb, adb or ssh for those actions. They stay fine for builds, installs, code sync, Metro, port forwards, logs, test runners and what this command cannot do; come back to it for every UI action and screenshot so the user can watch.\\nEach device_open returns its own command; opening another device does not retarget this one.\\nThe command is removed when the device closes or T3 Code restarts. If it is missing, call device_open again.\\nThe Android snapshot helper installs itself on first use.\"}"
+          }
+        ],
+        "structuredContent": {
+          "device": {
+            "hostId": "local",
+            "id": "emulator-5556",
+            "platform": "android",
+            "name": "bookfin-api36",
+            "version": "Android",
+            "booted": true,
+            "physical": false
+          },
+          "agentDevice": {
+            "command": "/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device",
+            "targetArgs": [
+              "--platform",
+              "android",
+              "--serial",
+              "emulator-5556",
+              "--config",
+              "/Users/alexispurslane/.t3/userdata/device/hosts/25bf8e1a2393f1108d37029b.json",
+              "--session",
+              "t3-bdbd965bfc55eb8afbd9f3f6"
+            ],
+            "session": "t3-bdbd965bfc55eb8afbd9f3f6"
+          },
+          "quickStart": "The user is watching bookfin-api36 (Android) in the Device panel.\nDrive it with /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device. It is bound to this device and session, so it needs no --platform, --udid, --serial, --config or --session flags. Use this exact path; login shells may reset PATH.\nEvery app launch, deep link, tap, text entry, alert, setting, screenshot and recording on this device goes through it. Run open <bundle-or-package-id> (apps lists them) before snapshots, CLI screenshots or input; it starts the session they need. Use device_screenshot just to look.\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open <bundle-or-package-id> --relaunch  # restarts the app; Expo dev clients connect to their Metro, --metro-port <port> picks it\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open <bundle-or-package-id> <deep-link-url>\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device snapshot -i  # accessibility tree with @eN refs\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device press @e3 --settle\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device fill @e5 \"text\" --settle\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device alert accept\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device settings appearance dark  # also text-size, permission grant <name>\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device screenshot /tmp/shot.png  # or call device_screenshot to look\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device record start --scope device /tmp/run.mp4  # then record stop\n  /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device install <app> <path-to-.app-or-.apk>\nPrefer snapshot refs over coordinates. Run /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device help <command> for flags and /Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device help workflow for guides.\nDo not use simctl, idb, adb or ssh for those actions. They stay fine for builds, installs, code sync, Metro, port forwards, logs, test runners and what this command cannot do; come back to it for every UI action and screenshot so the user can watch.\nEach device_open returns its own command; opening another device does not retarget this one.\nThe command is removed when the device closes or T3 Code restarts. If it is missing, call device_open again.\nThe Android snapshot helper installs itself on first use."
+        },
+        "isError": false
+      }
+    },
+    {
+      "command": "/Users/alexispurslane/.t3/userdata/device/targets/t3-bdbd965bfc55eb8afbd9f3f6/agent-device open dev.bookfin.bookfin --foreground",
+      "result": {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "e05fcf",
+          "wall_time_seconds": 0.941579708,
+          "exit_code": 0,
+          "original_token_count": 443,
+          "output": "Opened: dev.bookfin.bookfin\nSession state: /Users/alexispurslane/.t3/userdata/device/agent-device/sessions/t3-bdbd965bfc55eb8afbd9f3f6\nPage: dev.bookfin.bookfin\nApp: dev.bookfin.bookfin\nSnapshot: 9 nodes\n@e2 [group] \"Scan\"\n@e3 [button] \"Fixture\"\n@e4 [button] \"Night\"\n@e5 [button] \"20\"\n@e6 [button] \"View: pageWords\"\n@e7 [group] \"A.D. 491.] VICTORY OF CLOVIS OVER SYAGRIUS. 19\"\n@e8 [group] \"hostile defiance of Clovis, who challenged his rival in the spirit, and almost in the language, of chivalry, to appoint the day and the field” of battle. In the time of Cesar, Soissons would have poured forth a body of fifty thousand horse; and such an army might have been plentifully supplied with shields, cuirasses, and military engines from the three arse- nals or manufactures of the city. But the courage and num- bers of the Gallic youth were long since exhausted, and the loose bands of volunteers or mercenaries who marched under the standard of Syagrius were incapable of contending with the national valor of the Franks. It would be ungenerous, without some more accurate knowledge of his strength and resources, to condemn the rapid flight of Syagrius, who es- caped after the loss of a battle to the distant court of Tou- louse. The feeble minority of Alaric could not assist or pro- tect an unfortunate fugitive; the pusillanimous” Goths were intimidated by the menaces of Clovis; and the Roman king, after a short confinement, was delivered into the hands of the executioner. The Belgic cities surrendered to the king of the Franks, and his dominions were en- larged towards the east by the ample diocese of Tongres,” which Clovis subdued in the tenth year of his reign.\"\n@e9 [group] \"The name of the Alemanni has been absurdly derived from their imaginary\"\n"
+        }
+      }
+    },
+    {
+      "tool": "device_screenshot",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        ],
+        "structuredContent": {
+          "error": {
+            "_tag": "DeviceOperationError",
+            "operation": "screenshot",
+            "failureCount": 1,
+            "message": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        },
+        "isError": true
+      }
+    },
+    {
+      "tool": "device_list",
+      "arguments": {
+        "hostId": "local"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"hostStatuses\":{\"local\":{\"status\":\"ready\"}},\"hosts\":[{\"id\":\"local\",\"label\":\"This machine\",\"platforms\":[{\"platform\":\"ios\",\"available\":true},{\"platform\":\"android\",\"available\":true}],\"tools\":{\"hub\":{\"requiredVersion\":\"0.19.0-canary-20261023-1357114\",\"installedVersions\":[\"0.19.0-canary-20261023-1357114\"],\"runningVersion\":\"0.19.0-canary-20261023-1357114\"},\"agent\":{\"requiredVersion\":\"0.21.31\",\"installedVersions\":[\"0.21.31\"],\"runningVersion\":\"0.21.31\"}},\"hubInstalled\":true,\"agentDeviceInstalled\":true,\"kind\":\"local\"}],\"devices\":[{\"hostId\":\"local\",\"id\":\"emulator-5554\",\"platform\":\"android\",\"name\":\"bookfin-tb22fu\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5556\",\"platform\":\"android\",\"name\":\"bookfin-api36\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5558\",\"platform\":\"android\",\"name\":\"bookfin-bench-gpu\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"emulator-5560\",\"platform\":\"android\",\"name\":\"bookfin-tam0\",\"version\":\"Android\",\"booted\":true,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-bench-rerun\",\"platform\":\"android\",\"name\":\"bookfin-bench-rerun\",\"version\":\"Android\",\"booted\":false,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-bench-sym\",\"platform\":\"android\",\"name\":\"bookfin-bench-sym\",\"version\":\"Android\",\"booted\":false,\"physical\":false},{\"hostId\":\"local\",\"id\":\"bookfin-vh77\",\"platform\":\"android\",\"name\":\"bookfin-vh77\",\"version\":\"Android\",\"booted\":false,\"physical\":false}],\"open\":[{\"hostId\":\"local\",\"deviceId\":\"emulator-5556\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "hostStatuses": {
+            "local": {
+              "status": "ready"
+            }
+          },
+          "hosts": [
+            {
+              "id": "local",
+              "label": "This machine",
+              "platforms": [
+                {
+                  "platform": "ios",
+                  "available": true
+                },
+                {
+                  "platform": "android",
+                  "available": true
+                }
+              ],
+              "tools": {
+                "hub": {
+                  "requiredVersion": "0.19.0-canary-20261023-1357114",
+                  "installedVersions": [
+                    "0.19.0-canary-20261023-1357114"
+                  ],
+                  "runningVersion": "0.19.0-canary-20261023-1357114"
+                },
+                "agent": {
+                  "requiredVersion": "0.21.31",
+                  "installedVersions": [
+                    "0.21.31"
+                  ],
+                  "runningVersion": "0.21.31"
+                }
+              },
+              "hubInstalled": true,
+              "agentDeviceInstalled": true,
+              "kind": "local"
+            }
+          ],
+          "devices": [
+            {
+              "hostId": "local",
+              "id": "emulator-5554",
+              "platform": "android",
+              "name": "bookfin-tb22fu",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5556",
+              "platform": "android",
+              "name": "bookfin-api36",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5558",
+              "platform": "android",
+              "name": "bookfin-bench-gpu",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "emulator-5560",
+              "platform": "android",
+              "name": "bookfin-tam0",
+              "version": "Android",
+              "booted": true,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-bench-rerun",
+              "platform": "android",
+              "name": "bookfin-bench-rerun",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-bench-sym",
+              "platform": "android",
+              "name": "bookfin-bench-sym",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            },
+            {
+              "hostId": "local",
+              "id": "bookfin-vh77",
+              "platform": "android",
+              "name": "bookfin-vh77",
+              "version": "Android",
+              "booted": false,
+              "physical": false
+            }
+          ],
+          "open": [
+            {
+              "hostId": "local",
+              "deviceId": "emulator-5556"
+            }
+          ]
+        },
+        "isError": false
+      }
+    },
+    {
+      "tool": "device_screenshot",
+      "arguments": {
+        "hostId": "local",
+        "deviceId": "emulator-5556"
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        ],
+        "structuredContent": {
+          "error": {
+            "_tag": "DeviceOperationError",
+            "operation": "screenshot",
+            "failureCount": 1,
+            "message": "Device screenshot failed: The device hub could not complete the request. Call device_list to check the device state, and device_open if it needs to be reopened."
+          }
+        },
+        "isError": true
+      }
+    }
+  ],
+  "resourceObservation": {
+    "loadAverages": [
+      10.98,
+      6.77,
+      5.15
+    ],
+    "memoryFreePercent": 61,
+    "heavyCommandsStarted": 0,
+    "gradleWorkersStarted": 0,
+    "flutterTestWorkersStarted": 0
+  },
+  "stoppedAfterFreshSingleAdvisedRetry": true,
+  "screenshots": [],
+  "logcatCaptures": [],
+  "ownedProcessesRemaining": [],
+  "existingBlocker": "t1-dth0",
+  "newTickets": [],
+  "appDataCleared": false
+}
