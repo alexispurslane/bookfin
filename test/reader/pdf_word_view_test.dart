@@ -1334,7 +1334,7 @@ void main() {
 
   testWidgets('a place saved in the text view opens the word view on the '
       'screen that holds it, and a word screen\'s place opens the text view '
-      'at that character', (tester) async {
+      'on the screen that holds that character', (tester) async {
     final book = await open(tester, marginsBook);
     final (reflow, read) = await attached(tester, book, 3);
     final source = read.text.source;
@@ -1364,7 +1364,17 @@ void main() {
       'the text view reports its place',
     );
     expect(find.byType(WordScreenView), findsNothing);
-    expect(textReports.places.first.character, inWords.character);
+    final textView = tester.widget<PdfTextView>(find.byType(PdfTextView));
+    final text = (await tester.runAsync(() => asText.text(3)))!;
+    final first = textView.screens.firstCharacter(textView.screen);
+    final end = textView.screen + 1 < textView.screens.count
+        ? textView.screens.firstCharacter(textView.screen + 1)
+        : text.text.length;
+    final requested = text.sourceOffsets.indexWhere(
+      (offset) => offset >= inWords.character,
+    );
+    expect(requested, inInclusiveRange(first, end - 1));
+    expect(textReports.places.last.character, text.sourceOffsets[first]);
     expect(
       find.text('The saved place does not match the text of this page.'),
       findsNothing,

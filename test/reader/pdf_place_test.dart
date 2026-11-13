@@ -87,6 +87,9 @@ class HeldPageDraw extends HeldScan {
     PdfRaster(1, 1, Uint8List.fromList([255, 255, 255, 255])),
   );
 
+  void failDraw(int page) =>
+      (_draws[page] ??= Completer()).completeError(Exception('raster failed'));
+
   @override
   Future<PdfRaster> render(int sourcePage, double width) =>
       (_draws[sourcePage] ??= Completer()).future;
@@ -477,6 +480,32 @@ void main() {
         }
       });
     }
+
+    testWidgets(
+      'a failed raster does not lose a jump whose text later appears',
+      (tester) async {
+        final store = MemoryResume();
+        final scan = HeldPageDraw()..recognize(1);
+        final reader = await read(tester, scan, store);
+        final jump = reader.goToContents('page:2');
+        await tester.pump();
+        scan.failDraw(2);
+        await tester.pump();
+        expect(find.text('Retry source page'), findsOneWidget);
+        expect(reader.position!.sourcePage, 1);
+        scan.recognize(2);
+        await finishReader(tester, jump);
+        await settle(tester);
+        final next = await restarted(store);
+        final chapters = next.history.where(
+          (move) => move.kind == HistoryAction.chapter,
+        );
+        expect(chapters, hasLength(1));
+        final move = chapters.single;
+        expect((pageOf(move.before), pageOf(move.after)), (1, 2));
+        expect(find.byType(PdfTextView), findsOneWidget);
+      },
+    );
 
     testWidgets('ready text becomes the saved page only after its frame', (
       tester,

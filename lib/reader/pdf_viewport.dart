@@ -413,6 +413,20 @@ class _PdfViewportState extends State<PdfViewport>
     } else {
       _publish();
     }
+    _finishUnavailablePage();
+  }
+
+  /// Ends a failed request only when neither its image nor its text can
+  /// appear. A raster failure cannot end a jump whose text is still on
+  /// its way: that text must get its frame and History report first.
+  void _finishUnavailablePage() {
+    if (_failure != null &&
+        !_loading &&
+        !_usingText &&
+        !_usingWords &&
+        !_appearance.isCompleted) {
+      _appearance.complete();
+    }
   }
 
   /// Called only while building page content that will enter this frame,
@@ -494,7 +508,7 @@ class _PdfViewportState extends State<PdfViewport>
         setState(
           () => _failure = 'The original page could not be drawn. Retry this source page or reopen the download.',
         );
-        if (!_appearance.isCompleted) _appearance.complete();
+        _finishUnavailablePage();
       }
     } finally {
       if (_drawingRequest == request) _drawingRequest = null;

@@ -122,3 +122,10 @@ Verification through nix develop:
 - Parent's full suite on integrated main remains the completion gate. No device acceptance, coverage, mutation run, push, or ticket closure is claimed here.
 
 F1 is resolved by the reproduced behavior and checks above. The planned PDF pager extraction remains boo-0hin; its notes include ownership of visibility and the frame wait. The td-rbtc note now correctly distinguishes superseded queued Undo from ordinary queued jumps.
+
+
+## Integration follow-through
+
+The first combined main suite after integrating boo-f4xm and the PDF branch finished with 3176 passed, 25 skipped, and one failed assertion in `a place saved in the text view opens the word view on the screen that holds it, and a word screen's place opens the text view at that character`. The assertion observed a requested character before layout rather than the saved first character of the actual text screen. It now verifies that the displayed screen contains the requested character and that the saved address names that screen's first source character.
+
+Inspection of failure cleanup found a related gap: a raster failure could release navigation before subsequently available text appeared, dropping the jump from History. A new held-raster test failed because the chapter move was absent (`/tmp/boo-f9xa-failed-raster-red.log`). Failure releases navigation only after text has also settled without usable content. When text is usable, its frame and History report complete navigation as usual. Both complete PDF place and word-view files then passed all 93 tests (`/tmp/boo-f9xa-final-focused.log`). The final combined full suite remains pending.
