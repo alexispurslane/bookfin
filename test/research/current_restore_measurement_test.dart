@@ -28,6 +28,32 @@ Future<void> versionThree(String path) async {
       await sql.execute('ALTER TABLE $table DROP COLUMN $column');
     }
   }
+  // Fold the current domain rows back into the old combined metadata. These
+  // fixtures have no archived accounts; production never downgrades a file.
+  for (final account in await sql.query('record_accounts')) {
+    final settings = await sql.query(
+      'record_settings',
+      where: 'account = ?',
+      whereArgs: [account['account']],
+    );
+    final byDomain = {
+      for (final row in settings)
+        row['domain']: jsonDecode(row['payload'] as String),
+    };
+    await sql.update(
+      'record_accounts',
+      {
+        'metadata': jsonEncode({
+          ...byDomain['listening'] as Map,
+          'reading': byDomain['reading'],
+        }),
+      },
+      where: 'account = ?',
+      whereArgs: [account['account']],
+    );
+  }
+  await sql.execute('DROP TABLE record_settings');
+  await sql.execute('DROP TABLE set_aside_record_settings');
   await sql.execute('DROP TABLE record_objects');
   await sql.execute('DROP TABLE set_aside_record_objects');
   await sql.execute('PRAGMA user_version = 3');

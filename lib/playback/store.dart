@@ -1149,10 +1149,18 @@ class LocalResumeStore
       final rows = await database.currentRows(account);
       return rows == null
           ? null
-          : await _derive(_readCurrentRows, (
-              account: account,
-              rows: rows,
-            ), small: small && rows.metadata.length < _inlineMetadataText);
+          : await _derive(
+              _readCurrentRows,
+              (account: account, rows: rows),
+              small:
+                  small &&
+                  rows.metadata.length +
+                          rows.settings.values.fold<int>(
+                            0,
+                            (size, text) => size + text.length,
+                          ) <
+                      _inlineMetadataText,
+            );
     } on FormatException {
       final rows = await database.rows(account);
       return rows == null
@@ -1211,6 +1219,9 @@ class LocalResumeStore
         stored.metadata,
         stored.journal,
         commit: restored.commit,
+        retainedObjectCount: restored.commit?.initialize == false
+            ? stored.objectCount
+            : null,
       );
     } else if (database != null) {
       _accounts[account] = stored;
@@ -1221,14 +1232,52 @@ class LocalResumeStore
     return stored;
   }
 
+  /// Compares only submitted domains. Retained domain maps keep their identity,
+  /// so journal-only saves and acknowledgments never traverse nested settings.
+  /// Growing submitted settings compare and encode in a worker. The cached
+  /// metadata becomes the comparison baseline only after a successful commit.
+  Future<Map<String, String>> _changedSettings(
+    Map<String, dynamic> metadata,
+    Map<String, dynamic>? saved,
+  ) async {
+    if (identical(metadata, saved)) return {};
+    final changes = <String, String>{};
+    for (final reading in [false, true]) {
+      final next = reading
+          ? metadata['reading'] as Map<String, dynamic>
+          : _settings(metadata, version: 3);
+      final previous = saved == null
+          ? null
+          : reading
+          ? saved['reading'] as Map<String, dynamic>
+          : _settings(saved, version: 3);
+      if (identical(next, previous)) continue;
+      final text = await _derive(
+        _changedSettingsText,
+        (next: next, previous: previous),
+        small:
+            _smallSettings(next) &&
+            (previous == null || _smallSettings(previous)),
+      );
+      if (text != null) changes[reading ? 'reading' : 'listening'] = text;
+    }
+    return changes;
+  }
+
   /// Saves [metadata] and [journal] as the durable state of [account].
   /// [commit] holds the rows of this save when a hop encoded them.
+  /// [retainedObjectCount] is the count already on disk when a schema migration
+  /// restores an account before it is cached. It must survive file replacement
+  /// too, so reconstruction can detect missing originals.
   Future<void> _persist(
     String account,
     Map<String, dynamic> metadata,
     RecordJournal journal, {
     RecordCommit? commit,
+    int? retainedObjectCount,
   }) async {
+    final existingObjects =
+        retainedObjectCount ?? _accounts[account]?.objectCount ?? 0;
     final database = await _storage();
     _forgetViews(account);
     if (database != null) {
@@ -1236,12 +1285,11 @@ class LocalResumeStore
         await database.writeCommit(
           _stageCommit(
             commit ??
-                RecordDatabase.encodeCommitWithMetadataText(
+                RecordDatabase.encodeCommitWithSettings(
                   account,
-                  await _derive(
-                    _encodeMetadata,
+                  await _changedSettings(
                     metadata,
-                    small: _smallSettings(metadata, domains: true),
+                    _accounts[account]?.metadata,
                   ),
                   journal,
                   initialize: !_accounts.containsKey(account),
@@ -1252,7 +1300,7 @@ class LocalResumeStore
         journal.persisted(retainedOnDisk: true);
         final count = (_objectWrites[account]?.isNotEmpty ?? false)
             ? await database.objectCount(account)
-            : _accounts[account]?.objectCount ?? 0;
+            : existingObjects;
         _objectWrites.remove(account);
         _accounts[account] = (
           metadata: metadata,
@@ -1263,7 +1311,7 @@ class LocalResumeStore
         _accounts[account] = (
           metadata: metadata,
           journal: journal,
-          objectCount: _accounts[account]?.objectCount ?? 0,
+          objectCount: existingObjects,
         );
         await _rewriteCached(database);
       }
@@ -1415,7 +1463,6 @@ class LocalResumeStore
     // microseconds, which is less than a hop.
     final copied = jsonDecode(
       jsonEncode({
-        'settings': changes.settings,
         'history': changes.history,
         'bookmarks': changes.bookmarks,
         'resumes': changes.resumes,
@@ -1423,7 +1470,9 @@ class LocalResumeStore
     ) as Map<String, dynamic>;
     return _change(
       accountKey,
-      copied['settings'] as Map<String, dynamic>,
+      _smallSettings(changes.settings)
+          ? Map<String, dynamic>.of(changes.settings)
+          : _derive(_copy, changes.settings, small: false),
       reading: false,
       records: (_) => recordChanges(copied, reading: false),
     );
@@ -1522,7 +1571,7 @@ class LocalResumeStore
   }
 
   /// Replaces the settings of one domain of [account] and saves its changed
-  /// records.
+  /// records. Null [settings] keeps the saved preferences unchanged.
   ///
   /// [records] receives the record values that the domain's writer last saved
   /// or accepted, by address. It returns the records that the writer changed,
@@ -1531,7 +1580,7 @@ class LocalResumeStore
   /// the writer knew none.
   Future<void> _change(
     String account,
-    FutureOr<Map<String, dynamic>> settings, {
+    FutureOr<Map<String, dynamic>?> settings, {
     required bool reading,
     required Map<String, Map<String, dynamic>?> Function(
       Map<String, Map<String, dynamic>> observed,
@@ -1567,16 +1616,16 @@ class LocalResumeStore
         final previous = stored?.metadata ?? _metadata({});
         await _persist(
           account,
-          _metadata(
-            reading
-                ? {...previous, 'reading': prepared}
-                : {
-                    ...prepared,
-                    'reading': previous['reading'],
-                    if (previous.containsKey('retainedObjects'))
-                      'retainedObjects': previous['retainedObjects'],
-                  },
-          ),
+          prepared == null
+              ? previous
+              : reading
+              ? {...previous, 'reading': _settings(prepared, version: 1)}
+              : {
+                  ..._settings(prepared, version: 3),
+                  'reading': previous['reading'],
+                  if (previous.containsKey('retainedObjects'))
+                    'retainedObjects': previous['retainedObjects'],
+                },
           journal,
         );
         for (final MapEntry(key: record, :value) in changed.entries) {
@@ -1649,11 +1698,13 @@ class ReadingRecords implements ResumeStore, ReadingStore, RecordWriterHost {
     });
     return owner._change(
       accountKey,
-      owner._derive(
-        _copy,
-        changes.settings,
-        small: _smallSettings(changes.settings),
-      ),
+      changes.settings == null
+          ? null
+          : owner._derive(
+              _copy,
+              changes.settings!,
+              small: _smallSettings(changes.settings!),
+            ),
       reading: true,
       records: (_) => recordChanges(copied, reading: true),
     );
@@ -1673,23 +1724,15 @@ class ReadingRecords implements ResumeStore, ReadingStore, RecordWriterHost {
 
 /// The settings of a listening [snapshot] and of its `reading` snapshot,
 /// without records, in the current format.
-Map<String, dynamic> _metadata(Map<String, dynamic> snapshot) {
-  Map<String, dynamic> withoutRecords(Map<String, dynamic>? value) =>
-      Map<String, dynamic>.from(value ?? const {})
-        ..remove('sync')
-        ..remove('bookmarks')
-        ..remove('history')
-        ..remove('resumes')
-        ..remove('reading');
-  return {
-    ...withoutRecords(snapshot),
-    'version': 3,
-    'reading': {
-      ...withoutRecords(snapshot['reading'] as Map<String, dynamic>?),
-      'version': 1,
-    },
-  };
-}
+Map<String, dynamic> _metadata(Map<String, dynamic> snapshot) => {
+  ..._settings(snapshot, version: 3),
+  'reading': _settings(
+    snapshot['reading'] as Map<String, dynamic>?,
+    version: 1,
+  ),
+  if (snapshot.containsKey('retainedObjects'))
+    'retainedObjects': snapshot['retainedObjects'],
+};
 
 Map<String, dynamic> _copy(Map<String, dynamic> value) =>
     jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
@@ -1712,7 +1755,25 @@ bool _smallSettings(Map<String, dynamic> settings, {bool domains = false}) {
   return true;
 }
 
-String _encodeMetadata(Map<String, dynamic> metadata) => jsonEncode(metadata);
+/// Normalizes one domain's settings without copying nested preferences.
+/// Retained wire originals belong to the account, not either settings domain.
+Map<String, dynamic> _settings(
+  Map<String, dynamic>? snapshot, {
+  required int version,
+}) => Map<String, dynamic>.of(snapshot ?? const {})
+  ..remove('reading')
+  ..remove('sync')
+  ..remove('resumes')
+  ..remove('bookmarks')
+  ..remove('history')
+  ..remove('retainedObjects')
+  ..['version'] = version;
+
+String? _changedSettingsText(
+  ({Map<String, dynamic> next, Map<String, dynamic>? previous}) input,
+) => const DeepCollectionEquality().equals(input.next, input.previous)
+    ? null
+    : jsonEncode(input.next);
 
 String _preferenceText(
   ({Map<String, dynamic> metadata, RecordJournal journal}) input,
@@ -1805,9 +1866,11 @@ _Restored _readCurrentRows(({String account, AccountRows rows}) input) {
       objectCount: input.rows.objectCount,
     ),
     views: _views(metadata, journal.values),
-    persist: false,
+    persist: input.rows.metadata != 'null',
     damaged: false,
-    commit: null,
+    commit: input.rows.metadata == 'null'
+        ? null
+        : RecordDatabase.encodeCommit(input.account, metadata, journal),
   );
 }
 
@@ -1988,9 +2051,11 @@ _Restored _readRows(({String account, AccountRows rows}) input) {
       objectCount: input.rows.objectCount,
     ),
     views: _views(metadata, journal.values),
-    persist: false,
+    persist: input.rows.metadata != 'null',
     damaged: false,
-    commit: null,
+    commit: input.rows.metadata == 'null'
+        ? null
+        : RecordDatabase.encodeCommit(input.account, metadata, journal),
   );
 }
 
@@ -2069,7 +2134,12 @@ typedef _Readable = ({
 /// decodes. Malformed rows may have lost the upload state, so it is not
 /// known.
 _Readable _readableRows(AccountRows rows) => (
-  snapshot: _decodedObject(rows.metadata) ?? {},
+  snapshot: rows.settings.isNotEmpty
+      ? {
+          ...?_decodedObject(rows.settings['listening'] ?? ''),
+          'reading': _decodedObject(rows.settings['reading'] ?? '') ?? {},
+        }
+      : _decodedObject(rows.metadata) ?? {},
   actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
   pending: rows.malformed ? null : rows.pending,
   records: const {},

@@ -936,7 +936,7 @@ void main() {
       expect(reader.fontSize, 20);
       expect(notified, 0);
       expect([
-        for (final changes in store.saves) changes.settings['sizesMainText'],
+        for (final changes in store.saves) changes.settings?['sizesMainText'],
       ], everyElement(isNull));
     });
 

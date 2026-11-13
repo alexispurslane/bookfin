@@ -89,6 +89,18 @@ void main() {
     return (reader, store);
   }
 
+  test('submitted settings replace old preferences while omitted settings preserve them', () {
+    final before = {...library(), 'trimMargins': false};
+    final unchanged = ReadingChanges(null).applyTo(before);
+    expect(unchanged['trimMargins'], isFalse);
+    final replaced = ReadingChanges({'version': 1, 'fontSize': 22})
+        .applyTo(before);
+    expect(replaced.containsKey('trimMargins'), isFalse);
+    expect(replaced['fontSize'], 22);
+    expect(replaced['bookmarks'], before['bookmarks']);
+    expect(replaced['resumes'], before['resumes']);
+  });
+
   test('a page turn saves a change set with only the new place', () async {
     final (reader, store) = await openReader();
 
@@ -99,7 +111,7 @@ void main() {
     final changes = store.saved.single;
     expect(changes.resumes.single['edition'], edition.id);
     expect(changes.bookmarks, isEmpty);
-    expect(changes.settings['fontSize'], 20);
+    expect(changes.settings, isNull);
   });
 
   test('adding a bookmark saves only that bookmark', () async {

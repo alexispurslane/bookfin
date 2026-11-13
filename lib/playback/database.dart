@@ -15,10 +15,13 @@ import 'kept_files.dart';
 /// [coverage] the highest applied sequence of each installation.
 /// [malformed] says that a value had a type that its column does not hold,
 /// such as a blob in a text column. Such a text reads as an empty string, and
-/// such a number as -1, so that neither decodes.
+/// such a number as -1, so that neither decodes. [settings] holds the
+/// separate domain texts. [metadata] is the legacy combined text, or JSON
+/// `null` once both domain rows have been committed.
 typedef AccountRows = ({
   bool malformed,
   String metadata,
+  Map<String, String> settings,
   String replica,
   int cursor,
   List<String> identities,
@@ -51,6 +54,7 @@ typedef RecordCommit = ({
   String account,
   bool initialize,
   Map<String, Object?> values,
+  List<Map<String, Object?>> settings,
   List<Map<String, Object?>> actions,
   List<Map<String, Object?>> objects,
   List<String> acknowledged,
@@ -65,6 +69,7 @@ typedef RecordCommit = ({
 const _accountTables = {
   'accounts': ['account', 'payload'],
   'record_accounts': ['account', 'replica', 'cursor', 'metadata'],
+  'record_settings': ['account', 'domain', 'payload'],
   'record_actions': [
     'account',
     'identity',
@@ -535,7 +540,7 @@ class RecordDatabase {
       files.openDatabase(
         name,
         options: OpenDatabaseOptions(
-          version: 5,
+          version: 6,
           onConfigure: (database) async {
             await database.rawQuery('PRAGMA journal_mode=WAL');
             await database.execute('PRAGMA synchronous=FULL');
@@ -546,13 +551,20 @@ class RecordDatabase {
             );
             await _createRows(database);
             await _createObjects(database);
+            await _createSettings(database);
             await _createSetAside(database);
             await _createActionIndexes(database);
           },
           onUpgrade: (database, previous, _) async {
             if (previous < 2) await _createRows(database);
             if (previous < 5) await _createObjects(database);
+            if (previous < 6) await _createSettings(database);
             if (previous < 3) await _createSetAside(database);
+            if (previous >= 3 && previous < 6) {
+              await database.execute(
+                'CREATE TABLE set_aside_record_settings (kept_at, account, domain, payload)',
+              );
+            }
             if (previous >= 3 && previous < 5) {
               await database.execute(
                 'CREATE TABLE set_aside_record_objects (kept_at, account, identity, sequence, body, unreadable)',
@@ -561,6 +573,11 @@ class RecordDatabase {
             if (previous < 4) await _createActionIndexes(database);
           },
         ),
+      );
+
+  static Future<void> _createSettings(DatabaseExecutor database) =>
+      database.execute(
+        'CREATE TABLE record_settings (account TEXT NOT NULL, domain TEXT NOT NULL CHECK(domain IN (\'listening\', \'reading\')), payload TEXT NOT NULL, PRIMARY KEY (account, domain))',
       );
 
   static Future<void> _createObjects(DatabaseExecutor database) async {
@@ -922,6 +939,7 @@ class RecordDatabase {
                 (row['pending'] != 0 && row['pending'] != 1),
           ),
       metadata: head.metadata,
+      settings: head.settings,
       replica: head.replica,
       cursor: head.cursor,
       identities: [
@@ -982,6 +1000,11 @@ class RecordDatabase {
     final objectQuery = hasObjects && includeActions
         ? 'UNION ALL SELECT 4, sequence, identity, unreadable, body FROM ${prefix}record_objects WHERE $where '
         : '';
+    // Kept whole files can predate domain rows. Never alter those originals.
+    final hasSettings = (await database.rawQuery(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+      ['${prefix}record_settings'],
+    )).isNotEmpty;
     final rows = await database.rawQuery(
       'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM ${prefix}record_accounts WHERE $where '
       '$actionQuery'
@@ -989,6 +1012,7 @@ class RecordDatabase {
       'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM ${prefix}record_coverage WHERE $where '
       '$objectQuery'
       '${hasObjects ? 'UNION ALL SELECT 5, NULL, NULL, COUNT(*), NULL FROM ${prefix}record_objects WHERE $where ' : ''}'
+      '${hasSettings ? 'UNION ALL SELECT 6, NULL, domain, NULL, payload FROM ${prefix}record_settings WHERE $where ' : ''}'
       'ORDER BY kind, position',
       [
         ...arguments,
@@ -997,6 +1021,7 @@ class RecordDatabase {
         ...arguments,
         if (hasObjects && includeActions) ...arguments,
         if (hasObjects) ...arguments,
+        if (hasSettings) ...arguments,
       ],
     );
     if (rows.isEmpty || rows.first['kind'] != 0) return null;
@@ -1025,6 +1050,7 @@ class RecordDatabase {
     final pending = <String>[];
     final objects = <Map<String, Object?>>[];
     var objectCount = 0;
+    final settings = <String, String>{};
     final versions = <String, String>{};
     final coverage = <String, int>{};
     for (final row in rows.skip(1)) {
@@ -1055,10 +1081,15 @@ class RecordDatabase {
           });
         case 5:
           objectCount = number(row['number']);
+        case 6:
+          final domain = text(row['name']);
+          if (settings.containsKey(domain)) malformed = true;
+          settings[domain] = text(row['content']);
       }
     }
     return (
       metadata: text(head['content']),
+      settings: settings,
       replica: text(head['name']),
       cursor: number(head['number']),
       identities: identities,
@@ -1070,6 +1101,34 @@ class RecordDatabase {
       coverage: coverage,
       malformed: malformed,
     );
+  }
+
+  /// Restores settings from domain rows, or the combined legacy metadata.
+  /// `null` in the legacy column marks a migrated account; both domain rows
+  /// must exist, so missing settings are damage rather than default settings.
+  static Map<String, dynamic> _decodeSettings(AccountRows rows) {
+    final legacy = jsonDecode(rows.metadata);
+    if (legacy != null) {
+      if (legacy is! Map<String, dynamic> ||
+          (legacy['reading'] != null &&
+              legacy['reading'] is! Map<String, dynamic>) ||
+          rows.settings.isNotEmpty) {
+        throw const FormatException('Invalid personal-record settings.');
+      }
+      return legacy;
+    }
+    if (rows.settings.length != 2 ||
+        !rows.settings.containsKey('listening') ||
+        !rows.settings.containsKey('reading')) {
+      throw const FormatException('Missing personal-record settings.');
+    }
+    final listening = jsonDecode(rows.settings['listening']!);
+    final reading = jsonDecode(rows.settings['reading']!);
+    if (listening is! Map<String, dynamic> ||
+        reading is! Map<String, dynamic>) {
+      throw const FormatException('Personal-record settings must be objects.');
+    }
+    return {...listening, 'reading': reading};
   }
 
   /// The account that [rows] hold: the settings under `snapshot`, the
@@ -1084,14 +1143,7 @@ class RecordDatabase {
         'A personal-record value has a type that its column does not hold.',
       );
     }
-    final metadata = jsonDecode(rows.metadata);
-    if (metadata is! Map<String, dynamic> ||
-        (metadata['reading'] != null &&
-            metadata['reading'] is! Map<String, dynamic>)) {
-      throw const FormatException(
-        'Personal-record metadata must be an object.',
-      );
-    }
+    final metadata = _decodeSettings(rows);
     final decodedActions = <Map<String, dynamic>>[];
     for (var index = 0; index < rows.payloads.length; index++) {
       final decoded = jsonDecode(rows.payloads[index]);
@@ -1154,21 +1206,30 @@ class RecordDatabase {
     RecordJournal journal, {
     bool initialize = false,
     List<Map<String, Object?>> objects = const [],
-  }) => encodeCommitWithMetadataText(
+  }) => encodeCommitWithSettings(
     account,
-    jsonEncode(metadata),
+    {
+      'listening': jsonEncode(Map.of(metadata)..remove('reading')),
+      'reading': jsonEncode(metadata['reading'] ?? <String, dynamic>{}),
+    },
     journal,
     initialize: initialize,
+    migrateSettings: true,
     objects: objects,
   );
 
-  /// Encodes the changed journal rows without encoding [metadataText] again.
+  /// Encodes the changed journal rows without encoding [settings] again.
+  /// [settings] contains only changed domain texts, keyed by `listening` or
+  /// `reading`; omitted domains remain untouched. Both domains are required
+  /// for [initialize] or [migrateSettings]. Migration replaces the legacy
+  /// combined metadata with a marker in the same transaction.
   /// A worker can encode growing settings without copying retained history.
-  static RecordCommit encodeCommitWithMetadataText(
+  static RecordCommit encodeCommitWithSettings(
     String account,
-    String metadataText,
+    Map<String, String> settings,
     RecordJournal journal, {
     bool initialize = false,
+    bool migrateSettings = false,
     List<Map<String, Object?>> objects = const [],
   }) {
     if (journal.account != account || journal.cursor < 0) {
@@ -1183,8 +1244,12 @@ class RecordDatabase {
         'account': account,
         'replica': journal.replica,
         'cursor': journal.cursor,
-        'metadata': metadataText,
+        if (initialize || migrateSettings) 'metadata': 'null',
       },
+      settings: [
+        for (final entry in settings.entries)
+          {'account': account, 'domain': entry.key, 'payload': entry.value},
+      ],
       actions: [
         for (final entry in journal.additions.entries)
           {
@@ -1276,6 +1341,13 @@ class RecordDatabase {
       if (updated != 1) {
         throw StateError('The retained account must exist before updating it.');
       }
+    }
+    for (final settings in commit.settings) {
+      await transaction.insert(
+        'record_settings',
+        settings,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
     for (final object in commit.objects) {
       if (object['account'] != account) {

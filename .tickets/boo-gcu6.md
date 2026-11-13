@@ -34,3 +34,50 @@ Use the current record journal, incremental current-state restore, commit encodi
 Own playback/store.dart, database.dart and narrowly necessary domain save wiring/tests. Reuse settled per-domain settings ownership rather than redesigning all record writers or typed record APIs (boo-n7no/boo-w6m2). Show a meaningful old-code failure with real SQLite operation/encode counts after nontrivial PDF settings exist, then verify listening saves, sync acknowledgments, actual settings changes, failure/retry, migration and reopen. Counts measure work; no Android latency threshold or timing claim.
 
 Required Nix checks: focused real-file regressions, sync/playback/durability/app and affected reader/settings suites, full Flutter suite, affected analysis/format/diff. Concurrency two, one heavy command per owner. Astra xhigh implementation/direct fixes, exactly one fresh read-only Astra high reviewer; preserve original verdicts and resolve findings with evidence. No devices/browser, coverage, mutations, push, PR or closure. Parent owns integration, acceptance and closure.
+
+## Implementation worktree — 2026-11-13
+
+Lead checkout: `/Users/alexispurslane/.t3/worktrees/bookfin/t3-c6dae15e`,
+branch `t3/c6dae15e`, original base
+`eb64fe705198fba0563df0a188939f6e57e16f35`.
+
+Implemented schema-six domain settings rows within RecordDatabase's existing
+transaction. Native record-only saves and batch acknowledgments leave both
+settings domains untouched. ResumeStore compares submitted settings against
+its last committed account state; a failed transaction cannot advance that
+baseline. ReadingChanges can omit settings, and ReaderSession uses bounded
+comparisons of scalar preferences and the identity of its replaced PDF map.
+Legacy text-sizing and clamped-size migrations remain real settings changes.
+
+Schema upgrades retain legacy combined metadata until the first successful
+account migration. Account repair keeps exact damaged settings rows alongside
+the existing retained action and object rows. Normal current-state restore,
+explicit reconstruction, snapshot readers, account isolation, and browser
+whole-account preferences use the existing owner paths.
+
+Real SQLite regression tests reproduce the original repeated work after
+2,000 nested PDF choices. They cover zero settings work on unrelated listening
+saves, first and later reading saves, and batch acknowledgments; one-domain
+settings changes; transaction rollback/retry; old schema/preference migration;
+reopen; and exact damaged-domain retention. See
+`docs/evidence/boo-gcu6/commands.md` for commands, results, and all iteration
+failures. Logs accompany that record as compressed files.
+
+No product fork was found. No coverage, mutation testing, device/browser work,
+push, PR, merge, closure, or worktree removal was performed. The parent owns
+integration, acceptance, hardening, and closure. Review and final checks are
+still in progress until the completion evidence below is recorded.
+
+### Check completion before review
+
+- Full Flutter suite: 3,530 passed, 27 explicitly skipped; all required affected
+  suites are included. Final log: `docs/evidence/boo-gcu6/full-final.log.gz`.
+- Changed analysis: eight Dart files, no issues. Format check: eight files,
+  zero changes. Diff check passed.
+- Strengthened native migration with an exact retained wire body and cursor
+  31. A failing invariant check exposed a lost cached original count; the
+  normal persistence/reconstruction path now retains the restored count.
+  All 133 focused durability/recovery/migration tests passed after that fix.
+- The single authorized read-only Astra high review is the remaining gate.
+  All implementation commands have finished. Original iteration failures and
+  their resolutions remain in the evidence record.

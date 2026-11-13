@@ -69,7 +69,7 @@ abstract class ReadingStore {
 
 /// The reading records that one save changes.
 ///
-/// A save carries the whole small [settings], but only the resumes,
+/// A save carries changed [settings], and only the resumes,
 /// bookmarks and moves that changed. One store transaction saves all of
 /// them, so a move and the place where it ended save together.
 class ReadingChanges {
@@ -80,8 +80,8 @@ class ReadingChanges {
     this.history = const {},
   });
 
-  /// The version and the saved reading preferences.
-  final Map<String, dynamic> settings;
+  /// The version and saved reading preferences, or null to keep them unchanged.
+  final Map<String, dynamic>? settings;
 
   /// The changed resumes as JSON. A resume replaces the saved resume of the
   /// same edition, source and revision. Resumes are never deleted.
@@ -96,7 +96,7 @@ class ReadingChanges {
   /// These changes followed by [later]: the later value of each record and
   /// the later settings win.
   ReadingChanges followedBy(ReadingChanges later) => ReadingChanges(
-    later.settings,
+    later.settings ?? settings,
     resumes: [
       for (final value in resumes)
         if (!later.resumes.any((next) => _samePlace(value, next))) value,
@@ -127,7 +127,7 @@ class ReadingChanges {
     }
 
     return {
-      ...settings,
+      ...(settings ?? snapshot ?? const {}),
       'resumes': [
         for (final value in snapshot?['resumes'] as List? ?? const [])
           if (!resumes.any((next) => _samePlace(value as Map, next)))
@@ -618,6 +618,7 @@ class ReaderSession extends ChangeNotifier {
     _sizesMainText = false;
     _legacyTrimMargins = true;
     _pdfBooks = const {};
+    _submittedSettings = null;
     final generation = ++_accountGeneration;
     final key = _account;
     final previous = _binding;
@@ -711,6 +712,12 @@ class ReaderSession extends ChangeNotifier {
             saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
         _legacyTrimMargins = saved['trimMargins'] != false;
         _pdfBooks = pdfBooks;
+        // Compare later saves with the saved scalar preferences, so inferred
+        // legacy text sizing and clamped sizes still migrate on the next save.
+        // The validated PDF map has the same choices and can share identity.
+        final submitted = _settings()..['fontSize'] = size ?? _defaultFontSize;
+        if (saved['sizesMainText'] != true) submitted.remove('sizesMainText');
+        _submittedSettings = submitted;
       }
       if (waiting != null) {
         _unreadChanges.remove(key);
@@ -1913,7 +1920,7 @@ class ReaderSession extends ChangeNotifier {
   }
 
   /// Hands the store the [resumes], [bookmarks] and [history] that one
-  /// action changed, with the current settings. A null bookmark or move is
+  /// action changed, with settings only when they changed. A null bookmark or move is
   /// a deletion. The changes stay pending, merged with earlier pending
   /// changes, until the store saves them.
   Future<void> _save({
@@ -1925,7 +1932,7 @@ class ReaderSession extends ChangeNotifier {
     if (key == null || _disposed) return;
     ++_recordRevision;
     final changes = ReadingChanges(
-      _settings(),
+      _settingsChange(),
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {
         for (final MapEntry(key: id, value: mark) in bookmarks.entries)
@@ -1943,6 +1950,18 @@ class ReaderSession extends ChangeNotifier {
     }
     _pendingWrites[key] = _pendingWrites[key]?.followedBy(changes) ?? changes;
     await _retryPending();
+  }
+
+  // The last submitted settings, not a durability claim. Failed submissions
+  // remain in _pendingWrites/_unreadChanges. PDF maps are replaced on change,
+  // so this bounded comparison never walks the saved choices for other books.
+  Map<String, dynamic>? _submittedSettings;
+
+  Map<String, dynamic>? _settingsChange() {
+    final settings = _settings();
+    if (mapEquals(settings, _submittedSettings)) return null;
+    _submittedSettings = settings;
+    return settings;
   }
 
   /// The version and the reading preferences as a save carries them.

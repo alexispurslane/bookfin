@@ -31,6 +31,7 @@ Future<R> inWorker<M, R>(FutureOr<R> Function(M) work, M input) =>
 class Workers {
   final texts = <String>[];
   int completed = 0;
+  int settingsCopies = 0;
   final copied = <int, Completer<void>>{};
   final copiesReady = Completer<void>();
   bool holdCopies = false;
@@ -38,6 +39,7 @@ class Workers {
   Future<R> call<M, R>(FutureOr<R> Function(M) work, M input) async {
     final result = await inWorker(work, input);
     completed++;
+    if (result is Map && result.containsKey('pdfBooks')) settingsCopies++;
     if (result is String) texts.add(result);
     if (holdCopies && result is Map && result.containsKey('pdfBooks')) {
       final release = Completer<void>();
@@ -94,12 +96,17 @@ void main() {
       );
 
       final text = sqlite
-          ? (await database.rows('alice'))!.metadata
+          ? (await database.rows('alice'))!.settings['reading']!
           : (await SharedPreferences.getInstance()).getString(
               'bookfin.playback.v1.alice',
             )!;
       expect(workers.texts.contains(text), isTrue);
-      expect(jsonDecode(text)['reading']['pdfBooks'], books);
+      expect(
+        sqlite
+            ? jsonDecode(text)['pdfBooks']
+            : jsonDecode(text)['reading']['pdfBooks'],
+        books,
+      );
       final restarted = LocalResumeStore(
         openDatabase: sqlite ? () async => database : null,
         hop: workers.call,
@@ -108,7 +115,7 @@ void main() {
     });
   }
 
-  test('audio saves encode retained reading preferences in a worker', () async {
+  test('audio saves leave retained reading preferences unencoded', () async {
     final workers = Workers();
     final store = LocalResumeStore(
       openDatabase: () async => database,
@@ -122,10 +129,10 @@ void main() {
 
     await store.save('alice', ListeningChanges({'version': 3, 'speed': 1.5}));
 
-    final text = (await database.rows('alice'))!.metadata;
-    expect(workers.texts.contains(text), isTrue);
-    expect(jsonDecode(text)['speed'], 1.5);
-    expect(jsonDecode(text)['reading']['pdfBooks']['book-1999'], {
+    final saved = (await database.load('alice'))!['snapshot'];
+    expect(workers.texts, isEmpty);
+    expect(saved['speed'], 1.5);
+    expect(saved['reading']['pdfBooks']['book-1999'], {
       'view': 'pageWords',
       'trimMargins': false,
     });
@@ -196,14 +203,14 @@ void main() {
 
       expect(
         jsonDecode(
-          (await database.rows('alice'))!.metadata,
-        )['reading']['pdfBooks'],
+          (await database.rows('alice'))!.settings['reading']!,
+        )['pdfBooks'],
         choices('text'),
       );
       expect(
         jsonDecode(
-          (await database.rows('bob'))!.metadata,
-        )['reading']['pdfBooks'],
+          (await database.rows('bob'))!.settings['reading']!,
+        )['pdfBooks'],
         choices('pageWords'),
       );
       final snapshot = readingSettings(choices('original'));
@@ -216,8 +223,8 @@ void main() {
       await save;
       expect(
         jsonDecode(
-          (await database.rows('alice'))!.metadata,
-        )['reading']['pdfBooks']['book-0'],
+          (await database.rows('alice'))!.settings['reading']!,
+        )['pdfBooks']['book-0'],
         {'view': 'original', 'trimMargins': false},
       );
     },
