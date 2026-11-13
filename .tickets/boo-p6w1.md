@@ -74,3 +74,17 @@ https://github.com/jellyfin/jellyfin/blob/v10.11.0/MediaBrowser.Controller/Entit
 No production or test changes, query execution, cache design, or delegate
 launch followed this audit. Freshness ownership and bounded note selection
 remain separate unsettled work; this audit does not authorize a second cache.
+
+Additional paging evidence from
+https://github.com/jellyfin/jellyfin/blob/v10.11.0/MediaBrowser.Controller/Entities/Folder.cs:
+`GetItemsInternal` at lines 970-1002 passes limit/startIndex into a child
+query without includeItemTypes, obtains those children, then applies the
+outer filter. It retains the unfiltered child count. `AddChildrenFromCollection`
+at lines 1347-1380 applies the page boundary to those children. Therefore a
+nonrecursive mixed-collection page can contain fewer matching book items,
+or no matching items, while later pages still contain books. A fixture that
+filters before paging would hide this server behavior. When narrowing child
+queries, advance through the counted source pages; do not end pagination
+because a filtered page is short or empty. Keep recursive semantics unchanged
+unless a separate equivalence test establishes that changing them preserves
+membership. No runtime proof is claimed by this source audit.
