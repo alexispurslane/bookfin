@@ -215,6 +215,14 @@ its retained History entry and original journal identity; restart recovers the
 question from those durable records. The catalog screen controller presents
 requests through the shared glass choice and follows the app's foreground state.
 
+Refresh and restart apply the same rule to decide whether that question still
+exists. Replacing or withdrawing a durable question saves its marker without
+choosing a resume. Restart uses the journal's last local action for this phone's
+place, then checks the current resume after loading the decoder. An obsolete
+marker cannot bring back a withdrawn question, even if saving the withdrawal
+failed. If sync invalidates an answer while its seek is in flight, the decoder
+returns to the phone's prior place before any move or resume is committed.
+
 ## Storage and sync
 
 The record store (`LocalResumeStore`) keeps one journal per account. Each record has an address `[domain, collection, id]`. The domain is `audio` or `reading`. Today `audio` has `bookmarks`, `history` and `resumes`, and `reading` has `bookmarks` and `resumes`.

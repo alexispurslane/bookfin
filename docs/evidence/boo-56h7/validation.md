@@ -67,7 +67,7 @@ cause remains unexplained by this ticket. The integrated `tf-il7u` correction
 was preserved. The parent's combined baseline of 3,692 passes and 27 skips at
 `1bf2d597` is supplied context, not a run performed by this ticket lead.
 
-## Completed implementation checks
+## Checks before the independent review
 
 - Focused and retained refresh regression run: 131 passed (`18-regression-green.log`).
 - Final affected suite: 1,253 passed, 3 skipped (`22-affected-green.log`).
@@ -79,4 +79,67 @@ was preserved. The parent's combined baseline of 3,692 passes and 27 skips at
 All Flutter runs used the pinned Nix shell and concurrency 2, with one heavy
 command at a time. The 53 new cases include the final failed-save presentation
 retry, checked again in the affected and full suites. All earlier failures and
-skips remain in the command manifest and full logs. Review is the next gate.
+skips remain in the command manifest and full logs.
+
+## Independent review and fixes
+
+The one authorized reviewer returned `changes-required` for correctness,
+fulfillment and design. `original-review.json` preserves its original report
+unchanged. `review-resolutions.json` retains the thread link, original verdicts,
+gaps and the ticket lead's resolution of each finding. There was no second
+review, and the original verdicts have not been relabeled as passes.
+
+R1 concerned a sync that replaced or deleted a question while its answer's seek
+was held. Four reproductions failed on the two storage backends: the decoder
+and recorded position moved from 11 seconds to the obsolete 40-second place.
+The seek now checks the question at decoder confirmation. If it became stale,
+the decoder returns to the prior local place before any move or resume is
+published. Tests check the decoder, current position, current journal action,
+History, Undo and replacement question.
+
+R2 concerned restoration of a question that refresh had already withdrawn or
+replaced. Twelve restart cases failed on preferences and SQLite. Refresh and
+restart now share one validity rule. Marker replacement or withdrawal goes
+through the existing writer without writing a resume. Restart uses the
+journal's last local action for this phone's place, and checks the current
+resume after loading the decoder. This also rejects an obsolete saved marker
+when saving its withdrawal failed.
+
+Two further pairs of behavioral failures tightened that rule: refresh must
+await the marker write, and sync during a held restart load must replace the
+question before presentation. All red logs remain in the command manifest.
+The focused and retained command/refresh regression run passes 154 tests
+(`39-review-regression-green.log`). The affected suite passes 1,275 tests with
+3 skips (`40-review-affected-green.log`).
+
+Command 32 had two overly broad test expectations: ordinary reopening after a
+fully saved withdrawal may update the existing offline-report flag. The tests
+now check unchanged action identity during reconciliation and pending-question
+recovery, and the unchanged 11-second position during ordinary reopening. No
+production change was made for those expectations. Command 36 passed 75 focused
+cases but failed to load a nonexistent test path. Command 39 used the correct
+paths and passed. Neither command failure is counted as behavioral red.
+
+The first full-suite run after review fixes (`41-review-full-suite.log`) also
+reported the existing `t5-rplx` failure: `test/reader/unread_records_test.dart`,
+“the next place after a failed read opens the records again without a flush”,
+line 97. Its saved resumes list was empty instead of having one entry. The
+affected suite had passed that test. This ticket changes neither that test nor
+reader production code. The observation matches the existing ticket; it does
+not establish a cause. No wait, timing threshold or reader behavior was changed.
+The immediate unchanged retry of all five tests in that file passed
+(`42-unread-retry.log`).
+The unchanged full-suite retry passed 3,767 tests with 27 skips
+(`43-full-suite-retry.log`). Both complete full-run logs are retained. Neither
+retry establishes the cause of `t5-rplx`.
+
+## Final verification
+
+The final code passes the 154-test focused regression run, the 1,275-test
+affected run (3 skips), and the 3,767-test full retry (27 skips). The original
+full failure remains reported above. Final affected analysis reports no issues
+(`44-final-analysis.log`). Named-file format verification and the full diff
+whitespace checks are listed in `commands.json`. The manifest also declares the
+final committed-HEAD whitespace check; that post-commit result lives in the
+external command ledger and final handoff so the manifest need not refer to its
+own commit hash. No Dart source changed between the full runs and this commit.

@@ -1,0 +1,107 @@
+{
+  "ticket": "boo-56h7",
+  "originalReport": "original-review.json",
+  "reviewedHead": "37af3fb580a5e59abbe9de5522dac854e895cb97",
+  "threadLink": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Abf722fad-1d87-4a3a-b291-7dd638aee41b%3Adelegate-task%3Aboo-56h7-single-review-20261113-1>",
+  "reviewerVerdicts": {
+    "correctness": "changes-required",
+    "fulfillment": "changes-required",
+    "design": "changes-required"
+  },
+  "reviewCount": 1,
+  "secondReviewPerformed": false,
+  "resolutions": [
+    {
+      "id": "BOO-56H7-R1",
+      "status": "resolved_by_ticket_lead",
+      "behavioralRed": {
+        "log": "/tmp/bookfin-boo-56h7-evidence/28-review-red.log",
+        "failures": 4,
+        "observed": "Both backends committed 40000 milliseconds instead of retaining 11000 milliseconds when sync replaced or deleted the choice during its held seek."
+      },
+      "change": "The existing seek operation carries the accepted choice and validates it at decoder confirmation. If refresh invalidated that choice, it restores the decoder to the pre-seek local place while suppressing samples, without publishing a move, changing Undo or saving an obsolete resume. A failed decoder restoration leaves it unavailable until reload and follows ordinary audio failure handling.",
+      "evidence": [
+        "29-held-choice-green.log: all four reproductions passed.",
+        "39-review-regression-green.log: 154 focused, actual-callback, command-queue and sync-refresh tests passed.",
+        "Tests assert decoder position, Playback position, unchanged current journal version, absence of an obsolete open move, retained Undo and the replacement choice."
+      ]
+    },
+    {
+      "id": "BOO-56H7-R2",
+      "status": "resolved_by_ticket_lead",
+      "behavioralRed": {
+        "log": "/tmp/bookfin-boo-56h7-evidence/28-review-red.log",
+        "failures": 12,
+        "observed": "Restart retained an obsolete marker after matching-place withdrawal, deletion or replacement, both before and after refresh on both backends.",
+        "additionalReproductions": [
+          "31-marker-save-red.log: two failures because refresh returned before marker persistence completed.",
+          "35-restoration-refresh-red.log: two failures because a sync during restart loading left the prior question visible."
+        ]
+      },
+      "change": "Refresh and restoration now use one Playback-owned reconciliation rule. Durable replacement or withdrawal saves the marker and any preservation History through the existing writer without selecting a resume. Refresh awaits that write. Restart decodes the marker as a candidate, uses the journal's last local action for the phone's position, then checks the current typed resume after decoder loading before presenting the question. A stale durable marker is rejected even if a prior correction failed to save.",
+      "evidence": [
+        "39-review-regression-green.log: 154 tests passed.",
+        "Recovery tests cover matching, deleted and replaced resumes before and after refresh, a failed marker write, and sync during a held decoder load.",
+        "Tests confirm that reconciliation leaves the current resume action unchanged, preserves the phone's position and keeps only the current question."
+      ]
+    }
+  ],
+  "testCorrection": {
+    "log": "32-review-focused-green.log",
+    "failures": 2,
+    "reason": "After matching-place withdrawal was successfully saved, restart had no pending question and used ordinary opening. That existing path may update the offline-report flag. The test's whole-action identity assertion incorrectly covered that ordinary opening.",
+    "correction": "Check whole-action identity immediately after reconciliation and after pending-question recovery. For ordinary reopening after withdrawal, assert the unchanged 11000-millisecond place. No production code changed for this correction."
+  },
+  "resolvedReviewGaps": [
+    "Held remote-choice seek invalidation by replacement and deletion.",
+    "Process abandonment after withdrawal, deletion or replacement of a durable question.",
+    "A common validity rule for refresh and recovery; marker persistence and failed-write recovery.",
+    "Sync refresh during decoder loading at restart."
+  ],
+  "remainingMaterialGaps": [],
+  "limits": [
+    "Fixes were made and verified by the ticket lead. The original review remains changes-required; no second reviewer was launched.",
+    "Native headset, notification and lock-screen acceptance remains parent-owned under t1-dth0.",
+    "Host restart fixtures do not establish native process-kill acceptance.",
+    "No coverage or general mutation campaign; t5-rplx remains unexplained; tf-il7u is unchanged."
+  ],
+  "originalReportSha256": "e2407fc44b1ca75d9552b50932f7161de06f4bbba906b1c26f2e87bd5d2f2a71",
+  "finalVerification": {
+    "focused": {
+      "passed": 154,
+      "log": "39-review-regression-green.log"
+    },
+    "affected": {
+      "passed": 1275,
+      "skipped": 3,
+      "log": "40-review-affected-green.log"
+    },
+    "firstFull": {
+      "passed": 3766,
+      "skipped": 27,
+      "failed": 1,
+      "log": "41-review-full-suite.log",
+      "failure": "Existing t5-rplx assertion: test/reader/unread_records_test.dart:97; cause unexplained."
+    },
+    "isolatedRetry": {
+      "passed": 5,
+      "log": "42-unread-retry.log"
+    },
+    "fullRetry": {
+      "passed": 3767,
+      "skipped": 27,
+      "failed": 0,
+      "log": "43-full-suite-retry.log"
+    },
+    "analysis": {
+      "result": "No issues found",
+      "log": "44-final-analysis.log"
+    },
+    "format": {
+      "result": "11 files, 0 changes",
+      "log": "45-final-format-check.log"
+    },
+    "logsRoot": "/tmp/bookfin-boo-56h7-evidence",
+    "note": "Both retries used unchanged source. No second review; these are ticket-lead checks."
+  }
+}

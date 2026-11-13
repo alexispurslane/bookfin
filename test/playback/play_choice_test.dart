@@ -18,9 +18,15 @@ import 'playback_test.dart' as audio;
 class _Store extends LocalResumeStore {
   _Store({super.openDatabase});
   bool fail = false;
+  Completer<void>? saveGate;
+  Completer<void>? saveEntered;
   @override
-  Future<void> save(String account, ListeningChanges changes) {
+  Future<void> save(String account, ListeningChanges changes) async {
     if (fail) throw Exception('disk full');
+    if (saveGate != null) {
+      if (!saveEntered!.isCompleted) saveEntered!.complete();
+      await saveGate!.future;
+    }
     return super.save(account, changes);
   }
 }
@@ -64,6 +70,9 @@ void main() {
       });
       tearDown(() async {
         store.fail = false;
+        if (store.saveGate case final gate? when !gate.isCompleted) {
+          gate.complete();
+        }
         engine.release();
         downloads.lookupGate?.complete();
         await player.close();
@@ -82,6 +91,198 @@ void main() {
         }, device: 'Other phone');
         await store.receivePage(account, remote.uploads, 0);
         await player.refreshPersonalRecords();
+      }
+
+      Future<void> abandonAndRestart() async {
+        final abandoned = player;
+        store.fail = true;
+        addTearDown(abandoned.close);
+        if (sqlite) await phone!.restart();
+        store = _Store(
+          openDatabase: sqlite ? () async => phone!.database : null,
+        );
+        engine = _Engine();
+        player = Playback(downloads: downloads, engine: engine, store: store);
+        await player.bind(audio.account(), [audio.title, otherBook]);
+      }
+
+      test(
+        'refresh completes after the withdrawn question is durable',
+        () async {
+          await receive(40000);
+          await player.playExternally();
+          await player.pause();
+          store.saveGate = Completer<void>();
+          store.saveEntered = Completer<void>();
+          var completed = false;
+          final refreshing = receive(11000).then((_) => completed = true);
+          await store.saveEntered!.future;
+          await pumpEventQueue();
+          expect(completed, isFalse);
+          store.saveGate!.complete();
+          await refreshing;
+          expect((await store.read(account))!['playChoice'], isNull);
+        },
+      );
+
+      test(
+        'restart reconciles the question after a held decoder load',
+        () async {
+          await receive(40000);
+          await player.playExternally();
+          await player.pause();
+          final abandoned = player;
+          store.fail = true;
+          addTearDown(abandoned.close);
+          if (sqlite) await phone!.restart();
+          store = _Store(
+            openDatabase: sqlite ? () async => phone!.database : null,
+          );
+          engine = _Engine()..held = HeldCommand.load;
+          player = Playback(downloads: downloads, engine: engine, store: store);
+          final binding = player.bind(audio.account(), [
+            audio.title,
+            otherBook,
+          ]);
+          await engine.entered.future;
+          await receive(50000);
+          engine.release();
+          await binding;
+          expect(player.position!.milliseconds, 11000);
+          expect(player.playChoiceNotifier.value?.remote.milliseconds, 50000);
+        },
+      );
+
+      test('restart rejects an obsolete question even when its withdrawal failed to save', () async {
+        await receive(40000);
+        await player.playExternally();
+        await player.pause();
+        store.fail = true;
+        await receive(11000);
+        await player.flush();
+        expect(player.saveFailed, isTrue);
+        expect((await store.read(account))!['playChoice'], isNotNull);
+        await abandonAndRestart();
+        expect(player.playChoiceNotifier.value, isNull);
+        await player.play();
+        expect(player.playing, isTrue);
+        expect(player.position!.milliseconds, 11000);
+      });
+
+      for (final replacement in [50000, null]) {
+        test(
+          'a ${replacement == null ? 'deleted' : 'replaced'} choice during its seek never commits the obsolete move',
+          () async {
+            await receive(40000);
+            await player.play();
+            final choice = player.playChoiceNotifier.value!;
+            final previousUndo = player.undoAction;
+            engine.held = HeldCommand.seek;
+            final choosing = player.chooseListeningPlace(
+              choice,
+              ListeningPlace.otherDevice,
+            );
+            await engine.entered.future;
+            if (replacement == null) {
+              remote.receive(await store.pendingUploads(account));
+              remote.change(resumeRecordAddress(audio.recording), null);
+              await store.receivePage(account, remote.uploads, 0);
+              await player.refreshPersonalRecords();
+            } else {
+              await receive(replacement);
+            }
+            final current = await store.listeningResume(
+              account,
+              audio.recording,
+            );
+            engine.release();
+            await choosing;
+            expect(player.position!.milliseconds, 11000);
+            expect(engine.milliseconds, 11000);
+            expect(player.playing, isFalse);
+            expect(player.undoAction?.id, previousUndo?.id);
+            expect(
+              player.history.where((event) => event.kind == HistoryAction.open),
+              isEmpty,
+            );
+            expect(
+              await store.listeningResume(account, audio.recording),
+              current,
+            );
+            expect(
+              player.playChoiceNotifier.value?.remote.milliseconds,
+              replacement,
+            );
+            player.checkInvariants();
+          },
+        );
+      }
+
+      for (final refresh in [false, true]) {
+        for (final replacement in [11000, 50000, null]) {
+          test(
+            'restart reconciles a ${replacement ?? 'deleted'} resume ${refresh ? 'after' : 'before'} refreshing a durable choice',
+            () async {
+              await receive(40000);
+              await player.playExternally();
+              await player.pause();
+              remote.receive(await store.pendingUploads(account));
+              remote.change(
+                resumeRecordAddress(audio.recording),
+                replacement == null
+                    ? null
+                    : {
+                        'edition': audio.recording.id,
+                        'source': audio.first.key,
+                        'revision': audio.first.revision,
+                        'sources': editionSources(audio.recording),
+                        'milliseconds': replacement,
+                        'pendingOffline': false,
+                      },
+                device: 'Other phone',
+              );
+              await store.receivePage(account, remote.uploads, 0);
+              final current = await store.listeningResume(
+                account,
+                audio.recording,
+              );
+              if (refresh) {
+                await player.refreshPersonalRecords();
+                expect(
+                  await store.listeningResume(account, audio.recording),
+                  current,
+                  reason: 'reconciling a question must not choose a resume',
+                );
+              }
+              await abandonAndRestart();
+              expect(
+                player.playChoiceNotifier.value?.remote.milliseconds,
+                replacement == 50000 ? 50000 : null,
+              );
+              if (replacement == 50000) {
+                expect(player.position!.milliseconds, 11000);
+              }
+              await player.flush();
+              // Once matching-place withdrawal is durable, restart follows the
+              // ordinary open path, which may update its offline-report flag.
+              if (!refresh || replacement != 11000) {
+                expect(
+                  await store.listeningResume(account, audio.recording),
+                  current,
+                  reason: 'recovering a question must not choose a resume',
+                );
+              } else {
+                expect(player.position!.milliseconds, 11000);
+              }
+              final saved = await store.read(account);
+              expect(
+                saved!['playChoice'],
+                replacement == 50000 ? isNotNull : isNull,
+              );
+              player.checkInvariants();
+            },
+          );
+        }
       }
 
       for (final place in ListeningPlace.values) {

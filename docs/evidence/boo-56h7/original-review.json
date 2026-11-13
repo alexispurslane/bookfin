@@ -1,0 +1,192 @@
+{
+  "ticket": "boo-56h7",
+  "base": "62f4fb238861fd601acb2668a9a4d646c8a28c77",
+  "head": "37af3fb580a5e59abbe9de5522dac854e895cb97",
+  "overall_verdict": "changes-required",
+  "handoff_blocked": true,
+  "review_method": "Read-only inspection of the complete diff, relevant callers, instructions, plans, tests and retained logs. No files changed and no checks executed.",
+  "assessments": {
+    "correctness": {
+      "verdict": "changes-required",
+      "evidence": [
+        "Playback owns the pending choice. In-app Play returns before starting audio when a choice exists; PlaybackHandler.play routes external commands through playExternally.",
+        "Preservation uses ordinary History entries and the existing ListeningChanges writer. External Play waits for durable preservation before starting.",
+        "Retained tests cover both answers, cancellation, repeated operations, foreground presentation, account/edition/source replacement, preservation failure, restart, History restoration and Undo.",
+        "Static inspection found gaps when sync replaces a choice during its application and when restart follows withdrawal of a durable pending choice."
+      ],
+      "findings": [
+        "BOO-56H7-R1",
+        "BOO-56H7-R2"
+      ],
+      "gaps": [
+        "No retained reproduction covers sync replacing or deleting the choice while its remote-choice seek is held.",
+        "No retained reproduction covers process abandonment immediately after refresh withdraws or replaces an already durable pending choice."
+      ]
+    },
+    "fulfillment": {
+      "verdict": "changes-required",
+      "evidence": [
+        "The mini player, full player, book-page Resume and reader-cover callbacks reach Playback. CatalogHome presents showGlassChoices and observes foreground lifecycle changes.",
+        "Host tests exercise PlaybackHandler.play followed by background-to-foreground lifecycle callbacks. These establish host wiring only.",
+        "Refresh remains independent of the audio-command queue. Existing held-command and stale-action regression tests are retained.",
+        "The original regression patch and 01-original-red.log establish behavioral red on both preferences and SQLite.",
+        "The requested affected and full suites, analysis, formatting and complete committed-diff whitespace checks have retained passing evidence.",
+        "The remaining findings concern expressly requested stale-choice and restart behavior, rather than additional product scope."
+      ],
+      "findings": [
+        "BOO-56H7-R1",
+        "BOO-56H7-R2"
+      ],
+      "gaps": [
+        "The two missing sequences identified in the findings prevent treating stale-choice and restart handling as complete.",
+        "Native headset, notification and lock-screen acceptance remains parent-owned under t1-dth0. This exclusion is not an implementation gate for this review."
+      ]
+    },
+    "design": {
+      "verdict": "changes-required",
+      "evidence": [
+        "The principal ownership boundaries are appropriate: Playback decides and writes; CatalogHome presents and reports; leaf controls retain callback-based behavior.",
+        "The implementation reuses typed journal views, History, Undo, the record writer and durable transactions. It adds no second resume store or generic command framework.",
+        "The choice signal is narrow, and preservation entries neither invent an Undo move nor count as recent listening.",
+        "Choice validity has different rules during refresh and restoration. Refresh consults the current journal version; restoration accepts the retained History marker without applying those same rules. This leaves one lifecycle decision implemented in two paths."
+      ],
+      "findings": [
+        "BOO-56H7-R2"
+      ],
+      "gaps": [
+        "The on-demand invariant checker checks the in-memory choice and its History reference, but cannot detect a withdrawn choice remaining in durable settings and returning after restart."
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "BOO-56H7-R1",
+      "severity": "medium",
+      "assessments": [
+        "correctness",
+        "fulfillment"
+      ],
+      "title": "A superseded remote-choice seek commits before its stale answer is rejected",
+      "file": "lib/playback/playback.dart",
+      "line": 1667,
+      "related_locations": [
+        "lib/playback/playback.dart:1675",
+        "lib/playback/playback.dart:1696",
+        "lib/playback/playback.dart:1946",
+        "lib/playback/playback.dart:1957"
+      ],
+      "trigger": "Choose the 40-second remote place, hold engine.seek, then receive and refresh a newer 50-second remote resume before releasing the seek.",
+      "expected": "Once the choice has been replaced, the superseded answer must not commit an obsolete resume and move before being rejected. The decoder, recorded position and pending choice must follow one coherent acceptance rule.",
+      "predicted_behavior": "Refresh replaces the pending choice while the seek remains held. After release, _seekPosition checks only the account generation, commits the 40-second position, records an open move and saves it. Only after those effects does chooseListeningPlace detect that its choice is stale and return. The newer 50-second place is preserved by the save path, but the obsolete answer has already moved the decoder and replaced the current resume.",
+      "evidence_kind": "static",
+      "evidence": [
+        "chooseListeningPlace checks request identity before _seekPosition and again only after that method completes.",
+        "_seekPosition commits the confirmed position, History event and save before returning to its caller.",
+        "The added stale-answer test refreshes before calling chooseListeningPlace. The held-command test holds an unrelated pause, so neither covers this ordering."
+      ],
+      "reproduction": {
+        "executed": false,
+        "steps": [
+          "Use the existing play-choice fixture with the phone paused at 11000 milliseconds and a remote resume at 40000 milliseconds.",
+          "Request the choice, hold HeldCommand.seek, and start chooseListeningPlace with otherDevice.",
+          "Wait for the engine's entered future, receive 50000 milliseconds, and complete refreshPersonalRecords.",
+          "Release the seek and inspect the decoder position, saved resume, open History event and replacement choice."
+        ]
+      },
+      "proposed_remedy": "Carry choice validity into the existing move operation and define its commit point. A superseded operation must not publish an obsolete resume before discovering invalidation. Handle any decoder movement already in flight coherently, preserve independent refresh, and add held-seek replacement/deletion tests."
+    },
+    {
+      "id": "BOO-56H7-R2",
+      "severity": "medium",
+      "assessments": [
+        "correctness",
+        "fulfillment",
+        "design"
+      ],
+      "title": "Restart can resurrect a pending choice that refresh already withdrew",
+      "file": "lib/playback/playback.dart",
+      "line": 1717,
+      "related_locations": [
+        "lib/playback/playback.dart:727",
+        "lib/playback/playback.dart:1749",
+        "lib/playback/playback.dart:1761",
+        "lib/playback/playback.dart:1776"
+      ],
+      "trigger": "External Play durably retains the phone's 11-second place and a 40-second remote choice. Pause, then receive a newer remote resume at the same 11-second place. Refresh withdraws the choice. Abandon the process before another local save, then restart.",
+      "expected": "The withdrawn 40-second question must remain withdrawn after restart. Restoration must reconcile the retained marker with the current journal state before publishing a choice.",
+      "predicted_behavior": "_adoptListeningChoice clears the in-memory choice because the new remote place equals the phone's position, but refresh does not update the saved playChoice marker. On restart, _restoreListeningChoice accepts that old marker because its source identity and History entry still exist. It recreates the requested 40-second choice without checking the current resume version, so foreground presentation can offer the obsolete place again.",
+      "evidence_kind": "static",
+      "evidence": [
+        "Refresh adopts records and calls _adoptListeningChoice without saving a changed choice marker.",
+        "The matching-place branch clears only _playChoice.",
+        "Restoration checks source identity and History membership, but does not consult the current ListeningResume.",
+        "The persisted original action identity is restored into _identity but is not used to validate restoration.",
+        "Existing tests separately cover matching-place withdrawal and restart of an unchanged pending question; they do not combine withdrawal with process abandonment."
+      ],
+      "design_sources": [
+        "User: one coherent model and one owner operation for related state transitions",
+        "Ousterhout: information hiding and keeping one decision in one place"
+      ],
+      "design_evidence": {
+        "owner": "Playback",
+        "shared_invariant": "The live pending choice and its durable recovery marker must describe the same unresolved question.",
+        "duplicated_decision": "_adoptListeningChoice and _restoreListeningChoice independently decide whether a choice remains valid, using different evidence.",
+        "change_amplification": "A change to invalidation rules must currently be implemented separately in refresh and restoration; updating only the refresh path leaves restart behavior inconsistent."
+      },
+      "reproduction": {
+        "executed": false,
+        "steps": [
+          "Receive a 40000-millisecond remote resume while paused at 11000 milliseconds.",
+          "Call playExternally, then pause and await durable writes.",
+          "Receive a newer remote resume at 11000 milliseconds and refresh; verify the choice signal is null.",
+          "Abandon Playback without close or another save, reopen the store and bind a fresh Playback.",
+          "Inspect the restored choice signal and foreground sheet for the obsolete 40000-millisecond alternative."
+        ]
+      },
+      "proposed_remedy": "Use one Playback-owned reconciliation rule for refresh and restoration. Persist changes to the recovery marker through the existing writer without rewriting the resume, and validate restored markers against current journal state before presentation. Add restart tests after matching-place withdrawal, deletion and replacement."
+    }
+  ],
+  "retained_validation": {
+    "affected_suite": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/22-affected-green.log",
+      "observed_summary": "01:23 +1253 ~3: All tests passed!"
+    },
+    "full_suite": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/23-full-suite.log",
+      "observed_summary": "04:57 +3745 ~27: All tests passed!"
+    },
+    "analysis": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/24-analysis-green.log",
+      "observed_summary": "No issues found!",
+      "scope": "The affected paths listed in commands.json, not a separately established whole-project analysis run."
+    },
+    "format": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/25-format-check.log",
+      "observed_summary": "Formatted 11 files (0 changed)."
+    },
+    "committed_diff_whitespace": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/27-committed-diff-check.log",
+      "evidence": "Empty log; commands.jsonl records exit 0 for the original-base-to-HEAD check. The committed commands.json ends at command 26."
+    },
+    "behavioral_red": {
+      "log": "/tmp/bookfin-boo-56h7-evidence/01-original-red.log",
+      "evidence": "Four assertion failures: both stores lacked the 40000-millisecond remote place in History, and both in-app Play cases called the engine before a choice."
+    },
+    "earlier_failures": [
+      "Commands 02, 03, 04, 07 and 10 are compilation failures, not behavioral red.",
+      "Command 06 records fixture cleanup errors after restart assertions.",
+      "Command 08 includes missing-presentation failures and a separate reader-cover finder error.",
+      "Command 16 records 15 refresh regressions involving ParallelWaitError. The final implementation uses Future.wait, and subsequent retained regression and full runs pass.",
+      "Other retained behavioral failures cover restart position, device attribution, choice withdrawal, failed preservation, late-library settings and presentation retry."
+    ]
+  },
+  "limits": [
+    "The two reproduction recipes were not executed; their outcomes are static predictions.",
+    "SQLite interruption evidence uses a transaction-aborting trigger. Restart evidence reconstructs the player/store; it is not a native operating-system kill acceptance test.",
+    "Native media-control acceptance remains parent-owned and blocked on t1-dth0.",
+    "No coverage or general mutation campaign was performed or requested.",
+    "The earlier t5-rplx failure remains unexplained. Passing retained tests do not establish its cause.",
+    "The tf-il7u correction is untouched by this diff.",
+    "HEAD matched the requested commit, and the checkout remained clean."
+  ]
+}

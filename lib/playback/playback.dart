@@ -730,9 +730,10 @@ class Playback extends ChangeNotifier {
     if (edition != null &&
         _edition != null &&
         _sameEdition(edition, _edition!)) {
-      _adoptListeningChoice(origin);
+      _reconcileListeningChoice(origin);
     }
     _notify();
+    await _writes.idle;
   }
 
   /// Restores the bookmark [id]. If it is gone when this command runs,
@@ -1258,6 +1259,10 @@ class Playback extends ChangeNotifier {
     final selected = _selectedEdition();
     if (selected == null) return;
     final (book, edition) = selected;
+    if (_choiceToRestore?['sources'] == editionSources(edition)) {
+      await _open(book, edition, autoplay: false);
+      return;
+    }
     final resume = _readPosition(edition);
     if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
@@ -1400,15 +1405,23 @@ class Playback extends ChangeNotifier {
     final generation = _generation;
     // An open at the saved place asks where that place came from while the
     // audio loads. A failed query knows nothing.
+    final account = _session!.scope.key;
     final origin = target != null || replacement != null
         ? null
         : store
-              .origin(_session!.scope.key, edition)
+              .origin(account, edition)
               .then<PlaceOrigin?>(
                 (value) => value,
                 onError: (Object _) => null,
               );
-    final files = await _savedFiles(edition);
+    final restoringChoice =
+        _choiceToRestore?['sources'] == editionSources(edition);
+    final opening = await Future.wait<Object?>([
+      _savedFiles(edition),
+      if (restoringChoice) origin ?? Future<PlaceOrigin?>.value(),
+    ]);
+    final files = opening[0] as List<Uri>?;
+    final recovered = restoringChoice ? opening[1] as PlaceOrigin? : null;
     if (generation != _generation) return false;
     bound = _bound(book, edition);
     if (bound == null) return false;
@@ -1418,12 +1431,18 @@ class Playback extends ChangeNotifier {
       _notify();
       return false;
     }
+    final own = recovered?.own;
     final resume = replacement != null
         ? null
-        : target ?? _readPosition(edition);
+        : target ??
+              (own is AudioPosition && own.fits(edition)
+                  ? own
+                  : _readPosition(edition));
     if (resume != null &&
         (!resume.fits(edition) ||
-            target == null && !_resumeFits(edition, _resumeRecord(edition)))) {
+            target == null &&
+                !restoringChoice &&
+                !_resumeFits(edition, _resumeRecord(edition)))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
       _offerReplacement(book, edition, resume);
       _notify();
@@ -1445,6 +1464,11 @@ class Playback extends ChangeNotifier {
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
           : await engine.seek(fileIndex, target.milliseconds);
       final known = await origin;
+      // Refresh can run while the decoder loads. Reconcile against the
+      // journal at confirmation, not the question from before that wait.
+      final currentResume = restoringChoice
+          ? await store.listeningResume(account, edition)
+          : null;
       bound = generation == _generation ? _bound(book, edition) : null;
       if (bound == null ||
           replacement != null && !identical(replacement, _replacementStart)) {
@@ -1476,8 +1500,14 @@ class Playback extends ChangeNotifier {
       _active = autoplay;
       _position = _positionForSample(confirmed);
       _decoderReady = true;
-      _restoreListeningChoice(_choiceToRestore);
+      final savedChoice = _choiceToRestore;
       _choiceToRestore = null;
+      if (restoringChoice) {
+        // Reopening an unresolved question is not a choice of resume. The
+        // journal's last local action supplies this phone's decoder place.
+        _recordedDecoderAnchor = _decoderAnchor;
+        _reconcileListeningChoice(currentResume, saved: savedChoice);
+      }
       _replacementStart = null;
       if (action != null) {
         _record(action, previous ?? _position!, _position!);
@@ -1669,6 +1699,7 @@ class Playback extends ChangeNotifier {
         target.milliseconds,
         HistoryAction.open,
         device: choice.device,
+        choice: choice,
       )) {
         return;
       }
@@ -1693,40 +1724,60 @@ class Playback extends ChangeNotifier {
     await _play();
   });
 
-  void _adoptListeningChoice(ListeningResume? origin) {
+  /// Refresh and restart use the same validity rule. A durable question's
+  /// replacement or withdrawal is saved without choosing a resume.
+  void _reconcileListeningChoice(
+    ListeningResume? origin, {
+    Map<String, dynamic>? saved,
+  }) {
+    final before = saved ?? _savedListeningChoice;
+    _playChoice = _currentListeningChoice(
+      origin,
+      saved == null ? _playChoice : _readListeningChoice(saved),
+    );
+    if (before != null) {
+      _preserveListeningChoice();
+      if (!mapEquals(before, _savedListeningChoice)) _save(saveResume: false);
+    }
+  }
+
+  ListeningChoice? _currentListeningChoice(
+    ListeningResume? origin,
+    ListeningChoice? choice,
+  ) {
     final edition = _edition;
     final position = _position;
-    if (_playChoice?._historyId case final id?
+    if (choice?._historyId case final id?
         when !_history.any((event) => event.id == id)) {
-      _playChoice = null;
+      choice = null;
     }
-    if (edition == null || position == null) return;
-    if (origin == null) {
-      _playChoice = null;
-      return;
-    }
+    if (edition == null || position == null || origin == null) return null;
     final value = origin.version.value;
     if (value is! ResumeValue ||
         value.position is! AudioPosition ||
         !(value.position as AudioPosition).fits(edition)) {
-      _playChoice = null;
-      return;
+      return null;
     }
-    if (!origin.elsewhere) return;
+    if (!origin.elsewhere) return choice;
     final remote = value.position as AudioPosition;
     if (samePlace(position, remote)) {
-      _playChoice = null;
-      return;
+      return null;
     }
-    if (_playChoice?._version == origin.version) return;
-    _playChoice = ListeningChoice._(
+    if (choice?._version == origin.version ||
+        choice != null &&
+            choice._version == null &&
+            choice._identity == origin.version.identity &&
+            samePlace(choice.remote, remote)) {
+      return choice;
+    }
+    return ListeningChoice._(
       local: position,
       remote: remote,
       identity: origin.version.identity,
       sources: editionSources(edition),
       device: origin.version.device,
       version: origin.version,
-      requested: _playChoice?._requested ?? false,
+      requested: choice?._requested ?? false,
     );
   }
 
@@ -1758,18 +1809,17 @@ class Playback extends ChangeNotifier {
     };
   }
 
-  void _restoreListeningChoice(dynamic saved) {
-    if (saved is! Map ||
-        _edition == null ||
+  ListeningChoice? _readListeningChoice(Map<String, dynamic> saved) {
+    if (_edition == null ||
         _position == null ||
         saved['sources'] != editionSources(_edition!)) {
-      return;
+      return null;
     }
     final event = _history
         .where((event) => event.id == saved['history'])
         .firstOrNull;
-    if (event == null || !event.after.fits(_edition!)) return;
-    _playChoice = ListeningChoice._(
+    if (event == null || !event.after.fits(_edition!)) return null;
+    return ListeningChoice._(
       local: _position!,
       remote: event.after,
       device: event.device,
@@ -1917,12 +1967,15 @@ class Playback extends ChangeNotifier {
   }
 
   /// True only after a confirmed position and its action were committed.
+  /// A choice must still be current when the decoder confirms the move.
+  /// Otherwise restore the decoder before publishing or saving any move.
   Future<bool> _seekPosition(
     int index,
     int milliseconds,
     HistoryAction kind, {
     AudioPosition? before,
     String? device,
+    ListeningChoice? choice,
     _SliderGesture? gesture,
     _Counterpart? counterpart,
   }) async {
@@ -1939,11 +1992,33 @@ class Playback extends ChangeNotifier {
       if (!loaded || generation != _generation) return false;
     }
     if (gesture != null && gesture.revision != _sliderRevision) return false;
+    if (choice != null && !identical(choice, _playChoice)) return false;
     assert(_edition != null && index >= 0 && index < _edition!.files.length);
     _seeking = true;
     late final AudioSample confirmed;
     try {
       confirmed = await engine.seek(index, milliseconds);
+      if (generation != _generation) return false;
+      if (choice != null && !identical(choice, _playChoice)) {
+        // Samples stay suppressed until the rejected seek has been undone.
+        // A failed restoration leaves the decoder unusable; the ordinary
+        // audio failure path pauses it and a later Play reloads the local place.
+        _decoderReady = false;
+        final restored = await engine.seek(
+          _edition!.files.indexWhere((file) => file.key == previous.sourceKey),
+          previous.milliseconds,
+        );
+        if (generation != _generation) return false;
+        if (restored.fileIndex < 0 ||
+            restored.fileIndex >= _edition!.files.length ||
+            !samePlace(_positionForSample(restored), previous)) {
+          throw const FormatException(
+            'The decoder did not restore the local place.',
+          );
+        }
+        _decoderReady = true;
+        return false;
+      }
     } finally {
       _seeking = false;
     }
@@ -2037,14 +2112,17 @@ class Playback extends ChangeNotifier {
 
   /// Hands the store the records changed since the last save, with the
   /// current settings. The changes stay pending until the store saves them.
-  void _save() {
+  /// Choice reconciliation saves its marker and History without a resume.
+  void _save({bool saveResume = true}) {
     final accountKey = _session?.scope.key;
     if (accountKey == null || !_restored) return;
     ++_recordRevision;
     final resumes = <String, List<Map<String, dynamic>>>{};
     final position = _position;
     final decoderAnchor = _decoderAnchor;
-    if (position != null && decoderAnchor != _recordedDecoderAnchor) {
+    if (saveResume &&
+        position != null &&
+        decoderAnchor != _recordedDecoderAnchor) {
       _preserveListeningChoice();
       final records = _resumes.putIfAbsent(position.editionId, () => []);
       // A legacy file-relative position can be read but cannot establish
