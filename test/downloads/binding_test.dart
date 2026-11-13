@@ -386,6 +386,22 @@ void main() {
     expect(storage.paths, isEmpty);
   });
 
+  test(
+    'switching accounts never reports the previous account files as available',
+    () async {
+      await saveAll();
+      final notices = <DownloadPhase>[];
+      downloads.addListener(
+        () => notices.add(downloads.status(fixture.text).phase),
+      );
+      await downloads.bind(fixture.session(user: 'bob'), fixture.books);
+      expect(notices, isNotEmpty);
+      expect(notices, isNot(contains(DownloadPhase.downloaded)));
+      expect(await downloads.localFile(fixture.text.files.single), isNull);
+      downloads.checkInvariants();
+    },
+  );
+
   test('credential renewal still resets mobile permission while keeping local availability', () async {
     await saveAll();
     policy.network = MediaNetwork.mobile;
@@ -658,12 +674,13 @@ void main() {
   );
 
   test('an unchanged active download survives adding sources without another transfer', () async {
-    await downloads.bind(fixture.session(), books([fixture.text]));
+    final session = fixture.session();
+    await downloads.bind(session, books([fixture.text]));
     fixture.holdItem = 'text';
     await downloads.request(fixture.text);
     await fixture.firstChunk.future;
     await waitForBytes(downloads, fixture.text, 3);
-    final binding = downloads.bind(fixture.session(), fixture.books);
+    final binding = downloads.bind(session, fixture.books);
     expect(downloads.status(fixture.text).bytes, 3);
     fixture.release();
     await binding;

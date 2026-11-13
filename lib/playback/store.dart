@@ -1186,12 +1186,12 @@ class LocalResumeStore
           keptAt: DateTime.now().millisecondsSinceEpoch,
         );
         stored.journal.persisted(retainedOnDisk: true);
-        _objectWrites.remove(account);
         stored = (
           metadata: stored.metadata,
           journal: stored.journal,
           objectCount: await database.objectCount(account),
         );
+        _objectWrites.remove(account);
         _accounts[account] = stored;
       } on RecordFileSetAside {
         _accounts[account] = stored;

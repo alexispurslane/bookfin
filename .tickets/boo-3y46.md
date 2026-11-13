@@ -221,3 +221,13 @@ R1, R2 and R3 have recorded resolutions with executed red-green evidence and
 passing required checks. No findings, material unverified assessments or design
 forks remain unresolved. The final report gives the ordered implementation and
 fix commit SHAs. Parent alone integrates, accepts, hardens and closes the ticket.
+
+## Parent integration — 2026-11-13
+
+Inspected the complete original-base diff, real callers, new discovery tests, the completed review, and saved verification logs. Integrated 876a4786 as fdaca101 and a4aec3d3 as 015773dd. Preserved both parent launch records and child evidence. The coordinator conflict preserves boo-721h credential identity, rejection subscriptions, local-only choices and account guards while sharing received-record refresh after complete/incomplete exchanges. A local-only operation with neither exchange result nor exchange failure records no successful sync.
+
+Parent finding P1: damage immediately after a server-copy repair commits can discard the newly retained unreadable original before the count query succeeds. The old cached count is zero, so reconstruction can then accept zero originals with an advanced cursor. A real-SQLite regression in test/sync/repair_recovery_test.dart corrupts the record_objects table and its indexes precisely before that count query. It failed meaningfully: expected one unreadable record, observed zero (exit 1, /tmp/boo-3y46-integrated-recovery-red.log). Recovery inputs now remain staged until the count succeeds. The regression verifies original retention, repaired bookmark, cursor, reopen and invariants; it passes in the 174-test combined focused run (/tmp/boo-3y46-o3cm-integrated-focused-green.log).
+
+This is a direct parent fix with executed evidence, not a second review or a reviewer reapproval. Combined final verification and closure follow below.
+
+Combined affected verification passed 2,777 tests, 24 existing skips, zero failures in 4m16s (/tmp/boo-3y46-o3cm-integrated-affected.log). Exact command and the separate downloads integration correction are recorded in boo-o3cm. After that correction, 105 focused tests passed, including the real-SQLite repair regression (/tmp/boo-3y46-o3cm-integrated-regressions-green.log). Final analysis/format/full verification follows both direct parent fixes.

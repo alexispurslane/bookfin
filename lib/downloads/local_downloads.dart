@@ -163,7 +163,7 @@ class LocalDownloads extends Downloads {
         await previous;
         final plan = await _hop(
           account,
-            identities,
+          identities,
           _session?.scope.key,
           _sourceFacts(),
         );
@@ -192,9 +192,7 @@ class LocalDownloads extends Downloads {
     List<Object?> identities,
     String? previousAccount,
     List<Object?> previous,
-  ) => Isolate.run(
-    () => _plan(account, identities, previousAccount, previous),
-  );
+  ) => Isolate.run(() => _plan(account, identities, previousAccount, previous));
 
   /// The id of each source in [identities], which holds four facts per
   /// source: key, revision, size and kind. The signature covers [account]
@@ -273,10 +271,10 @@ class LocalDownloads extends Downloads {
     _session = session;
     if (credentialsChanged) {
       session?.credentialChanges.addListener(_networkChanged);
-      policy.resetSession();
     }
     if (_signature == signature) {
       // The same sources can form other editions, which changes their status.
+      if (credentialsChanged) policy.resetSession();
       updateWatches();
       _schedule();
       return _binding ?? Future.value();
@@ -389,6 +387,9 @@ class LocalDownloads extends Downloads {
     if (accountChanged) {
       _leftovers?.value = const LeftoverFiles(reading: true);
     }
+    // Resetting permission notifies listeners, so the new account's records
+    // must be installed before it can report availability.
+    if (credentialsChanged) policy.resetSession();
     _emit();
     return binding;
   }
