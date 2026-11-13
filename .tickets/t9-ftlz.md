@@ -77,3 +77,16 @@ frame-test investigation. Parent integrates and closes.
 - taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t9-ftlz-astra-20261113-1
 - childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t9-ftlz-astra-20261113-1
 - Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-t9-ftlz-astra-20261113-1>
+
+## Parent frame-test coordination — 2026-11-13
+
+tf-il7u is integrated as 2a9df513 and 96eb86b5 and closed after parent EPUB
+verification: 666 passed, 20 existing skips. It corrects a test completion
+assumption; production is unchanged. Its child full suite passed 3,676 with
+27 skips. Evidence: `tool/evidence/tf-il7u/integration.json`.
+
+The running collection lead received this update. Its original base retains
+the old frame assertion: record any recurrence with this correction noted,
+without editing the frame test or repeating runs merely to get a pass. Parent
+will verify the combined result at collection integration. t5-rplx remains
+unexplained. Collection CPU work, scope and ownership are unchanged.

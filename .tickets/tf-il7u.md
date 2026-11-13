@@ -1,6 +1,6 @@
 ---
 id: tf-il7u
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-13T13:23:39Z
@@ -142,3 +142,31 @@ optional tests remain skipped; design used static and archived evidence.
 The controlled release test independently proves actual callback progress.
 No fix or second review was needed. Only evidence and ticket updates follow
 the reviewed implementation. Parent still owns integration and closure.
+
+## Parent integration and closure — 2026-11-13
+
+Integrated e40d1abc as 2a9df513 and 66169f2d as 96eb86b5. The only conflict
+was ticket history; both launch and investigation records were retained.
+The integrated production and test files exactly match the reviewed child.
+Production remains unchanged from the parent integration base 8c7c191b.
+All 23 archived artifacts match their hashes, byte counts and raw captures.
+
+Parent verification through Nix passed: 666 EPUB tests, 20 existing skips,
+zero failures, including all seven frame cases. Affected EPUB analysis found
+no issues; formatting changed no files; the complete integration diff passed
+the whitespace check. Parent inspected the child's full-suite pass of 3,676
+tests with 27 skips but did not repeat it. Exact commands, logs, hashes,
+review disposition and remaining limits are in
+`tool/evidence/tf-il7u/integration.json`.
+
+The invalid completion assumption is demonstrated by controlled callback
+ordering, and a deliberate scheduling violation fails the corrected tests.
+Historical runs cannot be reconstructed without traces. The inherited
+completion helper also accepts errors; the controlled release case proves
+actual progress independently. Those review limits remain unchanged.
+
+Closed after integration and passing affected checks. No dependent tickets
+were newly unblocked. t5-rplx remains unexplained; t9-ftlz continues separately.
+The collection lead was informed of this integrated test-only correction so
+its old-base results can be reported accurately without unrelated edits.
+Device/browser acceptance and general hardening remain outside this closure.

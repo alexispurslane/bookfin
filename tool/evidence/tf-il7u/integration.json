@@ -1,0 +1,141 @@
+{
+  "ticket": "tf-il7u",
+  "integrationBase": "8c7c191ba5c9e59835d18a691323ae9ddba80ed2",
+  "testedHead": "96eb86b5726891b9d6a89e24c72536d3cfbe1109",
+  "childBase": "403b803d24b5e20a9a249ca094dff477fba90eac",
+  "childHead": "66169f2dd292fe8133f597899c32d291c75d1725",
+  "commitMapping": [
+    {
+      "child": "e40d1abc8704800d54a6e7a54e47cfbc760b25bd",
+      "main": "2a9df513d398ba86f0a6142abe1c7240e43e570e"
+    },
+    {
+      "child": "66169f2dd292fe8133f597899c32d291c75d1725",
+      "main": "96eb86b5726891b9d6a89e24c72536d3cfbe1109"
+    }
+  ],
+  "inspection": [
+    "Inspected the complete original-base-to-child-HEAD diff, scheduler implementation, production pager caller, diagnostic patches, original review and saved execution evidence.",
+    "All 23 archived artifacts match their manifest byte counts, SHA-256 hashes and original raw files. This includes the 22 original reviewed artifacts plus the staged-diff archive added with the review handoff.",
+    "Only merge conflict was ticket history. Preserved both parent launch and child investigation/review evidence.",
+    "git diff --exit-code 66169f2dd292fe8133f597899c32d291c75d1725 HEAD -- lib test returned 0 after integration: production and tests exactly match the child.",
+    "git diff --exit-code 8c7c191ba5c9e59835d18a691323ae9ddba80ed2 HEAD -- lib returned 0: production is unchanged.",
+    "Original pass verdicts and gaps remain unchanged. No additional reviewer or implementation changes."
+  ],
+  "causeEvidence": {
+    "originalFailure": "Unchanged original test reproduced its false completion assertion.",
+    "ordering": "A trace observed idle work before the next redraw request, with no frame pending. That traced run passed the old test, so it is ordering evidence only.",
+    "controlledExperiment": "Three legal callbacks completed in three frames and failed the old completion assertion.",
+    "negativeControl": "Removing only the pending-frame guard caused five failures, including eleven idle callbacks where at most one was allowed. Production was restored exactly.",
+    "limit": "Historical failing runs did not trace callback order; individual histories cannot be reconstructed."
+  },
+  "checks": [
+    {
+      "stage": "format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "test/reader/epub/page_source_frames_test.dart"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.91,
+      "log": "/tmp/bookfin-tf-il7u-integration/format.log",
+      "bytes": 46,
+      "sha256": "1685974b88bd671112e17334bdc2abb8ef350e01ae026547459ec7a8307375ec",
+      "result": "One file checked; zero changes"
+    },
+    {
+      "stage": "analysis",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "analyze",
+        "--no-pub",
+        "lib/reader/epub",
+        "test/reader/epub"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 5.57,
+      "log": "/tmp/bookfin-tf-il7u-integration/analysis.log",
+      "bytes": 96,
+      "sha256": "f425a9a14934d628e50ddc68c10ad0824a28b3d1194d8593c15703f6424f192e",
+      "result": "No issues found"
+    },
+    {
+      "stage": "epub",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=2",
+        "--reporter=expanded",
+        "test/reader/epub"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 71.9,
+      "log": "/tmp/bookfin-tf-il7u-integration/epub.log",
+      "bytes": 135118,
+      "sha256": "2997f6fa648072446c0eeac12875b0cea8322cfd246ae9a0025980d2e64becad",
+      "result": "666 passed, 20 existing skips, zero failures; includes all seven frame tests"
+    },
+    {
+      "stage": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "8c7c191ba5c9e59835d18a691323ae9ddba80ed2",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.03,
+      "log": "/tmp/bookfin-tf-il7u-integration/diff.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "Complete integration diff has no whitespace errors"
+    }
+  ],
+  "inspectedChildChecks": {
+    "repeats": "Five independent processes passed seven tests each.",
+    "readerCrossings": "1714 passed, 21 skipped",
+    "full": "3676 passed, 27 skipped, zero failures",
+    "fullLog": "tool/evidence/tf-il7u/09-full.log.gz",
+    "fullUncompressedSha256": "aac0e3c76c3626b04147d663315ac1d780fcb7a65035ad9a04ba22bb7ab67070",
+    "provenance": "Builder-run evidence, inspected by parent. Parent reran EPUB tests, analysis and formatting; did not repeat the full suite."
+  },
+  "review": {
+    "file": "tool/evidence/tf-il7u/review-original.json",
+    "correctness": "pass",
+    "ticketFulfillment": "pass",
+    "design": "pass",
+    "findings": [],
+    "originalPreserved": true
+  },
+  "limits": [
+    "Existing optional tests remain skipped; no Android, browser, live-server, performance or total-heap claim.",
+    "The inherited completion helper also accepts error completion; the controlled release test independently proves callback progress.",
+    "t5-rplx remains unexplained. No assertion that all historical intermittent failures share this cause.",
+    "Coverage and general mutation testing remain deferred until user acceptance.",
+    "Collection CPU work in t9-ftlz remains independent and active."
+  ],
+  "coordination": {
+    "ticket": "t9-ftlz",
+    "message": "Parent informed the running collection lead of the integrated test correction. Its original base retains the old assertion; preserve any recurrence without unrelated frame changes or retries toward green. Parent will verify the combined result at collection integration.",
+    "delivery": "steered"
+  },
+  "closure": "Implementation integrated, parent affected checks passed, and ticket closed. No dependent tickets were newly unblocked.",
+  "integrationOperations": [
+    "First cherry-pick stopped on a ticket-history conflict; both parent and child history were preserved before continuing.",
+    "One documentation patch used a handoff-document line as ticket context and failed before changing the ticket; the patch was reapplied with the actual ticket context."
+  ]
+}
