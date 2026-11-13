@@ -10,6 +10,18 @@ assignee: Alexis Purslane
 parent: boo-fs0n
 tags: [survey-1112]
 ---
+
+## Launch — 2026-11-13
+
+Astra xhigh lead launched from a72d2043804c336877d6f3ed5ef72f3fd4994cd8.
+Running, stage uncertain; branch not yet reported. Exactly one fresh read-only
+Astra high reviewer authorized. Parent combined boo-gcu6 verification continues.
+
+- clientRequestId: bookfin-boo-2bl9-astra-20261113-1
+- taskId: node:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-2bl9-astra-20261113-1
+- childThreadId: thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-2bl9-astra-20261113-1
+- Link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3Ade3a91ba-7d8c-4ac2-9796-a93ca278e01c%3Adelegate-task%3Abookfin-boo-2bl9-astra-20261113-1>
+
 # Keep record refresh from holding sync behind audio commands
 
 Found during parent integration of boo-rw9z at 4c020d1e. Read-only evidence; no reproduction has been run. Playback.flush is now independent of unfinished audio commands, and its regression proves transport can exchange durable records while a seek is held. A later step remains coupled: RecordSync._sync awaits records.refreshWriters (lib/sync/coordinator.dart:391); the store awaits every stale writer (lib/playback/store.dart:241); Playback.refreshPersonalRecords uses _recordsCommand (lib/playback/playback.dart:619), which shares the audio command queue. When received listening records make Playback stale during a held audio command, the exchange can finish but the sync operation cannot. _exclusive retains _running until _sync returns, so later manual or background syncs also wait. This is a statically confirmed path; the trigger still needs a controlled regression.
