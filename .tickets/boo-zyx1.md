@@ -2,7 +2,7 @@
 id: boo-zyx1
 status: in_progress
 deps: []
-links: []
+links: [t0-5b9b, t0-wedg]
 created: 2026-11-12T23:41:01Z
 type: bug
 priority: 1
@@ -26,3 +26,7 @@ Verification. `nix develop --command bash -c "flutter pub get && bash tool/bookf
 The pendingOffline flag is unchanged. The survey is right that the only production reader is Playback.pendingOfflineResume, that its only production caller is _save, and that no rule clears the flag. But docs/plans/bookfin.md, section Standard Jellyfin behavior, says: "Keep pending offline progress locally. Reconcile it with newer server activity before uploading." That sentence gives a purpose to what the flag marks, and no code builds that purpose. So the choice between a reader with a clearing rule and deletion is a product decision. Ticket t0-5b9b holds the findings and two designs.
 
 New work found: when the audio service creates the engine before any Activity, no bookfin channel exists and Dart keeps unavailable downloads. This gap is older than this ticket. Ticket t0-wedg holds it. It came from reading code and was not run.
+
+**2026-11-13T01:47:18Z**
+
+Orchestrator, 2026-11-12: merged into main. A reviewer read the old MainActivity against HostChannels.kt line by line and passed correctness and design, with one comment fix that is applied: the comments now say that an engine that the audio service starts before any Activity has no plugin until an Activity attaches (t0-wedg, raised to priority 1). The ticket stays open until the device check runs: start playback, swipe Bookfin from Recents, reopen it, turn Wi-Fi off and on, and expect a Wi-Fi-only download to pause and then resume. The pendingOffline part moved to t0-5b9b, which needs a user decision.

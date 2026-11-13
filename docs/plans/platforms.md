@@ -29,7 +29,7 @@ The runner channels form one contract. A port implements the contract in its run
 | `bookfin/device` | `name` | The name that the owner gave the device, or null. |
 | `bookfin/ocr` | `recognize`, `close` | hOCR text of one BGRA page image, and the end of the worker. |
 
-Android implements the media and device channels in `android/app/src/main/kotlin/dev/bookfin/bookfin/HostChannels.kt` and the OCR channel in `OcrChannel.kt`. Both are plugins of the Flutter engine, so their channels and listeners live as long as the engine, not as long as an Activity. macOS implements the media and device channels in `macos/Runner/MediaChannel.swift` and `macos/Runner/DeviceChannel.swift`. These two Swift files use no AppKit, so the iOS runner can compile them unchanged.
+Android implements the media and device channels in `android/app/src/main/kotlin/dev/bookfin/bookfin/HostChannels.kt` and the OCR channel in `OcrChannel.kt`. Both are plugins of the Flutter engine. After an Activity adds them, their channels and listeners live until the engine ends, not until the Activity ends. An engine that the audio service starts before any Activity lacks them until an Activity attaches (t0-wedg). macOS implements the media and device channels in `macos/Runner/MediaChannel.swift` and `macos/Runner/DeviceChannel.swift`. These two Swift files use no AppKit, so the iOS runner can compile them unchanged.
 
 ```mermaid
 flowchart LR

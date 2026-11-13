@@ -19,7 +19,7 @@ The catalog remains the only owner of books, editions, and ordered source files.
 | Android method and event channels | Supply the application-private directory, available storage in bytes, and the validated default network type. |
 | Catalog screens | Bind the current account and current catalog; display derived availability; request commands. |
 
-The Android channels are small native boundaries in `HostChannels.kt`, a plugin of the Flutter engine. The network listener lives as long as the engine, because Dart listens once and the engine outlives an Activity during playback. They do not install another connectivity or filesystem package. The only added Dart package is `crypto` 3.0.7, pinned in `pubspec.yaml` and `pubspec.lock`. All build and test commands use the existing pinned Nix development shell.
+The Android channels are small native boundaries in `HostChannels.kt`, a plugin of the Flutter engine. The network listener lives as long as the engine, because Dart listens once and the engine outlives an Activity during playback. The channels do not install another connectivity or filesystem package. The only added Dart package is `crypto` 3.0.7, pinned in `pubspec.yaml` and `pubspec.lock`. All build and test commands use the existing pinned Nix development shell.
 
 ## One media-network policy
 

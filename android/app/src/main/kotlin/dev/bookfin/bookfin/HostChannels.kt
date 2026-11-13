@@ -26,7 +26,8 @@ import java.io.File
 // audio_service the engine outlives an Activity. So the channels and their
 // listeners live from the attach of the engine to its detach, and no
 // Activity owns any of them. MainActivity adds this plugin once to each
-// engine.
+// engine that it attaches to. An engine that the audio service starts
+// before any Activity has no plugin until an Activity attaches (t0-wedg).
 class HostPlugin : FlutterPlugin {
     private var channels: HostChannels? = null
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {

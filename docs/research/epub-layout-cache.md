@@ -151,7 +151,7 @@ The page map holds the output of prepare and layout. The table lists each input 
 | System fallback fonts, for characters that no bundled or embedded font has | The operating system | The operating system's build fingerprint |
 | The locale | The platform | The platform's locale list |
 
-The app's version (`version: 0.1.0+1` in pubspec.yaml) is the same in every build, so it cannot stand for the code. Two values change with every install of a new APK, on Android: `PackageInfo.lastUpdateTime`, and the path of the installed APK. `lastUpdateTime` is simpler. The existing `bookfin/device` channel in MainActivity.kt can return it with `Build.FINGERPRINT`. On macOS the same channel can return the modification time of the app bundle's executable and the system version. A debug build changes its code by hot reload with no install. So a debug build reads no page map, except in a test that asks for it.
+The app's version (`version: 0.1.0+1` in pubspec.yaml) is the same in every build, so it cannot stand for the code. Two values change with every install of a new APK, on Android: `PackageInfo.lastUpdateTime`, and the path of the installed APK. `lastUpdateTime` is simpler. The existing `bookfin/device` channel in HostChannels.kt can return it with `Build.FINGERPRINT`. On macOS the same channel can return the modification time of the app bundle's executable and the system version. A debug build changes its code by hot reload with no install. So a debug build reads no page map, except in a test that asks for it.
 
 The proposed key:
 

@@ -2,10 +2,10 @@
 id: t0-wedg
 status: open
 deps: []
-links: []
+links: [t0-5b9b, boo-zyx1]
 created: 2026-11-13T01:40:12Z
 type: bug
-priority: 2
+priority: 1
 assignee: Alexis Purslane
 parent: boo-fs0n
 tags: [survey-1112]
