@@ -1783,11 +1783,7 @@ class Playback extends ChangeNotifier {
     // status of [_persistChanges]. A bug in the save goes to the zone, and
     // the queue runs the next save all the same. The changes stay pending,
     // so the next save and [flush] send them again.
-    unawaited(
-      _writes
-          .run(() => _persistChanges(accountKey, value))
-          .onError<Exception>((error, stack) {}),
-    );
+    unawaited(_writes.run(() => _persistChanges(accountKey, value)));
   }
 
   Future<void> _persistChanges(
@@ -1816,12 +1812,18 @@ class Playback extends ChangeNotifier {
             'Personal records could not be saved. Free storage and try again.';
         _notify();
       }
-      rethrow;
     }
   }
 
-  /// Saves the current place and retries pending changes of every account.
-  /// A retry failure goes to the caller and leaves its changes pending.
+  /// Saves the current place and retries the pending changes of every
+  /// account. A retry that fails leaves its changes pending.
+  ///
+  /// A save that fails with an [Exception] is an expected failure, such as
+  /// full storage. Its report is the save status ([unsavedChanges] and the
+  /// status notifier), so this future completes normally, as the flush of
+  /// the reader session does. Callers that drop the future, such as the
+  /// app when it goes to the background, then leave no uncaught error. A
+  /// save that fails with an [Error] is a bug and goes to the caller.
   Future<void> flush() async {
     final generation = _generation;
     await _binding;
@@ -1839,8 +1841,9 @@ class Playback extends ChangeNotifier {
   }
 
   /// Stops playback and flushes records before releasing its resources.
-  /// Teardown completes even when the final save fails. That failure goes
-  /// to the caller and the pending changes remain available to [flush].
+  /// Teardown completes even when the final save fails. The failure is
+  /// reported as [flush] reports it: an [Exception] as the save status, a
+  /// bug to the caller. The pending changes stay available to [flush].
   Future<void> close() async {
     if (_closed) return;
     try {

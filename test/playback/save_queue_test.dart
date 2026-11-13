@@ -146,9 +146,14 @@ void main() {
     });
   });
 
+  // A save that fails with an Exception is an expected failure, such as
+  // full storage. Its report is the save status, and flush and close
+  // complete normally, as the reader session does. A save that fails with
+  // an Error is a bug, and flush and close hand it to their caller.
   for (final bug in [true, false]) {
     final kind = bug ? 'Error' : 'Exception';
-    test('close reports the final $kind and keeps the stop event pending', () async {
+    final report = bug ? 'hands its caller' : 'keeps as the save status';
+    test('close $report the final $kind and keeps the stop event pending', () async {
       final firstFailure = StateError('The stop save failed.');
       final lastFailure = bug
           ? StateError('The close retry failed.')
@@ -156,7 +161,10 @@ void main() {
       final uncaught = await withPlayback((playback) async {
         store.failureAction = HistoryAction.stop;
         store.failures.addAll([firstFailure, lastFailure]);
-        await expectLater(playback.close(), throwsA(same(lastFailure)));
+        await expectLater(
+          playback.close(),
+          bug ? throwsA(same(lastFailure)) : completes,
+        );
         expect(playback.unsavedChanges, isTrue);
         expect(engine.closed, isTrue);
         expect(engine.events.hasListener, isFalse);
@@ -181,7 +189,7 @@ void main() {
       expect(uncaught, [same(firstFailure)]);
     });
 
-    test('flush reports the $kind from its own retry save', () async {
+    test('flush $report the $kind of its own retry save', () async {
       final firstFailure = StateError('The first save failed.');
       final lastFailure = bug
           ? StateError('The flush retry failed.')
@@ -190,8 +198,12 @@ void main() {
         store.failures.add(firstFailure);
         await playback.addBookmark(title: 'Keep me');
         store.failures.add(lastFailure);
-        await expectLater(playback.flush(), throwsA(same(lastFailure)));
+        await expectLater(
+          playback.flush(),
+          bug ? throwsA(same(lastFailure)) : completes,
+        );
         expect(playback.unsavedChanges, isTrue);
+        expect(playback.statusNotifier.value.saveFailed, !bug);
         await playback.flush();
         expect(await savedBookmarks(), ['Keep me']);
       });

@@ -259,7 +259,7 @@ void main() {
       engine: TestEngine(),
       store: FullStore(),
     );
-    addTearDown(() => expectLater(full.close(), throwsException));
+    addTearDown(full.close);
     await full.bind(account(), [title]);
     await full.open(title, recording, autoplay: false);
     await full.addBookmark();
