@@ -121,8 +121,178 @@ Further checks:
   `full.log`, exit 0, 3,491 passed and 27 skipped, including the unchanged
   unread-record recovery test. Every required build check is now complete.
 
-Review gate: implementation is ready for the single authorized fresh read-only
-reviewer, Astra high through `delegate_task`, shared isolation, async, role review.
-The reviewer must inspect the full original-base diff, separate the parent
-prerequisite from this ticket, read callers and logs, and assess correctness,
-fulfillment and design independently. Integration remains with the parent.
+## Completed review — 2026-11-13
+
+The single authorized fresh reviewer, Astra high, completed its read-only review
+of `7671529078bd9ea12d91a46e4fde1e1fb1d67443`. Correctness, fulfillment and design
+each passed, with no findings or material validation gaps. No fixes or further
+review were needed. Only this ticket evidence changed after review; the tested
+implementation is unchanged. Integration and ticket closure remain with the parent.
+
+Review task: `node:delegated-task:command%3Amcp%3A8bbb6a28-e2eb-411c-8c5e-8d4c39384dc7%3Adelegate-task%3Aboo-hd47-review-astra-high-20261113-1`.
+Review link: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A8bbb6a28-e2eb-411c-8c5e-8d4c39384dc7%3Adelegate-task%3Aboo-hd47-review-astra-high-20261113-1>.
+
+Original review report, preserved without changes:
+
+```yaml
+ticket: boo-hd47
+review_head: 7671529078bd9ea12d91a46e4fde1e1fb1d67443
+review_mode: read_only
+assessment_weight: equal
+
+scope:
+  full_context_diff: 00b5860e7cdabcc943871913409036646900bd13..7671529078bd9ea12d91a46e4fde1e1fb1d67443
+  implementation_diff: 64d9fede7d5806941d7194941915dd3c57206ec6..7671529078bd9ea12d91a46e4fde1e1fb1d67443
+  excluded_prerequisite: 64d9fede7d5806941d7194941915dd3c57206ec6
+  ordered_implementation_commits:
+    - 7671529078bd9ea12d91a46e4fde1e1fb1d67443
+  checkout: clean
+  evidence_basis: Source inspection and existing builder logs; no reviewer execution.
+
+definitions:
+  DOM: The parsed tree of a section's elements and text.
+  CFI: EPUB's location format, which identifies a position through tree steps.
+  href_read: Reading one contents entry's URL in the controlled tests.
+
+correctness:
+  verdict: pass
+  evidence:
+    - location: lib/reader/epub/places.dart:238
+      assessment: >
+        Construction and lookup preserve package-relative URLs, decoded
+        fragments, missing and malformed targets, targets without fragments,
+        CFI ordering, and last-entry precedence at equal positions.
+      tests:
+        - test/reader/epub/chapter_titles_test.dart:250
+        - test/reader/epub/places_test.dart:647
+    - location: lib/reader/epub/places.dart:280
+      assessment: >
+        Heading fallback, empty-heading behavior, Chapter N fallback,
+        and the 512-character limit remain covered.
+      tests:
+        - test/reader/epub/places_test.dart:697
+    - location: lib/reader/epub/places.dart:135
+      assessment: >
+        Quote lookup preserves text identity and document order, including
+        continuation from the body's first text when the starting text is
+        outside the body. That outside-body case was checked statically.
+      tests:
+        - test/reader/epub/chapter_titles_test.dart:185
+        - test/reader/epub/places_test.dart:551
+    - location: test/reader/epub/chapter_titles_test.dart:282
+      assessment: >
+        Recorded passing tests cover partial preparation, same-parse whole
+        fallback, excerpts, real worker handover, eviction, settings changes,
+        and reopening. Search-hit chapter and quote checks also remain green.
+  findings: []
+  material_validation_gaps: []
+  limitations:
+    - No checks were rerun by this reviewer.
+    - >
+      The initial reader/crossings run failed at unread_records_test.dart:97.
+      Its trigger and result match the existing t5-rplx report. The test uses
+      ReaderSession without the EPUB pager. Subsequent recorded runs passed;
+      the intermittent failure's cause remains unresolved.
+
+fulfillment:
+  verdict: pass
+  evidence:
+    - requirement: Remove repeated contents URL resolution from page reporting.
+      source: lib/reader/epub/pager.dart:749
+      recorded_result: >
+        Thirteen reports made zero reporting-path href reads.
+        One worker preparation made 2,001 href reads.
+    - requirement: Resolve section targets and fallback heading once per parse.
+      source: lib/reader/epub/prepare.dart:619
+      recorded_result: >
+        Sixty title queries required 2,002 href reads, two target lookups,
+        and one heading traversal in total.
+    - requirement: Remove the full preceding-text scan from saved quotes.
+      source: lib/reader/epub/places.dart:145
+      recorded_result: >
+        The late quote required 14 text-list reads; the recorded old-code
+        failure required 4,002.
+    - requirement: Preserve section lifetime and existing measurement ownership.
+      sources:
+        - lib/reader/epub/prepare.dart:459
+        - lib/reader/epub/prepare.dart:551
+        - lib/reader/epub/page_source.dart:1644
+        - lib/reader/epub/page_source.dart:1796
+      assessment: >
+        Whole and partial worker inputs carry contents and package path.
+        Excerpts and same-parse fallback retain the existing title facts.
+        Paragraph-width ownership and active-excerpt release paths are unchanged.
+    - requirement: Complete the required verification.
+      inspected_logs:
+        focused-final.log: "193 passed, 3 skipped."
+        focused-unread-retry.log: "13 passed."
+        reader-crossings-retry.log: "1,674 passed, 21 skipped."
+        full.log: "3,491 passed, 27 skipped."
+        analysis-final.log: "Nine affected Dart files; no issues."
+        format-final.log: "Nine files; zero changes."
+        diff-check.log: "Empty; ticket records exit zero."
+      qualification: >
+        These are this worktree's recorded results, not parent-provided counts.
+        red-complete.log contains three meaningful old-code failures and one
+        passing semantics test. The initial implementation compile error is
+        excluded from meaningful red evidence.
+  findings: []
+  material_validation_gaps: []
+  limitations:
+    - Operation counts establish reduced repeated work, not Android latency.
+    - Optional skipped tests remain outside the executed evidence.
+
+design:
+  verdict: pass
+  evidence:
+    - sources: [User, Ousterhout]
+      owner: Publication
+      facts: Immutable contents entries and package path.
+      locations:
+        - lib/reader/epub/publication.dart:301
+        - lib/reader/epub/publication.dart:1038
+    - sources: [User, Ousterhout]
+      owner: PreparedSection
+      facts: The parsed DOM and its derived ChapterTitles.
+      locations:
+        - lib/reader/epub/prepare.dart:268
+        - lib/reader/epub/prepare.dart:619
+      assessment: >
+        Title facts have no independent cache or update lifecycle.
+        Their private representation is constructed once and exposes a
+        focused location-to-title query.
+    - sources: [User, Muratori]
+      owner: ChapterTitles
+      facts: One chapter-selection rule used by page reports and search.
+      locations:
+        - lib/reader/epub/places.dart:238
+        - lib/reader/epub/pager.dart:749
+        - lib/reader/epub/search.dart:183
+      assessment: >
+        Search uses the same rule for its own parsed DOM. The old separate
+        search filtering mechanism is removed. No general indexing framework
+        or test-only production hook was introduced.
+    - sources: [User, Ousterhout]
+      owner: PageSource and its existing section layout
+      lifecycle_trace:
+        - "Partial preparation: page_source.dart:349."
+        - "Whole replacement: page_source.dart:1644."
+        - "Settings retention and dropping: page_source.dart:302."
+        - "Eviction: page_source.dart:1826."
+        - "Disposal: page_source.dart:684."
+        - "Excerpt measurement and lifetime ownership: page_source.dart:2151."
+      assessment: >
+        Existing owners still control preparation retention, measurement
+        invalidation, and unfinished excerpts. The change adds no parallel
+        coordination obligation.
+  findings: []
+  material_validation_gaps: []
+
+overall_verdict: pass
+user_decision_needed: none
+unavailable_checks:
+  - Independent builds, tests, analysis, and formatting: prohibited for this review.
+  - Device acceptance and Android latency measurements: not performed.
+  - Coverage and mutation testing: reserved for parent-coordinated hardening.
+  - Root cause of the existing t5-rplx intermittent failure: unresolved.
+```
