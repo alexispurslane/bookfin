@@ -2,7 +2,7 @@
 id: boo-r8st
 status: in_progress
 deps: []
-links: []
+links: [boo-4088]
 created: 2026-11-12T23:41:02Z
 type: bug
 priority: 3

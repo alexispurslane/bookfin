@@ -1,0 +1,16 @@
+{
+  "testedHead": "751642f2",
+  "command": "nix develop --command flutter test --no-pub --concurrency=2 --reporter expanded",
+  "exitCode": 0,
+  "passed": 3797,
+  "skipped": 27,
+  "failed": 0,
+  "log": "full.log.gz",
+  "rawLogSha256": "4ed2931dc9603f533931ea90d7498d9e97b3d6e091c3fdc9512dd13c4119dabb",
+  "sourceChangesDuringRun": false,
+  "limits": [
+    "Existing 27 skips remain exclusions.",
+    "Combined browser builds, analysis and formatting will follow playback-notice integration.",
+    "Android acceptance is retained in boo-4088; coverage and mutations await acceptance."
+  ]
+}
