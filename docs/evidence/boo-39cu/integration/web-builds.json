@@ -1,0 +1,16 @@
+{
+  "commandRecord": "14-web-builds-final",
+  "productionJavaScript": "Passed; test/web_build_test.sh checked nonempty JavaScript before starting the gallery build.",
+  "galleryJavaScript": "Passed; test/web_build_test.sh checked nonempty JavaScript.",
+  "retainedOutput": {
+    "path": "/Users/alexispurslane/Development/bookfin/build/web/main.dart.js",
+    "bytes": 2797030,
+    "sha256": "f69ad3c2ec1dea570bd1f8a60a79cd8e4b42c8422db17990d48b79742ed8b1e6",
+    "entrypoint": "lib/gallery.dart"
+  },
+  "limits": [
+    "The shared output directory now contains the gallery; no production output hash is claimed.",
+    "Existing WebAssembly dry-run incompatibilities and CupertinoIcons warning remain.",
+    "Build success does not establish browser interaction or WebAssembly support."
+  ]
+}

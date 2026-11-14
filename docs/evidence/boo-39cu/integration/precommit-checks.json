@@ -1,0 +1,28 @@
+{
+  "sourceHead": "0cd68d30f0b962d35b28289c2027b82b3f4e255d",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "finalHeadCheck": "A separate original-base-to-final-HEAD check follows the evidence commit; its result is kept at /tmp/bookfin-removal-integration/final-head-checks.json."
+}

@@ -17,3 +17,9 @@ Recorded during boo-39cu. Playback now uses the same verified-file holds as the 
 ## Acceptance Criteria
 
 Show that independent source verification overlaps while removal and account replacement remain guarded; retain the boo-39cu save-before-removal tests and the reader hold tests.
+
+## Notes
+
+**2026-11-14T00:38:07Z**
+
+Parent integration inspection found an additional static invariant concern for this read/removal lifetime work: checkInvariants currently rejects any _reading key that belongs to pending removal, even though removal may legitimately wait for a read callback admitted before removal began. Include a controlled existing-read/removal case and distinguish pre-existing reads from forbidden later admission when narrowing the queue. No runtime reproduction or normal user-flow failure is claimed here; general invariant hardening remains parent-owned after acceptance.

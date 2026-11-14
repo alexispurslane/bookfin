@@ -1,0 +1,21 @@
+{
+  "passed": 102,
+  "skipped": [],
+  "errors": [
+    {
+      "testID": 112,
+      "error": "Test failed. See exception logs above.\nThe test description was: unavailable private storage shows an error without exposing old entries",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 8098
+    }
+  ],
+  "completion": [
+    {
+      "success": false,
+      "type": "done",
+      "time": 8415
+    }
+  ]
+}

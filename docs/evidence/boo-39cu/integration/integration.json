@@ -1,0 +1,155 @@
+{
+  "status": "integrated_and_host_verified",
+  "tickets": [
+    "boo-39cu",
+    "boo-xyrl"
+  ],
+  "sourceHead": "0cd68d30f0b962d35b28289c2027b82b3f4e255d",
+  "originalBase": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "parentBeforeDeferredRemoval": "0c32c3bf32e1c2eb6e67ee4d3afa96bcfa4c37df",
+  "deferredRemovalCommitMap": {
+    "21aafcbe625319e0ed7d480a4aaee32453cf6ec4": "a77cfd0611680a8a6e7b6c3a927e29bda7f0905e",
+    "1748f9380e6661510578360b16d71d8fd4ae0851": "3413c099e5c58051bafa08b130db18fdb4fb860b"
+  },
+  "clearDataIntegration": "docs/evidence/boo-xyrl/integration/integration.json",
+  "parentSourceChange": "0cd68d30f0b962d35b28289c2027b82b3f4e255d",
+  "combinedBehavior": [
+    "Clear data keeps audio playing until pause and waits for required record upload before removal.",
+    "A failed pause save keeps files and permits retry.",
+    "A failed post-pause upload keeps files and permits retry.",
+    "A book switch releases the old book; Clear data waits for the new book to pause.",
+    "Both preferences and SQLite records are covered with real downloaded files and a test decoder."
+  ],
+  "conflicts": [
+    {
+      "commit": "21aafcbe",
+      "files": [
+        ".tickets/boo-39cu.md",
+        "lib/downloads/local_downloads.dart"
+      ],
+      "resolution": "Retained both ticket notes and the complete Clear data operation; adopted the deferred public remove boundary."
+    },
+    {
+      "commit": "1748f938",
+      "files": [
+        "lib/downloads/local_downloads.dart"
+      ],
+      "resolution": "Retained _guardClear and the extracted _guardRetained in retained deletion."
+    }
+  ],
+  "parentFinding": {
+    "id": "PARENT-R1",
+    "problem": "Expected stale confirmation and filesystem guards used StateError while UI recovery now catches Exception.",
+    "red": "06-stale-confirmation-red",
+    "resolution": "Keep expected changed account/catalog, retained ownership and filesystem errors recoverable. Keep invalid hold usage and invariant failures as programming Errors. No blanket Error catch was added.",
+    "green": "09-focused-final",
+    "scope": "Parent integration fix; no second reviewer."
+  },
+  "failureDispositions": {
+    "05-stale-confirmation-red": {
+      "result": "Interrupted fixture, not a pass or meaningful red",
+      "reason": "Initial widget started real inventory IO in fake time; corrected the initial pumpWidget boundary to tester.runAsync.",
+      "signal": "kill -INT 82022",
+      "onlyOwnedRunner": true,
+      "reportedExit": 0,
+      "completionEvent": false
+    },
+    "06-stale-confirmation-red": {
+      "result": "Meaningful expected failure",
+      "details": "Both actual confirmation flows raise uncaught StateError after a catalog change and omit recovery instructions."
+    },
+    "07-stale-confirmation-green": {
+      "result": "102 passed, one existing expectation failed",
+      "details": "Existing unavailable-storage UI assertion still expected StateError. Updated it to FileSystemException; file-preservation and UI assertions unchanged. Run 09 passes."
+    }
+  },
+  "finalChecks": {
+    "focused": {
+      "record": "09-focused-final",
+      "passed": 243,
+      "skipped": 0
+    },
+    "affected": {
+      "record": "10-affected-final",
+      "passed": 2012,
+      "skipped": 3
+    },
+    "analysis": {
+      "record": "11-analysis-final",
+      "result": "No issues in lib and test"
+    },
+    "format": {
+      "record": "12-format-check-final",
+      "examined": 38,
+      "changed": 0
+    },
+    "full": {
+      "record": "13-full-final",
+      "passed": 3974,
+      "skipped": 27,
+      "failed": 0
+    },
+    "browserBuilds": {
+      "record": "14-web-builds-final",
+      "production": "pass",
+      "gallery": "pass"
+    }
+  },
+  "sourceIdentity": {
+    "dartFiles": 498,
+    "manifestSha256": "cf0501738e1e55741123646384143436d76185ee513fb444e13704bb3c482c59",
+    "workingAndCommittedBytesMatch": true,
+    "finalChecksShareSourceBytes": true
+  },
+  "evidence": {
+    "commandRecords": 14,
+    "completeLogs": "*.log.gz",
+    "sourcePatches": "*.patch.gz",
+    "sourceManifests": "*.sources.json.gz",
+    "child": "child-verification.json",
+    "childPostCommit": "child-post-commit.json"
+  },
+  "review": {
+    "originalReportsUnchanged": true,
+    "deferredRemoval": {
+      "report": "../reviewer-original.json",
+      "originalVerdicts": "changes required",
+      "resolutions": "../review-resolutions.json",
+      "allSixFindingsResolvedByLead": true
+    },
+    "clearData": {
+      "report": "../../boo-xyrl/reviewer-original.md",
+      "originalVerdicts": "fail",
+      "resolutions": "../../boo-xyrl/review-resolutions.md",
+      "allThreeFindingsResolvedByLead": true
+    },
+    "secondReview": false,
+    "parentIntegrationFix": "PARENT-R1 reproduced by the parent and verified; no second independent review is claimed."
+  },
+  "remainingAcceptance": {
+    "ticket": "boo-6bge",
+    "blockedBy": "t1-dth0",
+    "status": "unverified"
+  },
+  "hardening": {
+    "ticket": "boo-gk92",
+    "coverageAndMutations": "Await user/device acceptance; not run"
+  },
+  "followUps": [
+    "t0-dv5n",
+    "t0-ejq2",
+    "t0-hwo8",
+    "t5-23yk",
+    "td-tswb"
+  ],
+  "limits": [
+    "Host decoder doubles are not proof of Android file-handle release, headset/lock-screen pause or operating-system process kills.",
+    "Pending removal is process-local; abandoning a process keeps its files.",
+    "A later Clear data failure stops further deletion; files already removed are not reconstructed.",
+    "No device/browser interaction, live-service action, coverage or mutation campaign.",
+    "Original review verdicts and all child evidence remain unchanged.",
+    "No iOS execution; native SDK availability was not established by host tests.",
+    "Implementation closure does not close native acceptance or release hardening."
+  ],
+  "ownedCommandsFinished": true
+}

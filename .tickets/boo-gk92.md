@@ -31,3 +31,7 @@ PDF word-image integration 1330132 is green (2560 passed, 21 skipped). User alre
 **2026-11-10T23:05:15Z**
 
 After final word-view and per-book preference integration ff336de, host suite passes2649 tests/21 skipped. Normal app from ab5b9a3 is installed on Pixel. Include persistence and worker-save ordering in later accepted-behavior coverage/mutation work. No competing hardening jobs started; emulator performance remains blocked by boo-kdc6.
+
+**2026-11-14T00:44:16Z**
+
+Current-account Clear data and deferred removal are integrated at source 0cd68d30; final combined checks pass (3974 full Flutter tests, 27 unchanged skips; both browser builds). Their native acceptance is retained in boo-6bge under t1-dth0. Coverage and mutation testing have not begun for these changes and must follow acceptance. Include the combined save/upload/removal lifetime, expected-error recovery, failed-save protection after close and the existing-read/removal invariant concern recorded in t0-dv5n.

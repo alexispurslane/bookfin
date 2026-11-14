@@ -1,0 +1,45 @@
+{
+  "passed": 0,
+  "skipped": [],
+  "errors": [
+    {
+      "testID": 3,
+      "error": "Test failed. See exception logs above.\nThe test description was: a stale edition confirmation keeps files and reports recovery",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 2390
+    },
+    {
+      "testID": 3,
+      "error": "Test failed. See exception logs above.\nThe test description was: a stale edition confirmation keeps files and reports recovery",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 2572
+    },
+    {
+      "testID": 4,
+      "error": "Test failed. See exception logs above.\nThe test description was: a stale leftover confirmation keeps files and reports recovery",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 2971
+    },
+    {
+      "testID": 4,
+      "error": "Test failed. See exception logs above.\nThe test description was: a stale leftover confirmation keeps files and reports recovery",
+      "stackTrace": "",
+      "isFailure": false,
+      "type": "error",
+      "time": 3110
+    }
+  ],
+  "completion": [
+    {
+      "success": false,
+      "type": "done",
+      "time": 3175
+    }
+  ]
+}

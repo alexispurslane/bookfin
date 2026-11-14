@@ -1,0 +1,12 @@
+{
+  "passed": 243,
+  "skipped": [],
+  "errors": [],
+  "completion": [
+    {
+      "success": true,
+      "type": "done",
+      "time": 16032
+    }
+  ]
+}

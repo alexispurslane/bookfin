@@ -1,6 +1,6 @@
 ---
 id: boo-xyrl
-status: in_progress
+status: closed
 deps: [boo-pwx7]
 links: [boo-6bge]
 created: 2026-11-07T15:30:28Z
@@ -63,3 +63,7 @@ Final fixed-source validation complete: full Flutter 3912 passed/27 unchanged op
 **2026-11-13T23:59:32Z**
 
 Parent integrated f8565faa and e5c045fe as c8cc9e44 and 33837083. The only conflict was ticket-note append context; both parent launch notes and child notes are retained. Application/test sources match the child final HEAD exactly. Parent inspected the full diff, original failed review and recorded resolutions, independently verified all 39 command archives and 497 source hashes, and reran 120 focused tests on main: all passed, no skips. Source identity retains the relevance of the child full suite (3912 passed, 27 optional skips), analysis and both JavaScript builds. Evidence: docs/evidence/boo-xyrl/integration/integration.json. Ticket remains in progress for combined boo-39cu verification, acceptance and hardening; no closure or native acceptance claimed. No product decision remains.
+
+**2026-11-14T00:44:15Z**
+
+Clear data now passes combined tests with deferred audiobook removal: required pause saves and record uploads precede removal; failed saves/uploads retain files; book changes keep the next playing book protected. The operation still affects only the confirmed current account. Parent combined verification completed on committed source 0cd68d30f0b962d35b28289c2027b82b3f4e255d: 243 focused tests passed; 2012 affected tests passed with 3 existing skips; full Flutter suite passed 3974 tests with 27 unchanged skips and zero failures. Full lib/test analysis found no issues; 38 changed Dart files passed formatting; production and gallery JavaScript builds passed. All final checks used identical source bytes. Complete parent commands, logs, source snapshots, failures, skip comparison and integration resolutions are archived in docs/evidence/boo-39cu/integration/integration.json. Original reviews and lead resolutions remain unchanged; no second review. Implementation is merged and ready for closure. Native acceptance remains unverified in boo-6bge, blocked by t1-dth0; coverage/mutation and release hardening remain in boo-gk92. Closing this implementation does not claim device acceptance or release completion.

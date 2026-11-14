@@ -20,3 +20,9 @@ docs/plans/bookfin.md, Library redesign: current-account Clear data and save-bef
 ## Acceptance Criteria
 
 Record installed source/APK identity. With synthetic accounts and downloaded audiobooks, confirm removal keeps multi-part audio playing through seeks and track progression; explicit pause, headset/lock-screen pause and book switch save the confirmed place before files disappear. Pending status and duplicate controls must match the actual removal. Check normal and retained downloads. For Settings Clear data, confirm only the current account is cleared after required record uploads, while personal records, other accounts, login and appearance remain. Verify Clear data waiting through a book switch, interrupted/failed saves and uploads using controlled fixtures, retry, account/source replacement, and restart during a pending operation. Record decoder/file-release behavior, History and saved places, screenshots, tool failures and unavailable cases. Host callback tests do not establish native acceptance. Use the owned T3 device session and bound command; no bypass of t1-dth0.
+
+## Notes
+
+**2026-11-14T00:44:15Z**
+
+Both implementation prerequisites are merged and host-verified at 0cd68d30. Parent full Flutter suite: 3974 passed, 27 existing skips; production and gallery JavaScript builds passed. Evidence: docs/evidence/boo-39cu/integration/integration.json. Implementation tickets are closing; this native acceptance ticket stays open and blocked by t1-dth0. No new device attempt or acceptance delegate was started. User product decisions are settled.

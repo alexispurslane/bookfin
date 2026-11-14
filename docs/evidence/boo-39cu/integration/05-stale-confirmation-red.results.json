@@ -1,0 +1,15 @@
+{
+  "passed": 0,
+  "skipped": [],
+  "errors": [
+    {
+      "testID": 1,
+      "error": "Bad state: Cannot close sink while adding stream.",
+      "stackTrace": "package:stream_channel/src/guarantee_channel.dart 180:7      _GuaranteeSink.close\npackage:flutter_tools/src/test/flutter_platform.dart 765:43  FlutterPlatform._startTest\n",
+      "isFailure": false,
+      "type": "error",
+      "time": 50231
+    }
+  ],
+  "completion": []
+}

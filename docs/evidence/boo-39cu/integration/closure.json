@@ -1,0 +1,42 @@
+{
+  "sourceHead": "0cd68d30f0b962d35b28289c2027b82b3f4e255d",
+  "closures": [
+    {
+      "ticket": "boo-39cu",
+      "command": [
+        "tk",
+        "close",
+        "boo-39cu"
+      ],
+      "exitCode": 0,
+      "stdout": "Updated boo-39cu -> closed\n",
+      "readyCommand": [
+        "tk",
+        "ready"
+      ],
+      "newlyReady": [
+        "t0-dv5n  [P3][open] - Keep independent verified-file lookups concurrent when lending an audio edition",
+        "t0-ejq2  [P3][open] - Propagate programming errors from the audio place-origin lookup",
+        "t0-hwo8  [P3][open] - Propagate programming errors from leftover-file inventory"
+      ]
+    },
+    {
+      "ticket": "boo-xyrl",
+      "command": [
+        "tk",
+        "close",
+        "boo-xyrl"
+      ],
+      "exitCode": 0,
+      "stdout": "Updated boo-xyrl -> closed\n",
+      "readyCommand": [
+        "tk",
+        "ready"
+      ],
+      "newlyReady": []
+    }
+  ],
+  "remainingAcceptance": "boo-6bge remains blocked by t1-dth0",
+  "remainingHardening": "boo-gk92 remains blocked by acceptance",
+  "readinessDisposition": "Newly ready tickets are recorded follow-up work outside this two-ticket integration. No acceptance or hardening prerequisite became executable. No new delegate was launched."
+}

@@ -1,6 +1,6 @@
 ---
 id: boo-39cu
-status: in_progress
+status: closed
 deps: []
 links: [boo-6bge]
 created: 2026-11-12T23:41:01Z
@@ -105,3 +105,7 @@ Review fixes verified: 50 real-file lifecycle tests across preferences and SQLit
 **2026-11-14T00:32:57Z**
 
 Parent integration inspection found PARENT-R1: the narrowed Exception-only UI handlers exposed expected stale edition/retained-file guards as uncaught StateErrors. Run 06 reproduced both real confirmation flows after a catalog change. Parent changed expected catalog/ownership/storage failures to recoverable Exceptions; invariants and invalid hold usage remain Errors. Run 05 was a fixture-clock stall, interrupted only through its owned runner PID 82022; exit zero without a completion event is not a pass. Run 07 passed both new regressions and 100 other cases, but one existing private-storage assertion still expected StateError; it was updated to FileSystemException. Full final verification remains in progress. No second review.
+
+**2026-11-14T00:44:15Z**
+
+Parent integrated 21aafcbe and 1748f938 as a77cfd06 and 3413c099, preserving the complete current-account Clear data operation. Parent commit 0cd68d30 adds eight combined real-store cases and fixes expected stale-confirmation errors escaping recovery, with meaningful red evidence. Parent combined verification completed on committed source 0cd68d30f0b962d35b28289c2027b82b3f4e255d: 243 focused tests passed; 2012 affected tests passed with 3 existing skips; full Flutter suite passed 3974 tests with 27 unchanged skips and zero failures. Full lib/test analysis found no issues; 38 changed Dart files passed formatting; production and gallery JavaScript builds passed. All final checks used identical source bytes. Complete parent commands, logs, source snapshots, failures, skip comparison and integration resolutions are archived in docs/evidence/boo-39cu/integration/integration.json. Original reviews and lead resolutions remain unchanged; no second review. Implementation is merged and ready for closure. Native acceptance remains unverified in boo-6bge, blocked by t1-dth0; coverage/mutation and release hardening remain in boo-gk92. Closing this implementation does not claim device acceptance or release completion.

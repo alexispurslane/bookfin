@@ -1,0 +1,20 @@
+{
+  "childHead": "1748f9380e6661510578360b16d71d8fd4ae0851",
+  "verifiedArtifacts": 135,
+  "verifiedCommands": 53,
+  "verifiedSources": 12,
+  "manifestSha256": "86ed2c870cd60b86f79c2be643f376191f1ca3ae6384178510efa91c3868b386",
+  "reviewSha256": "8a8d03cc0a157dcde80b3fa1af830ace40d6867f0fcd3901a7d6e88623709366",
+  "whitespace": {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+      "1748f9380e6661510578360b16d71d8fd4ae0851"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}
