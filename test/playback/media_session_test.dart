@@ -324,4 +324,115 @@ void main() {
       expect(session.mediaItem.value?.artUri, isNull);
     });
   });
+
+  // A headset button or the system's resume player can start Bookfin's
+  // process. The play command then reaches the handler before Playback has
+  // restored the book that it last played (t0-wedg).
+  group('a system play that comes before the book', () {
+    /// Lets queued playback work run, in fake and real time.
+    Future<void> settle(WidgetTester tester) async {
+      for (var step = 0; step < 20; step++) {
+        await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+        await tester.pump(Duration.zero);
+      }
+    }
+
+    Future<(Playback, TestEngine)> unopened(WidgetTester tester) async {
+      final downloads = LocalFiles();
+      final engine = TestEngine();
+      final playback = Playback(
+        downloads: downloads,
+        engine: engine,
+        store: MemoryResume(),
+      );
+      addTearDown(downloads.dispose);
+      await finish(tester, playback.bind(account(), [title]));
+      return (playback, engine);
+    }
+
+    testWidgets('plays the book that a new process restores', (tester) async {
+      final downloads = LocalFiles();
+      addTearDown(downloads.dispose);
+      final store = MemoryResume();
+      final before = Playback(
+        downloads: downloads,
+        engine: TestEngine(),
+        store: store,
+      );
+      await finish(tester, before.bind(account(), [title]));
+      await finish(tester, before.open(title, recording, autoplay: false));
+      await finish(tester, before.close());
+
+      final handler = PlaybackHandler();
+      await handler.play();
+      final engine = TestEngine();
+      final playback = Playback(
+        downloads: downloads,
+        engine: engine,
+        store: store,
+      );
+      handler.attach(playback);
+      await finish(tester, playback.bind(account(), [title]));
+      await settle(tester);
+      expect(engine.isPlaying, isTrue);
+      expect(playback.edition, recording);
+      await finish(tester, playback.close());
+    });
+
+    testWidgets('plays the book that opens after the play', (tester) async {
+      final (playback, engine) = await unopened(tester);
+      final handler = PlaybackHandler()..attach(playback);
+      await handler.play();
+      expect(engine.isPlaying, isFalse);
+      await finish(tester, playback.open(title, recording, autoplay: false));
+      await settle(tester);
+      expect(engine.isPlaying, isTrue);
+      await finish(tester, playback.close());
+    });
+
+    testWidgets('is forgotten when no book opens within ten seconds', (
+      tester,
+    ) async {
+      final (playback, engine) = await unopened(tester);
+      final handler = PlaybackHandler()..attach(playback);
+      await handler.play();
+      await tester.pump(const Duration(seconds: 11));
+      await finish(tester, playback.open(title, recording, autoplay: false));
+      await settle(tester);
+      expect(engine.isPlaying, isFalse);
+      await finish(tester, playback.close());
+    });
+
+    testWidgets('still plays a book that opens within ten seconds', (
+      tester,
+    ) async {
+      final (playback, engine) = await unopened(tester);
+      final handler = PlaybackHandler()..attach(playback);
+      await handler.play();
+      await tester.pump(const Duration(seconds: 9));
+      await finish(tester, playback.open(title, recording, autoplay: false));
+      await settle(tester);
+      expect(engine.isPlaying, isTrue);
+      await finish(tester, playback.close());
+    });
+
+    for (final (name, cancel)
+        in <(String, Future<void> Function(AudioHandler))>[
+          ('pause', (handler) => handler.pause()),
+          ('stop', (handler) => handler.stop()),
+        ]) {
+      testWidgets('is cancelled by a $name before the book opens', (
+        tester,
+      ) async {
+        final (playback, engine) = await unopened(tester);
+        final handler = PlaybackHandler()..attach(playback);
+        await handler.play();
+        await cancel(handler);
+        await finish(tester, playback.open(title, recording, autoplay: false));
+        await settle(tester);
+        expect(engine.isPlaying, isFalse);
+        await finish(tester, playback.close());
+      });
+    }
+  });
 }

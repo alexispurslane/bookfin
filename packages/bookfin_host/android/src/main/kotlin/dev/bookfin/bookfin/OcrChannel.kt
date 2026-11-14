@@ -6,21 +6,9 @@ import android.os.Looper
 import dev.bookfin.bookfin.ocr.OcrWorker
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.CompletableFuture
-
-class OcrPlugin : FlutterPlugin {
-    private var channel: OcrChannel? = null
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel = OcrChannel(binding.applicationContext, binding.binaryMessenger)
-    }
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel?.detach()
-        channel = null
-    }
-}
 
 class OcrChannel(private val context: Context, messenger: BinaryMessenger) {
     private val channel = MethodChannel(messenger, "bookfin/ocr")

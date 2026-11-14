@@ -2,5 +2,5 @@
 set -euo pipefail
 directory=$(mktemp -d)
 trap 'rm -rf "$directory"' EXIT
-javac -d "$directory" android/app/src/main/java/dev/bookfin/bookfin/ocr/OcrWorker.java test/native/OcrWorkerTest.java
+javac -d "$directory" packages/bookfin_host/android/src/main/java/dev/bookfin/bookfin/ocr/OcrWorker.java test/native/OcrWorkerTest.java
 java -cp "$directory" OcrWorkerTest

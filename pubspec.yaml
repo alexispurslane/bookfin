@@ -7,6 +7,9 @@ environment:
   sdk: ^3.13.3
 
 dependencies:
+  # Bookfin's Android host channels, registered in every engine (t0-wedg).
+  bookfin_host:
+    path: packages/bookfin_host
   flutter:
     sdk: flutter
   shared_preferences: ^2.5.6

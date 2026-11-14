@@ -216,7 +216,19 @@ class PlaybackHandler extends BaseAudioHandler {
   /// the file arrives.
   final Future<Uri?> Function(JellyfinSession session, CoverRef cover)? art;
   static const _drift = Duration(seconds: 1);
+
+  /// How long a system play waits for a book to open. A headset button or
+  /// the system's resume player can start Bookfin's process, and then the
+  /// play reaches this handler before Playback restores the book that it
+  /// last played (t0-wedg). That restore takes well under a second, so a
+  /// play that still has no book after this time meant nothing to play, and
+  /// a later open must not start playing.
+  static const _bookWait = Duration(seconds: 10);
   Playback? _playback;
+
+  /// Runs while a system play waits for a book, and forgets the play when
+  /// it ends.
+  Timer? _waitingPlay;
   Listenable? _changes;
   ({
     String id,
@@ -244,6 +256,12 @@ class PlaybackHandler extends BaseAudioHandler {
 
   void _publish() {
     final playback = _playback!;
+    if (_waitingPlay != null && playback.edition != null) {
+      _forgetWaitingPlay();
+      // Playback is still notifying its listeners, so the play starts after
+      // that notification.
+      scheduleMicrotask(() => unawaited(playback.playExternally()));
+    }
     final book = playback.book;
     final shown = book == null
         ? null
@@ -328,10 +346,27 @@ class PlaybackHandler extends BaseAudioHandler {
     );
   }
 
+  /// Plays the open book, or waits up to [_bookWait] for a book to open
+  /// and then plays it.
   @override
-  Future<void> play() async => _playback?.playExternally();
+  Future<void> play() async {
+    final playback = _playback;
+    if (playback?.edition != null) return playback!.playExternally();
+    _waitingPlay?.cancel();
+    _waitingPlay = Timer(_bookWait, () => _waitingPlay = null);
+  }
+
   @override
-  Future<void> pause() async => _playback?.pause();
+  Future<void> pause() async {
+    _forgetWaitingPlay();
+    await _playback?.pause();
+  }
+
+  void _forgetWaitingPlay() {
+    _waitingPlay?.cancel();
+    _waitingPlay = null;
+  }
+
   @override
   Future<void> seek(Duration position) async =>
       _playback?.seekEdition(position.inMilliseconds);
@@ -353,6 +388,7 @@ class PlaybackHandler extends BaseAudioHandler {
 
   @override
   Future<void> stop() async {
+    _forgetWaitingPlay();
     await _playback?.stop();
   }
 }

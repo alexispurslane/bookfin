@@ -15,29 +15,10 @@ import android.os.Looper
 import android.os.PowerManager
 import android.os.StatFs
 import android.provider.Settings
-import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
-
-// Gives one Flutter engine its host channels. Dart talks to the host for
-// the life of the engine, and it listens to each event channel once. Under
-// audio_service the engine outlives an Activity. So the channels and their
-// listeners live from the attach of the engine to its detach, and no
-// Activity owns any of them. MainActivity adds this plugin once to each
-// engine that it attaches to. An engine that the audio service starts
-// before any Activity has no plugin until an Activity attaches (t0-wedg).
-class HostPlugin : FlutterPlugin {
-    private var channels: HostChannels? = null
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channels = HostChannels(binding.applicationContext, binding.binaryMessenger)
-    }
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channels?.detach()
-        channels = null
-    }
-}
 
 // The host side of every Bookfin channel except recognition (OcrChannel.kt):
 // - `bookfin/media` and `bookfin/media-network`, the media host contract of

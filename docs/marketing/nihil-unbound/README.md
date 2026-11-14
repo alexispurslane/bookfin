@@ -74,7 +74,7 @@ These source and existing test references were inspected at the renderer revisio
 | Cream and Night paper and ink | `lib/reader/word_pages.dart:102`, `lib/reader/word_pages.dart:128` | `test/reader/word_pages_test.dart:555` |
 | Selection, Copy, and search when text is available | `lib/reader/pdf_viewport.dart:104`, `lib/reader/pdf_viewport.dart:546`, `lib/reader/pdf.dart:867`, `lib/reader/session.dart:1387` | `test/reader/pdf_word_view_test.dart:965`, `test/reader/pdf_word_selection_test.dart:245` |
 | Optional blank-margin trimming | `lib/reader/session.dart:1326`, `lib/reader/pdf_viewport.dart:785` | `test/reader/pdf_crop_test.dart` |
-| Downloaded PDFs and English scan recognition work offline | `lib/reader/session.dart`, `lib/reader/ocr.dart`, `android/app/src/main/kotlin/dev/bookfin/bookfin/OcrChannel.kt:118` | `test/reader/ocr_downloads_test.dart`, `test/reader/ocr_native_test.dart` |
+| Downloaded PDFs and English scan recognition work offline | `lib/reader/session.dart`, `lib/reader/ocr.dart`, `packages/bookfin_host/android/src/main/kotlin/dev/bookfin/bookfin/OcrChannel.kt:106` | `test/reader/ocr_downloads_test.dart`, `test/reader/ocr_native_test.dart` |
 
 The current size control ranges from 14 to 40. The homepage does not promise unlimited sizes or identical page layout after reflow.
 Picture colors are preserved on light paper with the implemented paper tint; Night dims pictures. Ink regions take the theme's ink.
