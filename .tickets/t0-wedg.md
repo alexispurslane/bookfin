@@ -18,3 +18,9 @@ MainActivity.configureFlutterEngine adds HostPlugin (HostChannels.kt) and OcrPlu
 
 First confirm it on a device: stop the app process, start playback from a media button or the resume player, then open the app and look at Downloads. A possible fix is to make the host channels a local Flutter plugin package, so that the generated registrant adds them to every engine. That also covers OcrPlugin. Before boo-zyx1 the same gap existed with the channels in MainActivity.
 
+
+## Notes
+
+**2026-11-14T16:42:57Z**
+
+Confirmed on a device, 2026-11-14, private emulator bookfin-wedg-20261114 (Android 16), release build 0.1.1 (9a6b8efe) and tool/showcase_fixture.dart. Steps: sign in, download First Frost's audiobook, play 5 s, pause. dumpsys media_session then names Bookfin's MediaButtonReceiver as the last one. Kill the app process as root (kill -9, not force-stop). 'adb shell cmd media_session dispatch play' starts a new process 'for broadcast {dev.bookfin.bookfin/com.ryanheise.audioservice.MediaButtonReceiver}'. Dart logs 'MissingPluginException(No implementation found for method listen on channel bookfin/power)'. The play key plays nothing (PlaybackState stays NONE). Opening the app in the same process (pid 5541) shows Downloads: 'Local downloads are available in the Android app.' with no books, although First Frost is downloaded. Files stay on disk; a new process fixes it.

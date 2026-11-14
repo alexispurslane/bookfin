@@ -80,7 +80,8 @@ void main() {
         totalFiles: 1,
       );
       await showBook(tester);
-      await tester.tap(find.byTooltip('Downloaded. Remove download'));
+      // The edition's own controls remove it. Listen plays a downloaded book.
+      await tester.tap(find.widgetWithText(TextButton, 'Remove'));
       await tester.pumpAndSettle();
       expect(find.text('Remove download?'), findsOneWidget);
       expect(find.textContaining('pause or switch books'), findsOneWidget);
@@ -100,8 +101,8 @@ void main() {
         totalFiles: 1,
       );
       await showBook(tester);
-      // The main download button retries, as everywhere else.
-      expect(find.byTooltip('Retry download'), findsOneWidget);
+      // Listen retries the partial download, as everywhere else.
+      expect(find.byTooltip('Partial. Retry download'), findsOneWidget);
       expect(find.byTooltip('Download'), findsNothing);
       // The edition's own controls.
       expect(find.widgetWithText(OutlinedButton, 'Retry'), findsOneWidget);
@@ -418,7 +419,14 @@ void main() {
       expect(_onPage(rebuilt), isEmpty);
     });
 
-    testPage('Listen opens the edition, then the player', (tester) async {
+    testPage('Listen opens a downloaded edition, then the player', (
+      tester,
+    ) async {
+      downloads.state = const EditionDownload(
+        phase: DownloadPhase.downloaded,
+        totalFiles: 1,
+        completeFiles: 1,
+      );
       await showFirstFrost(tester);
       await tester.tap(find.text('Listen'));
       for (var step = 0; step < 100 && !log.contains('push'); step++) {
@@ -570,7 +578,6 @@ void main() {
         BookActions(
           listening: recording,
           reading: _ebook,
-          resume: false,
           downloads: null,
           onListen: (edition) => log.add('listen ${edition.id}'),
           onRead: (edition) => log.add('read ${edition.id}'),
@@ -581,6 +588,164 @@ void main() {
       await tester.tap(find.text('Read'));
       await tester.pumpAndSettle();
       expect(log, ['listen ${recording.id}', 'read ${_ebook.id}']);
+    });
+
+    group('Listen and Read', () {
+      late StaticDownloads editions;
+      setUp(() => editions = StaticDownloads());
+
+      const downloaded = EditionDownload(
+        phase: DownloadPhase.downloaded,
+        bytes: 1000,
+        totalBytes: 1000,
+        completeFiles: 1,
+        totalFiles: 1,
+      );
+
+      Widget actions() => BookActions(
+        listening: recording,
+        reading: _ebook,
+        downloads: editions,
+        onListen: (edition) => log.add('listen ${edition.id}'),
+        onRead: (edition) => log.add('read ${edition.id}'),
+        onDownload: (edition, action) =>
+            log.add('${action.name} ${edition.id}'),
+      );
+
+      Finder button(String label) => find.ancestor(
+        of: find.text(label),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ButtonStyleButton,
+        ),
+      );
+
+      Finder icon(String label, IconData data) =>
+          find.descendant(of: button(label), matching: find.byIcon(data));
+
+      testWidgets('are two buttons of the same kind and the same width', (
+        tester,
+      ) async {
+        editions.state = downloaded;
+        await show(tester, actions());
+
+        final listen = tester.widget(button('Listen'));
+        final read = tester.widget(button('Read'));
+        expect(listen.runtimeType, read.runtimeType);
+        expect(
+          tester.getSize(button('Listen')).width,
+          tester.getSize(button('Read')).width,
+        );
+        expect(find.byType(DownloadButton), findsNothing);
+      });
+
+      testWidgets('play and open downloaded editions, each with its own icon', (
+        tester,
+      ) async {
+        editions.state = downloaded;
+        await show(tester, actions());
+
+        expect(
+          find.descendant(
+            of: button('Listen'),
+            matching: find.byType(PlayStateIcon),
+          ),
+          findsOneWidget,
+        );
+        expect(icon('Read', Icons.menu_book_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.download_rounded), findsNothing);
+        await tester.tap(button('Listen'));
+        await tester.tap(button('Read'));
+        await tester.pumpAndSettle();
+        expect(log, ['listen ${recording.id}', 'read ${_ebook.id}']);
+      });
+
+      testWidgets('show a download icon on each edition that is not '
+          'downloaded, and a tap downloads that edition', (tester) async {
+        editions.set(recording, downloaded);
+        editions.set(_ebook, const EditionDownload(totalFiles: 1));
+        await show(tester, actions());
+
+        expect(
+          find.descendant(
+            of: button('Listen'),
+            matching: find.byType(PlayStateIcon),
+          ),
+          findsOneWidget,
+        );
+        expect(icon('Read', Icons.download_rounded), findsOneWidget);
+        await tester.tap(button('Read'));
+        await tester.pumpAndSettle();
+        expect(log, ['request ${_ebook.id}']);
+      });
+
+      testWidgets('show a download icon on both when neither edition is '
+          'downloaded', (tester) async {
+        editions.state = const EditionDownload(totalFiles: 1);
+        await show(tester, actions());
+
+        expect(icon('Listen', Icons.download_rounded), findsOneWidget);
+        expect(icon('Read', Icons.download_rounded), findsOneWidget);
+        await tester.tap(button('Listen'));
+        await tester.pumpAndSettle();
+        expect(log, ['request ${recording.id}']);
+      });
+
+      testWidgets('show the progress of a download, and a tap cancels it', (
+        tester,
+      ) async {
+        editions.set(recording, downloaded);
+        editions.set(
+          _ebook,
+          const EditionDownload(
+            phase: DownloadPhase.downloading,
+            bytes: 300,
+            totalBytes: 1000,
+            totalFiles: 1,
+          ),
+        );
+        await show(tester, actions());
+
+        expect(
+          find.descendant(
+            of: button('Read'),
+            matching: find.byType(CircularProgressIndicator),
+          ),
+          findsOneWidget,
+        );
+        await tester.tap(button('Read'));
+        await tester.pump();
+        expect(log, ['cancel ${_ebook.id}']);
+      });
+
+      testWidgets('retry a failed download', (tester) async {
+        editions.set(recording, downloaded);
+        editions.set(
+          _ebook,
+          const EditionDownload(phase: DownloadPhase.failed, totalFiles: 1),
+        );
+        await show(tester, actions());
+
+        expect(icon('Read', Icons.refresh_rounded), findsOneWidget);
+        await tester.tap(button('Read'));
+        await tester.pumpAndSettle();
+        expect(log, ['retry ${_ebook.id}']);
+      });
+
+      testWidgets('turn into the downloaded action when the download ends', (
+        tester,
+      ) async {
+        editions.set(recording, downloaded);
+        editions.set(_ebook, const EditionDownload(totalFiles: 1));
+        await show(tester, actions());
+
+        editions.set(_ebook, downloaded);
+        await tester.pump();
+
+        expect(icon('Read', Icons.menu_book_outlined), findsOneWidget);
+        await tester.tap(button('Read'));
+        await tester.pumpAndSettle();
+        expect(log, ['read ${_ebook.id}']);
+      });
     });
 
     testWidgets(
@@ -764,18 +929,20 @@ bool _onlyProgress(Element element) => _below(element).every(
   },
 );
 
-/// Whether [element] is part of the download controls of [edition], or of
-/// its round download button.
-bool _inDownloadControls(Element element, Edition edition) =>
-    switch (element.widget) {
-      DownloadControls(edition: final shown) ||
-      DownloadButton(edition: final shown) => shown.id == edition.id,
-      _ =>
-        element.findAncestorWidgetOfExactType<DownloadControls>()?.edition.id ==
-                edition.id ||
-            element
-                    .findAncestorWidgetOfExactType<DownloadButton>()
-                    ?.edition
-                    .id ==
-                edition.id,
-    };
+/// Whether [element] is part of the download controls of [edition], of its
+/// round download button, or of the main action that follows its download.
+bool _inDownloadControls(
+  Element element,
+  Edition edition,
+) => switch (element.widget) {
+  DownloadControls(edition: final shown) ||
+  DownloadButton(edition: final shown) ||
+  EditionAction(edition: final shown) => shown.id == edition.id,
+  _ =>
+    element.findAncestorWidgetOfExactType<DownloadControls>()?.edition.id ==
+            edition.id ||
+        element.findAncestorWidgetOfExactType<DownloadButton>()?.edition.id ==
+            edition.id ||
+        element.findAncestorWidgetOfExactType<EditionAction>()?.edition.id ==
+            edition.id,
+};

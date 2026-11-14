@@ -141,7 +141,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(
           surface == 'book page'
-              ? find.text('Resume')
+              ? find.text('Listen')
               : surface == 'reader cover'
               ? find.byType(CoverPlayButton)
               : find.byTooltip('Play').first,

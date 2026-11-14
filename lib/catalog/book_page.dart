@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../downloads/downloads.dart' show DownloadAction, Downloads;
+import '../downloads/downloads.dart'
+    show DownloadAction, DownloadPhase, Downloads;
 import '../foundation/listenable_selector.dart';
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
@@ -240,7 +241,6 @@ class BookPage extends StatelessWidget {
                         BookActions(
                           listening: listening.edition,
                           reading: reading,
-                          resume: listening.resume,
                           downloads: downloads,
                           starting: playback?.startingNotifier,
                           onListen: playback == null
@@ -597,14 +597,16 @@ class _Facts extends StatelessWidget {
   }
 }
 
-/// The main actions: listen or resume, read, and download. It reports each
-/// tap with its edition and causes nothing itself.
+/// The main actions: Listen and Read, two buttons of equal weight. Each one
+/// follows the download of its own edition: a downloaded edition plays or
+/// opens, and any other shows its download state and asks for its next
+/// download action. It reports each tap with its edition and causes nothing
+/// itself.
 class BookActions extends StatelessWidget {
   const BookActions({
     super.key,
     required this.listening,
     required this.reading,
-    required this.resume,
     required this.downloads,
     required this.onListen,
     required this.onRead,
@@ -622,77 +624,116 @@ class BookActions extends StatelessWidget {
   /// The ebook edition that Read opens, or null without one.
   final Edition? reading;
 
-  /// Whether [listening] has listening progress, so Listen says Resume.
-  final bool resume;
-
-  /// What the round download button follows for its edition, or null
-  /// without downloads.
+  /// What each button follows for its edition, or null without downloads.
   final Downloads? downloads;
 
-  /// Reports a tap on Listen or Resume. Null disables the button.
+  /// Reports a tap on Listen. Null disables the button.
   final ValueChanged<Edition>? onListen;
 
   /// Reports a tap on Read. Null disables the button.
   final ValueChanged<Edition>? onRead;
 
-  /// Reports a tap on the download button: the edition and its action.
+  /// Reports a tap on a button whose edition is not downloaded: the edition
+  /// and its next download action.
   final void Function(Edition edition, DownloadAction action) onDownload;
 
   @override
   Widget build(BuildContext context) {
     final listening = this.listening;
     final reading = this.reading;
-    final listen = listening == null || onListen == null
-        ? null
-        : () => onListen!(listening);
-    final read = reading == null || onRead == null
-        ? null
-        : () => onRead!(reading);
-    final saved = listening ?? reading;
-    final downloads = this.downloads;
     return Row(
       children: [
         if (listening != null)
           Expanded(
-            child: FilledButton.icon(
-              onPressed: listen,
+            child: EditionAction(
+              label: 'Listen',
               icon: _ListenIcon(starting: starting, edition: listening),
-              label: Text(resume ? 'Resume' : 'Listen'),
+              edition: listening,
+              downloads: downloads,
+              onOpen: onListen == null ? null : () => onListen!(listening),
+              onDownload: (action) => onDownload(listening, action),
             ),
           ),
-        if (reading != null) ...[
-          if (listening != null) const SizedBox(width: 8),
-          listening == null
-              ? Expanded(
-                  child: FilledButton.icon(
-                    onPressed: read,
-                    icon: const Icon(Icons.menu_book_outlined),
-                    label: const Text('Read'),
-                  ),
-                )
-              : FilledButton.tonalIcon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainer,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: read,
-                  icon: const Icon(Icons.menu_book_outlined),
-                  label: const Text('Read'),
-                ),
-        ],
-        if (saved != null && downloads != null && downloads.supported) ...[
-          const SizedBox(width: 8),
-          DownloadButton(
-            downloads: downloads,
-            edition: saved,
-            onAction: (action) => onDownload(saved, action),
+        if (listening != null && reading != null) const SizedBox(width: 10),
+        if (reading != null)
+          Expanded(
+            child: EditionAction(
+              label: 'Read',
+              icon: const Icon(Icons.menu_book_outlined),
+              edition: reading,
+              downloads: downloads,
+              onOpen: onRead == null ? null : () => onRead!(reading),
+              onDownload: (action) => onDownload(reading, action),
+            ),
           ),
-        ],
       ],
     );
   }
+}
+
+/// One main action of the book page for [edition]. A downloaded edition
+/// shows [icon] and reports [onOpen]. Any other shows its download state in
+/// place of [icon] and reports its next download action. Without downloads,
+/// it opens as a downloaded edition does.
+class EditionAction extends StatelessWidget {
+  const EditionAction({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.edition,
+    required this.downloads,
+    required this.onOpen,
+    required this.onDownload,
+  });
+  final String label;
+  final Widget icon;
+  final Edition edition;
+  final Downloads? downloads;
+  final VoidCallback? onOpen;
+  final ValueChanged<DownloadAction> onDownload;
+
+  @override
+  Widget build(BuildContext context) {
+    final downloads = this.downloads;
+    if (downloads == null || !downloads.supported) {
+      return _button(icon, onOpen);
+    }
+    // Only this button follows the download of its edition.
+    return ValueListenableBuilder(
+      valueListenable: downloads.watch(edition),
+      builder: (context, state, _) {
+        if (state.phase == DownloadPhase.downloaded) {
+          return _button(icon, onOpen);
+        }
+        final action = state.actions.firstOrNull;
+        final shown = switch (state.phase) {
+          DownloadPhase.downloading => SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              value: downloadShare(state),
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          DownloadPhase.waiting => const Icon(Icons.wifi_off_rounded),
+          _ when action == DownloadAction.retry => Icon(downloadIcon(action!)),
+          _ => const Icon(Icons.download_rounded),
+        };
+        return Tooltip(
+          message: action == null
+              ? state.message ?? state.label
+              : '${state.label}. ${downloadTooltip(action)}',
+          child: _button(
+            shown,
+            action == null ? null : () => onDownload(action),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _button(Widget icon, VoidCallback? onPressed) =>
+      FilledButton.icon(onPressed: onPressed, icon: icon, label: Text(label));
 }
 
 /// How far the listening of the book is, with the way to its history.

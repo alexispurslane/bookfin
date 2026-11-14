@@ -234,7 +234,6 @@ void main() {
         BookActions(
           listening: recording,
           reading: null,
-          resume: false,
           downloads: null,
           starting: starting,
           onListen: (_) {},

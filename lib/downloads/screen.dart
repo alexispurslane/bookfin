@@ -58,7 +58,7 @@ class DownloadControls extends StatelessWidget {
         if (state.phase == DownloadPhase.downloading)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: ProgressLine(value: _share(state)),
+            child: ProgressLine(value: downloadShare(state)),
           ),
         if (state.message != null) StatusMessage(state.message!),
         if (!supported)
@@ -118,15 +118,16 @@ class DownloadButton extends StatelessWidget {
         : switch (state.phase) {
             DownloadPhase.downloaded => Icons.check_rounded,
             DownloadPhase.waiting => Icons.wifi_off_rounded,
-            _ => _icon(action),
+            _ => downloadIcon(action),
           };
     final tooltip = action == null
         ? state.message ?? state.label
         : switch (state.phase) {
             DownloadPhase.downloaded ||
             DownloadPhase.waiting ||
-            DownloadPhase.failed => '${state.label}. ${_tooltip(action)}',
-            _ => _tooltip(action),
+            DownloadPhase.failed =>
+              '${state.label}. ${downloadTooltip(action)}',
+            _ => downloadTooltip(action),
           };
     final downloading = state.phase == DownloadPhase.downloading;
     return Stack(
@@ -138,7 +139,7 @@ class DownloadButton extends StatelessWidget {
             height: 44,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              value: _share(state),
+              value: downloadShare(state),
             ),
           ),
         IconButton.filled(
@@ -512,16 +513,16 @@ class _DownloadRow extends StatelessWidget {
       compact: compact,
       onTap: () => onOpen(book),
       below: state.phase == DownloadPhase.downloading
-          ? ProgressLine(value: _share(state))
+          ? ProgressLine(value: downloadShare(state))
           : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final action in state.actions)
             IconButton(
-              tooltip: _tooltip(action),
+              tooltip: downloadTooltip(action),
               onPressed: () => onAction(edition, action),
-              icon: Icon(_icon(action)),
+              icon: Icon(downloadIcon(action)),
             ),
         ],
       ),
@@ -544,19 +545,23 @@ Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
 
 /// How much of a transfer is saved, from 0 to 1, or null when its size is
 /// unknown.
-double? _share(EditionDownload state) => switch (state.totalBytes) {
+/// The downloaded share of [state], from 0 to 1, or null when its size is
+/// unknown.
+double? downloadShare(EditionDownload state) => switch (state.totalBytes) {
   final total? when total > 0 => (state.bytes / total).clamp(0, 1),
   _ => null,
 };
 
-String _tooltip(DownloadAction action) => switch (action) {
+/// What a control that asks for [action] says it does.
+String downloadTooltip(DownloadAction action) => switch (action) {
   DownloadAction.request => 'Download',
   DownloadAction.retry => 'Retry download',
   DownloadAction.cancel => 'Cancel download',
   DownloadAction.remove => 'Remove download',
 };
 
-IconData _icon(DownloadAction action) => switch (action) {
+/// The icon of a control that asks for [action].
+IconData downloadIcon(DownloadAction action) => switch (action) {
   DownloadAction.request => Icons.download_rounded,
   DownloadAction.retry => Icons.refresh_rounded,
   DownloadAction.cancel => Icons.close_rounded,
