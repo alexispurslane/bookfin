@@ -21,6 +21,21 @@ The landing page is [`index.html`](index.html).
 - A 64-bit ARM Android phone or emulator.
 - A Jellyfin server. The plugin was tested only with Jellyfin 12.4.0.
 
+## Download the app
+
+Download the newest signed APK from the [releases](https://github.com/alexispurslane/bookfin/releases/latest) on your phone, then open it to install it.
+
+## Publish a release
+
+Push a version tag. The release workflow (`.github/workflows/release.yml`) builds the signed arm64 APK and publishes it as a GitHub release:
+
+```sh
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The workflow runs `tool/release/build-release-apk.sh`, which you can also run locally in the dev shell. The release key stays out of the repository. Locally, the dev shell reads it from `~/.config/bookfin/release-signing.properties`. In GitHub, the secrets `BOOKFIN_RELEASE_KEYSTORE_BASE64` and `BOOKFIN_RELEASE_KEYSTORE_PASSWORD` hold it.
+
 ## Build and install the app
 
 Run these commands from the checkout root:

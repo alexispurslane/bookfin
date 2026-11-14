@@ -1,5 +1,6 @@
 import java.io.File
 import java.security.MessageDigest
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -31,6 +32,14 @@ val verifyBundledSpeech by tasks.registering {
 }
 tasks.named("preBuild") { dependsOn(verifyBundledSpeech) }
 
+// The release key's properties file: storeFile, storePassword, keyAlias,
+// keyPassword. The dev shell points BOOKFIN_RELEASE_SIGNING at
+// ~/.config/bookfin/release-signing.properties, and the release workflow
+// writes one from its secrets. Without the file, release APKs stay unsigned.
+val releaseSigning = System.getenv("BOOKFIN_RELEASE_SIGNING")
+    ?.let(::File)?.takeIf { it.isFile }
+    ?.let { file -> Properties().apply { file.inputStream().use { load(it) } } }
+
 android {
     namespace = "dev.bookfin.bookfin"
     compileSdk = flutter.compileSdkVersion
@@ -39,6 +48,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    if (releaseSigning != null) {
+        signingConfigs.create("release") {
+            storeFile = File(releaseSigning.getProperty("storeFile"))
+            storePassword = releaseSigning.getProperty("storePassword")
+            keyAlias = releaseSigning.getProperty("keyAlias")
+            keyPassword = releaseSigning.getProperty("keyPassword")
+        }
+        buildTypes.getByName("release").signingConfig = signingConfigs.getByName("release")
     }
 
     defaultConfig {

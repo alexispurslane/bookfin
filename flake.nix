@@ -139,6 +139,9 @@
                 # dependency cache. A cache per checkout took 3.6 GB each.
                 export PUB_CACHE="''${XDG_CACHE_HOME:-$HOME/.cache}/bookfin/pub"
                 export GRADLE_USER_HOME="''${XDG_CACHE_HOME:-$HOME/.cache}/bookfin/gradle"
+                # The release key's properties file. android/app/build.gradle.kts
+                # signs release APKs with it when the file exists.
+                export BOOKFIN_RELEASE_SIGNING="''${BOOKFIN_RELEASE_SIGNING:-''${XDG_CONFIG_HOME:-$HOME/.config}/bookfin/release-signing.properties}"
                 export PATH="${sdk}/cmdline-tools/latest/bin:${sdk}/platform-tools:${sdk}/emulator:$PATH"
               '';
             }

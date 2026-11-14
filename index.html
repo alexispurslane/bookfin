@@ -50,6 +50,7 @@ h1,h2,h3{text-wrap:balance}
 h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max-width:18ch;letter-spacing:-.015em}
 .lede{font-size:1.3rem;color:var(--subtle);max-width:44ch;margin:0 auto 2rem}
 .actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.copy .actions{justify-content:flex-start;margin:.4rem 0 1.4rem}
 .btn{font:600 1rem var(--display);padding:.9rem 1.6rem;border-radius:999px;text-decoration:none;transition:background .3s var(--ease),color .3s var(--ease)}
 .btn.primary{background:var(--accent);color:var(--sheet)}
 .btn.primary:hover{background:var(--ink)}
@@ -242,8 +243,8 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     <h1>Your books, on paper you can carry.</h1>
     <p class="lede">An Android app for the audiobooks and ebooks on your Jellyfin server, the free media server that you run yourself. It remembers every place you have been in a book, and it makes PDFs readable on a phone.</p>
     <div class="actions">
-      <a class="btn primary" href="#setup">Get started</a>
-      <a class="btn ghost" href="https://tangled.org/xenolandscapes.com/bookfin">Source code</a>
+      <a class="btn primary" href="https://github.com/alexispurslane/bookfin/releases/latest/download/bookfin.apk">Download the APK</a>
+      <a class="btn ghost" href="https://github.com/alexispurslane/bookfin">Source code</a>
     </div>
     <p class="built">Written in <a href="https://flutter.dev">Flutter</a> · open source · Android today</p>
     <div class="hero-art">
@@ -356,7 +357,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         </picture>
       </figure>
     </div>
-    <p class="capture-note"><cite>The Time Machine</cite>, from Standard Ebooks, with demonstration history. <a href="docs/marketing/read-together/README.md">Capture notes</a>.</p>
+    <p class="capture-note"><cite>The Time Machine</cite>, from Standard Ebooks, with demonstration history. <a href="https://github.com/alexispurslane/bookfin/blob/main/docs/marketing/read-together/README.md">Capture notes</a>.</p>
   </section>
 
   <section class="chapter full reflow" id="reflow" aria-labelledby="reflow-h">
@@ -419,7 +420,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         <img src="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound page in Page words at night, with the printed words in light ink on dark paper at a larger size">
       </figure>
     </div>
-    <p class="capture-note"><cite>Nihil Unbound</cite>, printed page 9. Each Page words capture shows the first screen of that page. The rest of the page follows on the next screen. <a href="docs/marketing/nihil-unbound/README.md">Capture and excerpt notes</a>.</p>
+    <p class="capture-note"><cite>Nihil Unbound</cite>, printed page 9. Each Page words capture shows the first screen of that page. The rest of the page follows on the next screen. <a href="https://github.com/alexispurslane/bookfin/blob/main/docs/marketing/nihil-unbound/README.md">Capture and excerpt notes</a>.</p>
   </section>
 
   <section class="chapter full" id="reader">
@@ -462,7 +463,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         </table>
       </div>
       <p class="epub-evidence">Each time runs from the request until the engine has drawn the page: on the GPU for Bookfin and WebView, and on the CPU for KOReader, which always draws that way. The idle wait for the screen’s next refresh is left out, because KOReader has no such wait. These are emulator results, not phone timings.</p>
-      <p class="epub-evidence">Bookfin prepares each ebook in the background when its download finishes, so the first open uses that work. An open with no preparation takes 195.5 ms. On a reopen, Bookfin first shows a saved picture of the last page, then lays the page out. A tap on the picture waits and acts when the laid-out page is ready. WebView and KOReader show the page only after they lay it out, so each has one reopen time. A first open has no saved picture, so its page is readable and responds at the same time. <a href="docs/marketing/epub-renderer/README.md#rerun-on-current-main-november-12-2026">Books, method, and remaining differences</a>.</p>
+      <p class="epub-evidence">Bookfin prepares each ebook in the background when its download finishes, so the first open uses that work. An open with no preparation takes 195.5 ms. On a reopen, Bookfin first shows a saved picture of the last page, then lays the page out. A tap on the picture waits and acts when the laid-out page is ready. WebView and KOReader show the page only after they lay it out, so each has one reopen time. A first open has no saved picture, so its page is readable and responds at the same time. <a href="https://github.com/alexispurslane/bookfin/blob/main/docs/marketing/epub-renderer/README.md#rerun-on-current-main-november-12-2026">Books, method, and remaining differences</a>.</p>
     </div>
   </section>
 
@@ -492,29 +493,30 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
   <section class="chapter full setup" id="setup">
     <div class="copy">
       <h2><span>Seven.</span> Getting it</h2>
-      <p class="stand">Build it once, and your shelf comes with you.</p>
+      <p class="stand">Install it once, and your shelf comes with you.</p>
     </div>
     <div class="setup-grid">
       <div class="copy">
-        <p>Bookfin is a personal project with no store release yet. You build it from source on a computer, then install it on your phone. A Nix flake pins every tool, so the build needs nothing else installed.</p>
+        <p>Bookfin is not in an app store yet. Download the newest release APK on your phone, open it, and let Android install it. Android asks once whether your browser can install apps.</p>
+        <div class="actions"><a class="btn primary" href="https://github.com/alexispurslane/bookfin/releases/latest/download/bookfin.apk">Download the APK</a></div>
         <p>You need:</p>
         <ul class="needs">
-          <li>A computer with Nix: an Apple Silicon Mac, x86_64 Linux, or WSL2 on Windows</li>
-          <li>A 64-bit Android phone and a USB cable</li>
+          <li>A 64-bit Android phone</li>
           <li>A Jellyfin server with a book library</li>
         </ul>
+        <p>To build it yourself instead, you need a computer with Nix: an Apple Silicon Mac, x86_64 Linux, or WSL2 on Windows. A Nix flake pins every tool, so the build needs nothing else installed.</p>
       </div>
       <div>
         <div class="code">
           <button class="copybtn" type="button" data-copy="build">Copy</button>
 <pre id="build"><span class="c"># on your Mac, Linux, or WSL2 computer, with the phone plugged in</span>
-git clone https://tangled.org/xenolandscapes.com/bookfin
+git clone https://github.com/alexispurslane/bookfin
 cd bookfin
 nix develop --command flutter pub get
 nix develop --command bash tool/bookfin build-android
 adb install build/app/outputs/flutter-apk/app-debug.apk</pre>
         </div>
-        <p class="after">Then open Bookfin and sign in with your Jellyfin address, user name, and password. To sync bookmarks and history between devices, add the Bookfin Storage plugin to your server. The <a href="https://tangled.org/xenolandscapes.com/bookfin">README</a> has its steps.</p>
+        <p class="after">Then open Bookfin and sign in with your Jellyfin address, user name, and password. To sync bookmarks and history between devices, add the Bookfin Storage plugin to your server. The <a href="https://github.com/alexispurslane/bookfin#readme">README</a> has its steps.</p>
       </div>
     </div>
   </section>
@@ -524,7 +526,7 @@ adb install build/app/outputs/flutter-apk/app-debug.apk</pre>
 <div class="wrap">
   <footer>
     <span>Bookfin · An Android companion for Jellyfin</span>
-    <span><a href="https://tangled.org/xenolandscapes.com/bookfin">Source and README on Tangled</a> · <a href="#top">Back to the top</a></span>
+    <span><a href="https://github.com/alexispurslane/bookfin">Source and README on GitHub</a> · <a href="https://tangled.org/xenolandscapes.com/bookfin">Tangled mirror</a> · <a href="#top">Back to the top</a></span>
   </footer>
 </div>
 

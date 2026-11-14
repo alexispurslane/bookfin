@@ -17,3 +17,4 @@ __pycache__/
 
 # Impeccable design tool: critique archive, hook config, live-server state
 .impeccable/
+dist/
