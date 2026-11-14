@@ -1,0 +1,444 @@
+{
+  "name": "49-full-suite-final",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-14T00:10:03.058895+00:00",
+  "ended": "2026-11-14T00:15:13.691638+00:00",
+  "exitCode": 0,
+  "log": "49-full-suite-final.log.gz",
+  "logSha256": "bc3c987b3b5dcc83e4cea225ed3cf201756149178fe86560d4f46cfbedd15070",
+  "patch": "49-full-suite-final.patch.gz",
+  "patchSha256": "20c684f58223fe32a3b1920346994e1de3abb2f9ebd8aa4cace7090b07f473a4",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {
+    "success": 3883,
+    "skipped": 27
+  },
+  "failures": [],
+  "skips": [
+    {
+      "id": 1506,
+      "name": "the part open benchmark",
+      "suiteID": 1502,
+      "groupIDs": [
+        1505
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+      },
+      "line": 53,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+    },
+    {
+      "id": 1510,
+      "name": "the corpus prepare",
+      "suiteID": 1507,
+      "groupIDs": [
+        1509
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+      },
+      "line": 81,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+    },
+    {
+      "id": 1534,
+      "name": "the downloaded books open the places that epub.js saved",
+      "suiteID": 1511,
+      "groupIDs": [
+        1514,
+        1533
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 45,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+    },
+    {
+      "id": 1578,
+      "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+      "suiteID": 1412,
+      "groupIDs": [
+        1418
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1346,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+    },
+    {
+      "id": 1615,
+      "name": "body text breaks lines and pages where epub.js broke them",
+      "suiteID": 1607,
+      "groupIDs": [
+        1613
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+      },
+      "line": 24,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+    },
+    {
+      "id": 1692,
+      "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1693,
+      "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1694,
+      "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1695,
+      "name": "the admitted files of a known book stay the same se-frankenstein",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1696,
+      "name": "the admitted files of a known book stay the same se-moby-dick",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1697,
+      "name": "the admitted files of a known book stay the same se-poetry",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1698,
+      "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+      "suiteID": 1678,
+      "groupIDs": [
+        1680,
+        1681
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+      },
+      "line": 236,
+      "column": 7,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+    },
+    {
+      "id": 1758,
+      "name": "the step budget",
+      "suiteID": 1754,
+      "groupIDs": [
+        1757
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+      },
+      "line": 63,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+    },
+    {
+      "id": 1829,
+      "name": "the corpus steps",
+      "suiteID": 1826,
+      "groupIDs": [
+        1828
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+      },
+      "line": 92,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+    },
+    {
+      "id": 1855,
+      "name": "the admission benchmark",
+      "suiteID": 1852,
+      "groupIDs": [
+        1854
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+      },
+      "line": 97,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+    },
+    {
+      "id": 2001,
+      "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+      "suiteID": 1987,
+      "groupIDs": [
+        1989,
+        1997
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 156,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+    },
+    {
+      "id": 2014,
+      "name": "the jumps into real books",
+      "suiteID": 2010,
+      "groupIDs": [
+        2013
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+    },
+    {
+      "id": 2053,
+      "name": "the corpus run",
+      "suiteID": 2049,
+      "groupIDs": [
+        2052
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+      },
+      "line": 33,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+    },
+    {
+      "id": 2117,
+      "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+      "suiteID": 2088,
+      "groupIDs": [
+        2091
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+      },
+      "line": 244,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+    },
+    {
+      "id": 2279,
+      "name": "the open of a PDF",
+      "suiteID": 2276,
+      "groupIDs": [
+        2278
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+      },
+      "line": 21,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+    },
+    {
+      "id": 2346,
+      "name": "the host benchmark draws each deck page in a section in under 20 ms",
+      "suiteID": 2198,
+      "groupIDs": [
+        2201
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 1433,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+    },
+    {
+      "id": 2361,
+      "name": "measure incremental saves and acknowledgments while retaining every original action",
+      "suiteID": 2357,
+      "groupIDs": [
+        2360
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+      },
+      "line": 498,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+    },
+    {
+      "id": 2366,
+      "name": "measure current restoration against complete retained replay on this host",
+      "suiteID": 2362,
+      "groupIDs": [
+        2365
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": null
+      },
+      "line": 130,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+    },
+    {
+      "id": 2371,
+      "name": "the layout cache survey",
+      "suiteID": 2367,
+      "groupIDs": [
+        2370
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+      },
+      "line": 51,
+      "column": 5,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+    },
+    {
+      "id": 4398,
+      "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+      "suiteID": 4393,
+      "groupIDs": [
+        4397
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+      },
+      "line": 69,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+    },
+    {
+      "id": 4503,
+      "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+      "suiteID": 4498,
+      "groupIDs": [
+        4502
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+      },
+      "line": 51,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+    },
+    {
+      "id": 4598,
+      "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+      "suiteID": 4593,
+      "groupIDs": [
+        4597
+      ],
+      "metadata": {
+        "skip": true,
+        "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+      },
+      "line": 18,
+      "column": 3,
+      "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+    }
+  ]
+}

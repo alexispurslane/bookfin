@@ -1,0 +1,31 @@
+{
+  "name": "41-cleanup-retry",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/playback/download_removal_test.dart",
+    "--plain-name",
+    "repeated decoder release failure"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-13T23:59:01.737852+00:00",
+  "ended": "2026-11-13T23:59:09.248216+00:00",
+  "exitCode": 0,
+  "log": "41-cleanup-retry.log.gz",
+  "logSha256": "e568af214a28abe5ef74c1fcbd1146e5d8f56b2116827cfbacabc9e5e48508ab",
+  "patch": "41-cleanup-retry.patch.gz",
+  "patchSha256": "027b42699cce24d458916bedbec4ecba641c6009596a040d2f7a9adc49a4027e",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {
+    "success": 2
+  },
+  "failures": [],
+  "skips": []
+}

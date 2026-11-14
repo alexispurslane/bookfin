@@ -1,0 +1,30 @@
+{
+  "name": "40-review-focused",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/playback/download_removal_test.dart",
+    "test/downloads/screen_test.dart"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-13T23:58:09.814462+00:00",
+  "ended": "2026-11-13T23:58:23.143073+00:00",
+  "exitCode": 0,
+  "log": "40-review-focused.log.gz",
+  "logSha256": "adb0e105892eb022551f4d9a34cda5d38295b3272427e738670588d610f03dff",
+  "patch": "40-review-focused.patch.gz",
+  "patchSha256": "639d22db4c95f06da93de0f3854ede4f848d1dcc5654f351b39246603d4f0d8c",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {
+    "success": 63
+  },
+  "failures": [],
+  "skips": []
+}

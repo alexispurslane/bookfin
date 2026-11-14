@@ -1,0 +1,164 @@
+{
+  "ticket": "boo-39cu",
+  "originalReport": "reviewer-original.json",
+  "reviewMetadata": "reviewer-metadata.json",
+  "originalVerdictsPreserved": true,
+  "secondReview": false,
+  "resolutions": [
+    {
+      "id": "BOO39CU-C1",
+      "disposition": "fixed",
+      "change": "LocalDownloads refuses read admission after asynchronous verification when removal has begun. The removal observes existing consumers once and retains their outcomes through the command barrier.",
+      "red": "33-review-behavior-red",
+      "tests": [
+        "removal refuses an opening edition whose file verification is still running"
+      ],
+      "green": [
+        "40-review-focused",
+        "44-final-lifecycle-signals"
+      ],
+      "backends": [
+        "preferences",
+        "SQLite"
+      ]
+    },
+    {
+      "id": "BOO39CU-C2",
+      "disposition": "fixed",
+      "change": "Playback owns the file lend before loading the decoder. Failed cleanup leaves that ownership reachable by pause, removal, binding and close. The loading flag is reset independently of cleanup; decoder failure handling releases files only after confirmed pause and successful save.",
+      "red": "33-review-behavior-red",
+      "tests": [
+        "failed decoder cleanup retains reachable ownership for a later removal",
+        "repeated decoder release failure keeps files until a successful retry"
+      ],
+      "green": [
+        "40-review-focused",
+        "41-cleanup-retry",
+        "44-final-lifecycle-signals"
+      ],
+      "backends": [
+        "preferences",
+        "SQLite"
+      ]
+    },
+    {
+      "id": "BOO39CU-C3",
+      "disposition": "fixed",
+      "change": "Open preserves the original thrown object while an operational cleanup Exception is handled as a retained ownership failure. A programming Error is rethrown unchanged; cleanup Errors are not caught.",
+      "red": "33-review-behavior-red",
+      "tests": [
+        "a programming Error survives an Exception from decoder cleanup"
+      ],
+      "green": [
+        "40-review-focused",
+        "44-final-lifecycle-signals"
+      ],
+      "backends": [
+        "preferences",
+        "SQLite"
+      ]
+    },
+    {
+      "id": "BOO39CU-C4",
+      "disposition": "fixed",
+      "change": "The shared retained-entry guard runs before pending state or consumer contact, and remains in place across later asynchronous storage operations.",
+      "red": "33-review-behavior-red",
+      "tests": [
+        "a stale leftover request cannot contact the current catalog decoder",
+        "a stale leftover request cannot contact the current account decoder"
+      ],
+      "green": [
+        "40-review-focused",
+        "44-final-lifecycle-signals"
+      ],
+      "backends": [
+        "preferences",
+        "SQLite"
+      ]
+    },
+    {
+      "id": "BOO39CU-F1",
+      "disposition": "fixed",
+      "change": "LeftoverFiles exposes pending source ids from LocalDownloads. Existing rows explain the pause/switch wait and disable duplicate row/Remove all actions. Confirmation explains successful saving and retained personal records. Unchanged state does not send extra notifications.",
+      "red": [
+        "36-retained-status-red",
+        "37-retained-status-red"
+      ],
+      "redLimit": "Both runs recorded the expected missing-explanation failure, then were interrupted during test cleanup. They are not successful completed runs. The real-IO/fake-clock fixture boundary was corrected; all incomplete logs are retained.",
+      "tests": [
+        "leftover removal explains its wait and disables a duplicate request",
+        "the inventory notifies once for each phase change and each reload",
+        "byte progress neither reads nor notifies the inventory"
+      ],
+      "green": [
+        "40-review-focused",
+        "44-final-lifecycle-signals"
+      ]
+    },
+    {
+      "id": "BOO39CU-D1",
+      "disposition": "fixed",
+      "change": "Pending removal is the sole admission decision under LocalDownloads. The post-verification admission guard and existing removal counter reject late or nested holds; removal no longer depends on two snapshots. The on-demand invariant checker rejects read ownership for pending-removal sources.",
+      "evidence": [
+        "33-review-behavior-red",
+        "40-review-focused",
+        "44-final-lifecycle-signals"
+      ],
+      "relatedFinding": "BOO39CU-C1"
+    }
+  ],
+  "additionalFixes": [
+    {
+      "id": "BOO39CU-L1",
+      "origin": "Lead inspection during review fixes",
+      "change": "A failed-save close now retains the audio lend. A later removal waits for physical decoder closure and retries pending records before releasing files.",
+      "red": "43-closed-save-retry-red",
+      "green": "44-final-lifecycle-signals",
+      "tests": [
+        "a fresh removal after failed-save close must still save before deleting"
+      ],
+      "backends": [
+        "preferences",
+        "SQLite"
+      ]
+    },
+    {
+      "origin": "Affected suite",
+      "change": "Pending leftover publication compares the existing snapshot and source-id set before notifying.",
+      "red": "42-affected-after-review",
+      "green": "44-final-lifecycle-signals"
+    }
+  ],
+  "gapDispositions": [
+    {
+      "gap": "Unexecuted reviewer reproductions",
+      "disposition": "Executed by the lead against actual LocalDownloads files, held asynchronous work, preferences and SQLite where records matter. Red and green runs are retained."
+    },
+    {
+      "gap": "Pending admission invariant",
+      "disposition": "Added to LocalDownloads.checkInvariants; late-read regression exercises the owned admission boundary."
+    },
+    {
+      "gap": "Independent archive hash verification",
+      "disposition": "The lead audit verifies every retained log and patch against recorded SHA-256 hashes. Reviewer did not execute the audit."
+    },
+    {
+      "gap": "Native decoder release and interruption acceptance",
+      "disposition": "Still unverified on a device; explicitly parent-owned under t1-dth0, excluded from this implementation stage. Host callbacks and file-reading decoder doubles are not device proof."
+    },
+    {
+      "gap": "Clear data integration",
+      "disposition": "Parent/boo-xyrl owns integration. Downloads.remove retains its signature and requires awaiting actual completion/failure."
+    },
+    {
+      "gap": "Coverage, mutation and performance measurement",
+      "disposition": "Excluded by instruction. No claim made. Existing verification-queue follow-up remains t0-dv5n."
+    },
+    {
+      "gap": "Pre-existing touched-code rule exceptions",
+      "disposition": "Recorded explicitly with tk: t0-dv5n (serialized verification), t0-ejq2 (origin Error handling), t0-hwo8 (leftover inventory Error handling). These are static follow-ups, not new runtime evidence or product forks."
+    }
+  ],
+  "forks": [],
+  "finalChecks": "final-checks.json"
+}

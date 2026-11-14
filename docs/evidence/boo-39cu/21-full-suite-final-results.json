@@ -18,6 +18,8 @@
   "logSha256": "c7ad5360539ad77a02a6d0f161131f4f523172de4f3283cc354aa0fb8d52690f",
   "patch": "21-full-suite-final.patch.gz",
   "patchSha256": "2b2c97f91849925acda1d125f2524eb3be527140503cca9b7f846f026b594f37",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
   "counts": {
     "success": 3866,
     "skipped": 27

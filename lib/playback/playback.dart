@@ -282,6 +282,9 @@ typedef _ActionFailure = ({_NoticeOrigin origin, PlaybackActionNotice notice});
 /// One decoder lend. [ended] protects files; [boundary] reports the next
 /// release attempt. A failed save ends that attempt, not the lend.
 class _AudioFiles {
+  _AudioFiles(this.account, this.edition);
+  final String account;
+  final Edition edition;
   List<Uri> uris = const [];
   final ended = Completer<void>();
   var boundary = Completer<bool>();
@@ -352,6 +355,9 @@ class Playback extends ChangeNotifier {
   bool _playing = false;
   bool _active = false;
   bool _closed = false;
+
+  /// Physical decoder shutdown; removal must await it even after UI disposal.
+  Future<void>? _engineClosing;
   bool _loading = false;
   // A failed load can leave the decoder on another edition. Ignore its
   // samples until the retained selection is successfully loaded again.
@@ -1254,8 +1260,10 @@ class Playback extends ChangeNotifier {
   }) async {
     var message =
         'Cannot play this local audio file. Download it again or choose another edition.';
+    var released = false;
     try {
       await engine.pause();
+      released = true;
     } on Exception {
       message =
           'The audio device failed. Restart Bookfin before listening again.';
@@ -1271,6 +1279,11 @@ class Playback extends ChangeNotifier {
     _starting = null;
     reports?.stop();
     _save();
+    if (released) {
+      await _releaseAudioFiles();
+    } else {
+      _audioFiles?.saveFailed();
+    }
     _requestUpload();
     _notify();
   }
@@ -1327,7 +1340,6 @@ class Playback extends ChangeNotifier {
     _save();
     reports?.stop();
     final previousFiles = _audioFiles;
-    _audioFiles = null;
     final generation = ++_generation;
     _session = session;
     _restored = false;
@@ -1366,6 +1378,7 @@ class Playback extends ChangeNotifier {
       await previousOperations;
       await engine.pause();
       await _writes.idle;
+      if (identical(_audioFiles, previousFiles)) _audioFiles = null;
       previousFiles?.finish(false);
       if (session == null || generation != _generation) return;
       try {
@@ -1602,7 +1615,7 @@ class Playback extends ChangeNotifier {
   /// Lends every part for the decoder's whole use, including unopened parts.
   /// Readers and audio use the same Downloads holds and removal boundary.
   Future<_AudioFiles?> _lendAudioFiles(Edition edition) async {
-    final files = _AudioFiles();
+    final files = _AudioFiles(_session!.scope.key, edition);
     Future<void> release() => _releaseForRemoval(files);
     try {
       final found = await Future.wait([
@@ -1631,13 +1644,21 @@ class Playback extends ChangeNotifier {
   /// release now, without starting sound. Failed saves keep the lend alive.
   Future<void> _releaseForRemoval(_AudioFiles files) async {
     final boundary = files.boundary;
-    await _inCommandOrder(() async {
-      if (identical(files, _audioFiles) && !_playing && _starting == null) {
-        await engine.pause();
-        _save();
-        await _releaseAudioFiles();
-      }
-    });
+    if (_closed) {
+      // Closing the UI owner does not turn an unsaved place into a safe
+      // deletion. Confirm physical decoder closure, then retry its records.
+      await _engineClosing;
+      await flush();
+      await _releaseAudioFiles();
+    } else {
+      await _inCommandOrder(() async {
+        if (identical(files, _audioFiles) && !_playing && _starting == null) {
+          await engine.pause();
+          _save();
+          await _releaseAudioFiles();
+        }
+      });
+    }
     if (!await boundary.future) {
       throw const DownloadRemovalException(
         'The listening place could not be saved or playback changed. The files were kept.',
@@ -1645,12 +1666,13 @@ class Playback extends ChangeNotifier {
     }
   }
 
-  /// Called only after decoder pause, in command order. A failed save vetoes
-  /// this removal attempt but retains ownership so a retry must save again.
+  /// Called after confirmed decoder pause in command order, or after physical
+  /// decoder closure. A failed save vetoes this removal attempt but retains
+  /// ownership so a retry must save again.
   Future<bool> _releaseAudioFiles() async {
     final files = _audioFiles;
     if (files == null) return true;
-    final account = _session?.scope.key;
+    final account = files.account;
     await _writes.idle;
     if (!identical(files, _audioFiles)) return false;
     if (_pendingWrites.containsKey(account)) {
@@ -1778,6 +1800,9 @@ class Playback extends ChangeNotifier {
     }
     _loading = true;
     _decoderReady = false;
+    var decoderOwnsFiles = false;
+    var committed = false;
+    Object? failure;
     try {
       await engine.pause();
       _playing = false;
@@ -1790,6 +1815,10 @@ class Playback extends ChangeNotifier {
       final fileIndex = resume == null
           ? 0
           : edition.files.indexWhere((file) => file.key == resume.sourceKey);
+      // Loading may acquire native file handles before it fails. Ownership
+      // must already be reachable by pause, removal, bind and close retries.
+      _audioFiles = files;
+      decoderOwnsFiles = true;
       await engine.load(files.uris, fileIndex, resume?.milliseconds ?? 0);
       await engine.speed(_speed);
       final confirmed = target == null
@@ -1832,7 +1861,7 @@ class Playback extends ChangeNotifier {
       _active = autoplay;
       _position = _positionForSample(confirmed);
       _decoderReady = true;
-      _audioFiles = files;
+      committed = true;
       final savedChoice = _choiceToRestore;
       _choiceToRestore = null;
       if (restoringChoice) {
@@ -1852,12 +1881,24 @@ class Playback extends ChangeNotifier {
       }
       _actionFailure = null;
       _cancelSleep();
+    } catch (error) {
+      failure = error;
+      rethrow;
     } finally {
-      if (!identical(_audioFiles, files)) {
-        await engine.pause();
-        files.finish(false);
+      try {
+        if (!committed) {
+          if (decoderOwnsFiles) await engine.pause();
+          if (identical(_audioFiles, files)) _audioFiles = null;
+          files.finish(false);
+        }
+      } on Exception {
+        // Cleanup did not confirm decoder release: keep its owned lend for
+        // retry, reject this removal attempt, and preserve any original Error.
+        files.saveFailed();
+        if (failure == null) rethrow;
+      } finally {
+        _loading = false;
       }
-      _loading = false;
     }
     _save();
     _lastUploadPosition = _position;
@@ -2595,7 +2636,8 @@ class Playback extends ChangeNotifier {
   /// Stops playback and flushes records before releasing its resources.
   /// Teardown completes even when the final save fails. The failure is
   /// reported as [flush] reports it: an [Exception] as the save status, a
-  /// bug to the caller. The pending changes stay available to [flush].
+  /// bug to the caller. Pending changes stay available to [flush], and their
+  /// file lend keeps a later removal from bypassing the unsuccessful save.
   Future<void> close() async {
     if (_closed) return;
     try {
@@ -2608,14 +2650,19 @@ class Playback extends ChangeNotifier {
       reports?.close();
       _closed = true;
       _cancelSleep();
-      await _samples.cancel();
-      await engine.close();
-      _audioFiles?.finish(false);
-      _audioFiles = null;
-      for (final signal in _signals) {
-        signal.dispose();
+      _engineClosing = () async {
+        await _samples.cancel();
+        await engine.close();
+      }();
+      try {
+        await _engineClosing;
+        await _releaseAudioFiles();
+      } finally {
+        for (final signal in _signals) {
+          signal.dispose();
+        }
+        super.dispose();
       }
-      super.dispose();
     }
   }
 
@@ -2736,8 +2783,9 @@ class Playback extends ChangeNotifier {
   ///   exposes only requested presentations, never a refresh alone.
   /// - The personal records, the pending writes and the replacement offer
   ///   agree.
-  /// - Playing audio owns every source file. A retained decoder lend belongs
-  ///   to the open edition and has not ended or completed a release attempt.
+  /// - Playing audio owns every source file. A decoder lend remains owned
+  ///   even when loading or cleanup fails, until confirmed release. Only a
+  ///   ready decoder's lend must match the current selection and account.
   /// - Action notices retain the current source of their signed-in binding;
   ///   recovery notices belong to a signed-in binding. Save failure
   ///   is derived from that account's unconfirmed writes, never from text.
@@ -2745,10 +2793,13 @@ class Playback extends ChangeNotifier {
     final files = _audioFiles;
     if (_playing && files == null ||
         files != null &&
-            (_edition == null ||
-                files.ended.isCompleted ||
+            (files.ended.isCompleted ||
                 files.boundary.isCompleted ||
-                files.uris.length != _edition!.files.length)) {
+                files.uris.length != files.edition.files.length ||
+                _decoderReady &&
+                    (_edition == null ||
+                        !_sameEdition(files.edition, _edition!) ||
+                        files.account != _session?.scope.key))) {
       throw StateError('Playing audio must own its complete, live file lend.');
     }
     if (_actionFailure case final failure?) {

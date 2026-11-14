@@ -1,0 +1,104 @@
+{
+  "name": "43-closed-save-retry-red",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/playback/download_removal_test.dart",
+    "--plain-name",
+    "fresh removal after failed-save close"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-14T00:03:40.872839+00:00",
+  "ended": "2026-11-14T00:03:49.763553+00:00",
+  "exitCode": 1,
+  "log": "43-closed-save-retry-red.log.gz",
+  "logSha256": "8edba4ee0c5396dd4c839acb7310f99873e70218736345a5e3596dd864a13f0f",
+  "patch": "43-closed-save-retry-red.patch.gz",
+  "patchSha256": "90962cf466e6aad1fb3149e7222b85d7c8ebbb23c101ffca04c7ec3cb5407421",
+  "frameworkCompleted": true,
+  "frameworkSuccess": false,
+  "counts": {
+    "failure": 2
+  },
+  "failures": [
+    {
+      "test": {
+        "id": 4,
+        "name": "preferences a fresh removal after failed-save close must still save before deleting",
+        "suiteID": 0,
+        "groupIDs": [
+          2,
+          3
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 570,
+        "column": 7,
+        "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+      },
+      "result": {
+        "testID": 4,
+        "result": "failure",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 2186
+      },
+      "errors": [
+        {
+          "testID": 4,
+          "error": "Expected: throws <Instance of 'DownloadRemovalException'>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+          "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 577:17    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 575:11    main.<fn>.<fn>\n",
+          "isFailure": true,
+          "type": "error",
+          "time": 2185
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": 6,
+        "name": "SQLite a fresh removal after failed-save close must still save before deleting",
+        "suiteID": 0,
+        "groupIDs": [
+          2,
+          5
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 570,
+        "column": 7,
+        "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+      },
+      "result": {
+        "testID": 6,
+        "result": "failure",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 2553
+      },
+      "errors": [
+        {
+          "testID": 6,
+          "error": "Expected: throws <Instance of 'DownloadRemovalException'>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+          "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 577:17    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 575:11    main.<fn>.<fn>\n",
+          "isFailure": true,
+          "type": "error",
+          "time": 2550
+        }
+      ]
+    }
+  ],
+  "skips": []
+}

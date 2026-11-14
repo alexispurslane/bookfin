@@ -22,8 +22,11 @@ for path in untracked:
         ).stdout
 head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
 started = datetime.datetime.now(datetime.timezone.utc).isoformat()
-result = subprocess.run(command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-output = result.stdout
+live = evidence / f"{name}.running.log"
+with live.open("wb") as stream:
+    result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT)
+output = live.read_bytes()
+live.unlink()
 for suffix, value in [("log", output), ("patch", patch)]:
     (evidence / f"{name}.{suffix}.gz").write_bytes(gzip.compress(value, mtime=0))
 row = dict(name=name, command=command, head=head, started=started,

@@ -1,0 +1,61 @@
+{
+  "name": "35-retained-status-red",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/downloads/screen_test.dart",
+    "--plain-name",
+    "leftover removal explains its wait"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-13T23:53:52.190788+00:00",
+  "ended": "2026-11-13T23:55:06.145075+00:00",
+  "exitCode": 0,
+  "log": "35-retained-status-red.log.gz",
+  "logSha256": "855918f5ff10e09f7edf9f5c47a2fad509364e6cd42488ef13b6907e0a284841",
+  "patch": "35-retained-status-red.patch.gz",
+  "patchSha256": "002359188c0fcfcea116d07ea23db596c7021861a6f56af68685a6a19a9f6d29",
+  "frameworkCompleted": false,
+  "frameworkSuccess": null,
+  "counts": {
+    "error": 1
+  },
+  "failures": [
+    {
+      "test": {
+        "id": 3,
+        "name": "leftover removal explains its wait and disables a duplicate request",
+        "suiteID": 0,
+        "groupIDs": [
+          2
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 174,
+        "column": 5,
+        "url": "package:flutter_test/src/widget_tester.dart",
+        "root_line": 383,
+        "root_column": 3,
+        "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+      },
+      "result": {
+        "testID": 3,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 68514
+      },
+      "errors": []
+    }
+  ],
+  "skips": []
+}

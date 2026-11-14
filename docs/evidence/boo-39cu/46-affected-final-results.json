@@ -1,0 +1,35 @@
+{
+  "name": "46-affected-final",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/downloads",
+    "test/playback",
+    "test/app",
+    "test/reader/book_words_reader_test.dart",
+    "test/reader/admitted_books_test.dart",
+    "test/reader/kept_pages_test.dart",
+    "test/catalog/book_page_test.dart"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-14T00:06:15.054841+00:00",
+  "ended": "2026-11-14T00:07:20.676166+00:00",
+  "exitCode": 0,
+  "log": "46-affected-final.log.gz",
+  "logSha256": "cf0af6c04a7e627db2c5cd5fb951fa531c700266720db1348c713df25fd4feac",
+  "patch": "46-affected-final.patch.gz",
+  "patchSha256": "b09fd6a113811624eda6b511cedbdada56158caf96ca79fb3a4b9bb77c819ca7",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {
+    "success": 994
+  },
+  "failures": [],
+  "skips": []
+}

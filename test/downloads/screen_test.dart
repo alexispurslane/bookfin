@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -376,6 +377,77 @@ void main() {
       await tester.pageBack();
       await _settleStorage(tester, downloads);
       expect(find.text('Leftover files'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'leftover removal explains its wait and disables a duplicate request',
+    (tester) async {
+      final release = Completer<void>();
+      addTearDown(() {
+        if (!release.isCompleted) release.complete();
+      });
+      await tester.runAsync(() async {
+        await downloads.bind(catalog.session, fixture.books);
+        await downloads.request(fixture.audio);
+        await downloads.idle;
+        await downloads.readLocalFile(fixture.audio.files.first, (
+          original,
+        ) async {
+          unawaited(
+            original.hold(
+              () => release.future,
+              beforeRemoval: () => release.future,
+            ),
+          );
+          return true;
+        });
+        await downloads.bind(catalog.session, []);
+        await downloads.reloadLeftovers();
+      });
+      await tester.pumpWidget(
+        MaterialApp(home: LeftoverFilesPage(downloads: downloads)),
+      );
+      await tester.pumpAndSettle();
+      // One of the two saved parts has an active consumer. Choose that source.
+      final row = find.ancestor(
+        of: find.text('Source ${fixture.audio.files.first.key}'),
+        matching: find.byType(ListTile),
+      );
+      await tester.runAsync(
+        () => tester.tap(
+          find.descendant(of: row, matching: find.byType(IconButton)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
+        await downloads.reloadLeftovers();
+      });
+      await tester.pumpAndSettle();
+      try {
+        expect(find.textContaining('pause or switch books'), findsOneWidget);
+        final button = tester.widget<IconButton>(
+          find.descendant(of: row, matching: find.byType(IconButton)),
+        );
+        expect(button.onPressed, isNull);
+        expect(
+          tester
+              .widget<TextButton>(find.widgetWithText(TextButton, 'Remove all'))
+              .onPressed,
+          isNull,
+        );
+      } finally {
+        await tester.runAsync(() async {
+          release.complete();
+          await downloads.idle;
+        });
+      }
+      await _settleStorage(tester, downloads);
+      expect(
+        find.text('Source ${fixture.audio.files.first.key}'),
+        findsNothing,
+      );
     },
   );
 

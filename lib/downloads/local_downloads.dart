@@ -919,25 +919,19 @@ class LocalDownloads extends Downloads {
 
     try {
       final releases = <Future<void> Function()>{};
-      Future<void> releaseReaders() => Future.wait([
+      final readers = Future.wait([
         for (final id in pending.ids)
           for (final held in _held[id] ?? <_HeldRead>{})
             if (held.beforeRemoval case final release?
                 when releases.add(release))
               Future.sync(release),
       ]);
-      // Observe each current owner's result now. A failed close can end its
-      // hold while another read occupies the queue; an ended hold alone does
-      // not prove that the place was saved. Also ask any owner that a read
-      // already in progress lends to before the queue barrier completes.
+      // Admission closes when pending removal starts, including lookups
+      // already in flight. Retain the existing owners' results even if their
+      // holds end while another read occupies the queue. An ended hold alone
+      // does not prove that its listening place was saved.
       await Future.any([
-        Future.wait([
-          releaseReaders(),
-          _command(() async {}).then((_) {
-            guard();
-            return releaseReaders();
-          }),
-        ]),
+        Future.wait([readers, _command(() async {})]),
         pending.abandoned.future,
       ]);
       guard();
@@ -1160,7 +1154,7 @@ class LocalDownloads extends Downloads {
         if (generation != _generation) {
           _leftoversStale = true;
         } else {
-          _leftovers!.value = result;
+          _publishLeftovers(result);
         }
       }
     } finally {
@@ -1168,6 +1162,26 @@ class LocalDownloads extends Downloads {
       // last check starts a new read.
       _leftoverReads = null;
     }
+  }
+
+  void _publishLeftovers(LeftoverFiles value) {
+    final removing = {
+      for (final entry in value.entries)
+        if (_removing(entry.id)) entry.id,
+    };
+    final previous = _leftovers!.value;
+    if (identical(value.entries, previous.entries) &&
+        value.reading == previous.reading &&
+        identical(value.error, previous.error) &&
+        setEquals(removing, previous.removing)) {
+      return;
+    }
+    _leftovers!.value = LeftoverFiles(
+      entries: value.entries,
+      reading: value.reading,
+      error: value.error,
+      removing: Set.unmodifiable(removing),
+    );
   }
 
   @override
@@ -1178,6 +1192,7 @@ class LocalDownloads extends Downloads {
         'The active download catalog changed.',
       );
     }
+    _guardRetained(download, catalog.generation);
     return _startRemoval(
       'retained:${download.id}',
       [download.id],
@@ -1190,17 +1205,7 @@ class LocalDownloads extends Downloads {
     final generation = _generation;
     void guard() {
       _guardClear();
-      if (_disposed ||
-          generation != _generation ||
-          _session?.scope.key != download.accountKey ||
-          !identical(_retainedBinding, download.binding) ||
-          _sources.containsKey(download.id) ||
-          !download.removable ||
-          !_idPattern.hasMatch(download.id)) {
-        throw StateError(
-          'This retained download no longer belongs to this view.',
-        );
-      }
+      _guardRetained(download, generation);
     }
 
     guard();
@@ -1222,6 +1227,22 @@ class LocalDownloads extends Downloads {
       await _deleteOwnedFiles(directory, guard);
     } finally {
       if (generation == _generation) _emit();
+    }
+  }
+
+  /// Reject obsolete entries before they can contact current file consumers,
+  /// and again after each asynchronous storage step.
+  void _guardRetained(RetainedDownload download, int generation) {
+    if (_disposed ||
+        generation != _generation ||
+        _session?.scope.key != download.accountKey ||
+        !identical(_retainedBinding, download.binding) ||
+        _sources.containsKey(download.id) ||
+        !download.removable ||
+        !_idPattern.hasMatch(download.id)) {
+      throw StateError(
+        'This retained download no longer belongs to this view.',
+      );
     }
   }
 
@@ -1273,9 +1294,7 @@ class LocalDownloads extends Downloads {
       // restoration. A converter must settle before either can reclaim its
       // source directory.
       await _command(() async {
-        if (_pendingRemovals.values.any(
-          (removal) => removal.ids.contains(id),
-        )) {
+        if (_removing(id)) {
           replaced = false;
           return;
         }
@@ -1283,6 +1302,9 @@ class LocalDownloads extends Downloads {
         final found = await _lookup(id, generation);
         if (found == null) return;
         replaced = false;
+        // Verification awaited storage. Removal can have closed admission
+        // during that wait; no new consumer may then acquire this source.
+        if (_removing(id)) return;
         final file = found.file;
         if (file == null) return;
         final token = Object();
@@ -1315,6 +1337,9 @@ class LocalDownloads extends Downloads {
       }
     }
   }
+
+  bool _removing(String id) =>
+      _pendingRemovals.values.any((removal) => removal.ids.contains(id));
 
   /// Runs [work] under [lend], as [VerifiedFile.hold] describes.
   Future<void> _hold(
@@ -1952,6 +1977,7 @@ class LocalDownloads extends Downloads {
   ///   changed outside the app breaks this until [refresh] looks again.
   /// - Each pending removal belongs to this binding and has not been abandoned.
   /// - A source with no held work has no entry in the held-read index.
+  /// - A pending removal admits no new read ownership for any of its sources.
   @override
   void checkInvariants() {
     if (_pendingRemovals.values.any(
@@ -1981,6 +2007,9 @@ class LocalDownloads extends Downloads {
     }
     if (_held.values.any((held) => held.isEmpty)) {
       throw StateError('A source without held work must have no entry.');
+    }
+    if (_reading.keys.any(_removing)) {
+      throw StateError('A pending removal must exclude new read ownership.');
     }
     for (final record in _records.values) {
       if (record.accountKey != _session?.scope.key ||
@@ -2018,7 +2047,10 @@ class LocalDownloads extends Downloads {
   void _emit() {
     if (_disposed) return;
     notifyListeners();
-    if (_leftovers != null) unawaited(reloadLeftovers());
+    if (_leftovers case final leftovers?) {
+      _publishLeftovers(leftovers.value);
+      unawaited(reloadLeftovers());
+    }
   }
 
   @override

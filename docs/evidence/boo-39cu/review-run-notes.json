@@ -1,0 +1,58 @@
+{
+  "32-review-behavior-red": {
+    "outcome": "invalid selection",
+    "reason": "Used --plain-name with a regex. No tests matched; exit 79. Corrected to --name for run 33."
+  },
+  "33-review-behavior-red": {
+    "outcome": "meaningful red",
+    "reason": "All ten cases failed across preferences and SQLite: late admission followed by deletion, unreachable cleanup hold, swallowed original Error, and stale retained request contacting the decoder (catalog/account)."
+  },
+  "34-retained-status-red": {
+    "outcome": "fixture failure",
+    "reason": "Requested a fixture edition not in the catalog-generated binding. Explicitly bound the fixture books."
+  },
+  "35-retained-status-red": {
+    "outcome": "interrupted; not a pass",
+    "signalCommand": "kill -INT 57104",
+    "reason": "Widget test mixed fake-clock callbacks with real IO; interrupted only its owned runner after a stall. Exit 0 is not successful verification; framework emitted shutdown errors and no done event."
+  },
+  "36-retained-status-red": {
+    "outcome": "meaningful missing-status assertion, then interrupted cleanup",
+    "signalCommand": "kill -INT 57766",
+    "reason": "Expected pending explanation was absent. Cleanup stalled because the first confirmation tap started its callback in fake time. Exit 0 is not a pass."
+  },
+  "37-retained-status-red": {
+    "outcome": "meaningful missing-status assertion, then interrupted cleanup",
+    "signalCommand": "os.kill(58498, signal.SIGINT)",
+    "reason": "Diagnostic prints confirmed setup completed; pending explanation was absent. Removed diagnostics after correcting the first confirmation tap to tester.runAsync. Exit 0 is not a pass."
+  },
+  "38-retained-status-red": {
+    "outcome": "interrupted cleanup; not a pass",
+    "signalCommand": "os.kill(58950, signal.SIGINT)",
+    "reason": "Moving gate cleanup into finally alone did not repair fake-clock ownership. Fixed the first confirmation tap as well; final focused run 40 passed."
+  },
+  "39-review-format": {
+    "outcome": "format passed; command-order deviation",
+    "reason": "Formatting ran while stalled test command 38 had not yet been terminated. This violated the requested sequential command order. Both completed; later checks are sequential and rerun on final sources."
+  },
+  "40-review-focused": {
+    "outcome": "passed",
+    "reason": "Full lifecycle and real leftover-files UI tests pass after fixes."
+  },
+  "41-cleanup-retry": {
+    "outcome": "passed",
+    "reason": "Both record backends preserve files through three decoder release failures, reject removal, and allow successful retry."
+  },
+  "42-affected-after-review": {
+    "outcome": "two introduced signal regressions",
+    "reason": "Immediate leftover publication notified unchanged states. Existing narrow-signal tests detected extra notices. Fixed by comparing entries, read/error status and pending source ids before publishing."
+  },
+  "43-closed-save-retry-red": {
+    "outcome": "meaningful red on both backends",
+    "reason": "A fresh removal after failed-save close succeeded while records remained pending. Closing now retains the file lend until a successful retry, and the retry waits for physical decoder closure."
+  },
+  "50-format-check-final": {
+    "outcome": "format check failed",
+    "reason": "A documentation comment added after formatting needed one blank line. Run 51 applied only that spacing; run 52 verifies all twelve changed Dart files. No behavior changed after the full suite."
+  }
+}

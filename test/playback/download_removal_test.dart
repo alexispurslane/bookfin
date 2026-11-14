@@ -17,6 +17,31 @@ import 'held_engine.dart';
 /// The decoder boundary reopens real downloaded files for seeks and progression.
 /// Removing an unopened part therefore fails here, as it does on a decoder reopen.
 class _FileEngine extends HeldEngine {
+  Object? loadFailure;
+  int cleanupFailures = 0;
+  int pauses = 0;
+  int _pauseFailures = 0;
+
+  @override
+  Future<void> load(List<Uri> sources, int fileIndex, int position) async {
+    if (loadFailure case final failure?) {
+      loadFailure = null;
+      _pauseFailures = cleanupFailures;
+      throw failure;
+    }
+    await super.load(sources, fileIndex, position);
+  }
+
+  @override
+  Future<void> pause() async {
+    pauses++;
+    if (_pauseFailures > 0) {
+      _pauseFailures--;
+      throw Exception('decoder release failed');
+    }
+    await super.pause();
+  }
+
   @override
   Future<AudioSample> seek(int fileIndex, int position) async {
     await super.seek(fileIndex, position);
@@ -148,6 +173,154 @@ void main() {
         for (final path in paths) {
           expect(await File.fromUri(path).readAsBytes(), fixture.payload);
         }
+      }
+
+      test('removal refuses an opening edition whose file verification is still running', () async {
+        await player.pause();
+        await downloads.request(otherEdition);
+        await downloads.idle;
+        final path = (await downloads.localFile(otherEdition.files.single))!;
+        final verifying = Completer<void>();
+        final verified = Completer<void>();
+        final reading = Completer<void>();
+        final read = Completer<void>();
+        addTearDown(() {
+          if (!verified.isCompleted) verified.complete();
+          if (!read.isCompleted) read.complete();
+        });
+        final opening = IOOverrides.runZoned(
+          () => player.open(otherBook, otherEdition),
+          fseGetType: (name, followLinks) async {
+            if (name == path.toFilePath() && !verified.isCompleted) {
+              if (!verifying.isCompleted) verifying.complete();
+              await verified.future;
+            }
+            return Zone.root.run(
+              () => FileSystemEntity.type(name, followLinks: followLinks),
+            );
+          },
+        );
+        await verifying.future;
+        final unrelated = downloads.readLocalFile(edition.files.first, (
+          _,
+        ) async {
+          reading.complete();
+          await read.future;
+          return true;
+        });
+        final removal = downloads.remove(otherEdition);
+        await pumpEventQueue();
+        expect(downloads.status(otherEdition).removing, isTrue);
+        verified.complete();
+        await reading.future;
+        await opening;
+        final admitted = player.edition?.id == otherEdition.id;
+        if (admitted) engine.emit(0, 17000, playing: true);
+        store.fail = true;
+        await player.close();
+        read.complete();
+        await unrelated;
+        await removal;
+        // No new listening place may arise after removal owns admission.
+        expect(admitted, isFalse);
+        expect(await File.fromUri(path).exists(), isFalse);
+      });
+
+      test('failed decoder cleanup retains reachable ownership for a later removal', () async {
+        await downloads.request(otherEdition);
+        await downloads.idle;
+        final path = (await downloads.localFile(otherEdition.files.single))!;
+        engine.loadFailure = Exception('decoder load failed');
+        engine.cleanupFailures = 1;
+        await player.open(otherBook, otherEdition);
+        expect(await File.fromUri(path).exists(), isTrue);
+        await downloads
+            .remove(otherEdition)
+            .timeout(const Duration(seconds: 1));
+        expect(await File.fromUri(path).exists(), isFalse);
+        await player.play();
+        expect(player.playing, isTrue);
+        engine.emit(0, 19000, playing: true);
+        expect(player.position!.milliseconds, 19000);
+        player.checkInvariants();
+      });
+
+      test(
+        'repeated decoder release failure keeps files until a successful retry',
+        () async {
+          await downloads.request(otherEdition);
+          await downloads.idle;
+          final path = (await downloads.localFile(otherEdition.files.single))!;
+          engine.loadFailure = Exception('decoder load failed');
+          engine.cleanupFailures = 3;
+          await player.open(otherBook, otherEdition);
+          player.checkInvariants();
+          await expectLater(
+            downloads.remove(otherEdition),
+            throwsA(isA<Exception>()),
+          );
+          expect(await File.fromUri(path).readAsBytes(), fixture.payload);
+          expect(downloads.status(otherEdition).removing, isFalse);
+          await downloads
+              .remove(otherEdition)
+              .timeout(const Duration(seconds: 1));
+          expect(await File.fromUri(path).exists(), isFalse);
+          await player.play();
+          expect(player.playing, isTrue);
+          player.checkInvariants();
+        },
+      );
+
+      test(
+        'a programming Error survives an Exception from decoder cleanup',
+        () async {
+          await downloads.request(otherEdition);
+          await downloads.idle;
+          final failure = StateError('decoder contract');
+          engine.loadFailure = failure;
+          engine.cleanupFailures = 1;
+          await expectLater(
+            player.open(otherBook, otherEdition),
+            throwsA(same(failure)),
+          );
+          await player.stop();
+          await downloads
+              .remove(otherEdition)
+              .timeout(const Duration(seconds: 1));
+          await player.play();
+          engine.emit(0, 21000, playing: true);
+          expect(player.position!.milliseconds, 21000);
+        },
+      );
+
+      for (final replacement in ['catalog', 'account']) {
+        test(
+          'a stale leftover request cannot contact the current $replacement decoder',
+          () async {
+            await player.pause();
+            await downloads.bind(fixture.session(), [otherBook]);
+            final leftover = (await downloads.retainedStorage()).first;
+            final session = fixture.session(
+              user: replacement == 'account' ? 'bob' : 'alice',
+            );
+            fixture.authenticatedUser = session.scope.userId;
+            await downloads.bind(session, [book, otherBook]);
+            await player.bind(session, [book, otherBook]);
+            await downloads.request(edition);
+            await downloads.idle;
+            await player.open(book, edition, autoplay: false);
+            await player.flush();
+            final pauses = engine.pauses;
+            final saved = await store.read(session.scope.key);
+            await expectLater(
+              downloads.removeRetained(leftover),
+              throwsStateError,
+            );
+            expect(engine.pauses, pauses);
+            expect(await store.read(session.scope.key), saved);
+            expect(downloads.status(edition).phase, DownloadPhase.downloaded);
+          },
+        );
       }
 
       test(
@@ -401,6 +574,26 @@ void main() {
           );
         },
       );
+
+      test('a fresh removal after failed-save close must still save before deleting', () async {
+        engine.emit(1, 41000, playing: true);
+        store.fail = true;
+        await player.close();
+        expect(player.unsavedChanges, isTrue);
+        await expectLater(
+          downloads.remove(edition),
+          throwsA(isA<DownloadRemovalException>()),
+        );
+        await expectFilesKept();
+        store.fail = false;
+        await downloads.remove(edition);
+        expect(await File.fromUri(paths.first).exists(), isFalse);
+        final saved = (await store.read(fixture.session().scope.key))!;
+        expect(
+          (saved['resumes'] as Map)[edition.id].single['milliseconds'],
+          41000,
+        );
+      });
 
       test(
         'removal retains bookmarks History and saved places across restart',

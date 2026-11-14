@@ -25,6 +25,9 @@ for command in commands:
             events.append(value)
     row = dict(command)
     if events:
+        completed = [event for event in events if event["type"] == "done"]
+        row["frameworkCompleted"] = bool(completed)
+        row["frameworkSuccess"] = completed[-1].get("success") if completed else None
         tests = {event["test"]["id"]: event["test"] for event in events if event["type"] == "testStart"}
         results = [event for event in events if event["type"] == "testDone" and not event.get("hidden")]
         row["counts"] = dict(collections.Counter(
@@ -48,7 +51,7 @@ source_paths = [
     "test/playback/download_removal_test.dart", "test/playback/replacement_test.dart",
     "test/downloads/tab_test.dart", "test/reader/book_words_reader_test.dart",
     "test/reader/admitted_books_test.dart", "test/reader/kept_pages_test.dart",
-    "test/catalog/book_page_test.dart",
+    "test/catalog/book_page_test.dart", "test/downloads/screen_test.dart",
 ]
 summary = dict(
     auditCommand=["python3", "docs/evidence/boo-39cu/audit.py"],

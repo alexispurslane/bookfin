@@ -482,6 +482,8 @@
       "logSha256": "712278d4eb3a4efe584d4f07bde6cd45053b6a775907c6185b4a07e27bf473a0",
       "patch": "16-full-suite.patch.gz",
       "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+      "frameworkCompleted": true,
+      "frameworkSuccess": false,
       "counts": {
         "success": 3794,
         "error": 4,
@@ -1172,6 +1174,8 @@
       "logSha256": "c7ad5360539ad77a02a6d0f161131f4f523172de4f3283cc354aa0fb8d52690f",
       "patch": "21-full-suite-final.patch.gz",
       "patchSha256": "2b2c97f91849925acda1d125f2524eb3be527140503cca9b7f846f026b594f37",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
       "counts": {
         "success": 3866,
         "skipped": 27
@@ -1744,6 +1748,8 @@
       "logSha256": "1bfc391e5c165f4aa9390fd2148a2784568b38619a3c4d325c522eb34f1129e2",
       "patch": "27-full-suite-after-race.patch.gz",
       "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
       "counts": {
         "success": 3868,
         "skipped": 27
@@ -2257,20 +2263,2103 @@
       "patchSha256": "1402f5b70339a6e78a6acd7aab835bfecacbbfe4eaa565d565c9b0bf64e73008",
       "failureNames": [],
       "testSummary": []
+    },
+    {
+      "name": "32-review-behavior-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "--plain-name",
+        "verification is still running|failed decoder cleanup|programming Error survives|stale leftover request"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:51:17.804521+00:00",
+      "ended": "2026-11-13T23:51:25.391096+00:00",
+      "exitCode": 79,
+      "log": "32-review-behavior-red.log.gz",
+      "logSha256": "2e06d9d07ed8a53a08317ebe2aa0f30442c5e5c7119c6a2c36ac23ee3e67f84b",
+      "patch": "32-review-behavior-red.patch.gz",
+      "patchSha256": "cbc3647b21fbefde13b997559110d7e5adaf82a30f9f622a9f45b57788aaf92b",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {},
+      "failures": [],
+      "skips": []
+    },
+    {
+      "name": "33-review-behavior-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "--name",
+        "verification is still running|failed decoder cleanup|programming Error survives|stale leftover request"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:51:38.015293+00:00",
+      "ended": "2026-11-13T23:51:48.193650+00:00",
+      "exitCode": 1,
+      "log": "33-review-behavior-red.log.gz",
+      "logSha256": "8a6f5e3fd647f75f0348424a2bebf490652905ea641c8c7b8f8d1e34bf1228b1",
+      "patch": "33-review-behavior-red.patch.gz",
+      "patchSha256": "0e1ba88b670af49f7bfcc67e82ac1f9dbe40d795f2f0894401a441051749532f",
+      "frameworkCompleted": true,
+      "frameworkSuccess": false,
+      "counts": {
+        "failure": 8,
+        "error": 2
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 4,
+            "name": "preferences removal refuses an opening edition whose file verification is still running",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 178,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 4,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 1782
+          },
+          "errors": [
+            {
+              "testID": 4,
+              "error": "Expected: false\n  Actual: <true>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 221:9      main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 1780
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 5,
+            "name": "preferences failed decoder cleanup retains reachable ownership for a later removal",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 225,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 5,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 2862
+          },
+          "errors": [
+            {
+              "testID": 5,
+              "error": "TimeoutException after 0:00:01.000000: Future not completed",
+              "stackTrace": "dart:async  _startMicrotaskLoop\n",
+              "isFailure": false,
+              "type": "error",
+              "time": 2854
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 6,
+            "name": "preferences a programming Error survives an Exception from decoder cleanup",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 242,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 6,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 2937
+          },
+          "errors": [
+            {
+              "testID": 6,
+              "error": "Expected: throws same instance as StateError:<Bad state: decoder contract>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+              "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 248:15    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 243:9     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 2934
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 7,
+            "name": "preferences a stale leftover request cannot contact the current catalog decoder",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 257,
+            "column": 9,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 7,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 3001
+          },
+          "errors": [
+            {
+              "testID": 7,
+              "error": "Expected: <4>\n  Actual: <5>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 272:11     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 2998
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 8,
+            "name": "preferences a stale leftover request cannot contact the current account decoder",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 257,
+            "column": 9,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 8,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 3077
+          },
+          "errors": [
+            {
+              "testID": 8,
+              "error": "Expected: <5>\n  Actual: <6>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 272:11     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 3075
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 10,
+            "name": "SQLite removal refuses an opening edition whose file verification is still running",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              9
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 178,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 10,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 3441
+          },
+          "errors": [
+            {
+              "testID": 10,
+              "error": "Expected: false\n  Actual: <true>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 221:9      main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 3439
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 11,
+            "name": "SQLite failed decoder cleanup retains reachable ownership for a later removal",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              9
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 225,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 11,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4522
+          },
+          "errors": [
+            {
+              "testID": 11,
+              "error": "TimeoutException after 0:00:01.000000: Future not completed",
+              "stackTrace": "dart:async  _startMicrotaskLoop\n",
+              "isFailure": false,
+              "type": "error",
+              "time": 4516
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 12,
+            "name": "SQLite a programming Error survives an Exception from decoder cleanup",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              9
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 242,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 12,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4590
+          },
+          "errors": [
+            {
+              "testID": 12,
+              "error": "Expected: throws same instance as StateError:<Bad state: decoder contract>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+              "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 248:15    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 243:9     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 4588
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 13,
+            "name": "SQLite a stale leftover request cannot contact the current catalog decoder",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              9
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 257,
+            "column": 9,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 13,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4654
+          },
+          "errors": [
+            {
+              "testID": 13,
+              "error": "Expected: <4>\n  Actual: <5>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 272:11     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 4652
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 14,
+            "name": "SQLite a stale leftover request cannot contact the current account decoder",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              9
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 257,
+            "column": 9,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 14,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4737
+          },
+          "errors": [
+            {
+              "testID": 14,
+              "error": "Expected: <5>\n  Actual: <6>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/playback/download_removal_test.dart 272:11     main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 4734
+            }
+          ]
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "34-retained-status-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/downloads/screen_test.dart",
+        "--plain-name",
+        "leftover removal explains its wait"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:52:09.808860+00:00",
+      "ended": "2026-11-13T23:52:18.601019+00:00",
+      "exitCode": 1,
+      "log": "34-retained-status-red.log.gz",
+      "logSha256": "24dc5f5de433a8fe6842ba8fa2cc99483fbff46d7f0a89019ee1c9adf1d0b551",
+      "patch": "34-retained-status-red.patch.gz",
+      "patchSha256": "52914e102ab573ac0857a4084c2d753d7d5cefd36d76aa2476efdc8e1ba04f69",
+      "frameworkCompleted": true,
+      "frameworkSuccess": false,
+      "counts": {
+        "error": 1
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 3,
+            "name": "leftover removal explains its wait and disables a duplicate request",
+            "suiteID": 0,
+            "groupIDs": [
+              2
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 383,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+          },
+          "result": {
+            "testID": 3,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 3415
+          },
+          "errors": [
+            {
+              "testID": 3,
+              "error": "Test failed. See exception logs above.\nThe test description was: leftover removal explains its wait and disables a duplicate request",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 3404
+            }
+          ]
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "35-retained-status-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/downloads/screen_test.dart",
+        "--plain-name",
+        "leftover removal explains its wait"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:53:52.190788+00:00",
+      "ended": "2026-11-13T23:55:06.145075+00:00",
+      "exitCode": 0,
+      "log": "35-retained-status-red.log.gz",
+      "logSha256": "855918f5ff10e09f7edf9f5c47a2fad509364e6cd42488ef13b6907e0a284841",
+      "patch": "35-retained-status-red.patch.gz",
+      "patchSha256": "002359188c0fcfcea116d07ea23db596c7021861a6f56af68685a6a19a9f6d29",
+      "frameworkCompleted": false,
+      "frameworkSuccess": null,
+      "counts": {
+        "error": 1
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 3,
+            "name": "leftover removal explains its wait and disables a duplicate request",
+            "suiteID": 0,
+            "groupIDs": [
+              2
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 383,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+          },
+          "result": {
+            "testID": 3,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 68514
+          },
+          "errors": []
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "36-retained-status-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "--timeout",
+        "30s",
+        "test/downloads/screen_test.dart",
+        "--plain-name",
+        "leftover removal explains its wait"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:55:16.162764+00:00",
+      "ended": "2026-11-13T23:56:27.062736+00:00",
+      "exitCode": 0,
+      "log": "36-retained-status-red.log.gz",
+      "logSha256": "c861d013ae1116c379981ef80ffdab3a8b94fcac31a2da0ebf3706257558154d",
+      "patch": "36-retained-status-red.patch.gz",
+      "patchSha256": "6e49277f75525ff378b8dcd930425e86359542c1bc88f81340f2232580c48449",
+      "frameworkCompleted": false,
+      "frameworkSuccess": null,
+      "counts": {
+        "error": 1
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 3,
+            "name": "leftover removal explains its wait and disables a duplicate request",
+            "suiteID": 0,
+            "groupIDs": [
+              2
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 383,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+          },
+          "result": {
+            "testID": 3,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 65525
+          },
+          "errors": [
+            {
+              "testID": 3,
+              "error": "Test failed. See exception logs above.\nThe test description was: leftover removal explains its wait and disables a duplicate request",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 2404
+            }
+          ]
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "37-retained-status-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "--timeout",
+        "30s",
+        "test/downloads/screen_test.dart",
+        "--plain-name",
+        "leftover removal explains its wait"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:56:27.274552+00:00",
+      "ended": "2026-11-13T23:56:53.004339+00:00",
+      "exitCode": 0,
+      "log": "37-retained-status-red.log.gz",
+      "logSha256": "8469aadddd14d77253071dcde9766ed3d4c926bca66f812a8dfa47b99000025f",
+      "patch": "37-retained-status-red.patch.gz",
+      "patchSha256": "62e96fe5b065be6a1553f7bfc2d0221790c008ce60fa90901522155a66d63ca2",
+      "frameworkCompleted": false,
+      "frameworkSuccess": null,
+      "counts": {
+        "error": 1
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 3,
+            "name": "leftover removal explains its wait and disables a duplicate request",
+            "suiteID": 0,
+            "groupIDs": [
+              2
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 385,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+          },
+          "result": {
+            "testID": 3,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 20306
+          },
+          "errors": [
+            {
+              "testID": 3,
+              "error": "Test failed. See exception logs above.\nThe test description was: leftover removal explains its wait and disables a duplicate request",
+              "stackTrace": "",
+              "isFailure": false,
+              "type": "error",
+              "time": 2398
+            }
+          ]
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "39-review-format",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/downloads/screen_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:57:40.226494+00:00",
+      "ended": "2026-11-13T23:57:42.562957+00:00",
+      "exitCode": 0,
+      "log": "39-review-format.log.gz",
+      "logSha256": "1736f4b6133cb12fce7bc9a1524f7322748b4c74ab26e813d645e5723d290ad1",
+      "patch": "39-review-format.patch.gz",
+      "patchSha256": "3e739a21b520a011daa09be39e2833d89c261b42cc637b17e0d5e1984e6d6762",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "38-retained-status-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/downloads/screen_test.dart",
+        "--plain-name",
+        "leftover removal explains its wait"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:56:53.218516+00:00",
+      "ended": "2026-11-13T23:57:58.221906+00:00",
+      "exitCode": 0,
+      "log": "38-retained-status-red.log.gz",
+      "logSha256": "1b8b26642d9b618fc6075dad8f148abdf13a7fe98e4f18d4c35235fe83101fb1",
+      "patch": "38-retained-status-red.patch.gz",
+      "patchSha256": "0da2380115ab406bdb3709017ecbfbe8c6d36b8a96f8b8faf5a81b6e8e5edbd1",
+      "frameworkCompleted": false,
+      "frameworkSuccess": null,
+      "counts": {
+        "error": 1
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 3,
+            "name": "leftover removal explains its wait and disables a duplicate request",
+            "suiteID": 0,
+            "groupIDs": [
+              2
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 174,
+            "column": 5,
+            "url": "package:flutter_test/src/widget_tester.dart",
+            "root_line": 383,
+            "root_column": 3,
+            "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+          },
+          "result": {
+            "testID": 3,
+            "result": "error",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 59653
+          },
+          "errors": []
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "40-review-focused",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "test/downloads/screen_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:58:09.814462+00:00",
+      "ended": "2026-11-13T23:58:23.143073+00:00",
+      "exitCode": 0,
+      "log": "40-review-focused.log.gz",
+      "logSha256": "adb0e105892eb022551f4d9a34cda5d38295b3272427e738670588d610f03dff",
+      "patch": "40-review-focused.patch.gz",
+      "patchSha256": "639d22db4c95f06da93de0f3854ede4f848d1dcc5654f351b39246603d4f0d8c",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {
+        "success": 63
+      },
+      "failures": [],
+      "skips": []
+    },
+    {
+      "name": "41-cleanup-retry",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "--plain-name",
+        "repeated decoder release failure"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:59:01.737852+00:00",
+      "ended": "2026-11-13T23:59:09.248216+00:00",
+      "exitCode": 0,
+      "log": "41-cleanup-retry.log.gz",
+      "logSha256": "e568af214a28abe5ef74c1fcbd1146e5d8f56b2116827cfbacabc9e5e48508ab",
+      "patch": "41-cleanup-retry.patch.gz",
+      "patchSha256": "027b42699cce24d458916bedbec4ecba641c6009596a040d2f7a9adc49a4027e",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {
+        "success": 2
+      },
+      "failures": [],
+      "skips": []
+    },
+    {
+      "name": "42-affected-after-review",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/downloads",
+        "test/playback",
+        "test/reader",
+        "test/catalog/book_page_test.dart",
+        "test/app"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-13T23:59:22.917825+00:00",
+      "ended": "2026-11-14T00:03:20.623406+00:00",
+      "exitCode": 1,
+      "log": "42-affected-after-review.log.gz",
+      "logSha256": "0f1139eabc2452b3043711886da249f6643908d80123c5498fa24441b3d3ad53",
+      "patch": "42-affected-after-review.patch.gz",
+      "patchSha256": "321fb9b9de1050394f7a4df987594db5a237b059bff0c02dea645a047f3c0b33",
+      "frameworkCompleted": true,
+      "frameworkSuccess": false,
+      "counts": {
+        "success": 2605,
+        "failure": 2,
+        "skipped": 21
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 85,
+            "name": "Downloads owns the leftover inventory the inventory notifies once for each phase change and each reload",
+            "suiteID": 55,
+            "groupIDs": [
+              59,
+              82
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 257,
+            "column": 5,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/signals_test.dart"
+          },
+          "result": {
+            "testID": 85,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4445
+          },
+          "errors": [
+            {
+              "testID": 85,
+              "error": "Expected: <2>\n  Actual: <3>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/downloads/signals_test.dart 269:9              main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 4445
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 86,
+            "name": "Downloads owns the leftover inventory byte progress neither reads nor notifies the inventory",
+            "suiteID": 55,
+            "groupIDs": [
+              59,
+              82
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 274,
+            "column": 5,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/signals_test.dart"
+          },
+          "result": {
+            "testID": 86,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 4642
+          },
+          "errors": [
+            {
+              "testID": 86,
+              "error": "Expected: be in range from 1 (inclusive) to 3 (inclusive)\n  Actual: <5>\n",
+              "stackTrace": "package:matcher                                     expect\npackage:flutter_test/src/widget_tester.dart 473:18  expect\ntest/downloads/signals_test.dart 294:7              main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 4641
+            }
+          ]
+        }
+      ],
+      "skips": [
+        {
+          "id": 2583,
+          "name": "the part open benchmark",
+          "suiteID": 2575,
+          "groupIDs": [
+            2582
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+          },
+          "line": 53,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+        },
+        {
+          "id": 2588,
+          "name": "the corpus prepare",
+          "suiteID": 2584,
+          "groupIDs": [
+            2587
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+          },
+          "line": 81,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+        },
+        {
+          "id": 2612,
+          "name": "the downloaded books open the places that epub.js saved",
+          "suiteID": 2589,
+          "groupIDs": [
+            2592,
+            2611
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 45,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+        },
+        {
+          "id": 2659,
+          "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "suiteID": 2493,
+          "groupIDs": [
+            2499
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1346,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+        },
+        {
+          "id": 2694,
+          "name": "body text breaks lines and pages where epub.js broke them",
+          "suiteID": 2687,
+          "groupIDs": [
+            2692
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 24,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+        },
+        {
+          "id": 2766,
+          "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2767,
+          "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2768,
+          "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2769,
+          "name": "the admitted files of a known book stay the same se-frankenstein",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2770,
+          "name": "the admitted files of a known book stay the same se-moby-dick",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2771,
+          "name": "the admitted files of a known book stay the same se-poetry",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2772,
+          "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+          "suiteID": 2753,
+          "groupIDs": [
+            2758,
+            2759
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 2835,
+          "name": "the step budget",
+          "suiteID": 2831,
+          "groupIDs": [
+            2834
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+          },
+          "line": 63,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+        },
+        {
+          "id": 2907,
+          "name": "the corpus steps",
+          "suiteID": 2904,
+          "groupIDs": [
+            2906
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+          },
+          "line": 92,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+        },
+        {
+          "id": 2933,
+          "name": "the admission benchmark",
+          "suiteID": 2930,
+          "groupIDs": [
+            2932
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+          },
+          "line": 97,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+        },
+        {
+          "id": 3079,
+          "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "suiteID": 3065,
+          "groupIDs": [
+            3067,
+            3075
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 156,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+        },
+        {
+          "id": 3091,
+          "name": "the jumps into real books",
+          "suiteID": 3088,
+          "groupIDs": [
+            3090
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+        },
+        {
+          "id": 3130,
+          "name": "the corpus run",
+          "suiteID": 3126,
+          "groupIDs": [
+            3129
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+        },
+        {
+          "id": 3194,
+          "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "suiteID": 3166,
+          "groupIDs": [
+            3168
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 244,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+        },
+        {
+          "id": 3362,
+          "name": "the open of a PDF",
+          "suiteID": 3354,
+          "groupIDs": [
+            3361
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+          },
+          "line": 21,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+        },
+        {
+          "id": 3423,
+          "name": "the host benchmark draws each deck page in a section in under 20 ms",
+          "suiteID": 3276,
+          "groupIDs": [
+            3278
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1433,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+        }
+      ]
+    },
+    {
+      "name": "43-closed-save-retry-red",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "--plain-name",
+        "fresh removal after failed-save close"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:03:40.872839+00:00",
+      "ended": "2026-11-14T00:03:49.763553+00:00",
+      "exitCode": 1,
+      "log": "43-closed-save-retry-red.log.gz",
+      "logSha256": "8edba4ee0c5396dd4c839acb7310f99873e70218736345a5e3596dd864a13f0f",
+      "patch": "43-closed-save-retry-red.patch.gz",
+      "patchSha256": "90962cf466e6aad1fb3149e7222b85d7c8ebbb23c101ffca04c7ec3cb5407421",
+      "frameworkCompleted": true,
+      "frameworkSuccess": false,
+      "counts": {
+        "failure": 2
+      },
+      "failures": [
+        {
+          "test": {
+            "id": 4,
+            "name": "preferences a fresh removal after failed-save close must still save before deleting",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              3
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 570,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 4,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 2186
+          },
+          "errors": [
+            {
+              "testID": 4,
+              "error": "Expected: throws <Instance of 'DownloadRemovalException'>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+              "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 577:17    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 575:11    main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 2185
+            }
+          ]
+        },
+        {
+          "test": {
+            "id": 6,
+            "name": "SQLite a fresh removal after failed-save close must still save before deleting",
+            "suiteID": 0,
+            "groupIDs": [
+              2,
+              5
+            ],
+            "metadata": {
+              "skip": false,
+              "skipReason": null
+            },
+            "line": 570,
+            "column": 7,
+            "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/playback/download_removal_test.dart"
+          },
+          "result": {
+            "testID": 6,
+            "result": "failure",
+            "skipped": false,
+            "hidden": false,
+            "type": "testDone",
+            "time": 2553
+          },
+          "errors": [
+            {
+              "testID": 6,
+              "error": "Expected: throws <Instance of 'DownloadRemovalException'>\n  Actual: <Instance of 'Future<void>'>\n   Which: emitted <null>\n",
+              "stackTrace": "package:matcher                                    expectLater\npackage:flutter_test/src/widget_tester.dart 507:8  expectLater\ntest/playback/download_removal_test.dart 577:17    main.<fn>.<fn>\n===== asynchronous gap ===========================\ndart:async                                         _CustomZone.registerUnaryCallback\ntest/playback/download_removal_test.dart 575:11    main.<fn>.<fn>\n",
+              "isFailure": true,
+              "type": "error",
+              "time": 2550
+            }
+          ]
+        }
+      ],
+      "skips": []
+    },
+    {
+      "name": "44-final-lifecycle-signals",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/playback/download_removal_test.dart",
+        "test/downloads/signals_test.dart",
+        "test/downloads/screen_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:04:38.618514+00:00",
+      "ended": "2026-11-14T00:04:53.891270+00:00",
+      "exitCode": 0,
+      "log": "44-final-lifecycle-signals.log.gz",
+      "logSha256": "d6f3397c7ee1a18962f748199f08091b05bc0bd3a8761a84d30acd1480271f52",
+      "patch": "44-final-lifecycle-signals.patch.gz",
+      "patchSha256": "e0465929b83e4a6d03363275b36d4e4546fe693c0e1d8a83aba3c3ca984d9284",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {
+        "success": 95
+      },
+      "failures": [],
+      "skips": []
+    },
+    {
+      "name": "45-format-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/downloads/screen_test.dart",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:05:44.874642+00:00",
+      "ended": "2026-11-14T00:05:47.314023+00:00",
+      "exitCode": 0,
+      "log": "45-format-final.log.gz",
+      "logSha256": "17c3ab9cafeebecc0d7d15ec5069c9c0334dd07a5ac80899a5c98e8d50e086b4",
+      "patch": "45-format-final.patch.gz",
+      "patchSha256": "a568150189cc58efc4c85c29f4810177916e94604b6994b677f3ab143379fa8f",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "46-affected-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json",
+        "test/downloads",
+        "test/playback",
+        "test/app",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:06:15.054841+00:00",
+      "ended": "2026-11-14T00:07:20.676166+00:00",
+      "exitCode": 0,
+      "log": "46-affected-final.log.gz",
+      "logSha256": "cf0af6c04a7e627db2c5cd5fb951fa531c700266720db1348c713df25fd4feac",
+      "patch": "46-affected-final.patch.gz",
+      "patchSha256": "b09fd6a113811624eda6b511cedbdada56158caf96ca79fb3a4b9bb77c819ca7",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {
+        "success": 994
+      },
+      "failures": [],
+      "skips": []
+    },
+    {
+      "name": "47-analysis-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "analyze",
+        "--no-pub",
+        "lib/downloads",
+        "lib/playback",
+        "test/downloads",
+        "test/playback",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:07:49.846013+00:00",
+      "ended": "2026-11-14T00:07:56.897470+00:00",
+      "exitCode": 0,
+      "log": "47-analysis-final.log.gz",
+      "logSha256": "6761df08c04d7c9ddd4f6850331884c1303a0557c12a90ab693ace40ec0c5086",
+      "patch": "47-analysis-final.patch.gz",
+      "patchSha256": "c8e8213679f16a22978f4f55e9858d1336708f8b82b21074e8a97d853e721be5",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "48-web-builds-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "test/web_build_test.sh"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:08:26.700595+00:00",
+      "ended": "2026-11-14T00:09:41.556571+00:00",
+      "exitCode": 0,
+      "log": "48-web-builds-final.log.gz",
+      "logSha256": "8f4cc5a25bc6f2383b238b792ac025e218be7ad6150d162522b61d16181fd9ac",
+      "patch": "48-web-builds-final.patch.gz",
+      "patchSha256": "bcb2ef0ae6569faf4b8d5b82fb34bee1350d5124fc468a6dde34dfad0f31871b",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "49-full-suite-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "flutter",
+        "test",
+        "--concurrency=2",
+        "--reporter",
+        "json"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:10:03.058895+00:00",
+      "ended": "2026-11-14T00:15:13.691638+00:00",
+      "exitCode": 0,
+      "log": "49-full-suite-final.log.gz",
+      "logSha256": "bc3c987b3b5dcc83e4cea225ed3cf201756149178fe86560d4f46cfbedd15070",
+      "patch": "49-full-suite-final.patch.gz",
+      "patchSha256": "20c684f58223fe32a3b1920346994e1de3abb2f9ebd8aa4cace7090b07f473a4",
+      "frameworkCompleted": true,
+      "frameworkSuccess": true,
+      "counts": {
+        "success": 3883,
+        "skipped": 27
+      },
+      "failures": [],
+      "skips": [
+        {
+          "id": 1506,
+          "name": "the part open benchmark",
+          "suiteID": 1502,
+          "groupIDs": [
+            1505
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_PART_BENCHMARK=1 to run"
+          },
+          "line": 53,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/part_open_benchmark_test.dart"
+        },
+        {
+          "id": 1510,
+          "name": "the corpus prepare",
+          "suiteID": 1507,
+          "groupIDs": [
+            1509
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_PREPARE to a run name to run"
+          },
+          "line": 81,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_prepare_test.dart"
+        },
+        {
+          "id": 1534,
+          "name": "the downloaded books open the places that epub.js saved",
+          "suiteID": 1511,
+          "groupIDs": [
+            1514,
+            1533
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 45,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/saved_places_test.dart"
+        },
+        {
+          "id": 1578,
+          "name": "the host benchmark shows no step longer than the budget plus the longest paragraph",
+          "suiteID": 1412,
+          "groupIDs": [
+            1418
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1346,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_source_test.dart"
+        },
+        {
+          "id": 1615,
+          "name": "body text breaks lines and pages where epub.js broke them",
+          "suiteID": 1607,
+          "groupIDs": [
+            1613
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_TRIAL=1 to run"
+          },
+          "line": 24,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/fidelity_test.dart"
+        },
+        {
+          "id": 1692,
+          "name": "the admitted files of a known book stay the same pg-46-christmas-carol",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-46-christmas-carol.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1693,
+          "name": "the admitted files of a known book stay the same pg-84-frankenstein",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/pg-84-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1694,
+          "name": "the admitted files of a known book stay the same se-alices-adventures-in-wonderland",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-alices-adventures-in-wonderland.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1695,
+          "name": "the admitted files of a known book stay the same se-frankenstein",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-frankenstein.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1696,
+          "name": "the admitted files of a known book stay the same se-moby-dick",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-moby-dick.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1697,
+          "name": "the admitted files of a known book stay the same se-poetry",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-poetry.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1698,
+          "name": "the admitted files of a known book stay the same se-pride-and-prejudice",
+          "suiteID": 1678,
+          "groupIDs": [
+            1680,
+            1681
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "The trial book .cache/epub-trial/books/se-pride-and-prejudice.epub is not here."
+          },
+          "line": 236,
+          "column": 7,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_test.dart"
+        },
+        {
+          "id": 1758,
+          "name": "the step budget",
+          "suiteID": 1754,
+          "groupIDs": [
+            1757
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_STEPS=1 to run"
+          },
+          "line": 63,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/step_budget_test.dart"
+        },
+        {
+          "id": 1829,
+          "name": "the corpus steps",
+          "suiteID": 1826,
+          "groupIDs": [
+            1828
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS_STEPS to a run name to run"
+          },
+          "line": 92,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_steps_test.dart"
+        },
+        {
+          "id": 1855,
+          "name": "the admission benchmark",
+          "suiteID": 1852,
+          "groupIDs": [
+            1854
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_ADMISSION_BENCHMARK to a folder of books to run"
+          },
+          "line": 97,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/admission_benchmark_test.dart"
+        },
+        {
+          "id": 2001,
+          "name": "the CRC-32 of an entry of every entry of every corpus book is the CRC-32 that package:archive gives",
+          "suiteID": 1987,
+          "groupIDs": [
+            1989,
+            1997
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 156,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/zip_test.dart"
+        },
+        {
+          "id": 2014,
+          "name": "the jumps into real books",
+          "suiteID": 2010,
+          "groupIDs": [
+            2013
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/page_map_jump_test.dart"
+        },
+        {
+          "id": 2053,
+          "name": "the corpus run",
+          "suiteID": 2049,
+          "groupIDs": [
+            2052
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 to run"
+          },
+          "line": 33,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/corpus_test.dart"
+        },
+        {
+          "id": 2117,
+          "name": "every PNG and JPEG of the corpus books gets the size that package:image gave",
+          "suiteID": 2088,
+          "groupIDs": [
+            2091
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_EPUB_CORPUS=1 with the corpus in .cache/epub-corpus/books to run"
+          },
+          "line": 244,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/image_size_test.dart"
+        },
+        {
+          "id": 2279,
+          "name": "the open of a PDF",
+          "suiteID": 2276,
+          "groupIDs": [
+            2278
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_PDF_OPEN_BENCHMARK to the paths of PDF files"
+          },
+          "line": 21,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/pdf_open_benchmark_test.dart"
+        },
+        {
+          "id": 2346,
+          "name": "the host benchmark draws each deck page in a section in under 20 ms",
+          "suiteID": 2198,
+          "groupIDs": [
+            2201
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 1433,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/reader/epub/pager_test.dart"
+        },
+        {
+          "id": 2361,
+          "name": "measure incremental saves and acknowledgments while retaining every original action",
+          "suiteID": 2357,
+          "groupIDs": [
+            2360
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Set BOOKFIN_JOURNAL_GROWTH_EVIDENCE to run the bounded host measurement."
+          },
+          "line": 498,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/journal_growth_measurement_test.dart"
+        },
+        {
+          "id": 2366,
+          "name": "measure current restoration against complete retained replay on this host",
+          "suiteID": 2362,
+          "groupIDs": [
+            2365
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": null
+          },
+          "line": 130,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/current_restore_measurement_test.dart"
+        },
+        {
+          "id": 2371,
+          "name": "the layout cache survey",
+          "suiteID": 2367,
+          "groupIDs": [
+            2370
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "set BOOKFIN_LAYOUT_CACHE=1"
+          },
+          "line": 51,
+          "column": 5,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/research/epub_layout_cache_test.dart"
+        },
+        {
+          "id": 4398,
+          "name": "durable ordinary-account records and offline changes survive plugin upgrade: null",
+          "suiteID": 4393,
+          "groupIDs": [
+            4397
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/plugin/prove.py in the pinned shells."
+          },
+          "line": 69,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_upgrade_integration_test.dart"
+        },
+        {
+          "id": 4503,
+          "name": "the actual plugin transfers thousands of immutable actions between durable ordinary-account clients",
+          "suiteID": 4498,
+          "groupIDs": [
+            4502
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run with tool/plugin/prove.py in the pinned sync dev shell."
+          },
+          "line": 51,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_batch_integration_test.dart"
+        },
+        {
+          "id": 4598,
+          "name": "two durable ordinary-account clients merge offline edits through the actual plugin",
+          "suiteID": 4593,
+          "groupIDs": [
+            4597
+          ],
+          "metadata": {
+            "skip": true,
+            "skipReason": "Run tool/sync_fixture.py in the pinned shells."
+          },
+          "line": 18,
+          "column": 3,
+          "url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/sync/plugin_integration_test.dart"
+        }
+      ]
+    },
+    {
+      "name": "50-format-check-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/downloads/screen_test.dart",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:15:50.457339+00:00",
+      "ended": "2026-11-14T00:15:53.353656+00:00",
+      "exitCode": 1,
+      "log": "50-format-check-final.log.gz",
+      "logSha256": "85d2e5b56ecd19309d7f89093e5a6cee08e4bde9ea459ffbcebc79901a4613c0",
+      "patch": "50-format-check-final.patch.gz",
+      "patchSha256": "d108cbb1468ea33726db7baf0c6aa9a4843ac85ad6077535d04b1e02a4991367",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "51-format-comment-spacing",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "lib/playback/playback.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:16:21.832443+00:00",
+      "ended": "2026-11-14T00:16:24.167832+00:00",
+      "exitCode": 0,
+      "log": "51-format-comment-spacing.log.gz",
+      "logSha256": "50a85d69a8ba714d60df5722a2d6cd4dbfdf1e5d818128036624454fba16639b",
+      "patch": "51-format-comment-spacing.patch.gz",
+      "patchSha256": "2e7b86004dc06ba07ef08f77ca00852ee8119948644acf3e73334c9178979469",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "52-format-check-final",
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib/downloads/downloads.dart",
+        "lib/downloads/local_downloads.dart",
+        "lib/downloads/screen.dart",
+        "lib/playback/playback.dart",
+        "test/playback/download_removal_test.dart",
+        "test/playback/replacement_test.dart",
+        "test/downloads/tab_test.dart",
+        "test/downloads/screen_test.dart",
+        "test/reader/book_words_reader_test.dart",
+        "test/reader/admitted_books_test.dart",
+        "test/reader/kept_pages_test.dart",
+        "test/catalog/book_page_test.dart"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:16:46.758864+00:00",
+      "ended": "2026-11-14T00:16:49.203956+00:00",
+      "exitCode": 0,
+      "log": "52-format-check-final.log.gz",
+      "logSha256": "e5c00c11759cf81352a0872516c56b81de3c5ae69bd5c00c5b78f6f8d3895734",
+      "patch": "52-format-check-final.patch.gz",
+      "patchSha256": "6bfe394bb657a496f1f1bc36df37863f9ecba96e694fb1d14a218b3e6689699b",
+      "failureNames": [],
+      "testSummary": []
+    },
+    {
+      "name": "53-staged-base-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa"
+      ],
+      "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+      "started": "2026-11-14T00:17:38.517971+00:00",
+      "ended": "2026-11-14T00:17:38.549539+00:00",
+      "exitCode": 0,
+      "log": "53-staged-base-whitespace.log.gz",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patch": "53-staged-base-whitespace.patch.gz",
+      "patchSha256": "999537867533fc881c63dbf589617c382a33b6479f32448a1ecfda989484d3e9",
+      "failureNames": [],
+      "testSummary": []
     }
   ],
   "sourceSha256": {
-    "lib/downloads/downloads.dart": "055ee6a02ac3c87bd0900bebd4820d729a0d98b337c29fa00ca1d9984bb5d8e6",
-    "lib/downloads/local_downloads.dart": "82eaccb725e92dbab7bed6ee0ee4c65b9bc8c4a7fdd0854e27777c3409397777",
-    "lib/downloads/screen.dart": "fc5ea5a30f46625f221133a269e9c9156859611a6ae3610ca3707f2755be9ca9",
-    "lib/playback/playback.dart": "d3b293acf64ffafdf7196873f3647b469e519b55ebac7bc75d80c83790483723",
-    "test/playback/download_removal_test.dart": "38fa1a9f32541ec337717378bb23a39f081efcd5a5406e9f0d2b69a0867f9e43",
+    "lib/downloads/downloads.dart": "f4332450da77bc7eb6802f04b5ba781a137b85f7a65a46e8f9d2fe792060cf93",
+    "lib/downloads/local_downloads.dart": "d4df262a7ee66a25e33cfd81232d510be2e94f61d973c28f4e83c1d87d353301",
+    "lib/downloads/screen.dart": "5b6433bc6a39678feddf16316c072bc44848d1d5e6c423ab77cb4ce617982d90",
+    "lib/playback/playback.dart": "a57f8909dcb6ed4cfc96c4d023bd95030b365fb503f561dfa84c29dfbacaba75",
+    "test/playback/download_removal_test.dart": "dd0bb30e0a534fb8c6a9a99fe4757b4a6e48eab851c6d702a8ebf561012f1a32",
     "test/playback/replacement_test.dart": "b94f02850fef7ca41d9ff5a2af14c17ca5dc7be6f4185d6a104ba8d049bf8601",
     "test/downloads/tab_test.dart": "1ac04fff830a64a9d2add5ab74fd914ac142008023aec21312b565a1e5447e86",
     "test/reader/book_words_reader_test.dart": "da59ef66b23e90c4588be8877057ee7998f25480017d00f2794f244fb5e6ec96",
     "test/reader/admitted_books_test.dart": "215b80509b95dc012e7e3de74f5368ac7c157fd4a9f10b001584fb8cab1b56b1",
     "test/reader/kept_pages_test.dart": "49dd7f69945e980263e66e7ef32df726475d68c5782afe2cff32f20ac6490d77",
-    "test/catalog/book_page_test.dart": "16f614de1410ea255ca1fd452e6caa837f317f619901cc72a754dc3f0903cbdf"
+    "test/catalog/book_page_test.dart": "16f614de1410ea255ca1fd452e6caa837f317f619901cc72a754dc3f0903cbdf",
+    "test/downloads/screen_test.dart": "a6c262683d087547f0941c14cf6e9b51389a4788767a7fcbcdd744ae15960a13"
   },
   "exclusions": [
     "The full-suite skip entries name every omitted optional/external test and its framework metadata.",

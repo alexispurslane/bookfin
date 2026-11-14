@@ -1,0 +1,27 @@
+{
+  "taskId": "node:delegated-task:command%3Amcp%3A5cb01dfe-0cac-4b93-a0b3-787f5a1bc0e5%3Adelegate-task%3Aboo-39cu-read-only-review-20261113-1",
+  "childThreadId": "thread:delegated-task:command%3Amcp%3A5cb01dfe-0cac-4b93-a0b3-787f5a1bc0e5%3Adelegate-task%3Aboo-39cu-read-only-review-20261113-1",
+  "link": "<t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A5cb01dfe-0cac-4b93-a0b3-787f5a1bc0e5%3Adelegate-task%3Aboo-39cu-read-only-review-20261113-1>",
+  "reviewHead": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "originalBase": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "providerInstanceId": "codex",
+  "model": "gpt-6-astra",
+  "options": [
+    {
+      "id": "reasoningEffort",
+      "value": "high"
+    }
+  ],
+  "status": "completed",
+  "hasPendingChildRuns": false,
+  "originalReport": "reviewer-original.json",
+  "originalVerdicts": {
+    "correctness": "changes required",
+    "ticketFulfillment": "changes required",
+    "softwareDesign": "changes required",
+    "overall": "changes required"
+  },
+  "secondReview": false,
+  "originalReportSha256": "8a8d03cc0a157dcde80b3fa1af830ace40d6867f0fcd3901a7d6e88623709366",
+  "originalReportPreservation": "Exact final-message text read from the completed reviewer thread; matches task_status summary."
+}

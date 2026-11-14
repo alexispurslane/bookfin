@@ -1,0 +1,31 @@
+{
+  "name": "44-final-lifecycle-signals",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/playback/download_removal_test.dart",
+    "test/downloads/signals_test.dart",
+    "test/downloads/screen_test.dart"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-14T00:04:38.618514+00:00",
+  "ended": "2026-11-14T00:04:53.891270+00:00",
+  "exitCode": 0,
+  "log": "44-final-lifecycle-signals.log.gz",
+  "logSha256": "d6f3397c7ee1a18962f748199f08091b05bc0bd3a8761a84d30acd1480271f52",
+  "patch": "44-final-lifecycle-signals.patch.gz",
+  "patchSha256": "e0465929b83e4a6d03363275b36d4e4546fe693c0e1d8a83aba3c3ca984d9284",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {
+    "success": 95
+  },
+  "failures": [],
+  "skips": []
+}

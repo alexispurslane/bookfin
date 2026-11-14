@@ -1,0 +1,302 @@
+{
+  "ticket": "boo-39cu",
+  "reviewHead": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "originalBase": "2f5f0393d4d5961627b7eb84f7c2f7725ab762aa",
+  "worktree": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29",
+  "reviewMode": "One read-only review; no children",
+  "method": {
+    "scope": "Complete original-base-to-HEAD source, test, ticket and evidence-tool changes, with relevant callers and retained verification evidence.",
+    "executedByReviewer": [
+      "Read-only shell inspection of instructions, source, diff, tests and evidence.",
+      "Decompression and inspection of selected retained logs and patch metadata.",
+      "Confirmed the requested HEAD and clean checkout before and after inspection."
+    ],
+    "notExecuted": [
+      "Tests, builds, formatters or analyzers",
+      "Audit scripts or independent artifact-hash verification",
+      "Device, browser, network or server actions",
+      "Edits, commits or checkout changes"
+    ],
+    "findingBasis": "All new behavior findings below are static reasoning. Their reproduction steps have not been executed."
+  },
+  "retainedEvidence": {
+    "observed": [
+      {
+        "path": "docs/evidence/boo-39cu/02-unsafe-removal-red.log.gz",
+        "result": "Both record backends show missing real files during progression and playback failure during seek."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/03-save-order-red.log.gz",
+        "result": "Both backends show removal completing despite a failed required save."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/22-abandoned-removal-red.log.gz",
+        "result": "Both backends show the earlier failed-close race completing removal incorrectly."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/27-full-suite-after-race-results.json",
+        "result": "Records 3868 passing tests, 27 skips and no failures. The retained raw log ends with success."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/25-analysis-final.log.gz",
+        "result": "Reports no issues in the scoped analysis."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/26-web-builds-final.log.gz",
+        "result": "Production and gallery JavaScript builds succeed, with the documented WebAssembly and font warnings."
+      },
+      {
+        "path": "docs/evidence/boo-39cu/28-format-check.log.gz",
+        "result": "Reports 11 files formatted, zero changes."
+      }
+    ],
+    "limits": "These are retained builder executions, not reviewer executions. Commands identify the original base plus retained working-tree patches. I did not rerun the audit or independently verify every hash."
+  },
+  "correctness": {
+    "verdict": "changes required",
+    "evidence": [
+      "The normal path protects every audio part through VerifiedFile.hold.",
+      "Required-save failure retains the active lend and rejects an already-observed removal attempt.",
+      "The new real-file tests cover progression, seeks, pause, switching, save failure, account/source replacement and record retention on both backends.",
+      "The final race fix covers consumers already registered when removal begins, but not every consumer admitted during an asynchronous lookup."
+    ],
+    "findings": [
+      {
+        "id": "BOO39CU-C1",
+        "severity": "high",
+        "title": "A consumer admitted between the two inspections can lose its failed-save veto",
+        "locations": [
+          "lib/downloads/local_downloads.dart:839",
+          "lib/downloads/local_downloads.dart:1181",
+          "lib/downloads/local_downloads.dart:1202",
+          "lib/downloads/local_downloads.dart:1245",
+          "lib/playback/playback.dart:2605"
+        ],
+        "evidence": "Removal inspects registered consumers immediately and again after a queued barrier. A read that already passed the pending-removal check can finish its asynchronous lookup afterward and register a new hold. If that consumer closes unsuccessfully and its hold ends before the barrier runs, neither inspection observes its release result. The final deletion then finds no held work and can succeed.",
+        "code": "        final generation = _generation;\n        final found = await _lookup(id, generation);\n        if (found == null) return;\n        replaced = false;\n        final file = found.file;\n        if (file == null) return;",
+        "where": [
+          "generation is the current Downloads catalog version.",
+          "_lookup verifies the local source asynchronously.",
+          "id identifies the source key and revision.",
+          "found contains the verified file, or indicates that lookup could not complete under the catalog.",
+          "replaced controls whether readLocalFile retries after catalog replacement.",
+          "file is the verified file subsequently lent to the consumer."
+        ],
+        "unexecutedReproduction": [
+          "Open a single-file audio edition and hold its file verification after the pending-removal check but before a hold exists.",
+          "Queue an unrelated read whose callback waits on a gate.",
+          "Request removal of the opening audio edition.",
+          "Finish verification and let Playback acquire the hold and open the edition while the unrelated read blocks the removal barrier.",
+          "Move the listening position, fail required record saves, and close Playback so the new hold ends unsuccessfully.",
+          "Release the unrelated read."
+        ],
+        "expected": "Removal fails and keeps the audio files because the required listening-place save failed.",
+        "staticallyPredicted": "Both consumer inspections miss this hold; removal can complete successfully and delete the files.",
+        "proposedRemedy": "Make hold admission participate atomically in pending removal. Either refuse admission after verification when removal has begun, or register every newly admitted consumer and retain its release result until that removal settles. Another snapshot alone does not close this class of race."
+      },
+      {
+        "id": "BOO39CU-C2",
+        "severity": "medium",
+        "title": "Failed decoder cleanup can leave a permanent, unreachable audio hold",
+        "locations": [
+          "lib/playback/playback.dart:1773",
+          "lib/playback/playback.dart:1827",
+          "lib/playback/playback.dart:1847",
+          "lib/playback/playback.dart:1624"
+        ],
+        "evidence": "Before an open commits, its new audio lend exists only in a local variable. If decoder loading fails and the cleanup pause also fails, the lend is neither ended nor installed as an owned resource that later cleanup can retry. Its removal callback cannot release it because it is not identical to the current audio lend. The loading flag also remains set.",
+        "code": "    } finally {\n      if (!identical(_audioFiles, files)) {\n        await engine.pause();\n        files.finish(false);\n      }\n      _loading = false;\n    }",
+        "where": [
+          "_audioFiles is Playback's current owned audio lend.",
+          "files is the lend acquired for this open attempt.",
+          "identical checks whether this attempt became the current owned lend.",
+          "engine.pause requests decoder shutdown and file-handle release.",
+          "files.finish(false) ends the lend with an unsuccessful removal result.",
+          "_loading suppresses decoder samples while an open is being settled."
+        ],
+        "unexecutedReproduction": [
+          "Use real LocalDownloads files and attempt to open another edition.",
+          "Make engine.load fail, then make the pause in the quoted finally block fail once.",
+          "Allow the later error-handler pause and subsequent stop/close calls to succeed.",
+          "Request removal of the failed edition."
+        ],
+        "expected": "Files remain protected until decoder release is confirmed, and the retained ownership has a reachable cleanup/retry path.",
+        "staticallyPredicted": "Removal waits indefinitely on the abandoned lend, even after later decoder cleanup succeeds.",
+        "proposedRemedy": "Keep an uncommitted decoder lend owned and reachable until cleanup succeeds. Settle the removal attempt on cleanup failure without pretending the decoder released its files, and reset the loading flag independently of cleanup success."
+      },
+      {
+        "id": "BOO39CU-C3",
+        "severity": "medium",
+        "title": "The new cleanup finally can replace and swallow a programming Error",
+        "locations": [
+          "lib/playback/playback.dart:1785",
+          "lib/playback/playback.dart:1847",
+          "lib/playback/playback.dart:1195"
+        ],
+        "evidence": "The cleanup shown in BOO39CU-C2 awaits a fallible pause while an earlier failure is unwinding. A cleanup Exception replaces an original Error. _runAudio then catches that Exception and completes normally after publishing an audio failure.",
+        "unexecutedReproduction": [
+          "Make engine.load throw a specific StateError instance.",
+          "Make the cleanup engine.pause throw an Exception.",
+          "Let the error-handler pause succeed and await Playback.open."
+        ],
+        "expected": "The original programming Error reaches the caller or zone unchanged.",
+        "staticallyPredicted": "The cleanup Exception replaces it and is handled as an ordinary audio failure.",
+        "proposedRemedy": "Preserve the original failure and stack when cleanup also fails. Do not convert a programming Error into the cleanup Exception.",
+        "relatedFinding": "BOO39CU-C2"
+      },
+      {
+        "id": "BOO39CU-C4",
+        "severity": "medium",
+        "title": "Stale retained-file requests contact current consumers before validating ownership",
+        "locations": [
+          "lib/downloads/local_downloads.dart:1083",
+          "lib/downloads/local_downloads.dart:1098",
+          "lib/downloads/local_downloads.dart:815",
+          "lib/downloads/local_downloads.dart:840"
+        ],
+        "evidence": "removeRetained starts pending removal and contacts holders by source id before _removeRetained checks the account, retained binding and whether the source is now current. Source ids do not include the account. An obsolete retained entry can therefore contact a newly opened edition's consumer before being rejected.",
+        "unexecutedReproduction": [
+          "Download an edition, hide it, and retain its RetainedDownload entry.",
+          "Restore that edition to the current catalog and open it paused so Playback owns a live lend.",
+          "Call removeRetained with the obsolete entry and observe decoder pause/save calls.",
+          "Repeat with the same source identity downloaded under another account."
+        ],
+        "expected": "The stale request fails before changing current read ownership or contacting the current decoder.",
+        "staticallyPredicted": "It marks the source pending and can pause, save and release the current consumer before the late guard rejects the request. If the current edition is playing, rejection can wait until that unrelated playback pauses.",
+        "proposedRemedy": "Validate the retained entry before creating pending state or invoking consumers. Keep the existing later guards for changes during asynchronous work."
+      }
+    ],
+    "validationGaps": [
+      "No executed reproduction accompanies these findings.",
+      "The new real-file tests do not cover a consumer admitted during verification and gone before the removal barrier.",
+      "The new real-file tests do not cover failed decoder cleanup with later recovery, or a programming Error followed by a cleanup Exception.",
+      "Native decoder file-handle release and interruption behavior remain unverified on a device."
+    ]
+  },
+  "ticketFulfillment": {
+    "verdict": "changes required",
+    "requirements": [
+      {
+        "requirement": "Keep playing after confirmed removal; protect progression and seeks",
+        "assessment": "Supported for the normal active-consumer path by implementation and retained real-file tests."
+      },
+      {
+        "requirement": "Require a successful listening-place save before destructive success",
+        "assessment": "Incomplete: BOO39CU-C1 identifies an admission race that can bypass the failed-save veto."
+      },
+      {
+        "requirement": "Keep failure recoverable",
+        "assessment": "Incomplete: BOO39CU-C2 identifies ownership that can become unreachable after cleanup failure."
+      },
+      {
+        "requirement": "Remove paused/nonplaying files without starting audio",
+        "assessment": "Supported by the new tests for paused playback and opening paused."
+      },
+      {
+        "requirement": "Preserve confirmation and understandable pending status",
+        "assessment": "Implemented for edition removal; retained-file pending status is missing."
+      },
+      {
+        "requirement": "One pending-removal owner; no widget owner or second playback scheduler",
+        "assessment": "Met structurally: LocalDownloads owns pending operations, and Playback uses its existing command queue."
+      },
+      {
+        "requirement": "Use the existing public Downloads removal boundary for Clear data",
+        "assessment": "The boundary remains available and returns completion/failure. Settings implementation is correctly excluded. The correctness findings also affect callers through this boundary."
+      },
+      {
+        "requirement": "Prevent stale actions from affecting replacement sources, accounts or editions",
+        "assessment": "Pending replacement cases have tests; stale retained requests remain incomplete under BOO39CU-C4."
+      },
+      {
+        "requirement": "Preserve Ask-at-Play, external Play, History/Undo and scoped notices",
+        "assessment": "Existing paths remain in use and the retained full suite is green. BOO39CU-C3 breaks the separate requirement to propagate programming Errors."
+      },
+      {
+        "requirement": "Preserve restart behavior, personal records and atomic storage",
+        "assessment": "Storage implementations are unchanged. New tests check retained records across restart on both backends. Pending removal remains process-local, as explicitly documented."
+      },
+      {
+        "requirement": "Use asynchronous IO and track touched-code exceptions",
+        "assessment": "New IO remains asynchronous. Serialized verification and the pre-existing origin Error handler are recorded in t0-dv5n and t0-ejq2."
+      }
+    ],
+    "findings": [
+      {
+        "id": "BOO39CU-F1",
+        "severity": "medium",
+        "title": "Retained-file removal can wait without exposing pending status",
+        "locations": [
+          "lib/downloads/local_downloads.dart:708",
+          "lib/downloads/local_downloads.dart:1090",
+          "lib/downloads/screen.dart:689",
+          "lib/downloads/screen.dart:769"
+        ],
+        "evidence": "Retained removal now uses the deferred consumer-release path, but the published pending flag only checks edition keys. LeftoverFilesPage continues to show the ordinary size and enabled removal button while removeRetained waits. Its confirmation also gives no explanation of waiting for playback.",
+        "expected": "A person can tell that retained-file removal is pending and what will allow it to finish.",
+        "staticallyPredicted": "A valid retained removal waiting on an audio consumer appears to do nothing; repeated removal controls remain available.",
+        "proposedRemedy": "Expose retained pending state from the same LocalDownloads owner through the existing leftover status surface, and render its waiting explanation and unavailable action. Do not introduce widget-owned pending state.",
+        "scopeRationale": "This completes the pending-status requirement for a removal path changed by this ticket; it does not require Settings or a new product design."
+      }
+    ],
+    "validationGaps": [
+      "Android/native acceptance is materially unverified and explicitly parent-owned under t1-dth0. Host callbacks and file-reading test decoders do not establish native behavior.",
+      "Clear data integration itself was not reviewed or required here.",
+      "Coverage and mutation testing were excluded by instruction and are not claimed."
+    ]
+  },
+  "softwareDesign": {
+    "verdict": "changes required",
+    "evidence": [
+      "The boundary choices are appropriate: Downloads owns deletion, Playback owns decoder use and save ordering, and widgets display narrow status signals.",
+      "VerifiedFile.hold extends the existing reader ownership model instead of adding a separate playback scheduler.",
+      "_AudioFiles represents real shared lifecycle state; it is not speculative abstraction.",
+      "The ordinary reader hold call remains simple. Provider callback changes are confined and their test providers were updated.",
+      "Pending status is derived from the operation owner instead of maintained as a second widget flag.",
+      "The remaining structural weakness is how newly admitted holds join an already-pending removal."
+    ],
+    "findings": [
+      {
+        "id": "BOO39CU-D1",
+        "severity": "medium",
+        "title": "Consumer admission and removal participation lack one owning transition",
+        "source": [
+          "User: one owner and one named operation for a transition that keeps related state coherent",
+          "Ousterhout: information hiding and explicit lifecycle rules"
+        ],
+        "locations": [
+          "lib/downloads/local_downloads.dart:839",
+          "lib/downloads/local_downloads.dart:1181",
+          "lib/downloads/local_downloads.dart:1202",
+          "lib/downloads/local_downloads.dart:1239"
+        ],
+        "evidence": "The hold registry knows when a consumer starts and ends, but pending removal separately samples that registry twice. Registration does not enroll the consumer in the pending operation, and completion can erase the only route to its release result. Correctness therefore depends on timing knowledge shared across read admission, hold registration, hold cleanup and barrier placement.",
+        "maintenanceCost": "A change that adds an asynchronous step to admission or shortens a consumer's lifetime requires reasoning about all four sites. Another consumer can recreate the same missed-result bug without changing removal code.",
+        "speedAssessment": "No measured speed claim is made. The separate serialized-lookup cost is already tracked in t0-dv5n.",
+        "proposedRemedy": "Make admission decide, under LocalDownloads ownership, whether the consumer is refused or enrolled in each relevant pending removal. Preserve enrolled outcomes until removal settles. Keep this within the existing ownership model.",
+        "relatedFinding": "BOO39CU-C1",
+        "countingNote": "This is the structural assessment of the same defect class, not an additional runtime failure."
+      }
+    ],
+    "validationGaps": [
+      "The invariant check verifies that the held-work index has no empty entries, but does not verify that every relevant consumer participates in pending removal.",
+      "Native compliance with the strengthened AudioEngine.pause contract remains unverified.",
+      "No performance measurement was performed; t0-dv5n remains an explicitly tracked follow-up."
+    ]
+  },
+  "overallVerdict": {
+    "verdict": "changes required",
+    "reason": "The main design and retained tests establish the ordinary behavior, but a late-consumer race can permit deletion after save failure. Cleanup failure, Error propagation, stale retained requests and retained pending status also require resolution.",
+    "blockingFindingIds": [
+      "BOO39CU-C1",
+      "BOO39CU-C2",
+      "BOO39CU-C3",
+      "BOO39CU-C4",
+      "BOO39CU-F1",
+      "BOO39CU-D1"
+    ],
+    "nativeAcceptance": "unverified; parent-owned under t1-dth0",
+    "changesMadeByReviewer": false,
+    "secondReviewPerformedOrRequested": false
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "name": "36-retained-status-red",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "--timeout",
+    "30s",
+    "test/downloads/screen_test.dart",
+    "--plain-name",
+    "leftover removal explains its wait"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-13T23:55:16.162764+00:00",
+  "ended": "2026-11-13T23:56:27.062736+00:00",
+  "exitCode": 0,
+  "log": "36-retained-status-red.log.gz",
+  "logSha256": "c861d013ae1116c379981ef80ffdab3a8b94fcac31a2da0ebf3706257558154d",
+  "patch": "36-retained-status-red.patch.gz",
+  "patchSha256": "6e49277f75525ff378b8dcd930425e86359542c1bc88f81340f2232580c48449",
+  "frameworkCompleted": false,
+  "frameworkSuccess": null,
+  "counts": {
+    "error": 1
+  },
+  "failures": [
+    {
+      "test": {
+        "id": 3,
+        "name": "leftover removal explains its wait and disables a duplicate request",
+        "suiteID": 0,
+        "groupIDs": [
+          2
+        ],
+        "metadata": {
+          "skip": false,
+          "skipReason": null
+        },
+        "line": 174,
+        "column": 5,
+        "url": "package:flutter_test/src/widget_tester.dart",
+        "root_line": 383,
+        "root_column": 3,
+        "root_url": "file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-06198e29/test/downloads/screen_test.dart"
+      },
+      "result": {
+        "testID": 3,
+        "result": "error",
+        "skipped": false,
+        "hidden": false,
+        "type": "testDone",
+        "time": 65525
+      },
+      "errors": [
+        {
+          "testID": 3,
+          "error": "Test failed. See exception logs above.\nThe test description was: leftover removal explains its wait and disables a duplicate request",
+          "stackTrace": "",
+          "isFailure": false,
+          "type": "error",
+          "time": 2404
+        }
+      ]
+    }
+  ],
+  "skips": []
+}

@@ -18,6 +18,8 @@
   "logSha256": "712278d4eb3a4efe584d4f07bde6cd45053b6a775907c6185b4a07e27bf473a0",
   "patch": "16-full-suite.patch.gz",
   "patchSha256": "f092b3d13b1a474e785646524fb86cd73fd52c5895fc758998f9a4b07b696250",
+  "frameworkCompleted": true,
+  "frameworkSuccess": false,
   "counts": {
     "success": 3794,
     "error": 4,

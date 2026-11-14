@@ -694,12 +694,12 @@ class LeftoverFilesPage extends StatelessWidget {
       for (final entry in entries) {
         await downloads.removeRetained(entry);
       }
-    } catch (_) {
+    } on Exception catch (error) {
       unawaited(downloads.reloadLeftovers());
       if (context.mounted) {
         showGlassMessage(
           context,
-          'Some files could not be removed. Check your account and try again.',
+          error is DownloadRemovalException ? error.message : 'Some files could not be removed. Check your account and try again.',
         );
       }
     }
@@ -717,6 +717,7 @@ class LeftoverFilesPage extends StatelessWidget {
     // After a failed read, no old entry is offered for removal.
     final entries = failed ? const <RetainedDownload>[] : leftovers.entries;
     final removable = entries.where((entry) => entry.removable).toList();
+    final removing = leftovers.removing;
     final total = removable.fold<int>(0, (sum, entry) => sum + entry.bytes);
     return Scaffold(
       appBar: AppBar(
@@ -729,16 +730,18 @@ class LeftoverFilesPage extends StatelessWidget {
           ),
           if (removable.isNotEmpty)
             TextButton(
-              onPressed: () async {
-                if (await _confirm(
-                      context,
-                      'Remove all leftover files?',
-                      'Remove ${formatBytes(total)} kept from books that are no longer in your library? Your Jellyfin files will not change.',
-                    ) &&
-                    context.mounted) {
-                  await _remove(context, removable);
-                }
-              },
+              onPressed: removing.isNotEmpty
+                  ? null
+                  : () async {
+                      if (await _confirm(
+                            context,
+                            'Remove all leftover files?',
+                            'Remove ${formatBytes(total)} kept from books that are no longer in your library? Playing audio continues until you pause or switch books. Bookfin saves your listening place before removing its files. Your history, bookmarks and Jellyfin files stay.',
+                          ) &&
+                          context.mounted) {
+                        await _remove(context, removable);
+                      }
+                    },
               child: const Text('Remove all'),
             ),
           const SizedBox(width: 8),
@@ -774,21 +777,31 @@ class LeftoverFilesPage extends StatelessWidget {
                             ? 'Source ${entry.sourceKey}'
                             : 'Unidentified files',
                       ),
-                      subtitle: Text(formatBytes(entry.bytes)),
+                      subtitle: Text(
+                        removing.contains(entry.id)
+                            ? 'Waiting to remove. Playing audio continues until you pause or switch books.'
+                            : formatBytes(entry.bytes),
+                      ),
                       trailing: entry.removable
                           ? IconButton(
                               tooltip: 'Remove leftover files',
-                              onPressed: () async {
-                                if (await _confirm(
-                                      context,
-                                      'Remove leftover files?',
-                                      'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
-                                    ) &&
-                                    context.mounted) {
-                                  await _remove(context, [entry]);
-                                }
-                              },
-                              icon: const Icon(Icons.delete_outline_rounded),
+                              onPressed: removing.contains(entry.id)
+                                  ? null
+                                  : () async {
+                                      if (await _confirm(
+                                            context,
+                                            'Remove leftover files?',
+                                            'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Playing audio continues until you pause or switch books. Bookfin saves your listening place before removing its files. Your history, bookmarks and Jellyfin files stay.',
+                                          ) &&
+                                          context.mounted) {
+                                        await _remove(context, [entry]);
+                                      }
+                                    },
+                              icon: Icon(
+                                removing.contains(entry.id)
+                                    ? Icons.hourglass_empty_rounded
+                                    : Icons.delete_outline_rounded,
+                              ),
                             )
                           : const Tooltip(
                               message: 'These files cannot be identified, so they stay.',

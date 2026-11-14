@@ -1,0 +1,39 @@
+{
+  "focused": {
+    "run": "44-final-lifecycle-signals",
+    "passed": 95
+  },
+  "affected": {
+    "run": "46-affected-final",
+    "passed": 994
+  },
+  "analysis": {
+    "run": "47-analysis-final",
+    "result": "no issues"
+  },
+  "web": {
+    "run": "48-web-builds-final",
+    "result": "production and gallery JavaScript builds pass"
+  },
+  "full": {
+    "run": "49-full-suite-final",
+    "passed": 3883,
+    "skipped": 27,
+    "errors": 0,
+    "concurrency": 2,
+    "skipsUnchangedFromPreReview": true,
+    "skipDetails": "49-full-suite-final-results.json"
+  },
+  "format": {
+    "run": "52-format-check-final",
+    "files": 12,
+    "changed": 0
+  },
+  "whitespace": "Complete original-base-to-final-HEAD check will be recorded with final commit metadata outside the checkout, so the verification does not change that HEAD.",
+  "ownedImplementationGaps": [],
+  "parentAcceptance": "Native acceptance remains unverified and parent-owned under t1-dth0.",
+  "stagedWhitespace": {
+    "run": "53-staged-base-whitespace",
+    "result": "pass for complete original-base-to-staged diff"
+  }
+}

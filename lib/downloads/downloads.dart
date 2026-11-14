@@ -206,6 +206,7 @@ class LeftoverFiles {
     this.entries = const [],
     this.reading = false,
     this.error,
+    this.removing = const {},
   });
 
   /// The leftovers of the last read that succeeded, sorted by id.
@@ -216,6 +217,10 @@ class LeftoverFiles {
 
   /// Why the last read failed, or null when it succeeded.
   final Object? error;
+
+  /// Source ids whose removal is waiting for consumers or storage.
+  /// Downloads derives this from its pending operations, without disk IO.
+  final Set<String> removing;
 }
 
 abstract class Downloads extends ChangeNotifier {

@@ -1,0 +1,29 @@
+{
+  "name": "32-review-behavior-red",
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "flutter",
+    "test",
+    "--concurrency=2",
+    "--reporter",
+    "json",
+    "test/playback/download_removal_test.dart",
+    "--plain-name",
+    "verification is still running|failed decoder cleanup|programming Error survives|stale leftover request"
+  ],
+  "head": "21aafcbe625319e0ed7d480a4aaee32453cf6ec4",
+  "started": "2026-11-13T23:51:17.804521+00:00",
+  "ended": "2026-11-13T23:51:25.391096+00:00",
+  "exitCode": 79,
+  "log": "32-review-behavior-red.log.gz",
+  "logSha256": "2e06d9d07ed8a53a08317ebe2aa0f30442c5e5c7119c6a2c36ac23ee3e67f84b",
+  "patch": "32-review-behavior-red.patch.gz",
+  "patchSha256": "cbc3647b21fbefde13b997559110d7e5adaf82a30f9f622a9f45b57788aaf92b",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
+  "counts": {},
+  "failures": [],
+  "skips": []
+}

@@ -18,6 +18,8 @@
   "logSha256": "1bfc391e5c165f4aa9390fd2148a2784568b38619a3c4d325c522eb34f1129e2",
   "patch": "27-full-suite-after-race.patch.gz",
   "patchSha256": "34c61fec559c69c1365ce2bf316498a2c57655a67e96034faa6b5fcfc66f6fed",
+  "frameworkCompleted": true,
+  "frameworkSuccess": true,
   "counts": {
     "success": 3868,
     "skipped": 27
