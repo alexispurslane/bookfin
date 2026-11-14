@@ -931,10 +931,21 @@ class ReaderSession extends ChangeNotifier {
       final candidates = _resumes
           .where((value) => value.editionId == selected.id)
           .toList();
+      // While two devices' saved places compete, the journal shows no current
+      // resume (RecordJournal.value), so the restored resumes lack this
+      // edition. This phone's own last place, which the journal keeps, is
+      // where it opens then (boo-jxf9). The sync choice stays open.
+      final ownPlace = at == null && candidates.isEmpty
+          ? switch (known?.own) {
+              final TextPosition own => own,
+              _ => null,
+            }
+          : null;
       final saved =
           [
             ?at,
             ...candidates.reversed,
+            ?ownPlace,
           ].where((value) => _compatible(value) != null).firstOrNull ??
           candidates.lastOrNull;
       _initialAddress = at == null ? null : _compatible(at);

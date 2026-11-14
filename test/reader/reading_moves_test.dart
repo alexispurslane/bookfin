@@ -954,6 +954,54 @@ void main() {
       expect(reader.undoOffer, isNull);
     });
 
+    test('while Phone A\'s place competes with Phone B\'s as a sync choice, '
+        'a new reader on Phone B opens the book at B\'s own last place '
+        '(boo-jxf9)', () async {
+      final (reader, cedar) = await phoneBReadToBirch(phoneB.reading, syncB);
+      final birch = reader.history
+          .firstWhere((event) => event.kind == HistoryAction.close)
+          .after;
+      // Phone A never saw Birch, so its Cedar competes with it.
+      final file = epubEdition.files.single;
+      server.publish(
+        RecordJournal(server.session.scope.key, 'phone-a')..change(
+          jsonEncode([
+            'reading',
+            'resumes',
+            jsonEncode([epubEdition.id, file.key, file.revision]),
+          ]),
+          {
+            'edition': epubEdition.id,
+            'source': file.key,
+            'revision': file.revision,
+            'anchor': cedar,
+          },
+          device: 'Phone A',
+        ),
+      );
+      await syncB();
+      expect(
+        await phoneB.conflicts(server.session.scope.key),
+        isNotEmpty,
+      );
+
+      final restarted = await sessionOf(
+        bookOf(epubEdition),
+        records: phoneB.reading,
+        user: server.session,
+      );
+      await openIn(restarted);
+      await restarted.flush();
+
+      expect(shownSection(restarted), 1);
+      expect(json(restarted.position!), json(birch));
+      expect(
+        await phoneB.conflicts(server.session.scope.key),
+        isNotEmpty,
+        reason: 'only the person settles a sync choice',
+      );
+    });
+
     test('a sync while the book is open does not move the shown page and '
         'records nothing', () async {
       final (reader, cedar) = await phoneBReadToBirch(phoneB.reading, syncB);

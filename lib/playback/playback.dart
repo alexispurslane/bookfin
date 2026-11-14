@@ -1749,12 +1749,21 @@ class Playback extends ChangeNotifier {
               );
     final restoringChoice =
         _choiceToRestore?['sources'] == editionSources(edition);
+    // While two devices' saved places compete, the journal shows no current
+    // resume (RecordJournal.value), so the restored resumes lack this
+    // edition. This phone's own last place, which the journal keeps, is
+    // where it opens then (boo-jxf9). The sync choice stays open.
+    final atOwnPlace =
+        restoringChoice ||
+        target == null &&
+            replacement == null &&
+            _readPosition(edition) == null;
     final opening = await Future.wait<Object?>([
       _lendAudioFiles(edition),
-      if (restoringChoice) origin ?? Future<PlaceOrigin?>.value(),
+      if (atOwnPlace) origin ?? Future<PlaceOrigin?>.value(),
     ]);
     final files = opening[0] as _AudioFiles?;
-    final recovered = restoringChoice ? opening[1] as PlaceOrigin? : null;
+    final recovered = atOwnPlace ? opening[1] as PlaceOrigin? : null;
     if (generation != _generation) {
       files?.finish(false);
       return false;
@@ -1785,7 +1794,7 @@ class Playback extends ChangeNotifier {
     if (resume != null &&
         (!resume.fits(edition) ||
             target == null &&
-                !restoringChoice &&
+                !atOwnPlace &&
                 !_resumeFits(edition, _resumeRecord(edition)))) {
       _actionFailed(
         originContext,
