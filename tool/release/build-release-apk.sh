@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Builds the signed arm64 release APK of one version tag, checks its native
-# payloads and its signer, and copies it to dist/bookfin.apk and
-# dist/bookfin-<version>.apk. The release workflow runs it, and you can too:
+# payloads and its signer, and copies it to dist/bookfin.apk. A release
+# carries that one APK, so that Obtainium and the homepage's download
+# button find it without a choice. The release workflow runs this script,
+# and you can too:
 #
 #   nix develop --command bash tool/release/build-release-apk.sh v1.2.3
 #
@@ -54,7 +56,7 @@ python3 tool/reader/native_package.py verify "$apk"
 python3 tool/reader/ocr_package.py verify "$apk"
 python3 tool/reader/speech_package.py verify "$apk"
 
+rm -rf dist
 mkdir -p dist
-cp "$apk" "dist/bookfin-$version.apk"
 cp "$apk" dist/bookfin.apk
 echo "Built Bookfin $version ($version_code): dist/bookfin.apk"

@@ -25,6 +25,8 @@ The landing page is [`index.html`](index.html).
 
 Download the newest signed APK from the [releases](https://github.com/alexispurslane/bookfin/releases/latest) on your phone, then open it to install it.
 
+To get updates, add Bookfin to [Obtainium](https://obtainium.imranr.dev/), an app that installs and updates apps from their release pages. On your phone, open [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/alexispurslane/bookfin), or add the source `https://github.com/alexispurslane/bookfin` in Obtainium by hand. Each release carries one APK, `bookfin.apk`, and its tag matches the app's version, so Obtainium finds updates without a configuration.
+
 ## Publish a release
 
 Push a version tag. The release workflow (`.github/workflows/release.yml`) builds the signed arm64 APK and publishes it as a GitHub release:

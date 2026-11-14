@@ -1,6 +1,8 @@
 # Builds the signed release APK when a version tag (v1.2.3) is pushed, and
-# publishes it as a GitHub release. The homepage's download button points at
-# releases/latest/download/bookfin.apk, so it always gets the newest release.
+# publishes it as a GitHub release with one asset, bookfin.apk. The homepage's
+# download button points at releases/latest/download/bookfin.apk, so it
+# always gets the newest release. Obtainium reads the same releases: it takes
+# the version from the tag, which matches the APK's version name.
 #
 # A manual run builds a version without a release and keeps the APK as a
 # workflow artifact.
@@ -61,7 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" dist/*.apk \
+          gh release create "$TAG" dist/bookfin.apk \
             --title "Bookfin ${TAG#v}" --generate-notes --verify-tag
 
       - name: Keep the APK of a manual run
@@ -69,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bookfin-${{ env.TAG }}
-          path: dist/*.apk
+          path: dist/bookfin.apk
           retention-days: 7
 
       - name: Remove the release key

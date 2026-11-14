@@ -1,7 +1,7 @@
 name: bookfin
 description: "Bookfin Android audiobook and ebook companion."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.1+1001
 
 environment:
   sdk: ^3.13.3
