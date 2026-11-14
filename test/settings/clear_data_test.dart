@@ -198,6 +198,176 @@ void main() {
         online = true;
       }
 
+      Future<({Playback player, audio.TestEngine engine, List<Uri> paths})>
+      startDownloadedAudio() async {
+        await cache.write(
+          alice.scope,
+          CatalogCache(
+            scope: alice.scope,
+            libraries: [const BookLibrary('books', 'Books')],
+            entries: [
+              for (final id in ['audio1', 'audio2'])
+                CatalogEntry.fromJson(media.dto(id), libraryId: 'books'),
+            ],
+          ).encode(),
+        );
+        await catalog.restore();
+        await downloads.bind(alice, catalog.books);
+        final paths = <Uri>[];
+        for (final book in catalog.books) {
+          final edition = book.editions.single;
+          await downloads.request(edition);
+          await downloads.idle;
+          paths.add((await downloads.localFile(edition.files.single))!);
+        }
+        final engine = audio.TestEngine();
+        final player = Playback(
+          downloads: downloads,
+          engine: engine,
+          store: records,
+        );
+        addTearDown(player.close);
+        binding.dispose();
+        binding = AccountBinding(
+          catalog: catalog,
+          downloads: downloads,
+          playback: player,
+          sync: sync,
+        );
+        await player.bind(alice, catalog.books);
+        await player.open(
+          catalog.books.first,
+          catalog.books.first.editions.single,
+        );
+        await player.flush();
+        return (player: player, engine: engine, paths: paths);
+      }
+
+      Future<void> waitForRemoval(Edition edition) async {
+        final status = downloads.watch(edition);
+        if (status.value.removing) return;
+        final entered = Completer<void>();
+        void changed() {
+          if (status.value.removing && !entered.isCompleted) entered.complete();
+        }
+
+        status.addListener(changed);
+        try {
+          await entered.future.timeout(const Duration(seconds: 5));
+        } finally {
+          status.removeListener(changed);
+        }
+      }
+
+      test('Clear data waits for audio pause and uploads its new place before deleting', () async {
+        final (:player, :engine, :paths) = await startDownloadedAudio();
+        final edition = player.edition!;
+        var completed = false;
+        final clearing = clear().then((_) => completed = true);
+        await waitForRemoval(edition);
+        expect(player.playing, isTrue);
+        expect(completed, isFalse);
+        expect(await File.fromUri(paths.first).readAsBytes(), media.payload);
+        final uploading = Completer<void>();
+        final uploaded = Completer<void>();
+        addTearDown(() {
+          if (!uploaded.isCompleted) uploaded.complete();
+        });
+        upload = () async {
+          if (!uploading.isCompleted) uploading.complete();
+          await uploaded.future;
+        };
+        engine.emit(0, 23000, playing: true);
+        await player.pause();
+        await uploading.future.timeout(const Duration(seconds: 5));
+        expect(await File.fromUri(paths.first).exists(), isTrue);
+        expect(completed, isFalse);
+        uploaded.complete();
+        await clearing;
+        expect(await File.fromUri(paths.first).exists(), isFalse);
+        expect(await File.fromUri(paths.last).exists(), isFalse);
+        final saved = (await records.read(alice.scope.key))!;
+        expect(saved['resumes'][edition.id].single['milliseconds'], 23000);
+        expect(await records.hasPendingUploads(alice.scope.key), isFalse);
+        expect(await bobDownloaded.readAsBytes(), media.payload);
+        expect(catalog.books, isEmpty);
+        downloads.checkInvariants();
+        player.checkInvariants();
+      });
+
+      for (final failure in ['save', 'upload']) {
+        test(
+          'Clear data keeps audio when the pause $failure fails and succeeds on retry',
+          () async {
+            final (:player, :engine, :paths) = await startDownloadedAudio();
+            final edition = player.edition!;
+            final clearing = clear();
+            final refused = expectLater(clearing, throwsA(isA<Exception>()));
+            await waitForRemoval(edition);
+            final sql = await phone?.separateConnection();
+            try {
+              if (failure == 'save') {
+                preferences.refuseTitle = '31000';
+                await sql?.execute(
+                  "CREATE TRIGGER refuse_pause BEFORE INSERT ON record_actions BEGIN SELECT RAISE(ABORT, 'storage full'); END",
+                );
+              } else {
+                upload = () async =>
+                    throw const SocketException('offline after pause');
+              }
+              engine.emit(0, 31000, playing: true);
+              await player.pause();
+              await refused;
+              expect(
+                await File.fromUri(paths.first).readAsBytes(),
+                media.payload,
+              );
+              expect(await cache.read(alice.scope), isNotNull);
+              expect(catalog.clearingNotifier.value, isFalse);
+              expect(player.unsavedChanges, failure == 'save');
+            } finally {
+              preferences.refuseTitle = null;
+              await sql?.execute('DROP TRIGGER IF EXISTS refuse_pause');
+              upload = null;
+            }
+            await clear();
+            expect(await File.fromUri(paths.first).exists(), isFalse);
+            expect(player.unsavedChanges, isFalse);
+            final saved = (await records.read(alice.scope.key))!;
+            expect(saved['resumes'][edition.id].single['milliseconds'], 31000);
+            expect(await records.hasPendingUploads(alice.scope.key), isFalse);
+            expect(await bobDownloaded.readAsBytes(), media.payload);
+          },
+        );
+      }
+
+      test('Clear data releases the old book on switch and waits for the new book to pause', () async {
+        final (:player, :engine, :paths) = await startDownloadedAudio();
+        final first = player.edition!;
+        final secondBook = catalog.books.last;
+        final second = secondBook.editions.single;
+        var completed = false;
+        final clearing = clear().then((_) => completed = true);
+        await waitForRemoval(first);
+        engine.emit(0, 17000, playing: true);
+        await player.open(secondBook, second);
+        await waitForRemoval(second);
+        expect(player.edition, second);
+        expect(player.playing, isTrue);
+        expect(completed, isFalse);
+        expect(await File.fromUri(paths.first).exists(), isFalse);
+        expect(await File.fromUri(paths.last).readAsBytes(), media.payload);
+        engine.emit(0, 9000, playing: true);
+        await player.pause();
+        await clearing;
+        final saved = (await records.read(alice.scope.key))!;
+        expect(saved['resumes'][first.id].single['milliseconds'], 17000);
+        expect(saved['resumes'][second.id].single['milliseconds'], 9000);
+        expect(await records.hasPendingUploads(alice.scope.key), isFalse);
+        expect(await File.fromUri(paths.last).exists(), isFalse);
+        expect(catalog.books, isEmpty);
+      });
+
       test('clear uploads before deleting and retains all personal records across restart', () async {
         final entered = Completer<void>();
         final release = Completer<void>();

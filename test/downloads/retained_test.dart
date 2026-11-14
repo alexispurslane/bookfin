@@ -256,7 +256,10 @@ void main() {
       final alice = (await downloads.retainedStorage()).single;
       await downloads.bind(fixture.session(user: 'bob'), []);
       expect(await downloads.retainedStorage(), isEmpty);
-      await expectLater(downloads.removeRetained(alice), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(alice),
+        throwsA(isA<Exception>()),
+      );
       fixture.serverId = 'other-server';
       await downloads.bind(fixture.session(), []);
       expect(await downloads.retainedStorage(), isEmpty);
@@ -265,7 +268,10 @@ void main() {
       fixture.serverId = 'fixture-server';
       await downloads.bind(fixture.session(), []);
       expect(await downloads.retainedStorage(), hasLength(1));
-      await expectLater(downloads.removeRetained(alice), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(alice),
+        throwsA(isA<Exception>()),
+      );
     },
   );
 
@@ -362,7 +368,10 @@ void main() {
       await downloads.bind(fixture.session(), []);
       final retained = (await downloads.retainedStorage()).single;
       await downloads.bind(fixture.session(), fixture.books);
-      await expectLater(downloads.removeRetained(retained), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(retained),
+        throwsA(isA<Exception>()),
+      );
       expect(await file.exists(), isTrue);
     },
   );
@@ -399,7 +408,10 @@ void main() {
         final retained = (await downloads.retainedStorage()).single;
         expect(retained.bytes, 6);
         expect(retained.removable, isFalse);
-        await expectLater(downloads.removeRetained(retained), throwsStateError);
+        await expectLater(
+          downloads.removeRetained(retained),
+          throwsA(isA<Exception>()),
+        );
         expect(await file.exists(), isTrue);
       },
     );
@@ -412,7 +424,10 @@ void main() {
       await downloads.bind(fixture.session(), []);
       final retained = (await downloads.retainedStorage()).single;
       await File('${file.parent.path}/record.json').writeAsString('{}');
-      await expectLater(downloads.removeRetained(retained), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(retained),
+        throwsA(isA<Exception>()),
+      );
       expect(await file.exists(), isTrue);
     },
   );
@@ -454,7 +469,10 @@ void main() {
       await file.parent.delete(recursive: true);
       await Link(file.parent.path).create(outside.path);
       expect(await downloads.retainedStorage(), isEmpty);
-      await expectLater(downloads.removeRetained(retained), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(retained),
+        throwsA(isA<Exception>()),
+      );
       expect(await target.readAsString(), 'outside');
     },
   );
@@ -471,7 +489,10 @@ void main() {
       revision: retained.revision,
       bytes: 6,
     );
-    await expectLater(downloads.removeRetained(forged), throwsStateError);
+    await expectLater(
+      downloads.removeRetained(forged),
+      throwsA(isA<Exception>()),
+    );
     expect(await file.exists(), isTrue);
     final wrong = sha256
         .convert(utf8.encode(jsonEncode(['other:key', 'v1'])))
@@ -526,7 +547,10 @@ void main() {
     await downloads.bind(fixture.session(), []);
     final retained = (await downloads.retainedStorage()).single;
     final switching = downloads.bind(fixture.session(user: 'bob'), []);
-    await expectLater(downloads.removeRetained(retained), throwsStateError);
+    await expectLater(
+      downloads.removeRetained(retained),
+      throwsA(isA<Exception>()),
+    );
     await switching;
     expect(await file.exists(), isTrue);
   });
@@ -549,7 +573,10 @@ void main() {
       await downloads.bind(fixture.session(), []);
       final retained = (await downloads.retainedStorage()).single;
       expect(retained.removable, isFalse);
-      await expectLater(downloads.removeRetained(retained), throwsStateError);
+      await expectLater(
+        downloads.removeRetained(retained),
+        throwsA(isA<Exception>()),
+      );
       expect(await file.readAsBytes(), [1, 2, 3, 4, 5, 6]);
     });
   }
@@ -563,8 +590,11 @@ void main() {
       final account = file.parent.parent;
       final moved = await account.rename('${root.path}/unrelated-account');
       await Link(account.path).create(moved.path);
-      await expectLater(downloads.retainedStorage(), throwsStateError);
-      await expectLater(downloads.removeRetained(retained), throwsStateError);
+      await expectLater(downloads.retainedStorage(), throwsA(isA<Exception>()));
+      await expectLater(
+        downloads.removeRetained(retained),
+        throwsA(isA<Exception>()),
+      );
       final actual = File('${moved.path}/${retained.id}/complete');
       expect(await actual.readAsBytes(), [1, 2, 3, 4, 5, 6]);
     },

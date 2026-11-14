@@ -2,7 +2,7 @@
 id: boo-xyrl
 status: in_progress
 deps: [boo-pwx7]
-links: []
+links: [boo-6bge]
 created: 2026-11-07T15:30:28Z
 type: task
 priority: 1

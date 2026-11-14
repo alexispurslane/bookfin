@@ -314,6 +314,79 @@ void main() {
     await _settleStorage(tester, downloads);
   }
 
+  for (final retained in [false, true]) {
+    testWidgets(
+      'a stale ${retained ? 'leftover' : 'edition'} confirmation keeps files and reports recovery',
+      (tester) async {
+        if (retained) {
+          await showRetained(tester);
+          await openLeftovers(tester);
+        } else {
+          await tester.runAsync(() async {
+            final edition = catalog.books
+                .expand((book) => book.editions)
+                .firstWhere((edition) => edition.kind == EditionKind.text);
+            await downloads.request(edition);
+            await downloads.idle;
+          });
+          await tester.runAsync(
+            () => tester.pumpWidget(
+              MaterialApp(
+                home: Scaffold(
+                  body: DownloadsPage(
+                    downloads: downloads,
+                    books: catalog.books,
+                  ),
+                ),
+              ),
+            ),
+          );
+          await _settleStorage(tester, downloads);
+        }
+        final saved = await tester.runAsync(
+          () async =>
+              (await root
+                          .list(recursive: true)
+                          .where(
+                            (entry) =>
+                                entry is File &&
+                                entry.path.endsWith('/complete'),
+                          )
+                          .toList())
+                      .single
+                  as File,
+        );
+        await tester.runAsync(
+          () => tester.tap(
+            find.byTooltip(
+              retained ? 'Remove leftover files' : 'Remove download',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          await downloads.bind(catalog.session, retained ? catalog.books : []);
+          await tester.tap(
+            find.widgetWithText(
+              FilledButton,
+              retained ? 'Remove files' : 'Remove download',
+            ),
+          );
+          await downloads.idle;
+        });
+        await _settleStorage(tester, downloads);
+        expect(tester.takeException(), isNull);
+        expect(
+          find.textContaining(
+            retained ? 'Review Downloads' : 'Check your account',
+          ),
+          findsOneWidget,
+        );
+        expect(await tester.runAsync(saved!.readAsBytes), fixture.payload);
+      },
+    );
+  }
+
   testWidgets(
     'leftover files show as one summary row that opens their own page',
     (tester) async {
@@ -578,7 +651,7 @@ void main() {
         await tester.tap(find.byTooltip('Check again'));
       });
       await _settleStorage(tester, downloads);
-      expect(downloads.leftovers.value.error, isStateError);
+      expect(downloads.leftovers.value.error, isA<FileSystemException>());
       expect(find.text('Source text:text'), findsNothing);
       expect(find.byTooltip('Remove leftover files'), findsNothing);
       expect(

@@ -2,7 +2,7 @@
 id: boo-39cu
 status: in_progress
 deps: []
-links: []
+links: [boo-6bge]
 created: 2026-11-12T23:41:01Z
 type: bug
 priority: 2
@@ -101,3 +101,7 @@ The sole read-only review at 21aafcbe625319e0ed7d480a4aaee32453cf6ec4 returned c
 **2026-11-14T00:17:14Z**
 
 Review fixes verified: 50 real-file lifecycle tests across preferences and SQLite; focused lifecycle/status checks 95 passed; affected checks 994 passed. Final full Flutter suite through Nix, concurrency=2: 3883 passed, 27 unchanged skips, zero errors. Scoped analysis and production/gallery JavaScript builds pass. Final format check: 12 files, zero changes. All original review verdicts and IDs, resolutions, failures, interrupted fixture runs, exact commands, logs, patches and hashes are retained in docs/evidence/boo-39cu. No second review. No owned implementation gap remains; native acceptance, Clear data integration, hardening and closure stay parent-owned. Ticket remains in progress pending integration.
+
+**2026-11-14T00:32:57Z**
+
+Parent integration inspection found PARENT-R1: the narrowed Exception-only UI handlers exposed expected stale edition/retained-file guards as uncaught StateErrors. Run 06 reproduced both real confirmation flows after a catalog change. Parent changed expected catalog/ownership/storage failures to recoverable Exceptions; invariants and invalid hold usage remain Errors. Run 05 was a fixture-clock stall, interrupted only through its owned runner PID 82022; exit zero without a completion event is not a pass. Run 07 passed both new regressions and 100 other cases, but one existing private-storage assertion still expected StateError; it was updated to FileSystemException. Full final verification remains in progress. No second review.

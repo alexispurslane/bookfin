@@ -314,7 +314,7 @@ void main() {
             final saved = await store.read(session.scope.key);
             await expectLater(
               downloads.removeRetained(leftover),
-              throwsStateError,
+              throwsA(isA<DownloadRemovalException>()),
             );
             expect(engine.pauses, pauses);
             expect(await store.read(session.scope.key), saved);

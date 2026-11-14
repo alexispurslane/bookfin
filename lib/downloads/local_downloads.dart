@@ -497,7 +497,7 @@ class LocalDownloads extends Downloads {
 
   /// The source directories under [account]. They are none when the root or
   /// the account directory does not exist, because nothing was saved there.
-  /// Throws a [StateError] when either one is not a private directory.
+  /// Throws a [FileSystemException] when either is not a private directory.
   Future<List<Directory>> _savedDirectories(Directory account) async {
     for (final directory in [root, account]) {
       switch (await FileSystemEntity.type(directory.path, followLinks: false)) {
@@ -506,7 +506,9 @@ class LocalDownloads extends Downloads {
         case FileSystemEntityType.notFound:
           return const [];
         default:
-          throw StateError('Cannot read private download storage.');
+          throw const FileSystemException(
+            'Cannot read private download storage.',
+          );
       }
     }
     return [
@@ -736,7 +738,7 @@ class LocalDownloads extends Downloads {
         _session == null ||
         current == null ||
         identity(current) != identity(edition)) {
-      throw StateError('This edition is not in the active account catalog.');
+      throw Exception('This edition is not in the active account catalog.');
     }
     return _editionSources[edition.id]!;
   }
@@ -990,7 +992,9 @@ class LocalDownloads extends Downloads {
     void guard() {
       _guardClear();
       if (_disposed || generation != _generation) {
-        throw StateError('The active download catalog changed.');
+        throw const DownloadRemovalException(
+          'The active download catalog changed.',
+        );
       }
     }
 
@@ -1217,7 +1221,9 @@ class LocalDownloads extends Downloads {
     if (identity == null ||
         identity.key != download.sourceKey ||
         identity.revision != download.revision) {
-      throw StateError('The saved download identity cannot be verified.');
+      throw const DownloadRemovalException(
+        'The saved download identity cannot be verified.',
+      );
     }
     await _heldEnded(download.id);
     guard();
@@ -1240,8 +1246,8 @@ class LocalDownloads extends Downloads {
         _sources.containsKey(download.id) ||
         !download.removable ||
         !_idPattern.hasMatch(download.id)) {
-      throw StateError(
-        'This retained download no longer belongs to this view.',
+      throw const DownloadRemovalException(
+        'These files no longer belong to this view. Review Downloads and try again.',
       );
     }
   }
@@ -1260,7 +1266,9 @@ class LocalDownloads extends Downloads {
       guard();
       if (_session == null ||
           !await _containedDirectory(directory, _session!.scope.key)) {
-        throw StateError('Download storage is no longer a private directory.');
+        throw const FileSystemException(
+          'Download storage is no longer a private directory.',
+        );
       }
     }
 

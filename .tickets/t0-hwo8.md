@@ -17,3 +17,9 @@ Recorded while resolving boo-39cu-F1: the pre-existing LocalDownloads._readLefto
 ## Acceptance Criteria
 
 Expected storage Exceptions keep the last inventory and disable stale removal actions. A programming Error reaches the caller or owning zone unchanged. Preserve account/source guards, corrupt-file retention and narrow leftover notifications. Add controlled failing tests before changing behavior.
+
+## Notes
+
+**2026-11-14T00:32:57Z**
+
+Parent boo-39cu integration now classifies unavailable private storage as FileSystemException and stale removal guards as expected Exceptions, with actual confirmation-flow regressions. The broad Object recovery in _readLeftovers remains for this ticket to correct; preserve the new storage-failure and stale-confirmation coverage.
