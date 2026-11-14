@@ -6,6 +6,9 @@
 // decodes a window of an audio file and transcribes it on a thread of its
 // own at a low priority, so that playback and the UI never wait for it.
 
+// glibc declares gettid() only for _GNU_SOURCE. Android's Bionic always
+// declares it.
+#define _GNU_SOURCE
 #include <math.h>
 #include <pthread.h>
 #include <stdbool.h>
